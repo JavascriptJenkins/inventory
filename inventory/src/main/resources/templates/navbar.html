@@ -1,0 +1,50 @@
+
+<div th:fragment="navbarfragment">
+    <script>
+        function postLogout(){
+            console.log("postLogout");
+            document.getElementById("logoutform").submit();
+        }
+    </script>
+
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a th:if="${customJwtParameter != null}" class="navbar-brand" th:href="@{/dashboard/index?customJwtParameter=__${customJwtParameter}__}">ServePapers TechVVS</a>
+            <a th:if="${customJwtParameter == null}" class="navbar-brand" th:href="@{/login">ServePapers TechVVS</a>
+<!--            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">-->
+<!--                <span class="navbar-toggler-icon"></span>-->
+<!--            </button>-->
+<!--            <div class="collapse navbar-collapse" id="navbarSupportedContent">-->
+            <div id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li th:if="${customJwtParameter == null}" class="nav-item">
+                        <a class="nav-link active" aria-current="page" th:href="@{/login">Home</a>
+                    </li>
+                    <li th:if="${customJwtParameter != null}" class="nav-item">
+                        <a class="nav-link active" aria-current="page" th:href="@{/dashboard/index?customJwtParameter=__${customJwtParameter}__}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                            <a class="nav-link" th:href="@{/newform?customJwtParameter=__${customJwtParameter}__}">Input New Form</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/newform/searchProcessData?customJwtParameter=__${customJwtParameter}__}">Search</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/newform/browseProcessData?customJwtParameter=__${customJwtParameter}__}">Browse Records</a>
+                    </li>
+                    <li th:if="${customJwtParameter != null}" class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="javascript:{}" onclick="postLogout()">Logout</a>
+                    </li>
+
+                </ul>
+
+            </div>
+        </div>
+    </nav>
+
+    <form id="logoutform" th:action="@{/login/logout}" method="post">
+        <button id="triggerLogout" style="margin-top:5px;" type="submit" class="btn btn-primary" hidden>Submit</button>
+    </form>
+
+</div>

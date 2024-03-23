@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Authorization</title>
+    <script
+            src="https://code.jquery.com/jquery-3.6.0.js"
+            integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="
+            crossorigin="anonymous"></script>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <!-- JavaScript Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-kQtW33rZJAHjgefvhyyzcGF3C5TFyBQBA13V1RKPf4uH+bwyzQxZ6CmMZHmNBEfJ" crossorigin="anonymous"></script>
+
+
+    <link rel="stylesheet" type="text/css" media="all" href="/css/table.css" th:href="@{/css/table.css}" />
+    <!-- Bootstrap Font Icon CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+    <script>
+        function hideform(){
+            console.log("hideform");
+
+
+            $("#maincontainer").hide();
+            $("#hiddencontainer").show();
+
+
+
+        }
+    </script>
+    <style>
+      .required:after {
+        content:" *";
+        color: red;
+      }
+    </style>
+
+</head>
+<body>
+
+<br>
+<br>
+    <div id="hiddencontainer" class="container" style="display:none">
+        <div id="pleasewait" class="alert alert-primary" role="alert">Sending validation text message to phone associated with this email... </div>
+    </div>
+    <div id="maincontainer" class="container">
+
+        <div class="alert alert-primary" role="alert" >Login to the Servepapers TechVVS system</div>
+
+        <!--@RequestMapping("/studentView")-->
+        <form th:action="@{/login/systemuser}" th:object="${systemuser}" method="post">
+
+            <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
+            <div class="alert alert-info" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
+
+
+            <div class="row">
+
+                <div class="col">
+                    <label class="form-label required">Email</label>
+                    <input style="margin-bottom: 5px;" type="text" th:field="*{email}" class="form-control" placeholder="Email" aria-label="Email">
+                </div>
+            </div>
+
+<!--            <div class="row">-->
+<!--                <div class="col">-->
+<!--                    <input style="margin-bottom: 5px;" type="password" th:field="*{password}" class="form-control" placeholder="Password" aria-label="Password">-->
+<!--                </div>-->
+<!--            </div>-->
+
+
+
+
+            <button style="margin-top:5px;" type="submit" class="btn btn-primary" onclick="hideform()">Submit</button>
+
+        </form>
+
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+        <a href="http://localhost:8080/login/createaccount">Click here to create an account</a>
+        <br>
+        <br>
+        <br>
+        <a href="http://localhost:8080/login/resetpassword">Click here to reset password</a>
+
+
+    </div>
+
+
+</body>
+</html>
