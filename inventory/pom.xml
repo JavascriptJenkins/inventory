@@ -186,11 +186,13 @@
 			<version>2.4-M1-groovy-4.0</version>
 			<scope>test</scope>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.codehaus.groovy/groovy-eclipse-batch -->
 		<dependency>
 			<groupId>org.codehaus.groovy</groupId>
 			<artifactId>groovy-eclipse-batch</artifactId>
-			<version>3.0.17-02</version>
+			<version>3.0.8-01</version>
 		</dependency>
+
 	</dependencies>
 	
 	<build>
@@ -206,6 +208,11 @@
 						<groupId>org.codehaus.groovy</groupId>
 						<artifactId>groovy-eclipse-compiler</artifactId>
 						<version>3.9.0</version>
+					</dependency>
+					<dependency>
+						<groupId>org.codehaus.groovy</groupId>
+						<artifactId>groovy-eclipse-batch</artifactId>
+						<version>3.0.8-01</version>
 					</dependency>
 				</dependencies>
 			</plugin>
@@ -282,7 +289,17 @@
 <!--					</replacements>-->
 <!--				</configuration>-->
 <!--			</plugin>-->
+
+
 		</plugins>
+
 	</build>
+	<pluginRepositories>
+		<pluginRepository>
+			<id>groovy-plugins-release</id>
+			<url>https://groovy.jfrog.io/artifactory/plugins-release</url>
+		</pluginRepository>
+
+	</pluginRepositories>
 
 </project>

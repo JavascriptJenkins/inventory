@@ -1,10 +1,10 @@
-package com.techvvs.inventory.controller
+package com.techvvs.inventory.viewcontroller
 
-import com.techvvs.inventory.model.Product
-import com.techvvs.inventory.repository.ProductRepository
+import com.techvvs.inventory.model.ProductVO
+import com.techvvs.inventory.jparepo.ProductRepo
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.techvvs.inventory.repository.ProductTypeRepository
+import com.techvvs.inventory.jparepo.ProductTypeRepo
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -19,10 +19,10 @@ import org.springframework.web.bind.annotation.RestController
 class ProductController {
 
     @Autowired
-    ProductRepository productRepository
+    ProductRepo productRepository
 
     @Autowired
-    ProductTypeRepository productTypeRepository
+    ProductTypeRepo productTypeRepository
 
     ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();;
 

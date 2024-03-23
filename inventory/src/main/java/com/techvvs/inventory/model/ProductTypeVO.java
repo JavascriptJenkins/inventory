@@ -1,38 +1,14 @@
 package com.techvvs.inventory.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.Serializable;
 import javax.persistence.*;
 @JsonIgnoreProperties
 @Entity
-@Table(name="Product")
-class ProductVO implements Serializable {
+@Table(name="ProductType")
+public class ProductTypeVO implements Serializable {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @JsonProperty
-    Integer product_id;
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @JsonProperty
-    Integer product_type_id;
-    @JsonProperty
-    Integer quantity;
-    @JsonProperty
-    String name;
-    @JsonProperty
-    String description;
-    @JsonProperty
-    String barcode;
-    @JsonProperty
-    String price;
-    @JsonProperty
-    Integer sellPrice;
-    @JsonProperty
-    Integer salePrice;
-    @JsonProperty
-    Integer laborCostPricePerUnit;
-    @JsonProperty
-    Integer marginPercent;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @JsonProperty
@@ -44,9 +20,9 @@ class ProductVO implements Serializable {
     // generic fields below
     @Temporal(TemporalType.TIMESTAMP)
     @JsonProperty
-    java.util.Date updateTimeStamp
+    java.util.Date updateTimeStamp;
 
     @Temporal(TemporalType.TIMESTAMP)
     @JsonProperty
-    java.util.Date createTimeStamp
+    java.util.Date createTimeStamp;
                 }
