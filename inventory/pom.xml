@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.5.4</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+	<packaging>jar</packaging>
+	<groupId>com.techvvs</groupId>
+	<artifactId>inventory</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>inventory</name>
+	<description>Track Student enrollment </description>
+	<properties>
+		<java.version>11</java.version>
+		<maven.compiler.source>11</maven.compiler.source>
+		<maven.compiler.target>11</maven.compiler.target>
+	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter</artifactId>
+		</dependency>
+		 <!-- this dependency is needed to bring in sporing boot embedded webs server   -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+
+		<!-- this is needed to connect to mysql database-->
+<!--		<dependency>-->
+<!--			<groupId>mysql</groupId>-->
+<!--			<artifactId>mysql-connector-java</artifactId>-->
+<!--			<scope>runtime</scope>-->
+<!--			<version>8.0.13</version>-->
+<!--		</dependency>-->
+
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- provides integration with tyhmeleaf -->
+		<dependency>
+			<groupId>org.thymeleaf.extras</groupId>
+			<artifactId>thymeleaf-extras-springsecurity5</artifactId>
+			<version>3.1.0.RC1</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-thymeleaf</artifactId>
+			<version>2.5.4</version>
+		</dependency>
+		
+		<dependency>
+			<!-- JPA Data (Repositories, Entities, Hibernate, etc..) -->
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+			<version>2.4.0</version>
+		</dependency>
+
+		<dependency>
+			<!-- JSON Web Token Support -->
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt</artifactId>
+			<version>0.7.0</version>
+		</dependency>
+
+		<dependency>
+			<!-- Starter for using Spring Security -->
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+			<version>2.7.5</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+
+		<!-- to support pagination -->
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-commons</artifactId>
+			<version>2.3.2.RELEASE</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-jsr310 -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.datatype</groupId>
+			<artifactId>jackson-datatype-jsr310</artifactId>
+			<version>2.14.1</version>
+		</dependency>
+		
+		<!-- This is needed for using twilio and sending out sms messages -->
+		<dependency>
+			<groupId>com.twilio.sdk</groupId>
+			<artifactId>twilio</artifactId>
+			<version>8.11.0</version>
+		</dependency>
+
+		<!-- This is needed for using sendgrid and sending out emails -->
+		<dependency>
+			<groupId>com.sendgrid</groupId>
+			<artifactId>sendgrid-java</artifactId>
+			<version>4.10.1</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/javax.mail/javax.mail-api -->
+		<dependency>
+			<groupId>javax.mail</groupId>
+			<artifactId>javax.mail-api</artifactId>
+			<version>1.6.2</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.sun.mail</groupId>
+			<artifactId>javax.mail</artifactId>
+			<version>1.6.2</version>
+		</dependency>
+		
+		<!-- Java texting api -->
+		<!-- https://mvnrepository.com/artifact/com.textmagic.sdk/textmagic-java-sdk -->
+		<dependency>
+			<groupId>com.textmagic.sdk</groupId>
+			<artifactId>textmagic-java-sdk</artifactId>
+			<version>2.0.2456</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
+		<!-- need this for downloading files - specifically writing file to response -->
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.11.0</version>
+		</dependency>
+
+		<!-- This reloads thymeleaf automatically -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-devtools</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>31.1-jre</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.github.floverfelt</groupId>
+			<artifactId>find-and-replace-maven-plugin</artifactId>
+			<version>1.1.0</version>
+		</dependency>
+
+
+		<!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-devtools -->
+<!--		<dependency>-->
+<!--			<groupId>org.springframework.boot</groupId>-->
+<!--			<artifactId>spring-boot-devtools</artifactId>-->
+<!--			<version>2.5.5</version>-->
+<!--		</dependency>-->
+
+		<dependency>
+			<groupId>org.codehaus.groovy</groupId>
+			<artifactId>groovy-all</artifactId>
+			<version>3.0.15</version>
+			<type>pom</type>
+		</dependency>
+		<!--		<dependency>-->
+		<!--			<groupId>org.codehaus.groovy</groupId>-->
+		<!--			<artifactId>groovy-backports-compat23</artifactId>-->
+		<!--			<version>2.4.5</version>-->
+		<!--		</dependency>-->
+		<!-- https://mvnrepository.com/artifact/org.spockframework/spock-core -->
+		<dependency>
+			<groupId>org.spockframework</groupId>
+			<artifactId>spock-core</artifactId>
+			<version>2.4-M1-groovy-4.0</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.groovy</groupId>
+			<artifactId>groovy-eclipse-batch</artifactId>
+			<version>3.0.17-02</version>
+		</dependency>
+	</dependencies>
+	
+	<build>
+		<plugins>
+			<plugin>
+			<artifactId>maven-compiler-plugin</artifactId>
+			<version>3.11.0</version><!-- 3.6.2 is the minimum -->
+			<configuration>
+				<compilerId>groovy-eclipse-compiler</compilerId>
+			</configuration>
+				<dependencies>
+					<dependency>
+						<groupId>org.codehaus.groovy</groupId>
+						<artifactId>groovy-eclipse-compiler</artifactId>
+						<version>3.9.0</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+			<!--			This will clean the database -->
+			<plugin>
+				<artifactId>maven-clean-plugin</artifactId>
+				<version>3.1.0</version>
+				<configuration>
+					<filesets>
+						<fileset>
+							<directory>data</directory>
+							<includes>
+								<include>**.mv.db</include>
+							</includes>
+<!--							<excludes>-->
+<!--								<exclude>**/important.log</exclude>-->
+<!--								<exclude>**/another-important.log</exclude>-->
+<!--							</excludes>-->
+							<followSymlinks>false</followSymlinks>
+						</fileset>
+					</filesets>
+				</configuration>
+			</plugin>
+
+			<!-- if you run this it will replace all the uri references to local  -->
+			<plugin>
+				<groupId>io.github.floverfelt</groupId>
+				<artifactId>find-and-replace-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>exec</id>
+						<phase>package</phase>
+						<goals>
+							<goal>find-and-replace</goal>
+						</goals>
+						<configuration>
+							<!-- Possible replacementType values: file-contents, filenames, directory-names. To run for multiple types, pass the values as a CSV list. -->
+							<replacementType>file-contents</replacementType>
+							<baseDir>src/</baseDir>
+							<findRegex>https://inventory.techvvs.io</findRegex>
+							<replaceValue>http://localhost:8080</replaceValue>
+							<recursive>true</recursive>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			
+			<!-- replace all hostname files when going to do prod build -->
+<!--			<plugin>-->
+<!--				<groupId>com.google.code.maven-replacer-plugin</groupId>-->
+<!--				<artifactId>replacer</artifactId>-->
+<!--				<version>1.5.3</version>-->
+<!--				<executions>-->
+<!--					<execution>-->
+<!--						<phase>generate-sources</phase>-->
+<!--						<goals>-->
+<!--							<goal>replace</goal>-->
+<!--						</goals>-->
+<!--					</execution>-->
+<!--				</executions>-->
+<!--				<configuration>-->
+<!--					<includes>-->
+<!--						<include>src/main/java/com/techvvs/inventory/*</include>-->
+<!--					</includes>-->
+<!--					<replacements>-->
+<!--						<replacement>-->
+<!--							<token>@https://inventory.techvvs.io@</token>-->
+<!--							<value>https://inventory.techvvs.io</value>-->
+<!--						</replacement>-->
+<!--					</replacements>-->
+<!--				</configuration>-->
+<!--			</plugin>-->
+		</plugins>
+	</build>
+
+</project>
