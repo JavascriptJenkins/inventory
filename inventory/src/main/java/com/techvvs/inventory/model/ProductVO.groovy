@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import javax.persistence.*;
+
+@IdClass(ProductCompositeID.class)
 @JsonIgnoreProperties
 @Entity
 @Table(name="Product")
