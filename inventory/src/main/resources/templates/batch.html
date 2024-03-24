@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>New Batch Data Entry</title>
+
+
+    <script
+            src="https://code.jquery.com/jquery-3.6.0.js"
+            integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="
+            crossorigin="anonymous"></script>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <!-- JavaScript Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-kQtW33rZJAHjgefvhyyzcGF3C5TFyBQBA13V1RKPf4uH+bwyzQxZ6CmMZHmNBEfJ" crossorigin="anonymous"></script>
+
+
+    <link rel="stylesheet" type="text/css" media="all" href="/css/table.css" th:href="@{/css/table.css}" />
+    <!-- Bootstrap Font Icon CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+
+    <style>
+      .required:after {
+        content:" *";
+        color: red;
+      }
+    </style>
+
+</head>
+<body>
+
+
+
+<div th:insert="navbar.html :: navbarfragment"> </div>
+
+
+<div class="container">
+
+
+    <div class="alert alert-primary" role="alert" >Create a new Process Data Form entry in the database</div>
+    <br>
+
+
+<!--    <div th:if="${filelist != null || (successMessage == 'Record Successfully Saved.')}">-->
+    <div th:if="${filelist != null || processdata.createtimestamp != null}">
+            <form th:action="@{/newform/createNewProcessData?customJwtParameter=__${customJwtParameter}__}" th:object="${processdata}" method="post">
+                <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
+                <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
+
+                <div class="row" style="margin-bottom: 5px;">
+                    <div class="col-sm-2" style="margin-bottom: 5px;">
+                        <label class="form-label"><b>File Number</b></label>
+                        <input type="text" th:field="*{filenumber}" class="form-control" placeholder="filenumber" aria-label="filenumber" readonly>
+                    </div>
+                    <div class="col-sm-2" style="margin-bottom: 5px;">
+                        <label class="form-label required">Serve Attempts</label>
+                        <input type="number" th:field="*{serveattempts}" class="form-control" placeholder="serveattempts" aria-label="serveattempts" readonly>
+                    </div>
+                </div>
+
+                <div class="row" style="margin-bottom: 5px;">
+                    <div class="col-md-4" style="margin-bottom: 5px;">
+                        <label class="form-label required">First Name</label>
+                        <input type="text" th:field="*{fname}" class="form-control" placeholder="fname" aria-label="fname" readonly>
+                    </div>
+                    <div class="col-md-4" style="margin-bottom: 5px;">
+                        <label class="form-label">Middle Name</label>
+                        <input type="text" th:field="*{mname}" class="form-control" placeholder="mname" aria-label="mname" readonly>
+                    </div>
+                    <div class="col-md-4" style="margin-bottom: 5px;">
+                        <label class="form-label required">Last Name</label>
+                        <input type="text" th:field="*{lname}" class="form-control" placeholder="lname" aria-label="lname" readonly>
+                    </div>
+                </div>
+
+
+                <div class="row" style="margin-bottom: 5px;">
+                    <div class="col-md-4" style="margin-bottom: 5px;">
+                        <label class="form-label required">Age</label>
+                        <input type="number" th:field="*{age}" class="form-control" placeholder="age" aria-label="age" readonly>
+                    </div>
+                    <div class="col-md-4" style="margin-bottom: 5px;">
+                        <label class="form-label required">Height feet</label>
+                        <input type="text" th:field="*{heightfeet}" class="form-control" placeholder="height feet" aria-label="heightfeet" readonly>
+                    </div>
+                    <div class="col-md-4" style="margin-bottom: 5px;">
+                        <label class="form-label required">inches</label>
+                        <input type="text" th:field="*{heightinches}" class="form-control" placeholder="height inches" aria-label="heightinches" readonly>
+                    </div>
+                </div>
+
+
+                <div class="row" style="margin-bottom: 5px;">
+                    <div class="col-md-4" style="margin-bottom: 5px;">
+                        <label class="form-label required">Hair Color</label>
+                        <input type="text" th:field="*{haircolor}" class="form-control" placeholder="haircolor" aria-label="haircolor" readonly>
+                    </div>
+                    <div class="col-md-4" style="margin-bottom: 5px;">
+                        <label class="form-label required">Race</label>
+                        <input type="text" th:field="*{race}" class="form-control" placeholder="race" aria-label="race" readonly>
+                    </div>
+                </div>
+
+                <div class="col-md-3" style="margin-bottom: 5px;">
+                    <label class="form-label required">Phone</label>
+                    <input type="text" th:field="*{phone}" class="form-control" placeholder="phone" aria-label="phone">
+                </div>
+
+                    <br>
+                    <br>
+                    <div class="alert alert-info" role="alert" >Address</div>
+                    <br>
+                    <div class="row" style="margin-bottom: 5px;">
+                        <div class="col-md-4" style="margin-bottom: 5px;">
+                            <label class="form-label required">Address1</label>
+                            <input type="text" th:field="*{address1}" class="form-control" placeholder="address1" aria-label="address1" readonly>
+                        </div>
+                        <div class="col-md-4" style="margin-bottom: 5px;">
+                            <label class="form-label">Address2</label>
+                            <input type="text" th:field="*{address2}" class="form-control" placeholder="address2" aria-label="address2" readonly>
+                        </div>
+                    </div>
+
+                <div class="row" style="margin-bottom: 5px;">
+                    <div class="col" style="margin-bottom: 5px;">
+                        <label class="form-label required">City</label>
+                        <input type="text" th:field="*{city}" class="form-control" placeholder="city" aria-label="city" readonly>
+                    </div>
+
+                    <!-- todo: replace the state field on here and on edit form page with dropdown containing all the states -->
+                    <div class="col" style="margin-bottom: 5px;">
+                        <label class="form-label required">State</label>
+                        <input type="text" th:field="*{state}" class="form-control" placeholder="state" aria-label="state" readonly>
+                    </div>
+
+                    <!--            <div class="col" style="margin-bottom: 5px;">-->
+                    <!--                <select class="form-select" id="validationDefault04" required>-->
+                    <!--                    <option selected disabled value="">Choose...</option>-->
+                    <!--                    <option>...</option>-->
+                    <!--                </select>-->
+                    <!--            </div>-->
+
+                    <div class="col" style="margin-bottom: 5px;">
+                        <label class="form-label required">Zipcode</label>
+                        <input type="text" th:field="*{zipcode}" class="form-control" placeholder="zipcode" aria-label="zipcode" readonly>
+                    </div>
+                </div>
+                    <br>
+                    <br>
+                    <div class="alert alert-info" role="alert" >Notes</div>
+                    <div class="col" style="margin-bottom: 5px;">
+                        <label class="form-label required">Notes</label>
+                        <textarea style="width:648px;height:163px;" th:field="*{notes}" class="form-control" placeholder="notes" aria-label="notes" readonly></textarea>
+                    </div>
+                    <div class="alert alert-warning" role="alert" ><a th:href="@{/newform/editform?filenumber=__${processdata.filenumber}__&customJwtParameter=__${customJwtParameter}__}">Click here to edit this form</a>
+                    </div>
+                    <button style="margin-top:5px;" type="submit" class="btn btn-primary" disabled>Submit</button>
+            </form>
+
+    </div> <!-- end filelist view -->
+
+
+
+
+    <div th:if="${processdata.createtimestamp == null}">
+        <form th:action="@{/newform/createNewProcessData?customJwtParameter=__${customJwtParameter}__}" th:object="${processdata}" method="post">
+            <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
+            <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
+
+            <div class="row" style="margin-bottom: 5px;">
+                <div class="col-sm-2" style="margin-bottom: 5px;">
+                    <label class="form-label"><b>File Number</b></label>
+                    <input type="text" th:field="*{filenumber}" class="form-control" placeholder="filenumber" aria-label="filenumber" readonly>
+                </div>
+                <div class="col-sm-2" style="margin-bottom: 5px;">
+                    <label class="form-label required">Serve Attempts</label>
+                    <input type="number" th:field="*{serveattempts}" class="form-control" placeholder="serveattempts" aria-label="serveattempts">
+                </div>
+            </div>
+
+            <div class="row" style="margin-bottom: 5px;">
+                <div class="col-md-4" style="margin-bottom: 5px;">
+                    <label class="form-label required">First Name</label>
+                    <input type="text" th:field="*{fname}" class="form-control" placeholder="fname" aria-label="fname">
+                </div>
+                <div class="col-md-4" style="margin-bottom: 5px;">
+                    <label class="form-label">Middle Name</label>
+                    <input type="text" th:field="*{mname}" class="form-control" placeholder="mname" aria-label="mname">
+                </div>
+                <div class="col-md-4" style="margin-bottom: 5px;">
+                    <label class="form-label required">Last Name</label>
+                    <input type="text" th:field="*{lname}" class="form-control" placeholder="lname" aria-label="lname">
+                </div>
+            </div>
+
+
+            <div class="row" style="margin-bottom: 5px;">
+                <div class="col-md-4" style="margin-bottom: 5px;">
+                    <label class="form-label required">Age</label>
+                    <input type="number" th:field="*{age}" class="form-control" placeholder="age" aria-label="age">
+                </div>
+                <div class="col-md-4" style="margin-bottom: 5px;">
+                    <label class="form-label required">Height feet</label>
+                    <input type="text" th:field="*{heightfeet}" class="form-control" placeholder="height feet" aria-label="heightfeet">
+                </div>
+                <div class="col-md-4" style="margin-bottom: 5px;">
+                    <label class="form-label required">inches</label>
+                    <input type="text" th:field="*{heightinches}" class="form-control" placeholder="height inches" aria-label="heightinches">
+                </div>
+            </div>
+
+            <div class="row" style="margin-bottom: 5px;">
+                <div class="col-md-4" style="margin-bottom: 5px;">
+                    <label class="form-label required">Hair Color</label>
+                    <input type="text" th:field="*{haircolor}" class="form-control" placeholder="haircolor" aria-label="haircolor">
+                </div>
+                <div class="col-md-4" style="margin-bottom: 5px;">
+                    <label class="form-label required">Race</label>
+                    <input type="text" th:field="*{race}" class="form-control" placeholder="race" aria-label="race">
+                </div>
+            </div>
+
+
+            <div class="col-md-3" style="margin-bottom: 5px;">
+                <label class="form-label required">Phone</label>
+                <input type="text" th:field="*{phone}" class="form-control" placeholder="phone" aria-label="phone">
+            </div>
+            <br>
+            <br>
+
+            <div class="alert alert-info" role="alert" >Address</div>
+            <br>
+            <div class="row" style="margin-bottom: 5px;">
+                <div class="col-md-4" style="margin-bottom: 5px;">
+                    <label class="form-label required">Address1</label>
+                    <input type="text" th:field="*{address1}" class="form-control" placeholder="address1" aria-label="address1">
+                </div>
+                <div class="col-md-4" style="margin-bottom: 5px;">
+                    <label class="form-label">Address2</label>
+                    <input type="text" th:field="*{address2}" class="form-control" placeholder="address2" aria-label="address2">
+                </div>
+            </div>
+
+            <div class="row" style="margin-bottom: 5px;">
+                <div class="col" style="margin-bottom: 5px;">
+                    <label class="form-label required">City</label>
+                    <input type="text" th:field="*{city}" class="form-control" placeholder="city" aria-label="city">
+                </div>
+
+                <!-- todo: replace the state field on here and on edit form page with dropdown containing all the states -->
+                <div class="col" style="margin-bottom: 5px;">
+                    <label class="form-label required">State</label>
+                    <input type="text" th:field="*{state}" class="form-control" placeholder="state" aria-label="state">
+                </div>
+
+    <!--            <div class="col" style="margin-bottom: 5px;">-->
+    <!--                <select class="form-select" id="validationDefault04" required>-->
+    <!--                    <option selected disabled value="">Choose...</option>-->
+    <!--                    <option>...</option>-->
+    <!--                </select>-->
+    <!--            </div>-->
+
+                <div class="col" style="margin-bottom: 5px;">
+                    <label class="form-label required">Zipcode</label>
+                    <input type="text" th:field="*{zipcode}" class="form-control" placeholder="zipcode" aria-label="zipcode">
+                </div>
+            </div>
+            <br>
+            <br>
+            <div class="alert alert-info" role="alert" >Notes</div>
+            <div class="col" style="margin-bottom: 5px;">
+                <label class="form-label required">Notes</label>
+                <textarea style="width:648px;height:163px;" th:field="*{notes}" class="form-control" placeholder="notes" aria-label="notes"></textarea>
+            </div>
+            <button style="margin-top:5px;" type="submit" class="btn btn-primary">Submit</button>
+        </form>
+
+    </div> <!-- end non filelist -->
+
+
+
+            <br>
+            <br>
+
+
+            <!-- Show list of uploaded files -->
+            <div th:if="${filelist != null}">
+                <div class="alert alert-primary" role="alert" >Files Previously Uploaded</div>
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th scope="col">File Name</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="file : ${filelist}">
+                        <td th:text="${file.filename}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+
+            <div style="margin-bottom: 5px;" class="mx-auto">
+
+                <div class="alert alert-info" role="alert" >Upload a file</div>
+                <!-- pass the processdata object to the upload file controller to get the correct ID to save it under -->
+                <form method="post" th:object="${processdata}" th:action="@{/file/upload?customJwtParameter=__${customJwtParameter}__}" enctype="multipart/form-data">
+                    <div class="form-group">
+
+                        <div th:if="${disableupload}">
+                            <input type="file" disabled="disabled" name="file" class="form-control-file">
+                        </div>
+
+                        <div th:if="${disableupload == null}">
+                            <input type="file" name="file" class="form-control-file">
+                        </div>
+
+
+
+                        <!-- pass all these hidden attributes with so the data stays on page after uploading the file -->
+                        <input type="hidden" th:field="*{filenumber}">
+                        <input type="hidden" th:field="*{fname}">
+                        <input type="hidden" th:field="*{mname}">
+                        <input type="hidden" th:field="*{lname}">
+                        <input type="hidden" th:field="*{age}">
+                        <input type="hidden" th:field="*{actioncounter1}">
+                        <input type="hidden" th:field="*{serveattempts}">
+                        <input type="hidden" th:field="*{notes}">
+                        <input type="hidden" th:field="*{address1}">
+                        <input type="hidden" th:field="*{address2}">
+                        <input type="hidden" th:field="*{race}">
+                        <input type="hidden" th:field="*{city}">
+                        <input type="hidden" th:field="*{state}">
+                        <input type="hidden" th:field="*{zipcode}">
+                        <input type="hidden" th:field="*{heightfeet}">
+                        <input type="hidden" th:field="*{heightinches}">
+                        <input type="hidden" th:field="*{haircolor}">
+                        <input type="hidden" th:field="*{phone}">
+                        <input type="hidden" th:field="*{lastattemptvisit}">
+                        <input type="hidden" th:field="*{updatedtimestamp}">
+                        <input type="hidden" th:field="*{createtimestamp}">
+                    </div>
+                    <br>
+
+
+                    <div th:if="${disableupload}">
+
+                        <button type="submit" disabled="disabled" class="btn btn-primary">Upload File</button>
+                    </div>
+
+                    <!-- if it is first download then it is ok.  second download will throw 403 is upload is performed right after  -->
+                    <div th:if="${disableupload == null}">
+                        <button type="submit" class="btn btn-primary">Upload File</button>
+                    </div>
+
+
+<!--                    <button type="submit" class="btn btn-primary">Upload File</button>-->
+                </form>
+            </div>
+
+
+        </div>
+
+
+
+
+
+
+
+</div>
+
+
+</body>
+</html>

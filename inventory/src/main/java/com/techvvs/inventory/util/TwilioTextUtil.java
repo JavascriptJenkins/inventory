@@ -37,11 +37,16 @@ public class TwilioTextUtil {
 
 
     // todo: enforce country code
-    public String sendValidationText(SystemUserDAO systemUserDAO, String token) {
+    public String sendValidationText(SystemUserDAO systemUserDAO, String token, boolean isDev1) {
 
         String message = "Validate your techvvs account with token: "+token;
 
-        send(systemUserDAO.getPhone(), message);
+        if(!isDev1){
+            send(systemUserDAO.getPhone(), message);
+        } else {
+            System.out.println("NOT sending validation text because we are in dev1");
+        }
+
 
 
         return "success";
@@ -66,7 +71,7 @@ public class TwilioTextUtil {
 
     }
 
-    public String createAndSendNewPhoneToken(SystemUserDAO systemUserDAO){
+    public String createAndSendNewPhoneToken(SystemUserDAO systemUserDAO, boolean isDev1){
         // save a token value to a username and then send a text message
         String tokenval = String.valueOf(secureRandom.nextInt(1000000));
         String result = "";
@@ -84,7 +89,12 @@ public class TwilioTextUtil {
         } finally{
             // only send the text message after everything else went smoothly
             // todo : check result of this
-            result = sendValidationText(systemUserDAO, tokenval);
+            if(!isDev1){
+                result = sendValidationText(systemUserDAO, tokenval, isDev1);
+            } else {
+                result = "success"; // set it to success if we are in dev1 and skipped sending the validation text
+                System.out.println("Did NOT send validation text because we in dev1");
+            }
             System.out.println("Send Validation with result: "+result);
         }
 

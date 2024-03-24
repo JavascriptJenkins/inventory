@@ -74,7 +74,7 @@ public class AuthViewController {
 
 
         model.addAttribute("systemuser", new SystemUserDAO());
-        return "auth.html";
+        return "auth/auth.html";
     }
 
     //error page displayed when nobody is logged in
@@ -82,7 +82,7 @@ public class AuthViewController {
     String showErrorPage(Model model) {
 
         model.addAttribute("systemuser", new SystemUserDAO());
-        return "error.html";
+        return "auth/error.html";
     }
 
     //error page displayed when nobody is logged in
@@ -94,7 +94,7 @@ public class AuthViewController {
         SecurityContextHolder.getContext().setAuthentication(null); // clear the internal auth
         SecurityContextHolder.clearContext();
         model.addAttribute("systemuser", new SystemUserDAO());
-        return "auth.html";
+        return "auth/auth.html";
     }
 
     //error page displayed when nobody is logged in
@@ -102,7 +102,7 @@ public class AuthViewController {
     String viewCreateAccount(Model model) {
 
         model.addAttribute("systemuser", new SystemUserDAO());
-        return "newaccount.html";
+        return "auth/newaccount.html";
     }
 
     // display the page for typing in the token when user clicks link on phone
@@ -125,7 +125,7 @@ public class AuthViewController {
         return "verifyphonetoken.html";
     }
 
-    // display the page for typing in the token
+    // this gets hit after user enters phone token and password
     @PostMapping("/verifyphonetoken")
     String postverifyphonetoken(Model model, @ModelAttribute("tknfromcontroller") TokenDAO tokenDAO) {
 
@@ -134,7 +134,7 @@ public class AuthViewController {
             if (tokenDAO.getToken().length() < 5) {
                 model.addAttribute("errorMessage", "Token must be at least characters. ");
                 model.addAttribute("tknfromcontroller", tokenDAO);
-                return "authEnterPhoneToken.html";
+                return "auth/authEnterPhoneToken.html";
             }
 
 
@@ -151,13 +151,13 @@ public class AuthViewController {
                     System.out.println("passwords do not match");
                     model.addAttribute("tknfromcontroller", tokenDAO);
                     model.addAttribute("errorMessage", "Unable to login. ");
-                    return "authEnterPhoneToken.html";
+                    return "auth/authEnterPhoneToken.html";
                 }
             } else {
                 System.out.println("passwords not in correct format");
                 model.addAttribute("tknfromcontroller", tokenDAO);
                 model.addAttribute("errorMessage", "password is blank ");
-                return "authEnterPhoneToken.html";
+                return "auth/authEnterPhoneToken.html";
             }
 
 
@@ -165,22 +165,31 @@ public class AuthViewController {
             List<TokenDAO> tokenlist = tokenRepo.findTop10ByUsermetadataOrderByCreatetimestampDesc(tokenDAO.getUsermetadata());
             if (tokenlist != null && tokenlist.size() > 0) {
 
-
+                // take the most recent token generated for the user
                 latest = tokenlist.get(0);
-                // make sure token matches the one passed from controller
-                if (!latest.getToken().equals(tokenDAO.getToken())) {
-                    // the tokens don't match then we send them back
-                    model.addAttribute("errorMessage", "Token does not match.  Make sure you are entering the correct value or try logging in again. "); // todo: add a login link here
-                    model.addAttribute("tknfromcontroller", tokenDAO);
-                    return "authEnterPhoneToken.html";
+
+                boolean skip = false;
+                // if we are in dev1 just mark any token valid and let the user in
+                if ("dev1".equals(env.getProperty("spring.profiles.active"))){
+
+                    skip = true;
                 }
 
 
-                if (latest.getTokenused() == 1) {
+                // make sure token matches the one passed from controller
+                if (!latest.getToken().equals(tokenDAO.getToken()) && !skip) {
+                    // the tokens don't match then we send them back
+                    model.addAttribute("errorMessage", "Token does not match.  Make sure you are entering the correct value or try logging in again. "); // todo: add a login link here
+                    model.addAttribute("tknfromcontroller", tokenDAO);
+                    return "auth/authEnterPhoneToken.html";
+                }
+
+
+                if (latest.getTokenused() == 1 && !skip) {
                     // if token is used send them back
                     model.addAttribute("errorMessage", "Try logging in again so a new token will be sent. "); // todo: add a login link here
                     model.addAttribute("tknfromcontroller", tokenDAO);
-                    return "authEnterPhoneToken.html";
+                    return "auth/authEnterPhoneToken.html";
 
                 } else if (latest.getTokenused() == 0) {
 
@@ -196,17 +205,17 @@ public class AuthViewController {
                     // insert jwt token minting here
                     try {
 
-                        if (existingUser.isPresent() && existingUser.get().getIsuseractive() == 0) {
+                        if (existingUser.isPresent() && existingUser.get().getIsuseractive() == 0 && !skip) {
                             model.addAttribute("tknfromcontroller", tokenDAO);
                             System.out.println("User exists but is not active.  User needs to activate email. ");
                             model.addAttribute("errorMessage", "Unable to login. If you have created an account, check your email (and spam) for account activation link. ");
-                            //  return "authVerifySuccess.html";
-                            return "authEnterPhoneToken.html";
-                        } else if (existingUser.isEmpty()) {
+                            //  return "auth/authVerifySuccess.html";
+                            return "auth/authEnterPhoneToken.html";
+                        } else if (existingUser.isEmpty() && !skip) {
                             model.addAttribute("tknfromcontroller", tokenDAO);
                             model.addAttribute("errorMessage", "Unable to login. If you have created an account, check your email (and spam) for account activation link.  ");
-                            //return "authVerifySuccess.html";
-                            return "authEnterPhoneToken.html";
+                            //return "auth/authVerifySuccess.html";
+                            return "auth/authEnterPhoneToken.html";
                         }
 
 
@@ -231,14 +240,14 @@ public class AuthViewController {
                         model.addAttribute("errorMessage", "System Error");
                         System.out.println("TechVVS System Error in login: " + ex.getMessage());
                         model.addAttribute("tknfromcontroller", tokenDAO);
-                        // return "auth.html"; // return early with error
-                        return "authEnterPhoneToken.html";
+                        // return "auth/auth.html"; // return early with error
+                        return "auth/authEnterPhoneToken.html";
                     }
 
 
                     model.addAttribute("successMessage", "Phone token verified. ");
                     model.addAttribute("tknfromcontroller", tokenDAO);
-                    return "index.html";
+                    return "auth/index.html";
 
                 }
             }
@@ -252,7 +261,7 @@ public class AuthViewController {
 
 
         model.addAttribute("tknfromcontroller", new TokenDAO());
-        return "authEnterPhoneToken.html";
+        return "auth/authEnterPhoneToken.html";
     }
 
     @GetMapping("/verify")
@@ -274,13 +283,13 @@ public class AuthViewController {
             } catch (Exception ex) {
                 model.addAttribute("errorMessage", "System Error.  Try again or contact support: info@techvvs.io");
                 System.out.println("Error in viewAuthVerify: " + ex.getMessage());
-                return "authVerifySuccess.html";
+                return "auth/authVerifySuccess.html";
             }
 
             // add data for page display
             model.addAttribute("successMessage", "Success activating account with email: " + email);
         }
-        return "authVerifySuccess.html";
+        return "auth/authVerifySuccess.html";
     }
 
     int checkTokenExpire(LocalDateTime tokencreated) {
@@ -347,21 +356,21 @@ public class AuthViewController {
                 }
 
                 model.addAttribute("successMessage", "Check your email (and spam folder) to activate account: " + systemUserDAO.getEmail());
-                return "accountcreated.html";
+                return "auth/accountcreated.html";
 
             } catch (Exception ex) {
                 model.addAttribute("errorMessage", "System Error");
                 System.out.println("TechVVS System Error in createSystemUser: " + ex.getMessage());
-                return "newaccount.html"; // return early with error
+                return "auth/newaccount.html"; // return early with error
             }
 
 
         }
 
-        return "newaccount.html";
+        return "auth/newaccount.html";
     }
 
-    // todo: remove passing the password from this html page (auth.html)
+    // todo: remove passing the password from this html page (auth/auth.html)
     @PostMapping("/systemuser")
     String login(@ModelAttribute("systemuser") SystemUserDAO systemUserDAO, Model model, HttpServletResponse response) {
 
@@ -380,7 +389,7 @@ public class AuthViewController {
                 System.out.println("User tried to login with an email that does not exist. ");
                 errorResult = "Unable to login.  Check your email for validation link. ";
                 model.addAttribute("errorMessage", errorResult);
-                return "auth.html"; // return early with error
+                return "auth/auth.html"; // return early with error
             }
 
             // if user exists but is not active, tell them to check their email and validate
@@ -388,7 +397,7 @@ public class AuthViewController {
                 System.out.println("User exists but is not active. ");
                 errorResult = "Unable to login. Check your email for validation link. ";
                 model.addAttribute("errorMessage", errorResult);
-                return "auth.html"; // return early with error
+                return "auth/auth.html"; // return early with error
             }
 
 
@@ -398,7 +407,7 @@ public class AuthViewController {
         // Validation
         if (!errorResult.equals("success")) {
             model.addAttribute("errorMessage", errorResult);
-            return "auth.html"; // return early with error
+            return "auth/auth.html"; // return early with error
         } else {
 
 
@@ -412,7 +421,8 @@ public class AuthViewController {
                     if (latest.getTokenused() == 1) {
                         System.out.println("User has token that is already used. Making a new one now. ");
                         //send a new token
-                        textMagicUtil.createAndSendNewPhoneToken(userfromdb.get());
+                        boolean isDev1 = "dev1".equals(env.getProperty("spring.profiles.active"));
+                        textMagicUtil.createAndSendNewPhoneToken(userfromdb.get(), isDev1);
 
                     } else if (latest.getTokenused() == 0) {
                         // have them validate existing token
@@ -445,7 +455,13 @@ public class AuthViewController {
                         System.out.println("sending out validation text");
                         // only send the text message after everything else went smoothly
                         // todo : check result of this
-                        result = textMagicUtil.sendValidationText(userfromdb.get(), tokenval);
+                        boolean isDev1 = "dev1".equals(env.getProperty("spring.profiles.active"));
+                        if(!isDev1){
+                            result = textMagicUtil.sendValidationText(userfromdb.get(), tokenval, isDev1);
+                        } else {
+                            System.out.println("NOT sending validation text because we are in dev1");
+                        }
+
                     }
 
 
@@ -454,8 +470,9 @@ public class AuthViewController {
                         TokenDAO latest = tokenlist.get(0);
                         if (latest.getTokenused() == 1) {
                             System.out.println("User has token that is already used. Making a new one now. ");
+                            boolean isDev1 = "dev1".equals(env.getProperty("spring.profiles.active"));
                             //send a new token
-                            textMagicUtil.createAndSendNewPhoneToken(userfromdb.get());
+                            textMagicUtil.createAndSendNewPhoneToken(userfromdb.get(), isDev1);
 
                         } else if (latest.getTokenused() == 0) {
                             // have them validate existing token
@@ -481,8 +498,8 @@ public class AuthViewController {
             model.addAttribute("tknfromcontroller", tokenDAO);
         }
 
-        //  return "index.html";
-        return "authEnterPhoneToken.html";
+        //  return "auth/index.html";
+        return "auth/authEnterPhoneToken.html";
     }
 
     @GetMapping("/viewresetpass")
@@ -501,7 +518,7 @@ public class AuthViewController {
     String resetpasswordFromEmailLink(Model model, HttpServletResponse response) {
 
         model.addAttribute("systemuser", new SystemUserDAO());
-        return "authResetPassword.html";
+        return "auth/authResetPassword.html";
     }
 
     @PostMapping("/actuallyresetpassword")
@@ -520,7 +537,7 @@ public class AuthViewController {
 
                 if (existingUser.isPresent() && existingUser.get().getIsuseractive() == 0) {
                     model.addAttribute("errorMessage", "Unable to process request. ");
-                    return "authVerifySuccess.html";
+                    return "auth/authVerifySuccess.html";
                 } else if (existingUser.isPresent() && existingUser.get().getIsuseractive() == 1) {
 
                     existingUser.get().setPassword(passwordEncoder.encode(systemUserDAO.getPassword())); // set new password here
@@ -530,12 +547,12 @@ public class AuthViewController {
             } catch (Exception ex) {
                 model.addAttribute("errorMessage", "System Error");
                 System.out.println("TechVVS System Error: " + ex.getMessage());
-                return "authResetPassword.html"; // return early with error
+                return "auth/authResetPassword.html"; // return early with error
             }
             model.addAttribute("successMessage", "Password change success! ");
         }
 
-        return "authVerifySuccess.html";
+        return "auth/authVerifySuccess.html";
     }
 
     @PostMapping("/resetpasswordbyemail")
@@ -566,7 +583,7 @@ public class AuthViewController {
 
                 if (existingUser.isPresent() && existingUser.get().getIsuseractive() == 0) {
                     model.addAttribute("successMessage", "If email exists in techvvs system, a link was sent to that email to reset password.  Check spam folder. ");
-                    return "authVerifySuccess.html";
+                    return "auth/authVerifySuccess.html";
                 } else if (existingUser.isPresent() && existingUser.get().getIsuseractive() == 1) {
 
                     try {
@@ -593,12 +610,12 @@ public class AuthViewController {
             } catch (Exception ex) {
                 model.addAttribute("errorMessage", "System Error");
                 System.out.println("TechVVS System Error: " + ex.getMessage());
-                return "authResetPassword.html"; // return early with error
+                return "auth/authResetPassword.html"; // return early with error
             }
             model.addAttribute("successMessage", "If email exists in techvvs system, a link was sent to that email to reset password.  Check spam folder. ");
         }
 
-        return "auth.html";
+        return "auth/auth.html";
     }
 
     String validateActuallyResetPasswordInfo(SystemUserDAO systemUserDAO) {
