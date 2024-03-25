@@ -38,11 +38,10 @@ public class ProductVO implements Serializable {
     @JsonProperty
     Integer marginPercent;
     // generic fields below
-    @Temporal(TemporalType.TIMESTAMP)
     @JsonProperty
     java.util.Date updateTimeStamp;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @JsonProperty
     java.util.Date createTimeStamp;
-                }
+
+    }

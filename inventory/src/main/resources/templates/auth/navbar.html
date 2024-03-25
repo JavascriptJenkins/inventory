@@ -25,13 +25,13 @@
                         <a class="nav-link active" aria-current="page" th:href="@{/dashboard/index?customJwtParameter=__${customJwtParameter}__}">Home</a>
                     </li>
                     <li class="nav-item">
-                            <a class="nav-link" th:href="@{/newform?customJwtParameter=__${customJwtParameter}__}">Input New Form</a>
+                            <a class="nav-link" th:href="@{/newbatch?customJwtParameter=__${customJwtParameter}__}">Input New Batch</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" th:href="@{/newform/searchProcessData?customJwtParameter=__${customJwtParameter}__}">Search</a>
+                        <a class="nav-link" th:href="@{/newbatch/searchProcessData?customJwtParameter=__${customJwtParameter}__}">Search</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" th:href="@{/newform/browseProcessData?customJwtParameter=__${customJwtParameter}__}">Browse Records</a>
+                        <a class="nav-link" th:href="@{/newbatch/browseProcessData?customJwtParameter=__${customJwtParameter}__}">Browse Records</a>
                     </li>
                     <li th:if="${customJwtParameter != null}" class="nav-item">
                         <a class="nav-link active" aria-current="page" href="javascript:{}" onclick="postLogout()">Logout</a>
