@@ -232,6 +232,7 @@ public class BatchViewController {
             batchVO.setUpdateTimeStamp(LocalDateTime.now());
 
 
+            //todo: add support for batch types on the ui so we can save this batch object
             BatchVO result = batchRepo.save(batchVO);
 
             model.addAttribute("successMessage","Record Successfully Saved. ");

@@ -74,6 +74,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         .antMatchers("/newbatch/searchBatch/*").permitAll()//
         .antMatchers("/newbatch/browseBatch/***").permitAll()//
         .antMatchers("/newbatch/editBatch/*").permitAll()//
+        .antMatchers("/batchtype/createNewBatchType/*").permitAll()//
+        .antMatchers("/batchtype/editBatchType/*").permitAll()//
+
         .antMatchers("/login/createaccount").permitAll()//
         .antMatchers("/users/sendResetToken").permitAll()//
         .antMatchers("/users/validateUserEmail").permitAll()//

@@ -10,7 +10,7 @@
 
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
-            <a th:if="${customJwtParameter != null}" class="navbar-brand" th:href="@{/dashboard/index?customJwtParameter=__${customJwtParameter}__}">ServePapers TechVVS</a>
+            <a th:if="${customJwtParameter != null}" class="navbar-brand" th:href="@{/dashboard/index?customJwtParameter=__${customJwtParameter}__}">Inventory TechVVS</a>
             <a th:if="${customJwtParameter == null}" class="navbar-brand" th:href="@{/login">Inventory TechVVS</a>
 <!--            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">-->
 <!--                <span class="navbar-toggler-icon"></span>-->
@@ -32,6 +32,9 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" th:href="@{/newbatch/browseProcessData?customJwtParameter=__${customJwtParameter}__}">Browse Records</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/batchtype?customJwtParameter=__${customJwtParameter}__}">New Batch Type</a>
                     </li>
                     <li th:if="${customJwtParameter != null}" class="nav-item">
                         <a class="nav-link active" aria-current="page" href="javascript:{}" onclick="postLogout()">Logout</a>
