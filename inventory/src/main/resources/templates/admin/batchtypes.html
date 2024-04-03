@@ -76,8 +76,8 @@
     <br>
 
 
+
     <!-- Show list of batchtypes -->
-    <div th:if="${batchtypelist != null}">
         <div class="alert alert-primary" role="alert" >Batch Types</div>
         <table class="table">
             <thead>
@@ -87,20 +87,22 @@
                 </tr>
             </thead>
             <tbody>
-                <tr th:each="batchtype : ${batchtypelist}">
+                <tr th:each="batchtype, iStat : ${batchtypePage.content}"
+                    th:style="${iStat.odd}? 'font-weight: bold;'"
+                    th:alt-title="${iStat.even}? 'even' : 'odd'">
                     <td th:text="${batchtype.name}"></td>
                     <td th:text="${batchtype.description}"></td>
                 </tr>
             </tbody>
         </table>
 <!--        todo: add pagination here from the browseforms.html class in servepapers-->
-<!--        <div th:if="${processdataPage.totalPages > 0}" class="pagination"-->
-<!--             th:each="pageNumber : ${pageNumbers}">-->
-<!--            <a th:href="@{/newform/browseProcessData?customJwtParameter=__${customJwtParameter}__&size=__${#lists.size(processdataPage.content)}__&page=__${pageNumber}__}"-->
-<!--               th:text=${pageNumber}-->
-<!--               th:class="${pageNumber==processdataPage.number + 1} ? active"></a>-->
-<!--        </div>-->
-    </div>
+        <div th:if="${batchtypePage.totalPages > 0}" class="pagination"
+             th:each="pageNumber : ${pageNumbers}">
+            <a th:href="@{/batchtype/browseBatchType?customJwtParameter=__${customJwtParameter}__&size=__${#lists.size(batchtypePage.content)}__&page=__${pageNumber}__}"
+               th:text=${pageNumber}
+               th:class="${pageNumber==batchtypePage.number + 1} ? active"></a>
+        </div>
+
 
 
 

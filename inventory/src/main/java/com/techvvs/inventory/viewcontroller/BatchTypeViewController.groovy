@@ -4,6 +4,9 @@ import com.techvvs.inventory.jparepo.BatchTypeRepo
 import com.techvvs.inventory.model.BatchTypeVO
 import com.techvvs.inventory.model.BatchVO
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Controller
@@ -27,7 +30,12 @@ public class BatchTypeViewController {
 
     //default home mapping
     @GetMapping
-    String viewNewForm(@ModelAttribute( "batchtype" ) BatchTypeVO batchTypeVO, Model model, @RequestParam("customJwtParameter") String customJwtParameter){
+    String viewNewForm(@ModelAttribute( "batchtype" ) BatchTypeVO batchTypeVO,
+                       Model model,
+                       @RequestParam("customJwtParameter") String customJwtParameter,
+                       @RequestParam("page") Optional<Integer> page,
+                       @RequestParam("size") Optional<Integer> size
+    ){
 
         System.out.println("customJwtParam on batchtype controller: "+customJwtParameter);
 
@@ -39,9 +47,10 @@ public class BatchTypeViewController {
             batchTypeVOToBind.batch_type_id= 0
         }
 
-        model.addAttribute("batchtypelist", getBatchTypeList()); // todo: add pagination to this
+       // model.addAttribute("batchtypelist", getBatchTypeList()); // todo: add pagination to this
         model.addAttribute("customJwtParameter", customJwtParameter);
         model.addAttribute("batchtype", batchTypeVOToBind);
+        addPaginatedData(model, page)
         return "admin/batchtypes.html";
     }
 
@@ -50,8 +59,9 @@ public class BatchTypeViewController {
     String editBatchType(@ModelAttribute( "batchtype" ) BatchTypeVO batchTypeVO,
                      Model model,
                      HttpServletResponse response,
-                     @RequestParam("customJwtParameter") String customJwtParameter
-    ){
+                     @RequestParam("customJwtParameter") String customJwtParameter,
+    @RequestParam("page") Optional<Integer> page,
+    @RequestParam("size") Optional<Integer> size){
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         System.out.println("----------------------- START AUTH INFO ");
@@ -76,8 +86,9 @@ public class BatchTypeViewController {
             model.addAttribute("batch", result);
         }
 
-        model.addAttribute("batchtypelist", getBatchTypeList()); // todo: add pagination to this
+    //    model.addAttribute("batchtypelist", getBatchTypeList()); // todo: add pagination to this
         model.addAttribute("customJwtParameter", customJwtParameter);
+        addPaginatedData(model, page)
         return "admin/batchtypes";
     }
 
@@ -85,7 +96,9 @@ public class BatchTypeViewController {
     String createNewBatchType(@ModelAttribute( "batchtype" ) BatchTypeVO batchTypeVO,
                           Model model,
                           HttpServletResponse response,
-                          @RequestParam("customJwtParameter") String customJwtParameter
+                          @RequestParam("customJwtParameter") String customJwtParameter,
+                              @RequestParam("page") Optional<Integer> page,
+                              @RequestParam("size") Optional<Integer> size
     ){
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -116,7 +129,8 @@ public class BatchTypeViewController {
         }
 
         model.addAttribute("customJwtParameter", customJwtParameter);
-        model.addAttribute("batchtypelist", getBatchTypeList()); // todo: add pagination to this
+//        model.addAttribute("batchtypelist", getBatchTypeList()); // todo: add pagination to this
+        addPaginatedData(model, page)
         return "admin/batchtypes";
     }
 
@@ -140,6 +154,39 @@ public class BatchTypeViewController {
 
     List<BatchTypeVO> getBatchTypeList(){
         batchTypeRepo.findAll()
+    }
+
+    void addPaginatedData(Model model, Optional<Integer> page){
+
+        // https://www.baeldung.com/spring-data-jpa-pagination-sorting
+        //pagination
+        int currentPage = page.orElse(0);
+        int pageSize = 5;
+        Pageable pageable;
+        if(currentPage == 0){
+            pageable = PageRequest.of(0 , pageSize);
+        } else {
+            pageable = PageRequest.of(currentPage - 1, pageSize);
+        }
+
+        Page<BatchTypeVO> pageOfBatchType = batchTypeRepo.findAll(pageable);
+
+        int totalPages = pageOfBatchType.getTotalPages();
+
+        List<Integer> pageNumbers = new ArrayList<>();
+
+        while(totalPages > 0){
+            pageNumbers.add(totalPages);
+            totalPages = totalPages - 1;
+        }
+
+        model.addAttribute("pageNumbers", pageNumbers);
+        model.addAttribute("page", currentPage);
+        model.addAttribute("size", pageOfBatchType.getTotalPages());
+        model.addAttribute("batchtypePage", pageOfBatchType);
+        if(model.getAttribute("batchtype") == null){
+            model.addAttribute("batchtype", new BatchTypeVO())
+        }
     }
 
 
