@@ -27,6 +27,11 @@
 
 
         }
+        function filloutdefaults(){
+            $("#emailinput").val("unwoundcracker@gmail.com");
+            $("#tokeninput").val("555777");
+            $("#passinput").val("password");
+        }
     </script>
 
     <style>
@@ -39,6 +44,9 @@
 <body>
 <br>
 <br>
+<div th:if="${isDev1 == 1}" class="nav-item">
+    <button style="margin-top:5px;margin-bottom:5px;" type="submit" class="btn btn-primary" onclick="filloutdefaults()">devmode: Fill out defaults</button>
+</div>
 <div id="hiddencontainer" class="container" style="display:none">
     <div id="pleasewait" class="alert alert-primary" role="alert">Please wait while server authenticates... </div>
 </div>
@@ -58,15 +66,15 @@
 
             <div class="col">
                 <label class="form-label required">Email</label>
-                <input style="margin-bottom: 5px;" type="text" th:field="*{usermetadata}" class="form-control" placeholder="Email" aria-label="Email" readonly>
+                <input id="emailinput" style="margin-bottom: 5px;" type="text" th:field="*{usermetadata}" class="form-control" placeholder="Email" aria-label="Email" readonly>
             </div>
             <div class="col">
                 <label class="form-label required">Token</label>
-                <input style="margin-bottom: 5px;" type="text" th:field="*{token}" class="form-control" placeholder="Token" aria-label="Token">
+                <input id="tokeninput" style="margin-bottom: 5px;" type="text" th:field="*{token}" class="form-control" placeholder="Token" aria-label="Token">
             </div>
             <div class="col">
                 <label class="form-label required">Password</label>
-                <input style="margin-bottom: 5px;" type="password" th:field="*{password}" class="form-control" placeholder="Password" aria-label="Password">
+                <input id="passinput" style="margin-bottom: 5px;" type="password" th:field="*{password}" class="form-control" placeholder="Password" aria-label="Password">
             </div>
         </div>
 

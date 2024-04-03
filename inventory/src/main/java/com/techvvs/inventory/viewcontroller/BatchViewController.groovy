@@ -56,7 +56,7 @@ public class BatchViewController {
         model.addAttribute("disableupload","true"); // disable uploading a file until we actually have a record submitted successfully
         model.addAttribute("customJwtParameter", customJwtParameter);
         model.addAttribute("batch", batchVOToBind);
-        return "batch.html";
+        return "service/batch.html";
     }
 
     @GetMapping("/browseBatch")
@@ -240,7 +240,7 @@ public class BatchViewController {
         }
 
         model.addAttribute("customJwtParameter", customJwtParameter);
-        return "batch.html";
+        return "service/batch.html";
     }
 
     String validateNewFormInfo(BatchVO batchVO){

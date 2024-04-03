@@ -35,6 +35,8 @@ import java.util.Optional;
 public class AuthViewController {
 
 
+    @Autowired Environment environment;
+
     @Autowired
     UserService userService;
 
@@ -97,12 +99,21 @@ public class AuthViewController {
         return "auth/auth.html";
     }
 
-    //error page displayed when nobody is logged in
     @GetMapping("/createaccount")
     String viewCreateAccount(Model model) {
 
+        checkForDev1(model);
         model.addAttribute("systemuser", new SystemUserDAO());
         return "auth/newaccount.html";
+    }
+
+    void checkForDev1(Model model){
+        boolean isDev1 = "dev1".equals(env.getProperty("spring.profiles.active"));
+        if(isDev1){
+            model.addAttribute("isDev1",1); // if it is dev1 we will give option to fillout default values
+        } else {
+            model.addAttribute("isDev1",0);
+        }
     }
 
     // display the page for typing in the token when user clicks link on phone
@@ -134,6 +145,7 @@ public class AuthViewController {
             if (tokenDAO.getToken().length() < 5) {
                 model.addAttribute("errorMessage", "Token must be at least characters. ");
                 model.addAttribute("tknfromcontroller", tokenDAO);
+                checkForDev1(model);
                 return "auth/authEnterPhoneToken.html";
             }
 
@@ -151,12 +163,14 @@ public class AuthViewController {
                     System.out.println("passwords do not match");
                     model.addAttribute("tknfromcontroller", tokenDAO);
                     model.addAttribute("errorMessage", "Unable to login. ");
+                    checkForDev1(model);
                     return "auth/authEnterPhoneToken.html";
                 }
             } else {
                 System.out.println("passwords not in correct format");
                 model.addAttribute("tknfromcontroller", tokenDAO);
                 model.addAttribute("errorMessage", "password is blank ");
+                checkForDev1(model);
                 return "auth/authEnterPhoneToken.html";
             }
 
@@ -181,6 +195,7 @@ public class AuthViewController {
                     // the tokens don't match then we send them back
                     model.addAttribute("errorMessage", "Token does not match.  Make sure you are entering the correct value or try logging in again. "); // todo: add a login link here
                     model.addAttribute("tknfromcontroller", tokenDAO);
+                    checkForDev1(model);
                     return "auth/authEnterPhoneToken.html";
                 }
 
@@ -189,6 +204,7 @@ public class AuthViewController {
                     // if token is used send them back
                     model.addAttribute("errorMessage", "Try logging in again so a new token will be sent. "); // todo: add a login link here
                     model.addAttribute("tknfromcontroller", tokenDAO);
+                    checkForDev1(model);
                     return "auth/authEnterPhoneToken.html";
 
                 } else if (latest.getTokenused() == 0) {
@@ -210,11 +226,13 @@ public class AuthViewController {
                             System.out.println("User exists but is not active.  User needs to activate email. ");
                             model.addAttribute("errorMessage", "Unable to login. If you have created an account, check your email (and spam) for account activation link. ");
                             //  return "auth/authVerifySuccess.html";
+                            checkForDev1(model);
                             return "auth/authEnterPhoneToken.html";
                         } else if (existingUser.isEmpty() && !skip) {
                             model.addAttribute("tknfromcontroller", tokenDAO);
                             model.addAttribute("errorMessage", "Unable to login. If you have created an account, check your email (and spam) for account activation link.  ");
                             //return "auth/authVerifySuccess.html";
+                            checkForDev1(model);
                             return "auth/authEnterPhoneToken.html";
                         }
 
@@ -241,12 +259,14 @@ public class AuthViewController {
                         System.out.println("TechVVS System Error in login: " + ex.getMessage());
                         model.addAttribute("tknfromcontroller", tokenDAO);
                         // return "auth/auth.html"; // return early with error
+                        checkForDev1(model);
                         return "auth/authEnterPhoneToken.html";
                     }
 
 
                     model.addAttribute("successMessage", "Phone token verified. ");
                     model.addAttribute("tknfromcontroller", tokenDAO);
+                    checkForDev1(model);
                     return "auth/index.html";
 
                 }
@@ -499,6 +519,7 @@ public class AuthViewController {
         }
 
         //  return "auth/index.html";
+        checkForDev1(model);
         return "auth/authEnterPhoneToken.html";
     }
 

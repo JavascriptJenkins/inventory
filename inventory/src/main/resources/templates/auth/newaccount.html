@@ -49,6 +49,32 @@
 
         }
 
+        function validateEmail(){
+            console.log("validateEmail");
+
+
+            var emailinput = $("#emailinput").val();
+
+            if(emailinput.includes('@') &&
+            emailinput.includes('.com')
+
+            ){
+                $("#hiddencontainerEmailMsg").hide();
+            } else {
+                $("#hiddencontainerEmailMsg").show();
+            }
+        }
+
+        function filloutdefaults(){
+        $("#emailinput").val("unwoundcracker@gmail.com");
+        $("#phoneinput").val("6128002664");
+        $("#confirmpassinput").val("password");
+        $("#passinput").val("password");
+        comparePasswords();
+        validateEmail();
+
+        }
+
 <!--        function validatePhone(){-->
 <!--            console.log("validatePhone");-->
 
@@ -97,6 +123,9 @@
 <div id="hiddencontainerPasswordMsg" class="container" style="display:none">
     <div id="passwordsdontmatchdiv" class="alert alert-danger" role="alert">Passwords do not match </div>
 </div>
+<div id="hiddencontainerEmailMsg" class="container" style="display:none">
+    <div id="emailsdontmatchdiv" class="alert alert-danger" role="alert">Email needs @ and .com</div>
+</div>
 <!--<div id="hiddencontainerPhoneMsg" class="container" style="display:none">-->
 <!--    <div  class="alert alert-danger" role="alert">Phone number must contain no special characters ex. 6127438874 </div>-->
 <!--</div>-->
@@ -107,6 +136,12 @@
     <div id="pleasewait" class="alert alert-primary" role="alert">Sending validation email and creating account... </div>
 </div>
     <div id="maincontainer" class="container">
+
+        <div th:if="${isDev1 == 1}" class="nav-item">
+            <button style="margin-top:5px;margin-bottom:5px;" type="submit" class="btn btn-primary" onclick="filloutdefaults()">devmode: Fill out defaults</button>
+        </div>
+
+
         <div class="alert alert-primary" role="alert">Create a new account for the Servepapers TechVVS system</div>
         <!--@RequestMapping("/studentView")-->
         <form th:action="@{/login/createSystemUser}" th:object="${systemuser}" method="post">
@@ -128,7 +163,7 @@
             <div class="row">
                 <div class="col" style="margin-bottom: 5px;">
                     <label class="form-label required">Email</label>
-                    <input type="text" onkeyup="comparePasswords()" th:field="*{email}" class="form-control" placeholder="Email" aria-label="Email">
+                    <input id="emailinput" type="text" onkeyup="validateEmail()" th:field="*{email}" class="form-control" placeholder="Email" aria-label="Email">
                 </div>
 
             </div>
