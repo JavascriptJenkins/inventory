@@ -1,5 +1,7 @@
 package com.techvvs.inventory.viewcontroller;
 
+import com.techvvs.inventory.jparepo.BatchTypeRepo;
+import com.techvvs.inventory.model.BatchTypeVO;
 import com.techvvs.inventory.model.BatchVO;
 import com.techvvs.inventory.modelnonpersist.FileVO;
 import com.techvvs.inventory.util.TechvvsFileHelper;
@@ -36,6 +38,9 @@ public class UploadController {
     @Autowired
     TechvvsFileHelper techvvsFileHelper;
 
+    @Autowired
+    BatchTypeRepo batchTypeRepo;
+
     @PostMapping("/upload")
     public String uploadFile(@ModelAttribute( "batch" ) BatchVO batchVO,
                              Model model,
@@ -49,8 +54,9 @@ public class UploadController {
             model.addAttribute("errorMessage","Please select a file to upload.");
             System.out.println("file upload 2");
             model.addAttribute("batch", batchVO);
+            bindBatchTypes(model);
             model.addAttribute("customJwtParameter",customJwtParameter);
-            return "/newform.html";
+            return "/service/batch.html";
         }
         System.out.println("file upload 3");
         String fileName = "";
@@ -72,9 +78,9 @@ public class UploadController {
             System.out.println("file upload 8");
             e.printStackTrace();
             model.addAttribute("errorMessage","file upload failed");
-            model.addAttribute("batch", batchVO);
+            bindBatchTypes(model);
             model.addAttribute("customJwtParameter",customJwtParameter);
-            return "newform.html";
+            return "service/batch.html";
         }
 
 
@@ -89,9 +95,16 @@ public class UploadController {
         // return success response
         model.addAttribute("successMessage","You successfully uploaded " + fileName + '!');
         model.addAttribute("batch", batchVO);
+        bindBatchTypes(model);
         model.addAttribute("filelist", filelist);
         model.addAttribute("customJwtParameter",customJwtParameter);
-        return "newform.html";
+        return "service/batch.html";
+    }
+
+    void bindBatchTypes(Model model){
+        // get all the batchtype objects and bind them to select dropdown
+        List<BatchTypeVO> batchTypeVOS = batchTypeRepo.findAll();
+        model.addAttribute("batchtypes", batchTypeVOS);
     }
 
     @PostMapping("/upload2")
@@ -106,6 +119,7 @@ public class UploadController {
         if (file.isEmpty()) {
             model.addAttribute("errorMessage","Please select a file to upload.");
             model.addAttribute("batch", batchVO);
+            bindBatchTypes(model);
             model.addAttribute("customJwtParameter",customJwtParameter);
             return "/editforms.html";
         }
@@ -124,6 +138,7 @@ public class UploadController {
             e.printStackTrace();
             model.addAttribute("errorMessage","file upload failed");
             model.addAttribute("batch", batchVO);
+            bindBatchTypes(model);
             model.addAttribute("customJwtParameter",customJwtParameter);
             return "editforms.html";
         }
@@ -138,6 +153,7 @@ public class UploadController {
         // return success response
         model.addAttribute("successMessage","You successfully uploaded " + fileName + '!');
         model.addAttribute("batch", batchVO);
+        bindBatchTypes(model);
         model.addAttribute("filelist", filelist);
         model.addAttribute("customJwtParameter",customJwtParameter);
         return "editforms.html";

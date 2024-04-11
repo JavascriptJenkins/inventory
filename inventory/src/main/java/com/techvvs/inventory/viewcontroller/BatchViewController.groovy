@@ -109,7 +109,7 @@ public class BatchViewController {
         model.addAttribute("customJwtParameter", customJwtParameter);
         model.addAttribute("batch", new BatchVO());
         model.addAttribute("batchPage", pageOfBatch);
-        return "browseforms.html";
+        return "service/browsebatch.html";
     }
 
     @GetMapping("/searchBatch")
@@ -120,7 +120,7 @@ public class BatchViewController {
         model.addAttribute("customJwtParameter", customJwtParameter);
         model.addAttribute("batch", new BatchVO());
         model.addAttribute("batchs", new ArrayList<BatchVO>(1));
-        return "searchforms.html";
+        return "service/searchbatch.html";
     }
 
     @PostMapping("/searchBatch")
@@ -145,7 +145,7 @@ public class BatchViewController {
         model.addAttribute("customJwtParameter", customJwtParameter);
         model.addAttribute("batch", batchVO);
         model.addAttribute("batchs", results);
-        return "searchforms.html";
+        return "service/searchbatch.html";
     }
 
     @GetMapping("/editform")
