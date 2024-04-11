@@ -38,7 +38,7 @@ public class HomeViewController {
 //        System.out.println( httpServletRequest);
 
        // model.addAttribute("student", new StudentDAO());
-        return "index.html";
+        return "auth/index.html";
     }
 
 
@@ -55,7 +55,7 @@ public class HomeViewController {
         cookie.setMaxAge(0); // Don't set to -1 or it will become a session cookie!
         httpServletResponse.addCookie(cookie);
 
-        return "index.html";
+        return "auth/index.html";
     }
 
 

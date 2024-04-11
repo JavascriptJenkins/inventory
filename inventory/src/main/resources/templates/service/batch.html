@@ -66,6 +66,17 @@
                     </div>
                 </div>
 
+                <div class="row" style="margin-bottom: 5px;">
+                    <div class="col-md-4" style="margin-bottom: 5px;">
+                        <label class="form-label required">Batch Type</label>
+                        <select class="form-control" th:field="${batch.batch_type_id}"  id="batchtypeid" readonly="">
+                            <!--                        <option value="">select operator</option>-->
+                            <!--                        <option th:each="operator : ${}" th:value="${operator.id}" th:text="${operator.operatorName}"></option>-->
+                            <option th:each="batchtype : ${batchtypes}" th:value="${batchtype.batch_type_id}" th:text="${batchtype.name}"></option>
+
+                        </select>
+                    </div>
+
                     <br>
                     <br>
                     <div class="alert alert-info" role="alert" >Notes</div>
@@ -110,6 +121,19 @@
 
             <br>
             <br>
+
+            <div class="row" style="margin-bottom: 5px;">
+                <div class="col-md-4" style="margin-bottom: 5px;">
+                    <label class="form-label required">Batch Type</label>
+                    <select class="form-control" th:field="${batch.batch_type_id}"  id="batchtypeid">
+<!--                        <option value="">select operator</option>-->
+<!--                        <option th:each="operator : ${}" th:value="${operator.id}" th:text="${operator.operatorName}"></option>-->
+                        <option th:each="batchtype : ${batchtypes}" th:value="${batchtype.batch_type_id}" th:text="${batchtype.name}"></option>
+
+                    </select>
+                </div>
+<!--                    <select  th:field="*{batch_type_id}" class="form-control" placeholder="batchtype" aria-label="batchtype">-->
+            </div>
 
 
             <br>

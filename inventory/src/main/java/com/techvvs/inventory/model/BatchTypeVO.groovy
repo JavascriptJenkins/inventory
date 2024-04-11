@@ -14,7 +14,7 @@ class BatchTypeVO implements Serializable{
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @JsonProperty
-    Long batch_type_id;
+    Integer batch_type_id;
 
     @JsonProperty
     String name

@@ -14,7 +14,7 @@ class BatchProductVO implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @JsonProperty
-    Long batchproduct_id;
+    Integer batchproduct_id;
 
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name="product_id")

@@ -1,6 +1,8 @@
 package com.techvvs.inventory.viewcontroller;
 
-import com.techvvs.inventory.jparepo.BatchRepo;
+import com.techvvs.inventory.jparepo.BatchRepo
+import com.techvvs.inventory.jparepo.BatchTypeRepo
+import com.techvvs.inventory.model.BatchTypeVO;
 import com.techvvs.inventory.model.BatchVO;
 import com.techvvs.inventory.modelnonpersist.FileVO;
 import com.techvvs.inventory.util.TechvvsFileHelper;
@@ -35,6 +37,10 @@ public class BatchViewController {
     @Autowired
     BatchRepo batchRepo;
 
+    @Autowired
+    BatchTypeRepo batchTypeRepo;
+
+
     SecureRandom secureRandom = new SecureRandom();
 
 
@@ -51,12 +57,21 @@ public class BatchViewController {
             batchVOToBind = new BatchVO();
             batchVOToBind.setBatchnumber(0);
             batchVOToBind.setBatchnumber(secureRandom.nextInt(10000000));
+            batchVOToBind.batch_type_id = new BatchTypeVO()
         }
+
 
         model.addAttribute("disableupload","true"); // disable uploading a file until we actually have a record submitted successfully
         model.addAttribute("customJwtParameter", customJwtParameter);
         model.addAttribute("batch", batchVOToBind);
+        bindBatchTypes(model)
         return "service/batch.html";
+    }
+
+    void bindBatchTypes(Model model){
+        // get all the batchtype objects and bind them to select dropdown
+        List<BatchTypeVO> batchTypeVOS = batchTypeRepo.findAll();
+        model.addAttribute("batchtypes", batchTypeVOS);
     }
 
     @GetMapping("/browseBatch")
@@ -158,7 +173,8 @@ public class BatchViewController {
 
         model.addAttribute("customJwtParameter", customJwtParameter);
         model.addAttribute("batch", results.get(0));
-        return "editforms.html";
+        bindBatchTypes(model)
+        return "service/batch.html";
     }
 
     @PostMapping ("/editBatch")
@@ -202,6 +218,7 @@ public class BatchViewController {
         }
 
         model.addAttribute("customJwtParameter", customJwtParameter);
+        bindBatchTypes(model)
         return "editforms.html";
     }
 
@@ -240,6 +257,7 @@ public class BatchViewController {
         }
 
         model.addAttribute("customJwtParameter", customJwtParameter);
+        bindBatchTypes(model)
         return "service/batch.html";
     }
 
