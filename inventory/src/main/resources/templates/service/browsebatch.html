@@ -56,7 +56,7 @@
                     th:alt-title="${iStat.even}? 'even' : 'odd'">
 
                     <td th:text="${batch.batch_id}"></td>
-                    <td><a th:href="@{/newbatch/editform?batchnumber=__${batch.batchnumber}__&customJwtParameter=__${customJwtParameter}__}" th:text="${batch.batchnumber}"></a></td>
+                    <td><a th:href="@{/newbatch/editform?batchnumber=__${batch.batchnumber}__&customJwtParameter=__${customJwtParameter}__&editmode=no}" th:text="${batch.batchnumber}"></a></td>
                     <td th:text="${batch.name}"></td>
                     <td th:text="${batch.description}"></td>
 

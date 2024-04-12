@@ -152,6 +152,7 @@ public class BatchViewController {
     String viewEditForm(
                     Model model,
                     @RequestParam("customJwtParameter") String customJwtParameter,
+                    @RequestParam("editmode") String editmode,
                     @RequestParam("batchnumber") String batchnumber){
 
         System.out.println("customJwtParam on batch controller: "+customJwtParameter);
@@ -171,10 +172,16 @@ public class BatchViewController {
             model.addAttribute("filelist", null);
         }
 
+        if("yes".equals(editmode)){
+            model.addAttribute("editmode",editmode)
+        } else {
+            model.addAttribute("editmode","no")
+        }
+
         model.addAttribute("customJwtParameter", customJwtParameter);
         model.addAttribute("batch", results.get(0));
         bindBatchTypes(model)
-        return "service/batch.html";
+        return "service/editbatch.html";
     }
 
     @PostMapping ("/editBatch")
@@ -196,6 +203,7 @@ public class BatchViewController {
         // Validation
         if(!errorResult.equals("success")){
             model.addAttribute("errorMessage",errorResult);
+            model.addAttribute("editmode","yes") //
         } else {
 
             // when creating a new processData entry, set the last attempt visit to now - this may change in future
@@ -213,13 +221,15 @@ public class BatchViewController {
                 model.addAttribute("filelist", null);
             }
 
+            model.addAttribute("editmode","no") // after succesful edit is done we set this back to no
+            bindBatchTypes(model)
             model.addAttribute("successMessage","Record Successfully Saved.");
             model.addAttribute("batch", result);
         }
 
         model.addAttribute("customJwtParameter", customJwtParameter);
         bindBatchTypes(model)
-        return "service/batch.html";
+        return "service/editbatch.html";
     }
 
     @PostMapping ("/createNewBatch")

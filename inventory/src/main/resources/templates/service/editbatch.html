@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>New Batch Data Entry</title>
+    <title>Edit Batch</title>
 
 
     <script
@@ -41,8 +41,7 @@
     <br>
 
 
-<!--    <div th:if="${filelist != null || (successMessage == 'Record Successfully Saved.')}">-->
-    <div th:if="${filelist != null || batch.createTimeStamp != null}">
+    <div th:if="${editmode == 'no'}">
             <form th:action="@{/newbatch/createNewBatch?customJwtParameter=__${customJwtParameter}__}" th:object="${batch}" method="post">
                 <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
                 <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
@@ -91,14 +90,12 @@
                     <button style="margin-top:5px;" type="submit" class="btn btn-primary" disabled>Submit</button>
             </form>
 
-    </div> <!-- end filelist view -->
+    </div> <!-- end readonly view -->
 
 
 
-
-    <!-- if th-->
-    <div th:if="${batch.createTimeStamp == null}">
-        <form th:action="@{/newbatch/createNewBatch?customJwtParameter=__${customJwtParameter}__}" th:object="${batch}" method="post">
+    <div th:if="${editmode == 'yes'}">
+        <form th:action="@{/newbatch/editBatch?customJwtParameter=__${customJwtParameter}__}" th:object="${batch}" method="post">
             <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
             <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
 
@@ -107,6 +104,7 @@
                     <label class="form-label"><b>Batch Number</b></label>
                     <input type="text" th:field="*{batchnumber}" class="form-control" placeholder="batchnumber" aria-label="batchnumber" readonly>
                 </div>
+
             </div>
 
             <div class="row" style="margin-bottom: 5px;">
@@ -120,38 +118,34 @@
                 </div>
             </div>
 
-
-            <br>
-            <br>
-
             <div class="row" style="margin-bottom: 5px;">
                 <div class="col-md-4" style="margin-bottom: 5px;">
                     <label class="form-label required">Batch Type</label>
                     <select class="form-control" th:field="${batch.batch_type_id}"  id="batchtypeid">
-<!--                        <option value="">select operator</option>-->
-<!--                        <option th:each="operator : ${}" th:value="${operator.id}" th:text="${operator.operatorName}"></option>-->
+                        <!--                        <option value="">select operator</option>-->
+                        <!--                        <option th:each="operator : ${}" th:value="${operator.id}" th:text="${operator.operatorName}"></option>-->
                         <option th:each="batchtype : ${batchtypes}" th:value="${batchtype.batch_type_id}" th:text="${batchtype.name}"></option>
 
                     </select>
                 </div>
-<!--                    <select  th:field="*{batch_type_id}" class="form-control" placeholder="batchtype" aria-label="batchtype">-->
-            </div>
 
-
-            <br>
-            <br>
-
-            <div class="row" style="margin-bottom: 5px;">
-                <div class="alert alert-info" role="alert" >Notes</div>
-                <div class="col" style="margin-bottom: 5px;">
-                    <label class="form-label required">Notes</label>
-                    <textarea style="width:648px;height:163px;" th:field="*{notes}" class="form-control" placeholder="notes" aria-label="notes"></textarea>
+                <br>
+                <br>
+                <div class="row" style="margin-bottom: 5px;">
+                    <div class="alert alert-info" role="alert" >Notes</div>
+                    <div class="col" style="margin-bottom: 5px;">
+                        <label class="form-label required">Notes</label>
+                        <textarea style="width:648px;height:163px;" th:field="*{notes}" class="form-control" placeholder="notes" aria-label="notes"></textarea>
+                    </div>
                 </div>
-            </div>
-            <button style="margin-top:5px;" type="submit" class="btn btn-primary">Submit</button>
+                <input type="hidden" th:field="*{updateTimeStamp}">
+                <input type="hidden" th:field="*{createTimeStamp}">
+                <input type="hidden" th:field="*{batch_id}">
+                <button style="margin-top:5px;" type="submit" class="btn btn-primary">Submit Edit</button>
         </form>
 
-    </div> <!-- end non filelist -->
+    </div> <!-- end edit view -->
+
 
 
 
