@@ -17,8 +17,17 @@ class TaskVO implements Serializable {
     Integer task_id;
 
     @JsonProperty
+    Integer tasknumber;
+
+    @JsonProperty
     @OneToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
-    TaskTypeVO taskTypeVO
+    TaskTypeVO task_type_id
+
+    @JsonProperty
+    String name;
+
+    @JsonProperty
+    String notes;
 
     @JsonProperty
     String description

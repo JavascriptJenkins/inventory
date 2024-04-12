@@ -76,6 +76,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         .antMatchers("/newbatch/editBatch/*").permitAll()//
         .antMatchers("/batchtype/createNewBatchType/*").permitAll()//
         .antMatchers("/batchtype/editBatchType/*").permitAll()//
+            .antMatchers("/task/createNewTask/*").permitAll()//
+            .antMatchers("/task/searchTask/*").permitAll()//
+            .antMatchers("/task/browseTask/***").permitAll()//
+            .antMatchers("/task/editTask/*").permitAll()//
+            .antMatchers("/task/createNewTaskType/*").permitAll()//
+            .antMatchers("/task/editTaskType/*").permitAll()//
         .antMatchers("/producttype/createNewProductType/*").permitAll()//
         .antMatchers("/producttype/editProductType/*").permitAll()//
         .antMatchers("/product/searchProduct/*").permitAll()//
