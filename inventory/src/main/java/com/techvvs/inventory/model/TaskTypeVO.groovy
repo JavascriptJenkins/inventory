@@ -13,10 +13,10 @@ class TaskTypeVO implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @JsonProperty
-    private Long task_type_id;
+    Integer task_type_id;
 
     @JsonProperty
-    private String description
+    String description
 
 
 

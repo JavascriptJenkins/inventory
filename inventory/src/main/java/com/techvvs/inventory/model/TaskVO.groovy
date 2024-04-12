@@ -14,14 +14,14 @@ class TaskVO implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @JsonProperty
-    private Long task_id;
+    Integer task_id;
 
     @JsonProperty
     @OneToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
     TaskTypeVO taskTypeVO
 
     @JsonProperty
-    private String description
+    String description
 
 
 
