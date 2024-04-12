@@ -1,0 +1,2 @@
+on laptop to connect to DB locally:
+jdbc:h2:~/IdeaProjects/inventory/inventory/data/demo

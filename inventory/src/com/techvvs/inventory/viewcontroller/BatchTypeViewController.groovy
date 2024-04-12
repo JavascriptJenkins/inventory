@@ -2,7 +2,6 @@ package com.techvvs.inventory.viewcontroller
 
 import com.techvvs.inventory.jparepo.BatchTypeRepo
 import com.techvvs.inventory.model.BatchTypeVO
-import com.techvvs.inventory.model.BatchVO
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
