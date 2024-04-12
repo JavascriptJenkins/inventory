@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>New Product Type Data Entry</title>
+
+    <script
+            src="https://code.jquery.com/jquery-3.6.0.js"
+            integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="
+            crossorigin="anonymous"></script>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <!-- JavaScript Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-kQtW33rZJAHjgefvhyyzcGF3C5TFyBQBA13V1RKPf4uH+bwyzQxZ6CmMZHmNBEfJ" crossorigin="anonymous"></script>
+
+
+    <link rel="stylesheet" type="text/css" media="all" href="/css/table.css" th:href="@{/css/table.css}" />
+    <!-- Bootstrap Font Icon CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+
+    <style>
+      .required:after {
+        content:" *";
+        color: red;
+      }
+    </style>
+
+</head>
+<body>
+
+
+
+<div th:insert="auth/navbar.html :: navbarfragment"> </div>
+
+
+<div class="container">
+
+
+    <div class="alert alert-primary" role="alert" >Create a new Product Type entry in the database</div>
+    <br>
+
+
+
+
+
+
+    <!-- if th-->
+
+    <form th:action="@{/producttype/createNewProductType?customJwtParameter=__${customJwtParameter}__}" th:object="${producttype}" method="post">
+        <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
+        <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
+
+
+        <div class="row" style="margin-bottom: 5px;">
+            <div class="col-md-4" style="margin-bottom: 5px;">
+                <label class="form-label required">Product Type Name</label>
+                <input type="text" th:field="*{name}" class="form-control" placeholder="name" aria-label="name">
+            </div>
+            <div class="col-md-4" style="margin-bottom: 5px;">
+                <label class="form-label">Product Type Description</label>
+                <input type="text" th:field="*{description}" class="form-control" placeholder="description" aria-label="description">
+            </div>
+        </div>
+
+        <br>
+        <br>
+
+        <button style="margin-top:5px;" type="submit" class="btn btn-primary">Submit</button>
+    </form>
+
+
+
+
+
+    <br>
+    <br>
+
+
+
+    <!-- Show list of producttypes -->
+        <div class="alert alert-primary" role="alert" >Product Types</div>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Desc</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="producttype, iStat : ${producttypePage.content}"
+                    th:style="${iStat.odd}? 'font-weight: bold;'"
+                    th:alt-title="${iStat.even}? 'even' : 'odd'">
+                    <td th:text="${producttype.name}"></td>
+                    <td th:text="${producttype.description}"></td>
+                </tr>
+            </tbody>
+        </table>
+<!--        todo: add pagination here from the browseforms.html class in servepapers-->
+        <div th:if="${producttypePage.totalPages > 0}" class="pagination"
+             th:each="pageNumber : ${pageNumbers}">
+            <a th:href="@{/producttype/browseProductType?customJwtParameter=__${customJwtParameter}__&size=__${#lists.size(producttypePage.content)}__&page=__${pageNumber}__}"
+               th:text=${pageNumber}
+               th:class="${pageNumber==producttypePage.number + 1} ? active"></a>
+        </div>
+
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+</body>
+</html>

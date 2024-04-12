@@ -25,16 +25,28 @@
                         <a class="nav-link active" aria-current="page" th:href="@{/dashboard/index?customJwtParameter=__${customJwtParameter}__}">Home</a>
                     </li>
                     <li class="nav-item">
-                            <a class="nav-link" th:href="@{/newbatch?customJwtParameter=__${customJwtParameter}__}">Input New Batch</a>
+                            <a class="nav-link" th:href="@{/newbatch?customJwtParameter=__${customJwtParameter}__}">New Batch</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" th:href="@{/newbatch/searchBatch?customJwtParameter=__${customJwtParameter}__}">Search</a>
+                        <a class="nav-link" th:href="@{/product?customJwtParameter=__${customJwtParameter}__}">New Product</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" th:href="@{/newbatch/browseBatch?customJwtParameter=__${customJwtParameter}__}">Browse Records</a>
+                        <a class="nav-link" th:href="@{/newbatch/searchBatch?customJwtParameter=__${customJwtParameter}__}">Search Batches</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/product/searchProduct?customJwtParameter=__${customJwtParameter}__}">Search Products</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/newbatch/browseBatch?customJwtParameter=__${customJwtParameter}__}">Browse Batches</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/product/browseProduct?customJwtParameter=__${customJwtParameter}__}">Browse Products</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" th:href="@{/batchtype?customJwtParameter=__${customJwtParameter}__}">New Batch Type</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/producttype?customJwtParameter=__${customJwtParameter}__}">New Product Type</a>
                     </li>
                     <li th:if="${customJwtParameter != null}" class="nav-item">
                         <a class="nav-link active" aria-current="page" href="javascript:{}" onclick="postLogout()">Logout</a>

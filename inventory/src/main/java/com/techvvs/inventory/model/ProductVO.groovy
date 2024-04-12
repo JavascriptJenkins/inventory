@@ -3,7 +3,8 @@ package com.techvvs.inventory.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
-import javax.persistence.*;
+import javax.persistence.*
+import java.time.LocalDateTime;
 
 @IdClass(ProductCompositeID.class)
 @JsonIgnoreProperties
@@ -15,12 +16,16 @@ public class ProductVO implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     @JsonProperty
     Integer product_id;
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     @JsonProperty
-    Integer product_type_id;
+    @OneToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name="product_type_id")
+    ProductTypeVO product_type_id;
+    @JsonProperty
+    Integer productnumber;
     @JsonProperty
     Integer quantity;
+    @JsonProperty
+    String notes
     @JsonProperty
     String name;
     @JsonProperty
@@ -39,9 +44,9 @@ public class ProductVO implements Serializable {
     Integer marginPercent;
     // generic fields below
     @JsonProperty
-    java.util.Date updateTimeStamp;
+    LocalDateTime updateTimeStamp;
 
     @JsonProperty
-    java.util.Date createTimeStamp;
+    LocalDateTime createTimeStamp;
 
     }

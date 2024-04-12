@@ -42,37 +42,37 @@
 
 
 <!--    <div th:if="${filelist != null || (successMessage == 'Record Successfully Saved.')}">-->
-    <div th:if="${filelist != null || batch.createTimeStamp != null}">
-            <form th:action="@{/newbatch/createNewBatch?customJwtParameter=__${customJwtParameter}__}" th:object="${batch}" method="post">
+    <div th:if="${filelist != null || product.createTimeStamp != null}">
+            <form th:action="@{/product/createNewProduct?customJwtParameter=__${customJwtParameter}__}" th:object="${product}" method="post">
                 <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
                 <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
 
                 <div class="row" style="margin-bottom: 5px;">
                     <div class="col-sm-2" style="margin-bottom: 5px;">
-                        <label class="form-label"><b>Batch Number</b></label>
-                        <input type="text" th:field="*{batchnumber}" class="form-control" placeholder="batchnumber" aria-label="batchnumber" readonly>
+                        <label class="form-label"><b>Product Number</b></label>
+                        <input type="text" th:field="*{productnumber}" class="form-control" placeholder="productnumber" aria-label="productnumber" readonly>
                     </div>
 
                 </div>
 
                 <div class="row" style="margin-bottom: 5px;">
                     <div class="col-md-4" style="margin-bottom: 5px;">
-                        <label class="form-label required">Batch Name</label>
+                        <label class="form-label required">Product Name</label>
                         <input type="text" th:field="*{name}" class="form-control" placeholder="name" aria-label="name" readonly>
                     </div>
                     <div class="col-md-4" style="margin-bottom: 5px;">
-                        <label class="form-label">Batch Description</label>
+                        <label class="form-label">Product Description</label>
                         <input type="text" th:field="*{description}" class="form-control" placeholder="description" aria-label="description" readonly>
                     </div>
                 </div>
 
                 <div class="row" style="margin-bottom: 5px;">
                     <div class="col-md-4" style="margin-bottom: 5px;">
-                        <label class="form-label required">Batch Type</label>
-                        <select class="form-control" th:field="${batch.batch_type_id}"  id="batchtypeid" readonly="">
+                        <label class="form-label required">Product Type</label>
+                        <select class="form-control" th:field="${product.product_type_id}"  id="producttypeid" readonly="">
                             <!--                        <option value="">select operator</option>-->
                             <!--                        <option th:each="operator : ${}" th:value="${operator.id}" th:text="${operator.operatorName}"></option>-->
-                            <option th:each="batchtype : ${batchtypes}" th:value="${batchtype.batch_type_id}" th:text="${batchtype.name}"></option>
+                            <option th:each="producttype : ${producttypes}" th:value="${producttype.product_type_id}" th:text="${producttype.name}"></option>
 
                         </select>
                     </div>
@@ -86,7 +86,7 @@
                             <textarea style="width:648px;height:163px;" th:field="*{notes}" class="form-control" placeholder="notes" aria-label="notes" readonly></textarea>
                         </div>
                     </div>
-                    <div class="alert alert-warning" role="alert" ><a th:href="@{/newbatch/editform?batchnumber=__${batch.batchnumber}__&customJwtParameter=__${customJwtParameter}__}">Click here to edit this form</a>
+                    <div class="alert alert-warning" role="alert" ><a th:href="@{/product/editform?productnumber=__${product.productnumber}__&customJwtParameter=__${customJwtParameter}__}">Click here to edit this form</a>
                     </div>
                     <button style="margin-top:5px;" type="submit" class="btn btn-primary" disabled>Submit</button>
             </form>
@@ -97,25 +97,25 @@
 
 
     <!-- if th-->
-    <div th:if="${batch.createTimeStamp == null}">
-        <form th:action="@{/newbatch/createNewBatch?customJwtParameter=__${customJwtParameter}__}" th:object="${batch}" method="post">
+    <div th:if="${product.createTimeStamp == null}">
+        <form th:action="@{/product/createNewProduct?customJwtParameter=__${customJwtParameter}__}" th:object="${product}" method="post">
             <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
             <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
 
             <div class="row" style="margin-bottom: 5px;">
                 <div class="col-sm-2" style="margin-bottom: 5px;">
-                    <label class="form-label"><b>Batch Number</b></label>
-                    <input type="text" th:field="*{batchnumber}" class="form-control" placeholder="batchnumber" aria-label="batchnumber" readonly>
+                    <label class="form-label"><b>Product Number</b></label>
+                    <input type="text" th:field="*{productnumber}" class="form-control" placeholder="productnumber" aria-label="productnumber" readonly>
                 </div>
             </div>
 
             <div class="row" style="margin-bottom: 5px;">
                 <div class="col-md-4" style="margin-bottom: 5px;">
-                    <label class="form-label required">Batch Name</label>
+                    <label class="form-label required">Product Name</label>
                     <input type="text" th:field="*{name}" class="form-control" placeholder="name" aria-label="name">
                 </div>
                 <div class="col-md-4" style="margin-bottom: 5px;">
-                    <label class="form-label">Batch Description</label>
+                    <label class="form-label">Product Description</label>
                     <input type="text" th:field="*{description}" class="form-control" placeholder="description" aria-label="description">
                 </div>
             </div>
@@ -126,15 +126,15 @@
 
             <div class="row" style="margin-bottom: 5px;">
                 <div class="col-md-4" style="margin-bottom: 5px;">
-                    <label class="form-label required">Batch Type</label>
-                    <select class="form-control" th:field="${batch.batch_type_id}"  id="batchtypeid">
+                    <label class="form-label required">Product Type</label>
+                    <select class="form-control" th:field="${product.product_type_id}"  id="producttypeid">
 <!--                        <option value="">select operator</option>-->
 <!--                        <option th:each="operator : ${}" th:value="${operator.id}" th:text="${operator.operatorName}"></option>-->
-                        <option th:each="batchtype : ${batchtypes}" th:value="${batchtype.batch_type_id}" th:text="${batchtype.name}"></option>
+                        <option th:each="producttype : ${producttypes}" th:value="${producttype.product_type_id}" th:text="${producttype.name}"></option>
 
                     </select>
                 </div>
-<!--                    <select  th:field="*{batch_type_id}" class="form-control" placeholder="batchtype" aria-label="batchtype">-->
+<!--                    <select  th:field="*{product_type_id}" class="form-control" placeholder="producttype" aria-label="producttype">-->
             </div>
 
 
@@ -180,8 +180,8 @@
             <div style="margin-bottom: 5px;" class="mx-auto">
 
                 <div class="alert alert-info" role="alert" >Upload a file</div>
-                <!-- pass the batch object to the upload file controller to get the correct ID to save it under -->
-                <form method="post" th:object="${batch}" th:action="@{/file/upload?customJwtParameter=__${customJwtParameter}__}" enctype="multipart/form-data">
+                <!-- pass the product object to the upload file controller to get the correct ID to save it under -->
+                <form method="post" th:object="${product}" th:action="@{/file/upload?customJwtParameter=__${customJwtParameter}__}" enctype="multipart/form-data">
                     <div class="form-group">
 
                         <div th:if="${disableupload}">
@@ -195,7 +195,7 @@
 
 
                         <!-- pass all these hidden attributes with so the data stays on page after uploading the file -->
-                        <input type="hidden" th:field="*{batchnumber}">
+                        <input type="hidden" th:field="*{productnumber}">
                         <input type="hidden" th:field="*{name}">
                         <input type="hidden" th:field="*{description}">
                         <input type="hidden" th:field="*{notes}">

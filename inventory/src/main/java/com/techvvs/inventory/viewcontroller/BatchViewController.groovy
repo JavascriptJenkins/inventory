@@ -219,7 +219,7 @@ public class BatchViewController {
 
         model.addAttribute("customJwtParameter", customJwtParameter);
         bindBatchTypes(model)
-        return "editforms.html";
+        return "service/batch.html";
     }
 
     @PostMapping ("/createNewBatch")
