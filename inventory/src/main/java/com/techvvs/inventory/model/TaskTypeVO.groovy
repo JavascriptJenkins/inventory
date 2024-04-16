@@ -16,6 +16,9 @@ class TaskTypeVO implements Serializable {
     Integer task_type_id;
 
     @JsonProperty
+    String name
+
+    @JsonProperty
     String description
 
 
