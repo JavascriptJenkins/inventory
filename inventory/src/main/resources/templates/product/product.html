@@ -26,6 +26,61 @@
       }
     </style>
 
+    <script type="text/javascript">
+        function onpageload() {
+            console.log('running stuff on page load');
+            if(document.getElementById("barcodeinput1")){
+                var input = document.getElementById("barcodeinput1").focus();
+            }
+            if(document.getElementById("barcodeinput2")){
+                var input = document.getElementById("barcodeinput2").focus();
+            }
+
+             $("#hiddencontainerBarcodeInputMsg").show();
+
+             $(":input").keypress(function(event){
+                if (event.which == '10' || event.which == '13') {
+                    console.log("barcode keypress");
+                    event.preventDefault();
+                    var inputs = document.getElementById("name").focus();
+                }
+            });
+
+        }
+
+
+
+        window.onload = onpageload;
+
+
+
+        function checkForInput() {
+
+
+            if(document.getElementById("barcodeinput1")){
+                var input = $("#barcodeinput1").val();
+                if(input){
+                    $("#hiddencontainerBarcodeInputMsg").hide();
+                } else {
+                    $("#hiddencontainerBarcodeInputMsg").show();
+                }
+
+
+            }
+            if(document.getElementById("barcodeinput2")){
+                var input = $("#barcodeinput2").val();
+                if(input){
+                    $("#hiddencontainerBarcodeInputMsg").hide();
+                    console.log('hide');
+                } else {
+                    $("#hiddencontainerBarcodeInputMsg").show();
+                    console.log('show');
+                }
+            }
+
+        }
+    </script>
+
 </head>
 <body>
 
@@ -37,8 +92,16 @@
 <div class="container">
 
 
-    <div class="alert alert-primary" role="alert" >Create a new Batch Data Form entry in the database</div>
+    <div class="alert alert-primary" role="alert" >Create a new Product entry in the database</div>
     <br>
+
+    <div class="row" style="margin-bottom: 5px;">
+        <div class="col-md-4" style="margin-bottom: 5px;">
+            <div id="hiddencontainerBarcodeInputMsg" class="container" style="display:none">
+                <div id="barcodeinputdiv" class="alert alert-danger" role="alert">Scan a Barcode </div>
+            </div>
+        </div>
+    </div>
 
 
 <!--    <div th:if="${filelist != null || (successMessage == 'Record Successfully Saved.')}">-->
@@ -57,11 +120,18 @@
 
                 <div class="row" style="margin-bottom: 5px;">
                     <div class="col-md-4" style="margin-bottom: 5px;">
-                        <label class="form-label required">Product Name</label>
-                        <input type="text" th:field="*{name}" class="form-control" placeholder="name" aria-label="name" readonly>
+                        <label class="form-label"><b>Barcode</b></label>
+                        <input onkeyup="checkForInput()" id="barcodeinput1" type="text" th:field="*{barcode}" class="form-control" placeholder="barcode" aria-label="barcode" readonly>
+                    </div>
+                </div>
+
+                <div class="row" style="margin-bottom: 5px;">
+                    <div class="col-md-4" style="margin-bottom: 5px;">
+                        <label class="form-label required">Name</label>
+                        <input id="name" type="text" th:field="*{name}" class="form-control" placeholder="name" aria-label="name" readonly>
                     </div>
                     <div class="col-md-4" style="margin-bottom: 5px;">
-                        <label class="form-label">Product Description</label>
+                        <label class="form-label">Description</label>
                         <input type="text" th:field="*{description}" class="form-control" placeholder="description" aria-label="description" readonly>
                     </div>
                 </div>
@@ -75,6 +145,7 @@
                             <option th:each="producttype : ${producttypes}" th:value="${producttype.product_type_id}" th:text="${producttype.name}"></option>
 
                         </select>
+                        <!-- TODO: put a dropdown hydrated with batch names which will associate with batchid and create a BatchProduct Entry  -->
                     </div>
 
                     <br>
@@ -82,7 +153,7 @@
                     <div class="row" style="margin-bottom: 5px;">
                         <div class="alert alert-info" role="alert" >Notes</div>
                         <div class="col" style="margin-bottom: 5px;">
-                            <label class="form-label required">Notes</label>
+                            <label class="form-label">Notes</label>
                             <textarea style="width:648px;height:163px;" th:field="*{notes}" class="form-control" placeholder="notes" aria-label="notes" readonly></textarea>
                         </div>
                     </div>
@@ -111,11 +182,18 @@
 
             <div class="row" style="margin-bottom: 5px;">
                 <div class="col-md-4" style="margin-bottom: 5px;">
-                    <label class="form-label required">Product Name</label>
-                    <input type="text" th:field="*{name}" class="form-control" placeholder="name" aria-label="name">
+                    <label class="form-label"><b>Barcode</b></label>
+                    <input onkeyup="checkForInput()" id="barcodeinput2" type="text" th:field="*{barcode}" class="form-control" placeholder="barcode" aria-label="barcode">
+                </div>
+            </div>
+
+            <div class="row" style="margin-bottom: 5px;">
+                <div class="col-md-4" style="margin-bottom: 5px;">
+                    <label class="form-label required">Name</label>
+                    <input id="name" type="text" th:field="*{name}" class="form-control" placeholder="name" aria-label="name">
                 </div>
                 <div class="col-md-4" style="margin-bottom: 5px;">
-                    <label class="form-label">Product Description</label>
+                    <label class="form-label">Description</label>
                     <input type="text" th:field="*{description}" class="form-control" placeholder="description" aria-label="description">
                 </div>
             </div>
@@ -144,7 +222,7 @@
             <div class="row" style="margin-bottom: 5px;">
                 <div class="alert alert-info" role="alert" >Notes</div>
                 <div class="col" style="margin-bottom: 5px;">
-                    <label class="form-label required">Notes</label>
+                    <label class="form-label">Notes</label>
                     <textarea style="width:648px;height:163px;" th:field="*{notes}" class="form-control" placeholder="notes" aria-label="notes"></textarea>
                 </div>
             </div>
