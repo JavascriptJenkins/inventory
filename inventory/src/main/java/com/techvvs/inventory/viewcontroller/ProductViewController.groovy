@@ -1,7 +1,9 @@
 package com.techvvs.inventory.viewcontroller
 
+import com.techvvs.inventory.jparepo.BatchRepo
 import com.techvvs.inventory.jparepo.ProductRepo
 import com.techvvs.inventory.jparepo.ProductTypeRepo
+import com.techvvs.inventory.model.BatchVO
 import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.modelnonpersist.FileVO
@@ -39,6 +41,9 @@ public class ProductViewController {
     @Autowired
     ProductTypeRepo productTypeRepo;
 
+    @Autowired
+    BatchRepo batchRepo;
+
 
     SecureRandom secureRandom = new SecureRandom();
 
@@ -63,9 +68,20 @@ public class ProductViewController {
         model.addAttribute("disableupload","true"); // disable uploading a file until we actually have a record submitted successfully
         model.addAttribute("customJwtParameter", customJwtParameter);
         model.addAttribute("product", productVOToBind);
+        model.addAttribute("batch", new BatchVO()); // provide a default object for thymeleaf
         bindProductTypes(model)
+        bindBatches(model)
         return "product/product.html";
     }
+
+
+
+    void bindBatches(Model model){
+        // get all the batch objects and bind them to select dropdown
+        List<BatchVO> batchVOS = batchRepo.findAll();
+        model.addAttribute("batchlist", batchVOS);
+    }
+
 
     void bindProductTypes(Model model){
         // get all the producttype objects and bind them to select dropdown
@@ -173,6 +189,7 @@ public class ProductViewController {
         model.addAttribute("customJwtParameter", customJwtParameter);
         model.addAttribute("product", results.get(0));
         bindProductTypes(model)
+        bindBatches(model)
         return "product/product.html";
     }
 
@@ -218,6 +235,7 @@ public class ProductViewController {
 
         model.addAttribute("customJwtParameter", customJwtParameter);
         bindProductTypes(model)
+        bindBatches(model)
         return "product/product.html";
     }
 
@@ -257,6 +275,7 @@ public class ProductViewController {
 
         model.addAttribute("customJwtParameter", customJwtParameter);
         bindProductTypes(model)
+        bindBatches(model)
         return "product/product.html";
     }
 

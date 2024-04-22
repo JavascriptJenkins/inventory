@@ -32,7 +32,7 @@ class BatchVO implements Serializable {
 
     @JsonProperty
     @ElementCollection(fetch = FetchType.EAGER)
-    Set<BatchProductVO> batchproduct_set // list of batch products in this  batch.  these will be created new
+    Set<ProductVO> product_set
 
     @JsonProperty
     @OneToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)

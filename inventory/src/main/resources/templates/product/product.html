@@ -145,7 +145,17 @@
                             <option th:each="producttype : ${producttypes}" th:value="${producttype.product_type_id}" th:text="${producttype.name}"></option>
 
                         </select>
-                        <!-- TODO: put a dropdown hydrated with batch names which will associate with batchid and create a BatchProduct Entry  -->
+
+                        <div class="col-md-4" style="margin-bottom: 5px;">
+                            <label class="form-label required">Batch</label>
+                            <select class="form-control" th:field="${batch.batch_id}"  id="batchid" readonly="">
+                                <!--                        <option value="">select operator</option>-->
+                                <!--                        <option th:each="operator : ${}" th:value="${operator.id}" th:text="${operator.operatorName}"></option>-->
+                                <option th:each="batch : ${batchlist}" th:value="${batch.batch_id}" th:text="${batch.name}"></option>
+
+                            </select>
+                        </div>
+                            <!-- TODO: put a dropdown hydrated with batch names which will associate with batchid and create a BatchProduct Entry  -->
                     </div>
 
                     <br>
@@ -209,6 +219,17 @@
 <!--                        <option value="">select operator</option>-->
 <!--                        <option th:each="operator : ${}" th:value="${operator.id}" th:text="${operator.operatorName}"></option>-->
                         <option th:each="producttype : ${producttypes}" th:value="${producttype.product_type_id}" th:text="${producttype.name}"></option>
+
+                    </select>
+                </div>
+
+                <div class="col-md-4" style="margin-bottom: 5px;">
+                    <label class="form-label required">Batch</label>
+
+                    <select class="form-control" th:field="${batch.batch_id}"  id="batchid">
+                        <!--                        <option value="">select operator</option>-->
+                        <!--                        <option th:each="operator : ${}" th:value="${operator.id}" th:text="${operator.operatorName}"></option>-->
+                        <option th:each="batch : ${batchlist}" th:value="${batch.batch_id}" th:text="${batch.name}"></option>
 
                     </select>
                 </div>
