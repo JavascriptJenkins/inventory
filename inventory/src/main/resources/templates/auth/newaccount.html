@@ -155,7 +155,7 @@
 
                 <div class="col" style="margin-bottom: 5px;">
                     <label class="form-label required">Phone</label>
-                    <input id="phoneinput" onkeyup="comparePasswords()" type="text" th:field="*{phone}" class="form-control" placeholder="Phone" aria-label="Phone">
+                    <input id="phoneinput" onkeyup="comparePasswords()" type="tel" th:field="*{phone}" class="form-control" placeholder="Phone" aria-label="Phone">
                 </div>
 
             </div>
@@ -163,7 +163,7 @@
             <div class="row">
                 <div class="col" style="margin-bottom: 5px;">
                     <label class="form-label required">Email</label>
-                    <input id="emailinput" type="text" onkeyup="validateEmail()" th:field="*{email}" class="form-control" placeholder="Email" aria-label="Email">
+                    <input id="emailinput" type="email" onkeyup="validateEmail()" th:field="*{email}" class="form-control" placeholder="Email" aria-label="Email">
                 </div>
 
             </div>
