@@ -12,6 +12,7 @@ import com.techvvs.inventory.security.Token;
 import com.techvvs.inventory.security.UserService;
 import com.techvvs.inventory.util.SendgridEmailUtil;
 import com.techvvs.inventory.util.TwilioTextUtil;
+import com.techvvs.inventory.validation.ValidateAuth;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -69,6 +70,8 @@ public class AuthViewController {
     @Autowired
     SendgridEmailUtil emailManager;
 
+    @Autowired
+    ValidateAuth validateAuth;
 
     //default home mapping
     @GetMapping
@@ -344,7 +347,7 @@ public class AuthViewController {
         systemUserDAO.setCreatetimestamp(LocalDateTime.now());
         systemUserDAO.setUpdatedtimestamp(LocalDateTime.now());
 
-        String errorResult = validateCreateSystemUser(systemUserDAO);
+        String errorResult = validateAuth.validateCreateSystemUser(systemUserDAO);
 
         Optional<SystemUserDAO> existingUser = Optional.ofNullable(systemUserRepo.findByEmail(systemUserDAO.getEmail())); // see if user exists
 
@@ -396,7 +399,7 @@ public class AuthViewController {
 
 
         Optional<SystemUserDAO> userfromdb = Optional.empty();
-        String errorResult = validateLoginInfo(systemUserDAO);
+        String errorResult = validateAuth.validateLoginInfo(systemUserDAO);
 
         // todo: add a feature to make sure login pages are not abused with ddos (maybe nginx setting)
         // if the email is valid format, do a lookup to see if there is actually a user with this email in the system
@@ -546,7 +549,7 @@ public class AuthViewController {
     String actuallyresetpassword(@ModelAttribute("systemuser") SystemUserDAO systemUserDAO, Model model, HttpServletResponse response) {
 
 
-        String errorResult = validateActuallyResetPasswordInfo(systemUserDAO);
+        String errorResult = validateAuth.validateActuallyResetPasswordInfo(systemUserDAO);
 
         // Validation
         if (!errorResult.equals("success")) {
@@ -639,106 +642,8 @@ public class AuthViewController {
         return "auth/auth.html";
     }
 
-    String validateActuallyResetPasswordInfo(SystemUserDAO systemUserDAO) {
-
-        if (systemUserDAO.getEmail() == null || systemUserDAO.getPassword() == null || systemUserDAO.getEmail().isBlank() || systemUserDAO.getPassword().isBlank()) {
-            return "either email or password is blank";
-        }
 
 
-        if (systemUserDAO.getEmail().length() < 6
-                || systemUserDAO.getEmail().length() > 200
-                || !systemUserDAO.getEmail().contains("@")
-                || !systemUserDAO.getEmail().contains(".com")
-
-        ) {
-            return "email must be between 6-200 characters and contain @ and .com";
-        } else {
-            systemUserDAO.setEmail(systemUserDAO.getEmail().trim());
-            systemUserDAO.setEmail(systemUserDAO.getEmail().replaceAll(" ", ""));
-        }
-
-
-        if (systemUserDAO.getPassword().length() > 200
-                || systemUserDAO.getPassword().length() < 8) {
-            return "password must be between 8-200 characters";
-        }
-        return "success";
-    }
-
-
-    String validateLoginInfo(SystemUserDAO systemUserDAO) {
-
-        // note - not validating password in here becasue it's not needed until phonetoken/password page
-        if (systemUserDAO.getEmail() == null || systemUserDAO.getEmail().isBlank()) {
-            return "email is blank";
-        }
-
-
-        if (systemUserDAO.getEmail().length() < 6
-                || systemUserDAO.getEmail().length() > 200
-                || !systemUserDAO.getEmail().contains("@")
-                || !systemUserDAO.getEmail().contains(".com")
-
-        ) {
-            return "email must be between 6-200 characters and contain @ and .com";
-        } else {
-            systemUserDAO.setEmail(systemUserDAO.getEmail().trim());
-            systemUserDAO.setEmail(systemUserDAO.getEmail().replaceAll(" ", ""));
-        }
-
-        // note - not validating password in here becasue it's not needed until phonetoken/password page
-
-//        if( systemUserDAO.getPassword().length() > 200
-//                || systemUserDAO.getPassword().length() < 8 ){
-//            return "password must be between 8-200 characters";
-//        }
-        return "success";
-    }
-
-
-    String validateCreateSystemUser(SystemUserDAO systemUserDAO) {
-
-        if (systemUserDAO.getPhone() != null) {
-            String theDigits = CharMatcher.inRange('0', '9').retainFrom(systemUserDAO.getPhone());
-            systemUserDAO.setPhone(theDigits);
-        }
-
-        if (systemUserDAO.getPhone().length() > 11
-                || systemUserDAO.getPhone().length() < 10
-                || systemUserDAO.getPhone().contains("-")
-                || systemUserDAO.getPhone().contains(".")
-        ) {
-            return "enter 10 or 11 digit phone number (special characters are ignored).  ex. 18884445555";
-        } else {
-            systemUserDAO.setPhone(systemUserDAO.getPhone().trim());
-            systemUserDAO.setPhone(systemUserDAO.getPhone().replaceAll(" ", ""));
-        }
-
-        if (systemUserDAO.getPhone().length() == 10) {
-            systemUserDAO.setPhone("1" + systemUserDAO.getPhone()); // add usa country code if phone number is 10 digits
-        }
-
-        if (systemUserDAO.getEmail().length() < 6
-                || systemUserDAO.getEmail().length() > 200
-                || !systemUserDAO.getEmail().contains("@")
-                || !systemUserDAO.getEmail().contains(".com")
-            // todo: write method here to make sure there is text between @ and .com in the string
-
-        ) {
-            return "email must be between 6-200 characters and contain @ and .com";
-        } else {
-            systemUserDAO.setEmail(systemUserDAO.getEmail().trim());
-            systemUserDAO.setEmail(systemUserDAO.getEmail().replaceAll(" ", ""));
-        }
-
-
-        if (systemUserDAO.getPassword().length() > 200
-                || systemUserDAO.getPassword().length() < 8) {
-            return "password must be between 8-200 characters";
-        }
-        return "success";
-    }
 
 
     void sendValidateEmailToken(TokenDAO tokenVO) {
