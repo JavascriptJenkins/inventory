@@ -148,10 +148,10 @@
 
                         <div class="col-md-4" style="margin-bottom: 5px;">
                             <label class="form-label required">Batch</label>
-                            <select class="form-control" th:field="${batch.batch_id}"  id="batchid" readonly="">
+                            <select class="form-control" th:field="${batch.batchid}"  id="batchid" readonly="">
                                 <!--                        <option value="">select operator</option>-->
                                 <!--                        <option th:each="operator : ${}" th:value="${operator.id}" th:text="${operator.operatorName}"></option>-->
-                                <option th:each="batch : ${batchlist}" th:value="${batch.batch_id}" th:text="${batch.name}"></option>
+                                <option th:each="batch : ${batchlist}" th:value="${batch.batchid}" th:text="${batch.name}"></option>
 
                             </select>
                         </div>
@@ -226,10 +226,10 @@
                 <div class="col-md-4" style="margin-bottom: 5px;">
                     <label class="form-label required">Batch</label>
 
-                    <select class="form-control" th:field="${batch.batch_id}"  id="batchid">
+                    <select class="form-control" th:field="${batch.batchid}"  id="batchid">
                         <!--                        <option value="">select operator</option>-->
                         <!--                        <option th:each="operator : ${}" th:value="${operator.id}" th:text="${operator.operatorName}"></option>-->
-                        <option th:each="batch : ${batchlist}" th:value="${batch.batch_id}" th:text="${batch.name}"></option>
+                        <option th:each="batch : ${batchlist}" th:value="${batch.batchid}" th:text="${batch.name}"></option>
 
                     </select>
                 </div>

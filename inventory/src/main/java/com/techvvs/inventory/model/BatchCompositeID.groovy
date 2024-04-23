@@ -1,17 +1,15 @@
 package com.techvvs.inventory.model
 
-import javax.persistence.Entity;
-
 public class BatchCompositeID implements Serializable {
-    Integer batch_id;
+    Integer batchid;
     Integer batch_type_id;
 
-    Integer getBatch_id() {
-        return batch_id
+    Integer getBatchid() {
+        return batchid
     }
 
-    void setBatch_id(Integer batch_id) {
-        this.batch_id = batch_id
+    void setBatchid(Integer batchid) {
+        this.batchid = batchid
     }
 
     Integer getBatch_type_id() {

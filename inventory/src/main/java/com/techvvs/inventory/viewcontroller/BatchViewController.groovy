@@ -51,7 +51,7 @@ public class BatchViewController {
         System.out.println("customJwtParam on batch controller: "+customJwtParameter);
 
         BatchVO batchVOToBind;
-        if(batchVO != null && batchVO.getBatch_id() != null){
+        if(batchVO != null && batchVO.getBatchid() != null){
             batchVOToBind = batchVO;
         } else {
             batchVOToBind = new BatchVO();

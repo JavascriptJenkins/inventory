@@ -16,7 +16,7 @@ class BatchVO implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @JsonProperty
-    Integer batch_id
+    Integer batchid // need to refactor batchid to batchId in all usages
 
     @JsonProperty
     Integer batchnumber;
