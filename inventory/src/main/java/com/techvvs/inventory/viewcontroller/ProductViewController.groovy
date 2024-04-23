@@ -14,6 +14,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.core.parameters.P
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.*
@@ -240,7 +241,7 @@ public class ProductViewController {
     }
 
     @PostMapping ("/createNewProduct")
-    String createNewProduct(@ModelAttribute( "product" ) ProductVO productVO,
+    String createNewProduct(@ModelAttribute( "product" ) ProductVO productVO,@ModelAttribute( "batch" ) BatchVO batchVO,
                                 Model model,
                                 HttpServletResponse response,
                                 @RequestParam("customJwtParameter") String customJwtParameter
@@ -260,23 +261,50 @@ public class ProductViewController {
             model.addAttribute("disableupload","true"); // if there is an error submitting the new form we keep this disabled
             model.addAttribute("errorMessage",errorResult);
         } else {
+            // add the product to the database
+            ProductVO result = saveNewProduct(model, productVO)
 
-            // when creating a new processData entry, set the last attempt visit to now - this may change in future
-            productVO.setCreateTimeStamp(LocalDateTime.now());
-            productVO.setUpdateTimeStamp(LocalDateTime.now());
+            // add the product to the batch
+            batchVO = addProductToBatch(batchVO,result)
 
-
-            //todo: add support for product types on the ui so we can save this product object
-            ProductVO result = productRepo.save(productVO);
-
-            model.addAttribute("successMessage","Record Successfully Saved. ");
-            model.addAttribute("product", result);
         }
 
+        model.addAttribute("batch",batchVO) // bind the object back to the ui
         model.addAttribute("customJwtParameter", customJwtParameter);
         bindProductTypes(model)
         bindBatches(model)
         return "product/product.html";
+    }
+
+    BatchVO addProductToBatch(BatchVO batchVO, ProductVO result){
+        batchVO = batchRepo.findByBatchid(batchVO.getBatchid())
+        if(batchVO.getBatchnumber()){
+            // this means a valid batch was found
+            batchVO.getProduct_set().add(result) // add the product from database to the product set
+            batchVO = batchRepo.save(batchVO)
+            return batchVO
+
+        } else {
+            // no batch found in database, should never happen, throw an error here
+            System.out.println("Batch not found in db when adding product - should never happen")
+            return batchVO
+        }
+
+    }
+
+    ProductVO saveNewProduct(Model model, ProductVO productVO) {
+
+        // when creating a new processData entry, set the last attempt visit to now - this may change in future
+        productVO.setCreateTimeStamp(LocalDateTime.now());
+        productVO.setUpdateTimeStamp(LocalDateTime.now());
+
+        //todo: add support for product types on the ui so we can save this product object
+        ProductVO result = productRepo.save(productVO);
+
+        model.addAttribute("successMessage","Record Successfully Saved. ");
+        model.addAttribute("product", result);
+        return result
+
     }
 
     String validateNewFormInfo(ProductVO productVO){
