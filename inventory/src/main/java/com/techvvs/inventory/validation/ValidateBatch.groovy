@@ -1,6 +1,6 @@
 package com.techvvs.inventory.validation
 
-import com.techvvs.inventory.model.BatchTypeVO
+
 import com.techvvs.inventory.model.BatchVO
 import org.springframework.stereotype.Component
 
