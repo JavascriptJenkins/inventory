@@ -5,7 +5,8 @@ import com.techvvs.inventory.jparepo.BatchTypeRepo
 import com.techvvs.inventory.model.BatchTypeVO;
 import com.techvvs.inventory.model.BatchVO;
 import com.techvvs.inventory.modelnonpersist.FileVO;
-import com.techvvs.inventory.util.TechvvsFileHelper;
+import com.techvvs.inventory.util.TechvvsFileHelper
+import com.techvvs.inventory.validation.ValidateBatch;
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -39,6 +40,9 @@ public class BatchViewController {
 
     @Autowired
     BatchTypeRepo batchTypeRepo;
+
+    @Autowired
+    ValidateBatch validateBatch;
 
 
     SecureRandom secureRandom = new SecureRandom();
@@ -198,7 +202,7 @@ public class BatchViewController {
         System.out.println("authentication.getAuthorities: "+authentication.getAuthorities());
         System.out.println("----------------------- END AUTH INFO ");
 
-        String errorResult = validateNewFormInfo(batchVO);
+        String errorResult = validateBatch.validateNewFormInfo(batchVO);
 
         // Validation
         if(!errorResult.equals("success")){
@@ -246,7 +250,7 @@ public class BatchViewController {
         System.out.println("authentication.getAuthorities: "+authentication.getAuthorities());
         System.out.println("----------------------- END AUTH INFO ");
 
-        String errorResult = validateNewFormInfo(batchVO);
+        String errorResult = validateBatch.validateNewFormInfo(batchVO);
 
         // Validation
         if(!errorResult.equals("success")){
@@ -271,24 +275,7 @@ public class BatchViewController {
         return "service/batch.html";
     }
 
-    String validateNewFormInfo(BatchVO batchVO){
 
-        if(batchVO.getName() != null &&
-                (batchVO.getName().length() > 250
-                || batchVO.getName().length() < 1)
-        ){
-            return "first name must be between 1-250 characters. ";
-        }
-
-
-
-        if(batchVO.getNotes() != null && (batchVO.getNotes().length() > 1000)
-        ){
-            return "Notes must be less than 1000 characters";
-        }
-
-        return "success";
-    }
 
 
 }
