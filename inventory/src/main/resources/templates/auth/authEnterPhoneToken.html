@@ -70,7 +70,7 @@
             </div>
             <div class="col">
                 <label class="form-label required">Token</label>
-                <input id="tokeninput" style="margin-bottom: 5px;" type="text" th:field="*{token}" class="form-control" placeholder="Token" aria-label="Token">
+                <input id="tokeninput" style="margin-bottom: 5px;" type="text" th:field="*{token}" class="form-control" placeholder="Token" aria-label="Token" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code">
             </div>
             <div class="col">
                 <label class="form-label required">Password</label>

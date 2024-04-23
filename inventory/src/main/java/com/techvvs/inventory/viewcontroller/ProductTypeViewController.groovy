@@ -2,6 +2,7 @@ package com.techvvs.inventory.viewcontroller
 
 import com.techvvs.inventory.jparepo.ProductTypeRepo
 import com.techvvs.inventory.model.ProductTypeVO
+import com.techvvs.inventory.validation.ValidateProductType
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -21,6 +22,7 @@ public class ProductTypeViewController {
 
 
     @Autowired ProductTypeRepo productTypeRepo
+    @Autowired ValidateProductType validateProductType
 
     //default home mapping
     @GetMapping
@@ -64,7 +66,7 @@ public class ProductTypeViewController {
         System.out.println("authentication.getAuthorities: "+authentication.getAuthorities());
         System.out.println("----------------------- END AUTH INFO ");
 
-        String errorResult = validateNewFormInfo(productTypeVO);
+        String errorResult = validateProductType.validateNewFormInfo(productTypeVO);
 
         // Validation
         if(!errorResult.equals("success")){
@@ -102,7 +104,7 @@ public class ProductTypeViewController {
         System.out.println("authentication.getAuthorities: "+authentication.getAuthorities());
         System.out.println("----------------------- END AUTH INFO ");
 
-        String errorResult = validateNewFormInfo(productTypeVO);
+        String errorResult = validateProductType.validateNewFormInfo(productTypeVO);
 
         // Validation
         if(!errorResult.equals("success")){
@@ -130,22 +132,7 @@ public class ProductTypeViewController {
     }
 
 
-    String validateNewFormInfo(ProductTypeVO productTypeVO){
 
-        if(productTypeVO.getName() != null &&
-                (productTypeVO.getName().length() > 250
-                        || productTypeVO.getName().length() < 1)
-        ){
-            return "Name must be between 1-250 characters. ";
-        }
-
-        if(productTypeVO.getDescription() != null && (productTypeVO.getDescription().length() > 1000)
-        ){
-            return "Description must be less than 1000 characters";
-        }
-
-        return "success";
-    }
 
     List<ProductTypeVO> getProductTypeList(){
         productTypeRepo.findAll()
