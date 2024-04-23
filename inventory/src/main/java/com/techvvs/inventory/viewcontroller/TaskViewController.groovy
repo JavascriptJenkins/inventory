@@ -6,6 +6,7 @@ import com.techvvs.inventory.model.TaskTypeVO
 import com.techvvs.inventory.model.TaskVO
 import com.techvvs.inventory.modelnonpersist.FileVO
 import com.techvvs.inventory.util.TechvvsFileHelper
+import com.techvvs.inventory.validation.ValidateTask
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -38,6 +39,9 @@ public class TaskViewController {
 
     @Autowired
     TaskTypeRepo taskTypeRepo;
+
+    @Autowired
+    ValidateTask validateTask;
 
 
     SecureRandom secureRandom = new SecureRandom();
@@ -197,7 +201,7 @@ public class TaskViewController {
         System.out.println("authentication.getAuthorities: "+authentication.getAuthorities());
         System.out.println("----------------------- END AUTH INFO ");
 
-        String errorResult = validateNewFormInfo(taskVO);
+        String errorResult = validateTask.validateNewFormInfo(taskVO);
 
         // Validation
         if(!errorResult.equals("success")){
@@ -245,7 +249,7 @@ public class TaskViewController {
         System.out.println("authentication.getAuthorities: "+authentication.getAuthorities());
         System.out.println("----------------------- END AUTH INFO ");
 
-        String errorResult = validateNewFormInfo(taskVO);
+        String errorResult = validateTask.validateNewFormInfo(taskVO);
 
         // Validation
         if(!errorResult.equals("success")){
@@ -270,24 +274,6 @@ public class TaskViewController {
         return "task/task.html";
     }
 
-    String validateNewFormInfo(TaskVO taskVO){
-
-        if(taskVO.getName() != null &&
-                (taskVO.getName().length() > 250
-                || taskVO.getName().length() < 1)
-        ){
-            return "first name must be between 1-250 characters. ";
-        }
-
-
-
-        if(taskVO.getNotes() != null && (taskVO.getNotes().length() > 1000)
-        ){
-            return "Notes must be less than 1000 characters";
-        }
-
-        return "success";
-    }
 
 
 }
