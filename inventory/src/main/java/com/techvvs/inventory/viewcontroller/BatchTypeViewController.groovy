@@ -3,6 +3,7 @@ package com.techvvs.inventory.viewcontroller
 import com.techvvs.inventory.jparepo.BatchTypeRepo
 import com.techvvs.inventory.model.BatchTypeVO
 import com.techvvs.inventory.model.BatchVO
+import com.techvvs.inventory.validation.ValidateBatchType
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -27,6 +28,7 @@ public class BatchTypeViewController {
 
 
     @Autowired BatchTypeRepo batchTypeRepo
+    @Autowired ValidateBatchType validateBatchType
 
     //default home mapping
     @GetMapping
@@ -70,7 +72,7 @@ public class BatchTypeViewController {
         System.out.println("authentication.getAuthorities: "+authentication.getAuthorities());
         System.out.println("----------------------- END AUTH INFO ");
 
-        String errorResult = validateNewFormInfo(batchTypeVO);
+        String errorResult = validateBatchType.validateNewFormInfo(batchTypeVO);
 
         // Validation
         if(!errorResult.equals("success")){
@@ -108,7 +110,7 @@ public class BatchTypeViewController {
         System.out.println("authentication.getAuthorities: "+authentication.getAuthorities());
         System.out.println("----------------------- END AUTH INFO ");
 
-        String errorResult = validateNewFormInfo(batchTypeVO);
+        String errorResult = validateBatchType.validateNewFormInfo(batchTypeVO);
 
         // Validation
         if(!errorResult.equals("success")){
@@ -135,22 +137,7 @@ public class BatchTypeViewController {
     }
 
 
-    String validateNewFormInfo(BatchTypeVO batchTypeVO){
 
-        if(batchTypeVO.getName() != null &&
-                (batchTypeVO.getName().length() > 250
-                        || batchTypeVO.getName().length() < 1)
-        ){
-            return "Name must be between 1-250 characters. ";
-        }
-
-        if(batchTypeVO.getDescription() != null && (batchTypeVO.getDescription().length() > 1000)
-        ){
-            return "Description must be less than 1000 characters";
-        }
-
-        return "success";
-    }
 
     List<BatchTypeVO> getBatchTypeList(){
         batchTypeRepo.findAll()
