@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>New Product Data Entry</title>
+    <title>Edit Product</title>
 
 
     <script
@@ -26,61 +26,6 @@
       }
     </style>
 
-    <script type="text/javascript">
-        function onpageload() {
-            console.log('running stuff on page load');
-            if(document.getElementById("barcodeinput1")){
-                var input = document.getElementById("barcodeinput1").focus();
-            }
-            if(document.getElementById("barcodeinput2")){
-                var input = document.getElementById("barcodeinput2").focus();
-            }
-
-             $("#hiddencontainerBarcodeInputMsg").show();
-
-             $(":input").keypress(function(event){
-                if (event.which == '10' || event.which == '13') {
-                    console.log("barcode keypress");
-                    event.preventDefault();
-                    var inputs = document.getElementById("name").focus();
-                }
-            });
-
-        }
-
-
-
-        window.onload = onpageload;
-
-
-
-        function checkForInput() {
-
-
-            if(document.getElementById("barcodeinput1")){
-                var input = $("#barcodeinput1").val();
-                if(input){
-                    $("#hiddencontainerBarcodeInputMsg").hide();
-                } else {
-                    $("#hiddencontainerBarcodeInputMsg").show();
-                }
-
-
-            }
-            if(document.getElementById("barcodeinput2")){
-                var input = $("#barcodeinput2").val();
-                if(input){
-                    $("#hiddencontainerBarcodeInputMsg").hide();
-                    console.log('hide');
-                } else {
-                    $("#hiddencontainerBarcodeInputMsg").show();
-                    console.log('show');
-                }
-            }
-
-        }
-    </script>
-
 </head>
 <body>
 
@@ -92,25 +37,11 @@
 <div class="container">
 
 
-    <div class="alert alert-primary" role="alert" >Create a new Product entry in the database</div>
+    <div class="alert alert-primary" role="alert" >Create a new Product Data Form entry in the database</div>
     <br>
 
-    <div class="row" style="margin-bottom: 5px;">
 
-        <div th:if="${hidebarcodemsg != 'true'}" class="col-md-4" style="margin-bottom: 5px;">
-            <div id="hiddencontainerBarcodeInputMsg" class="container" style="display:none">
-                <div id="barcodeinputdiv" class="alert alert-danger" role="alert">Scan a Barcode </div>
-            </div>
-        </div>
-    </div>
-
-
-    <div th:if="${product.createTimeStamp != null}">
-        PRODUCT HAS BEEN CREATED
-    </div>
-
-
-    <div th:if="${filelist != null || product.createTimeStamp != null}">
+    <div th:if="${editmode == 'no'}">
             <form th:action="@{/product/createNewProduct?customJwtParameter=__${customJwtParameter}__}" th:object="${product}" method="post">
                 <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
                 <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
@@ -160,7 +91,7 @@
 
                             </select>
                         </div>
-                            <!-- TODO: put a dropdown hydrated with batch names which will associate with batchid and create a BatchProduct Entry  -->
+                        <!-- TODO: put a dropdown hydrated with batch names which will associate with batchid and create a BatchProduct Entry  -->
                     </div>
 
                     <br>
@@ -177,85 +108,89 @@
                     <button style="margin-top:5px;" type="submit" class="btn btn-primary" disabled>Submit</button>
             </form>
 
-    </div> <!-- end filelist view -->
+    </div> <!-- end readonly view -->
 
 
 
+    <div th:if="${editmode == 'yes'}">
+        <form th:action="@{/product/editProduct?customJwtParameter=__${customJwtParameter}__}" th:object="${product}" method="post">
 
-    <!-- if th-->
-    <div th:if="${product.createTimeStamp == null}">
-        <form th:action="@{/product/createNewProduct?customJwtParameter=__${customJwtParameter}__}" th:object="${product}" method="post">
-            <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
-            <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
+                <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
+                <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
 
-            <div class="row" style="margin-bottom: 5px;">
-                <div class="col-sm-2" style="margin-bottom: 5px;">
-                    <label class="form-label"><b>Product Number</b></label>
-                    <input type="text" th:field="*{productnumber}" class="form-control" placeholder="productnumber" aria-label="productnumber" readonly>
-                </div>
-            </div>
-
-            <div class="row" style="margin-bottom: 5px;">
-                <div class="col-md-4" style="margin-bottom: 5px;">
-                    <label class="form-label"><b>Barcode</b></label>
-                    <input onkeyup="checkForInput()" id="barcodeinput2" type="text" th:field="*{barcode}" class="form-control" placeholder="barcode" aria-label="barcode">
-                </div>
-            </div>
-
-            <div class="row" style="margin-bottom: 5px;">
-                <div class="col-md-4" style="margin-bottom: 5px;">
-                    <label class="form-label required">Name</label>
-                    <input id="name" type="text" th:field="*{name}" class="form-control" placeholder="name" aria-label="name">
-                </div>
-                <div class="col-md-4" style="margin-bottom: 5px;">
-                    <label class="form-label">Description</label>
-                    <input type="text" th:field="*{description}" class="form-control" placeholder="description" aria-label="description">
-                </div>
-            </div>
-
-
-            <br>
-            <br>
-
-            <div class="row" style="margin-bottom: 5px;">
-                <div class="col-md-4" style="margin-bottom: 5px;">
-                    <label class="form-label required">Product Type</label>
-                    <select class="form-control" th:field="${product.product_type_id}"  id="producttypeid">
-<!--                        <option value="">select operator</option>-->
-<!--                        <option th:each="operator : ${}" th:value="${operator.id}" th:text="${operator.operatorName}"></option>-->
-                        <option th:each="producttype : ${producttypes}" th:value="${producttype.product_type_id}" th:text="${producttype.name}"></option>
-
-                    </select>
+                <div class="row" style="margin-bottom: 5px;">
+                    <div class="col-sm-2" style="margin-bottom: 5px;">
+                        <label class="form-label"><b>Product Number</b></label>
+                        <input type="text" th:field="*{productnumber}" class="form-control" placeholder="productnumber" aria-label="productnumber" readonly>
+                    </div>
                 </div>
 
-                <div class="col-md-4" style="margin-bottom: 5px;">
-                    <label class="form-label required">Batch</label>
-
-                    <select class="form-control" th:field="${batch.batchid}"  id="batchid">
-                        <!--                        <option value="">select operator</option>-->
-                        <!--                        <option th:each="operator : ${}" th:value="${operator.id}" th:text="${operator.operatorName}"></option>-->
-                        <option th:each="batch : ${batchlist}" th:value="${batch.batchid}" th:text="${batch.name}"></option>
-
-                    </select>
+                <div class="row" style="margin-bottom: 5px;">
+                    <div class="col-md-4" style="margin-bottom: 5px;">
+                        <label class="form-label"><b>Barcode</b></label>
+                        <input onkeyup="checkForInput()" id="barcodeinput2" type="text" th:field="*{barcode}" class="form-control" placeholder="barcode" aria-label="barcode">
+                    </div>
                 </div>
-<!--                    <select  th:field="*{product_type_id}" class="form-control" placeholder="producttype" aria-label="producttype">-->
-            </div>
 
-
-            <br>
-            <br>
-
-            <div class="row" style="margin-bottom: 5px;">
-                <div class="alert alert-info" role="alert" >Notes</div>
-                <div class="col" style="margin-bottom: 5px;">
-                    <label class="form-label">Notes</label>
-                    <textarea style="width:648px;height:163px;" th:field="*{notes}" class="form-control" placeholder="notes" aria-label="notes"></textarea>
+                <div class="row" style="margin-bottom: 5px;">
+                    <div class="col-md-4" style="margin-bottom: 5px;">
+                        <label class="form-label required">Name</label>
+                        <input id="name" type="text" th:field="*{name}" class="form-control" placeholder="name" aria-label="name">
+                    </div>
+                    <div class="col-md-4" style="margin-bottom: 5px;">
+                        <label class="form-label">Description</label>
+                        <input type="text" th:field="*{description}" class="form-control" placeholder="description" aria-label="description">
+                    </div>
                 </div>
-            </div>
-            <button style="margin-top:5px;" type="submit" class="btn btn-primary">Submit</button>
+
+
+                <br>
+                <br>
+
+                <div class="row" style="margin-bottom: 5px;">
+                    <div class="col-md-4" style="margin-bottom: 5px;">
+                        <label class="form-label required">Product Type</label>
+                        <select class="form-control" th:field="${product.product_type_id}"  id="producttypeid">
+                            <!--                        <option value="">select operator</option>-->
+                            <!--                        <option th:each="operator : ${}" th:value="${operator.id}" th:text="${operator.operatorName}"></option>-->
+                            <option th:each="producttype : ${producttypes}" th:value="${producttype.product_type_id}" th:text="${producttype.name}"></option>
+
+                        </select>
+                    </div>
+
+                    <div class="col-md-4" style="margin-bottom: 5px;">
+                        <label class="form-label required">Batch</label>
+
+                        <select class="form-control" th:field="${batch.batchid}"  id="batchid">
+                            <!--                        <option value="">select operator</option>-->
+                            <!--                        <option th:each="operator : ${}" th:value="${operator.id}" th:text="${operator.operatorName}"></option>-->
+                            <option th:each="batch : ${batchlist}" th:value="${batch.batchid}" th:text="${batch.name}"></option>
+
+                        </select>
+                    </div>
+                    <!--                    <select  th:field="*{product_type_id}" class="form-control" placeholder="producttype" aria-label="producttype">-->
+                </div>
+
+
+                <br>
+                <br>
+
+                <div class="row" style="margin-bottom: 5px;">
+                    <div class="alert alert-info" role="alert" >Notes</div>
+                    <div class="col" style="margin-bottom: 5px;">
+                        <label class="form-label">Notes</label>
+                        <textarea style="width:648px;height:163px;" th:field="*{notes}" class="form-control" placeholder="notes" aria-label="notes"></textarea>
+                    </div>
+                </div>
+                    <input type="hidden" th:field="*{updateTimeStamp}">
+                    <input type="hidden" th:field="*{createTimeStamp}">
+                    <input type="hidden" th:field="*{product_id}">
+
+                <button style="margin-top:5px;" type="submit" class="btn btn-primary">Submit Edit</button>
         </form>
 
-    </div> <!-- end non filelist -->
+    </div> <!-- end edit view -->
+
 
 
 
@@ -317,7 +252,6 @@
                     <!-- if it is first download then it is ok.  second download will throw 403 is upload is performed right after  -->
                     <div th:if="${disableupload == null}">
                         <button type="submit" class="btn btn-primary">Upload File</button>
-                    </div>
                     </div>
 
 

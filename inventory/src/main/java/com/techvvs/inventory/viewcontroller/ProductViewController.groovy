@@ -168,6 +168,7 @@ public class ProductViewController {
     String viewEditForm(
                     Model model,
                     @RequestParam("customJwtParameter") String customJwtParameter,
+                    @RequestParam("editmode") String editmode,
                     @RequestParam("productnumber") String productnumber){
 
         System.out.println("customJwtParam on product controller: "+customJwtParameter);
@@ -189,15 +190,18 @@ public class ProductViewController {
 
         model.addAttribute("customJwtParameter", customJwtParameter);
         model.addAttribute("product", results.get(0));
+        model.addAttribute("editmode", editmode);
         bindProductTypes(model)
         bindBatches(model)
-        return "product/product.html";
+        model.addAttribute("batch", new BatchVO()); // provide a default object for thymeleaf
+        return "product/editproduct.html";
     }
 
     @PostMapping ("/editProduct")
-    String editProduct(@ModelAttribute( "product" ) ProductVO productVO,
+    String editProduct(
+            @ModelAttribute( "product" ) ProductVO productVO,
+            @ModelAttribute( "batch" ) BatchVO batchVO,
                                 Model model,
-                                HttpServletResponse response,
                                 @RequestParam("customJwtParameter") String customJwtParameter
     ){
 
@@ -210,17 +214,43 @@ public class ProductViewController {
 
         String errorResult = validateNewFormInfo(productVO);
 
+
+        BatchVO batchresult = batchVO
+        ProductVO productresult = productVO
+
+
         // Validation
         if(!errorResult.equals("success")){
             model.addAttribute("errorMessage",errorResult);
+            model.addAttribute("editmode","yes") // keep edit mode open if we catch an error
         } else {
 
             // when creating a new processData entry, set the last attempt visit to now - this may change in future
             productVO.setUpdateTimeStamp(LocalDateTime.now());
 
 
+            productresult = productRepo.save(productVO);
 
-            ProductVO result = productRepo.save(productVO);
+            // we need to save the the productVO to the batch it is now associated with
+            BatchVO hydratedBatchVO = batchRepo.getById(batchVO.batchid)
+
+
+
+            boolean found = false
+            // now see if we have this product existing in this batch
+            for(ProductVO item : hydratedBatchVO.getProduct_set()){
+
+                // if there is a match here it means the product was already in this batch and only it's attributes were edited
+                if(productresult.product_id == item.product_id && !found){
+                    hydratedBatchVO.product_set.remove(item) // remove old version of product
+                    hydratedBatchVO.product_set.add(productresult)
+                    batchVO.setUpdateTimeStamp(LocalDateTime.now());
+                    batchresult =  batchRepo.save(hydratedBatchVO) // save the object
+                    found = true // stop iterating
+                }
+            }
+
+
 
             // check to see if there are files uploaded related to this productnumber
             List<FileVO> filelist = techvvsFileHelper.getFilesByFileNumber(productVO.getProductnumber(), UPLOAD_DIR);
@@ -231,13 +261,16 @@ public class ProductViewController {
             }
 
             model.addAttribute("successMessage","Record Successfully Saved.");
-            model.addAttribute("product", result);
+
         }
 
+        model.addAttribute("product", productresult);
+        model.addAttribute("batch", batchresult);
+        model.addAttribute("editmode", "no");
         model.addAttribute("customJwtParameter", customJwtParameter);
         bindProductTypes(model)
         bindBatches(model)
-        return "product/product.html";
+        return "product/editproduct.html";
     }
 
     @PostMapping ("/createNewProduct")
@@ -266,6 +299,7 @@ public class ProductViewController {
 
             // add the product to the batch
             batchVO = addProductToBatch(batchVO,result)
+//            model.addAttribute("hidebarcodemsg","true") // only hide the barcode message if product is added with success
 
         }
 
@@ -279,6 +313,8 @@ public class ProductViewController {
     BatchVO addProductToBatch(BatchVO batchVO, ProductVO result){
         batchVO = batchRepo.findByBatchid(batchVO.getBatchid())
         if(batchVO.getBatchnumber()){
+
+            batchVO.setUpdateTimeStamp(LocalDateTime.now());
             // this means a valid batch was found
             batchVO.getProduct_set().add(result) // add the product from database to the product set
             batchVO = batchRepo.save(batchVO)

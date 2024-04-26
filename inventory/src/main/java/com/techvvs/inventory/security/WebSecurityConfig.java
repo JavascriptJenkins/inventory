@@ -86,6 +86,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         .antMatchers("/producttype/editProductType/*").permitAll()//
         .antMatchers("/product/searchProduct/*").permitAll()//
         .antMatchers("/product/browseProduct/***").permitAll()//
+        .antMatchers("/product/editform/***").permitAll()//
+        .antMatchers("/product/editProduct/*").permitAll()//
 
         .antMatchers("/login/createaccount").permitAll()//
         .antMatchers("/users/sendResetToken").permitAll()//
