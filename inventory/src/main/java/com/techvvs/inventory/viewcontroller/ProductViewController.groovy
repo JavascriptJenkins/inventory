@@ -8,6 +8,7 @@ import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.modelnonpersist.FileVO
 import com.techvvs.inventory.util.TechvvsFileHelper
+import com.techvvs.inventory.validation.ValidateProduct
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -44,6 +45,9 @@ public class ProductViewController {
 
     @Autowired
     BatchRepo batchRepo;
+
+    @Autowired
+    ValidateProduct validateProduct;
 
 
     SecureRandom secureRandom = new SecureRandom();
@@ -212,7 +216,7 @@ public class ProductViewController {
         System.out.println("authentication.getAuthorities: "+authentication.getAuthorities());
         System.out.println("----------------------- END AUTH INFO ");
 
-        String errorResult = validateNewFormInfo(productVO);
+        String errorResult = validateProduct.validateNewFormInfo(productVO);
 
 
         BatchVO batchresult = batchVO
@@ -287,7 +291,7 @@ public class ProductViewController {
         System.out.println("authentication.getAuthorities: "+authentication.getAuthorities());
         System.out.println("----------------------- END AUTH INFO ");
 
-        String errorResult = validateNewFormInfo(productVO);
+        String errorResult = validateProduct.validateNewFormInfo(productVO);
 
         // Validation
         if(!errorResult.equals("success")){
@@ -343,24 +347,6 @@ public class ProductViewController {
 
     }
 
-    String validateNewFormInfo(ProductVO productVO){
-
-        if(productVO.getName() != null &&
-                (productVO.getName().length() > 250
-                || productVO.getName().length() < 1)
-        ){
-            return "first name must be between 1-250 characters. ";
-        }
-
-
-
-        if(productVO.getNotes() != null && (productVO.getNotes().length() > 1000)
-        ){
-            return "Notes must be less than 1000 characters";
-        }
-
-        return "success";
-    }
 
 
 }
