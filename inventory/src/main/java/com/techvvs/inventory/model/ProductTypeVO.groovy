@@ -13,7 +13,7 @@ public class ProductTypeVO implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @JsonProperty
-    Integer product_type_id;
+    Integer producttypeid;
     @JsonProperty
     String name;
     @JsonProperty

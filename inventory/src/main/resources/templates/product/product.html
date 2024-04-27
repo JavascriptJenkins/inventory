@@ -144,10 +144,10 @@
                 <div class="row" style="margin-bottom: 5px;">
                     <div class="col-md-4" style="margin-bottom: 5px;">
                         <label class="form-label required">Product Type</label>
-                        <select class="form-control" th:field="${product.product_type_id}"  id="producttypeid" readonly="">
+                        <select class="form-control" th:field="${product.producttypeid}"  id="producttypeid" readonly="">
                             <!--                        <option value="">select operator</option>-->
                             <!--                        <option th:each="operator : ${}" th:value="${operator.id}" th:text="${operator.operatorName}"></option>-->
-                            <option th:each="producttype : ${producttypes}" th:value="${producttype.product_type_id}" th:text="${producttype.name}"></option>
+                            <option th:each="producttype : ${producttypes}" th:value="${producttype.producttypeid}" th:text="${producttype.name}"></option>
 
                         </select>
 
@@ -220,10 +220,10 @@
             <div class="row" style="margin-bottom: 5px;">
                 <div class="col-md-4" style="margin-bottom: 5px;">
                     <label class="form-label required">Product Type</label>
-                    <select class="form-control" th:field="${product.product_type_id}"  id="producttypeid">
+                    <select class="form-control" th:field="${product.producttypeid}"  id="producttypeid">
 <!--                        <option value="">select operator</option>-->
 <!--                        <option th:each="operator : ${}" th:value="${operator.id}" th:text="${operator.operatorName}"></option>-->
-                        <option th:each="producttype : ${producttypes}" th:value="${producttype.product_type_id}" th:text="${producttype.name}"></option>
+                        <option th:each="producttype : ${producttypes}" th:value="${producttype.producttypeid}" th:text="${producttype.name}"></option>
 
                     </select>
                 </div>
@@ -238,7 +238,7 @@
 
                     </select>
                 </div>
-<!--                    <select  th:field="*{product_type_id}" class="form-control" placeholder="producttype" aria-label="producttype">-->
+<!--                    <select  th:field="*{producttypeid}" class="form-control" placeholder="producttype" aria-label="producttype">-->
             </div>
 
 

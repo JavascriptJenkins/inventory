@@ -18,8 +18,8 @@ public class ProductVO implements Serializable {
     Integer product_id;
     @JsonProperty
     @OneToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn(name="product_type_id")
-    ProductTypeVO product_type_id;
+    @JoinColumn(name="producttypeid")
+    ProductTypeVO producttypeid;
     @JsonProperty
     Integer productnumber;
     @JsonProperty

@@ -43,6 +43,29 @@
 
     <!-- start readonly view -->
     <div th:if="${editmode == 'no'}">
+
+
+        <!-- Make a form that sends a search term to the server -->
+        <form th:action="@{/newbatch/filtereditform?batchnumber=__${batch.batchnumber}__&customJwtParameter=__${customJwtParameter}__&editmode=no&size=__${#lists.size(productPage.content)}__&page=1}" th:object="${searchproducttype}" method="post">
+            Enter one or more search fields to find records
+<!--            <div class="row">-->
+<!--                <div class="col" style="margin-bottom: 5px;">-->
+<!--                    <input type="text" th:field="*{producttypeid}" class="form-control" placeholder="producttypeid" aria-label="producttypeid">-->
+<!--                </div>-->
+<!--            </div>-->
+
+            <label class="form-label required">Product Type</label>
+            <select class="form-control" th:field="${searchproducttype.producttypeid}"  id="producttypeid" >
+                <!--                        <option value="">select operator</option>-->
+                <!--                        <option th:each="operator : ${}" th:value="${operator.id}" th:text="${operator.operatorName}"></option>-->
+                <option th:each="producttype : ${producttypelist}" th:value="${producttype.producttypeid}" th:text="${producttype.name}"></option>
+
+            </select>
+
+            <button style="margin-top:5px;" type="submit" class="btn btn-primary">Filter Products</button>
+        </form>
+
+
             <form th:action="@{/newbatch/createNewBatch?customJwtParameter=__${customJwtParameter}__}" th:object="${batch}" method="post">
                 <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
                 <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
@@ -56,6 +79,7 @@
                 </div>
 
                 <div class="row" style="margin-bottom: 5px;">
+
 
                     <!-- START insert a table full of paginated child products of this batch -->
                     <table class="table" border="1">

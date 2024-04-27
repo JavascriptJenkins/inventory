@@ -66,7 +66,7 @@ public class ProductViewController {
             productVOToBind = new ProductVO();
             productVOToBind.setProductnumber(0);
             productVOToBind.setProductnumber(secureRandom.nextInt(10000000));
-            productVOToBind.product_type_id = new ProductTypeVO()
+            productVOToBind.producttypeid = new ProductTypeVO()
         }
 
 

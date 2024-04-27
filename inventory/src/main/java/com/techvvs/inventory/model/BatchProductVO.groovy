@@ -18,7 +18,7 @@ class BatchProductVO implements Serializable {
 
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name="product_id")
-    @JoinColumn(name="product_type_id")
+    @JoinColumn(name="producttypeid")
     ProductVO product_id;
 
     @JsonProperty

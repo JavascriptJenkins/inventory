@@ -36,11 +36,11 @@ public class ProductTypeViewController {
         System.out.println("customJwtParam on producttype controller: "+customJwtParameter);
 
         ProductTypeVO productTypeVOToBind;
-        if(productTypeVO != null && productTypeVO.getProduct_type_id() != null){
+        if(productTypeVO != null && productTypeVO.getProducttypeid() != null){
             productTypeVOToBind = productTypeVO;
         } else {
             productTypeVOToBind = new ProductTypeVO();
-            productTypeVOToBind.product_type_id= 0
+            productTypeVOToBind.producttypeid= 0
         }
 
        // model.addAttribute("producttypelist", getProductTypeList()); // todo: add pagination to this

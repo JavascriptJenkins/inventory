@@ -3,8 +3,10 @@ package com.techvvs.inventory.viewcontroller;
 import com.techvvs.inventory.jparepo.BatchRepo
 import com.techvvs.inventory.jparepo.BatchTypeRepo
 import com.techvvs.inventory.jparepo.ProductRepo
+import com.techvvs.inventory.jparepo.ProductTypeRepo
 import com.techvvs.inventory.model.BatchTypeVO;
 import com.techvvs.inventory.model.BatchVO
+import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.ProductVO;
 import com.techvvs.inventory.modelnonpersist.FileVO;
 import com.techvvs.inventory.util.TechvvsFileHelper
@@ -42,6 +44,10 @@ public class BatchViewController {
 
     @Autowired
     BatchTypeRepo batchTypeRepo;
+
+    @Autowired
+    ProductTypeRepo productTypeRepo;
+
 
     @Autowired
     ProductRepo productRepo;
@@ -84,6 +90,48 @@ public class BatchViewController {
         model.addAttribute("batchtypes", batchTypeVOS);
     }
 
+    void bindProductTypes(Model model){
+        // get all the batchtype objects and bind them to select dropdown
+        List<ProductTypeVO> productTypeVOS = productTypeRepo.findAll();
+        model.addAttribute("producttypelist", productTypeVOS);
+    }
+
+
+    // todo: filter what comes back from this using
+    void bindFilterProducts(Model model, Optional<Integer> page, ProductTypeVO productTypeVO){
+
+
+        //pagination
+        int currentPage = page.orElse(0);
+        int pageSize = 5;
+        Pageable pageable;
+        if(currentPage == 0){
+            pageable = PageRequest.of(0 , pageSize);
+        } else {
+            pageable = PageRequest.of(currentPage - 1, pageSize);
+        }
+
+        Page<ProductVO> pageOfProduct = productRepo.findAllByProducttypeid(productTypeVO, pageable);
+
+
+
+        int totalPages = pageOfProduct.getTotalPages();
+
+        List<Integer> pageNumbers = new ArrayList<>();
+
+        while(totalPages > 0){
+            pageNumbers.add(totalPages);
+            totalPages = totalPages - 1;
+        }
+
+        model.addAttribute("pageNumbers", pageNumbers);
+        model.addAttribute("page", currentPage);
+        model.addAttribute("size", pageOfProduct.getTotalPages());
+        model.addAttribute("productPage", pageOfProduct);
+    }
+
+
+    // todo: filter what comes back from this using
     void bindProducts(Model model, Optional<Integer> page){
 
 
@@ -226,7 +274,55 @@ public class BatchViewController {
         model.addAttribute("customJwtParameter", customJwtParameter);
         model.addAttribute("batch", results.get(0));
         bindBatchTypes(model)
+        bindProductTypes(model)
         bindProducts(model, page)
+        model.addAttribute("searchproducttype", new ProductTypeVO()) // this is a blank object for submitting a search term
+        return "service/editbatch.html";
+    }
+
+    @PostMapping("/filtereditform")
+    String viewFilterEditForm(
+            Model model,
+            @ModelAttribute( "searchproducttype" ) ProductTypeVO productTypeVO,
+            @RequestParam("customJwtParameter") String customJwtParameter,
+            @RequestParam("editmode") String editmode,
+            @RequestParam("batchnumber") String batchnumber,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size
+
+    ){
+
+        System.out.println("customJwtParam on batch controller: "+customJwtParameter);
+
+        List<BatchVO> results = new ArrayList<BatchVO>();
+        if(batchnumber != null){
+            System.out.println("Searching data by batchnumber");
+            results = batchRepo.findAllByBatchnumber(Integer.valueOf(batchnumber));
+        }
+
+        // check to see if there are files uploaded related to this batchnumber
+        List<FileVO> filelist = techvvsFileHelper.getFilesByFileNumber(Integer.valueOf(batchnumber), UPLOAD_DIR);
+
+        if(filelist.size() > 0){
+            model.addAttribute("filelist", filelist);
+        } else {
+            model.addAttribute("filelist", null);
+        }
+
+        if("yes".equals(editmode)){
+            model.addAttribute("editmode",editmode)
+        } else {
+            model.addAttribute("editmode","no")
+        }
+
+        model.addAttribute("customJwtParameter", customJwtParameter);
+        model.addAttribute("batch", results.get(0));
+        bindBatchTypes(model)
+        bindProductTypes(model)
+     //   bindProducts(model, page)
+        bindFilterProducts(model, page, productTypeVO)
+
+        model.addAttribute("searchproducttype", productTypeVO) // this is a blank object for submitting a search term
         return "service/editbatch.html";
     }
 
