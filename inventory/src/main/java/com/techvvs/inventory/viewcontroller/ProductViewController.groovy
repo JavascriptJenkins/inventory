@@ -201,6 +201,7 @@ public class ProductViewController {
         return "product/editproduct.html";
     }
 
+    // todo: edit this method so it only edits individual products and ignores batch entirely
     @PostMapping ("/editProduct")
     String editProduct(
             @ModelAttribute( "product" ) ProductVO productVO,
@@ -236,9 +237,10 @@ public class ProductViewController {
             productresult = productRepo.save(productVO);
 
             // we need to save the the productVO to the batch it is now associated with
-            BatchVO hydratedBatchVO = batchRepo.getById(batchVO.batchid)
+            List<BatchVO> batchlist = batchRepo.findAllByBatchnumber(batchVO.batchnumber)
 
 
+            BatchVO hydratedBatchVO = batchlist.get(0) // there should only ever be one batch per batchnumber....
 
             boolean found = false
             // now see if we have this product existing in this batch

@@ -11,7 +11,7 @@ class ValidateAuth {
     String validateCreateSystemUser(SystemUserDAO systemUserDAO) {
 
         if (systemUserDAO.getPhone() != null) {
-            String theDigits = CharMatcher.inRange('0', '9').retainFrom(systemUserDAO.getPhone());
+            String theDigits = CharMatcher.inRange('0' as char, '9' as char).retainFrom(systemUserDAO.getPhone());
             systemUserDAO.setPhone(theDigits);
         }
 

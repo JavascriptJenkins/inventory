@@ -31,12 +31,10 @@ public class JwtTokenFilter extends OncePerRequestFilter implements CsrfTokenRep
       logger.info("REQUEST HIT JwtTokenFilter: "+httpServletRequest.getRequestURI());
       logger.info(" JwtTokenFilter: "+httpServletRequest.getMethod());
 
-    System.out.println("PARAM ON FILTER: "+ httpServletRequest.getParameter("customJwtParameter"));
+   // System.out.println("PARAM ON FILTER: "+ httpServletRequest.getParameter("customJwtParameter"));
     String token = httpServletRequest.getParameter("customJwtParameter");
 
-
-    System.out.println("############# HIT THE JWT TOKEN FILTER #####################");
-    System.out.println("############# RESOLVING TOKEN: "+token);
+    //System.out.println("############# RESOLVING TOKEN: "+token);
 
     if("/login/logout".equals(httpServletRequest.getRequestURI())) {
         System.out.println("#############---->  LOGGING OUT");

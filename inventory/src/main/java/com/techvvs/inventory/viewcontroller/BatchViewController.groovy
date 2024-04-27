@@ -152,6 +152,7 @@ public class BatchViewController {
         return "service/searchbatch.html";
     }
 
+    // TODO: add the list of products to come up under this
     @GetMapping("/editform")
     String viewEditForm(
                     Model model,
