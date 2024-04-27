@@ -2,8 +2,10 @@ package com.techvvs.inventory.viewcontroller;
 
 import com.techvvs.inventory.jparepo.BatchRepo
 import com.techvvs.inventory.jparepo.BatchTypeRepo
+import com.techvvs.inventory.jparepo.ProductRepo
 import com.techvvs.inventory.model.BatchTypeVO;
-import com.techvvs.inventory.model.BatchVO;
+import com.techvvs.inventory.model.BatchVO
+import com.techvvs.inventory.model.ProductVO;
 import com.techvvs.inventory.modelnonpersist.FileVO;
 import com.techvvs.inventory.util.TechvvsFileHelper
 import com.techvvs.inventory.validation.ValidateBatch;
@@ -42,6 +44,10 @@ public class BatchViewController {
     BatchTypeRepo batchTypeRepo;
 
     @Autowired
+    ProductRepo productRepo;
+
+
+    @Autowired
     ValidateBatch validateBatch;
 
 
@@ -76,6 +82,36 @@ public class BatchViewController {
         // get all the batchtype objects and bind them to select dropdown
         List<BatchTypeVO> batchTypeVOS = batchTypeRepo.findAll();
         model.addAttribute("batchtypes", batchTypeVOS);
+    }
+
+    void bindProducts(Model model, Optional<Integer> page){
+
+
+        //pagination
+        int currentPage = page.orElse(0);
+        int pageSize = 5;
+        Pageable pageable;
+        if(currentPage == 0){
+            pageable = PageRequest.of(0 , pageSize);
+        } else {
+            pageable = PageRequest.of(currentPage - 1, pageSize);
+        }
+
+        Page<ProductVO> pageOfProduct = productRepo.findAll(pageable);
+
+        int totalPages = pageOfProduct.getTotalPages();
+
+        List<Integer> pageNumbers = new ArrayList<>();
+
+        while(totalPages > 0){
+            pageNumbers.add(totalPages);
+            totalPages = totalPages - 1;
+        }
+
+        model.addAttribute("pageNumbers", pageNumbers);
+        model.addAttribute("page", currentPage);
+        model.addAttribute("size", pageOfProduct.getTotalPages());
+        model.addAttribute("productPage", pageOfProduct);
     }
 
     @GetMapping("/browseBatch")
@@ -158,7 +194,11 @@ public class BatchViewController {
                     Model model,
                     @RequestParam("customJwtParameter") String customJwtParameter,
                     @RequestParam("editmode") String editmode,
-                    @RequestParam("batchnumber") String batchnumber){
+                    @RequestParam("batchnumber") String batchnumber,
+                    @RequestParam("page") Optional<Integer> page,
+                    @RequestParam("size") Optional<Integer> size
+
+    ){
 
         System.out.println("customJwtParam on batch controller: "+customJwtParameter);
 
@@ -186,14 +226,18 @@ public class BatchViewController {
         model.addAttribute("customJwtParameter", customJwtParameter);
         model.addAttribute("batch", results.get(0));
         bindBatchTypes(model)
+        bindProducts(model, page)
         return "service/editbatch.html";
     }
 
+    // todo: add the pagination crap here too
     @PostMapping ("/editBatch")
     String editBatch(@ModelAttribute( "batch" ) BatchVO batchVO,
                                 Model model,
                                 HttpServletResponse response,
-                                @RequestParam("customJwtParameter") String customJwtParameter
+                                @RequestParam("customJwtParameter") String customJwtParameter,
+                     @RequestParam("page") Optional<Integer> page,
+                     @RequestParam("size") Optional<Integer> size
     ){
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -230,6 +274,7 @@ public class BatchViewController {
             bindBatchTypes(model)
             model.addAttribute("successMessage","Record Successfully Saved.");
             model.addAttribute("batch", result);
+            bindProducts(model, page)
         }
 
         model.addAttribute("customJwtParameter", customJwtParameter);

@@ -41,6 +41,7 @@
     <br>
 
 
+    <!-- start readonly view -->
     <div th:if="${editmode == 'no'}">
             <form th:action="@{/newbatch/createNewBatch?customJwtParameter=__${customJwtParameter}__}" th:object="${batch}" method="post">
                 <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
@@ -51,6 +52,45 @@
                         <label class="form-label"><b>Batch Number</b></label>
                         <input type="text" th:field="*{batchnumber}" class="form-control" placeholder="batchnumber" aria-label="batchnumber" readonly>
                     </div>
+
+                </div>
+
+                <div class="row" style="margin-bottom: 5px;">
+
+                    <!-- START insert a table full of paginated child products of this batch -->
+                    <table class="table" border="1">
+                        <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Product Number</th>
+                            <th scope="col">Product Name</th>
+                            <th scope="col">Product Desc</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="product, iStat : ${productPage.content}"
+                            th:style="${iStat.odd}? 'font-weight: bold;'"
+                            th:alt-title="${iStat.even}? 'even' : 'odd'">
+
+                            <td th:text="${product.product_id}"></td>
+                            <td><a th:href="@{/product/editform?productnumber=__${product.productnumber}__&customJwtParameter=__${customJwtParameter}__&editmode=no}" th:text="${product.productnumber}"></a></td>
+                            <td th:text="${product.name}"></td>
+                            <td th:text="${product.description}"></td>
+
+                        </tr>
+
+
+                        </tbody>
+                    </table>
+                    <div th:if="${productPage.totalPages > 0}" class="pagination"
+                         th:each="pageNumber : ${pageNumbers}">
+                        <a th:href="@{/product/browseProduct?customJwtParameter=__${customJwtParameter}__&size=__${#lists.size(productPage.content)}__&page=__${pageNumber}__}"
+                           th:text=${pageNumber}
+                           th:class="${pageNumber==productPage.number + 1} ? active"></a>
+                    </div>
+
+
+                    <!-- END paginated table of child products of this batch -->
 
                 </div>
 
