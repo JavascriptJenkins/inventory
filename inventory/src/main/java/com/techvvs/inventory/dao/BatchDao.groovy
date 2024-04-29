@@ -16,31 +16,7 @@ class BatchDao {
     @Autowired
     BatchRepo batchRepo;
 
-
     BatchVO updateBatch(BatchVO batchVO){
-
-//        try{
-//            BatchVO existing = batchRepo.findAllByBatchnumber(batchVO.batchnumber).get(0)
-//
-//
-//            // update this first to be safe
-//            existing.batch_type_id = batchVO.batch_type_id
-//            batchVO = batchRepo.save(batchVO) // todo: this is broken probably
-//
-//
-//            // update this second
-//            batchVO.product_set = existing.product_set
-//            batchVO.setUpdateTimeStamp(LocalDateTime.now());
-//
-//
-//
-//
-//
-//        } catch(Exception ex){
-//            System.out.println("Caught Error: "+ex.getCause())
-//        } finally {
-//            batchVO = batchRepo.save(batchVO)
-//        }
 
         BatchVO existing
         try{

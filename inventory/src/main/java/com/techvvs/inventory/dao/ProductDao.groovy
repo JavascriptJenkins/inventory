@@ -34,18 +34,6 @@ class ProductDao {
             productVO = productRepo.save(existing)
         }
 
-
-
-
-        // first go get the updated list of product objects associated with this batch
-
-        // then assign the product list from database to the instance of ProductVO from the ui
-
-        // update the batch lastupdated field
-
-        // save the batch from ui with existing productlist from database
-
-        // return the result from the database
         return productVO
     }
 
