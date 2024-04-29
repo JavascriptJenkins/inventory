@@ -7,7 +7,7 @@ import javax.persistence.*
 import java.time.LocalDateTime
 
 
-@IdClass(BatchCompositeID.class)
+//@IdClass(BatchCompositeID.class)
 @JsonIgnoreProperties
 @Entity
 @Table(name="batch")

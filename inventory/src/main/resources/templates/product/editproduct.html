@@ -82,16 +82,7 @@
 
                         </select>
 
-                        <div class="col-md-4" style="margin-bottom: 5px;">
-                            <label class="form-label required">Batch</label>
-                            <select class="form-control" th:field="${batch.batchnumber}"  id="batchid" readonly="">
-                                <!--                        <option value="">select operator</option>-->
-                                <!--                        <option th:each="operator : ${}" th:value="${operator.id}" th:text="${operator.operatorName}"></option>-->
-                                <option th:each="batch : ${batchlist}" th:value="${batch.batchnumber}" th:text="${batch.name}"></option>
-
-                            </select>
-                        </div>
-                        <!-- TODO: put a dropdown hydrated with batch names which will associate with batchid and create a BatchProduct Entry  -->
+                        <!-- TODO: put a dropdown hydrated with product names which will associate with productid and create a ProductProduct Entry  -->
                     </div>
 
                     <br>
@@ -158,16 +149,6 @@
                         </select>
                     </div>
 
-                    <div class="col-md-4" style="margin-bottom: 5px;">
-                        <label class="form-label required">Batch</label>
-
-                        <select class="form-control" th:field="${batch.batchnumber}"  id="batchid">
-                            <!--                        <option value="">select operator</option>-->
-                            <!--                        <option th:each="operator : ${}" th:value="${operator.id}" th:text="${operator.operatorName}"></option>-->
-                            <option th:each="batch : ${batchlist}" th:value="${batch.batchnumber}" th:text="${batch.name}"></option>
-
-                        </select>
-                    </div>
                     <!--                    <select  th:field="*{producttypeid}" class="form-control" placeholder="producttype" aria-label="producttype">-->
                 </div>
 
@@ -185,8 +166,7 @@
                     <input type="hidden" th:field="*{updateTimeStamp}">
                     <input type="hidden" th:field="*{createTimeStamp}">
                     <input type="hidden" th:field="*{product_id}">
-                    <input type="hidden" th:field="*{batch.batch_type_id}">
-                    <input type="hidden" th:field="*{batch.batchid}">
+
 
                 <button style="margin-top:5px;" type="submit" class="btn btn-primary">Submit Edit</button>
         </form>

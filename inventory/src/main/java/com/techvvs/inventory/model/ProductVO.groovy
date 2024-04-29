@@ -6,7 +6,7 @@ import java.io.Serializable;
 import javax.persistence.*
 import java.time.LocalDateTime;
 
-@IdClass(ProductCompositeID.class)
+//@IdClass(ProductCompositeID.class)
 @JsonIgnoreProperties
 @Entity
 @Table(name="Product")

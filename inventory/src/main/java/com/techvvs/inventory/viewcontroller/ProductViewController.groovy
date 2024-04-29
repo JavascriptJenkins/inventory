@@ -1,5 +1,6 @@
 package com.techvvs.inventory.viewcontroller
 
+import com.techvvs.inventory.dao.ProductDao
 import com.techvvs.inventory.jparepo.BatchRepo
 import com.techvvs.inventory.jparepo.ProductRepo
 import com.techvvs.inventory.jparepo.ProductTypeRepo
@@ -48,6 +49,9 @@ public class ProductViewController {
 
     @Autowired
     ValidateProduct validateProduct;
+
+    @Autowired
+    ProductDao productDao
 
 
     SecureRandom secureRandom = new SecureRandom();
@@ -205,7 +209,6 @@ public class ProductViewController {
     @PostMapping ("/editProduct")
     String editProduct(
             @ModelAttribute( "product" ) ProductVO productVO,
-            @ModelAttribute( "batch" ) BatchVO batchVO,
                                 Model model,
                                 @RequestParam("customJwtParameter") String customJwtParameter
     ){
@@ -220,7 +223,6 @@ public class ProductViewController {
         String errorResult = validateProduct.validateNewFormInfo(productVO);
 
 
-        BatchVO batchresult = batchVO
         ProductVO productresult = productVO
 
 
@@ -230,31 +232,9 @@ public class ProductViewController {
             model.addAttribute("editmode","yes") // keep edit mode open if we catch an error
         } else {
 
-            // when creating a new processData entry, set the last attempt visit to now - this may change in future
-            productVO.setUpdateTimeStamp(LocalDateTime.now());
 
+            productresult = productDao.updateProduct(productVO)
 
-            productresult = productRepo.save(productVO);
-
-            // we need to save the the productVO to the batch it is now associated with
-            List<BatchVO> batchlist = batchRepo.findAllByBatchnumber(batchVO.batchnumber)
-
-
-            BatchVO hydratedBatchVO = batchlist.get(0) // there should only ever be one batch per batchnumber....
-
-            boolean found = false
-            // now see if we have this product existing in this batch
-            for(ProductVO item : hydratedBatchVO.getProduct_set()){
-
-                // if there is a match here it means the product was already in this batch and only it's attributes were edited
-                if(productresult.product_id == item.product_id && !found){
-                    hydratedBatchVO.product_set.remove(item) // remove old version of product
-                    hydratedBatchVO.product_set.add(productresult)
-                    batchVO.setUpdateTimeStamp(LocalDateTime.now());
-                    batchresult =  batchRepo.save(hydratedBatchVO) // save the object
-                    found = true // stop iterating
-                }
-            }
 
 
 
@@ -271,11 +251,9 @@ public class ProductViewController {
         }
 
         model.addAttribute("product", productresult);
-        model.addAttribute("batch", batchresult);
         model.addAttribute("editmode", "no");
         model.addAttribute("customJwtParameter", customJwtParameter);
         bindProductTypes(model)
-        bindBatches(model)
         return "product/editproduct.html";
     }
 
