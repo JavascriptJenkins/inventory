@@ -1,5 +1,6 @@
-package com.techvvs.inventory.viewcontroller;
+package com.techvvs.inventory.viewcontroller
 
+import com.techvvs.inventory.dao.BatchDao;
 import com.techvvs.inventory.jparepo.BatchRepo
 import com.techvvs.inventory.jparepo.BatchTypeRepo
 import com.techvvs.inventory.jparepo.ProductRepo
@@ -41,6 +42,10 @@ public class BatchViewController {
 
     @Autowired
     BatchRepo batchRepo;
+
+    @Autowired
+    BatchDao batchDao;
+
 
     @Autowired
     BatchTypeRepo batchTypeRepo;
@@ -236,7 +241,7 @@ public class BatchViewController {
         return "service/searchbatch.html";
     }
 
-    // TODO: add the list of products to come up under this
+    // TODO: this needs to have the productPage stuff
     @GetMapping("/editform")
     String viewEditForm(
                     Model model,
@@ -351,12 +356,8 @@ public class BatchViewController {
             model.addAttribute("editmode","yes") //
         } else {
 
-            // when creating a new processData entry, set the last attempt visit to now - this may change in future
-            batchVO.setUpdateTimeStamp(LocalDateTime.now());
-
-
-
-            BatchVO result = batchRepo.save(batchVO);
+            BatchVO result = batchDao.updateBatch(batchVO);
+           // BatchVO result = batchRepo.save(batchVO);
 
             // check to see if there are files uploaded related to this batchnumber
             List<FileVO> filelist = techvvsFileHelper.getFilesByFileNumber(batchVO.getBatchnumber(), UPLOAD_DIR);
@@ -367,12 +368,14 @@ public class BatchViewController {
             }
 
             model.addAttribute("editmode","no") // after succesful edit is done we set this back to no
-            bindBatchTypes(model)
             model.addAttribute("successMessage","Record Successfully Saved.");
             model.addAttribute("batch", result);
-            bindProducts(model, page)
         }
 
+        bindProducts(model, page)
+        bindProductTypes(model)
+        //  bindFilterProducts(model, page, productTypeVO)
+        model.addAttribute("searchproducttype", new ProductTypeVO()) // this is a blank object for submitting a search term
         model.addAttribute("customJwtParameter", customJwtParameter);
         bindBatchTypes(model)
         return "service/editbatch.html";
