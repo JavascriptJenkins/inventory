@@ -143,6 +143,17 @@
 
                 <div class="row" style="margin-bottom: 5px;">
                     <div class="col-md-4" style="margin-bottom: 5px;">
+                        <label class="form-label required">Quantity</label>
+                        <input type="number" th:field="*{quantity}" class="form-control" placeholder="quantity" aria-label="quantity" readonly>
+                    </div>
+                    <div class="col-md-4" style="margin-bottom: 5px;">
+                        <label class="form-label">Price</label>
+                        <input type="number" th:field="*{price}" class="form-control" placeholder="price" aria-label="price" readonly>
+                    </div>
+                </div>
+
+                <div class="row" style="margin-bottom: 5px;">
+                    <div class="col-md-4" style="margin-bottom: 5px;">
                         <label class="form-label required">Product Type</label>
                         <select class="form-control" th:field="${product.producttypeid}"  id="producttypeid" readonly="">
                             <!--                        <option value="">select operator</option>-->
@@ -214,6 +225,18 @@
             </div>
 
 
+            <div class="row" style="margin-bottom: 5px;">
+                <div class="col-md-4" style="margin-bottom: 5px;">
+                    <label class="form-label required">Quantity</label>
+                    <input type="number" th:field="*{quantity}" class="form-control" placeholder="quantity" aria-label="quantity">
+                </div>
+                <div class="col-md-4" style="margin-bottom: 5px;">
+                    <label class="form-label">Price</label>
+                    <input type="number" th:field="*{price}" class="form-control" placeholder="price" aria-label="price">
+                </div>
+            </div>
+
+
             <br>
             <br>
 
@@ -240,6 +263,8 @@
                 </div>
 <!--                    <select  th:field="*{producttypeid}" class="form-control" placeholder="producttype" aria-label="producttype">-->
             </div>
+
+
 
 
             <br>
