@@ -1,5 +1,6 @@
 package com.techvvs.inventory.viewcontroller
 
+import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.dao.BatchDao;
 import com.techvvs.inventory.jparepo.BatchRepo
 import com.techvvs.inventory.jparepo.BatchTypeRepo
@@ -11,7 +12,8 @@ import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.ProductVO;
 import com.techvvs.inventory.modelnonpersist.FileVO;
 import com.techvvs.inventory.util.TechvvsFileHelper
-import com.techvvs.inventory.validation.ValidateBatch;
+import com.techvvs.inventory.validation.ValidateBatch
+import com.techvvs.inventory.viewcontroller.helper.BatchControllerHelper;
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -32,7 +34,9 @@ import java.time.LocalDateTime;
 @Controller
 public class BatchViewController {
 
-    private final String UPLOAD_DIR = "./uploads/";
+
+    @Autowired
+    AppConstants appConstants
 
     @Autowired
     HttpServletRequest httpServletRequest;
@@ -61,6 +65,9 @@ public class BatchViewController {
     @Autowired
     ValidateBatch validateBatch;
 
+    @Autowired
+    BatchControllerHelper batchControllerHelper;
+
 
     SecureRandom secureRandom = new SecureRandom();
 
@@ -85,87 +92,10 @@ public class BatchViewController {
         model.addAttribute("disableupload","true"); // disable uploading a file until we actually have a record submitted successfully
         model.addAttribute("customJwtParameter", customJwtParameter);
         model.addAttribute("batch", batchVOToBind);
-        bindBatchTypes(model)
+        batchControllerHelper.bindBatchTypes(model)
         return "service/batch.html";
     }
 
-    void bindBatchTypes(Model model){
-        // get all the batchtype objects and bind them to select dropdown
-        List<BatchTypeVO> batchTypeVOS = batchTypeRepo.findAll();
-        model.addAttribute("batchtypes", batchTypeVOS);
-    }
-
-    void bindProductTypes(Model model){
-        // get all the batchtype objects and bind them to select dropdown
-        List<ProductTypeVO> productTypeVOS = productTypeRepo.findAll();
-        model.addAttribute("producttypelist", productTypeVOS);
-    }
-
-
-    // todo: filter what comes back from this using
-    void bindFilterProducts(Model model, Optional<Integer> page, ProductTypeVO productTypeVO){
-
-
-        //pagination
-        int currentPage = page.orElse(0);
-        int pageSize = 5;
-        Pageable pageable;
-        if(currentPage == 0){
-            pageable = PageRequest.of(0 , pageSize);
-        } else {
-            pageable = PageRequest.of(currentPage - 1, pageSize);
-        }
-
-        Page<ProductVO> pageOfProduct = productRepo.findAllByProducttypeid(productTypeVO, pageable);
-
-
-
-        int totalPages = pageOfProduct.getTotalPages();
-
-        List<Integer> pageNumbers = new ArrayList<>();
-
-        while(totalPages > 0){
-            pageNumbers.add(totalPages);
-            totalPages = totalPages - 1;
-        }
-
-        model.addAttribute("pageNumbers", pageNumbers);
-        model.addAttribute("page", currentPage);
-        model.addAttribute("size", pageOfProduct.getTotalPages());
-        model.addAttribute("productPage", pageOfProduct);
-    }
-
-
-    // todo: filter what comes back from this using
-    void bindProducts(Model model, Optional<Integer> page){
-
-
-        //pagination
-        int currentPage = page.orElse(0);
-        int pageSize = 5;
-        Pageable pageable;
-        if(currentPage == 0){
-            pageable = PageRequest.of(0 , pageSize);
-        } else {
-            pageable = PageRequest.of(currentPage - 1, pageSize);
-        }
-
-        Page<ProductVO> pageOfProduct = productRepo.findAll(pageable);
-
-        int totalPages = pageOfProduct.getTotalPages();
-
-        List<Integer> pageNumbers = new ArrayList<>();
-
-        while(totalPages > 0){
-            pageNumbers.add(totalPages);
-            totalPages = totalPages - 1;
-        }
-
-        model.addAttribute("pageNumbers", pageNumbers);
-        model.addAttribute("page", currentPage);
-        model.addAttribute("size", pageOfProduct.getTotalPages());
-        model.addAttribute("productPage", pageOfProduct);
-    }
 
     @GetMapping("/browseBatch")
     String browseBatch(@ModelAttribute( "batch" ) BatchVO batchVO,
@@ -253,35 +183,7 @@ public class BatchViewController {
 
     ){
 
-        System.out.println("customJwtParam on batch controller: "+customJwtParameter);
-
-        List<BatchVO> results = new ArrayList<BatchVO>();
-        if(batchnumber != null){
-            System.out.println("Searching data by batchnumber");
-            results = batchRepo.findAllByBatchnumber(Integer.valueOf(batchnumber));
-        }
-
-        // check to see if there are files uploaded related to this batchnumber
-        List<FileVO> filelist = techvvsFileHelper.getFilesByFileNumber(Integer.valueOf(batchnumber), UPLOAD_DIR);
-
-        if(filelist.size() > 0){
-            model.addAttribute("filelist", filelist);
-        } else {
-            model.addAttribute("filelist", null);
-        }
-
-        if("yes".equals(editmode)){
-            model.addAttribute("editmode",editmode)
-        } else {
-            model.addAttribute("editmode","no")
-        }
-
-        model.addAttribute("customJwtParameter", customJwtParameter);
-        model.addAttribute("batch", results.get(0));
-        bindBatchTypes(model)
-        bindProductTypes(model)
-        bindProducts(model, page)
-        model.addAttribute("searchproducttype", new ProductTypeVO()) // this is a blank object for submitting a search term
+        model = batchControllerHelper.processModel(model, customJwtParameter, batchnumber, editmode, page,null , false);
         return "service/editbatch.html";
     }
 
@@ -297,37 +199,7 @@ public class BatchViewController {
 
     ){
 
-        System.out.println("customJwtParam on batch controller: "+customJwtParameter);
-
-        List<BatchVO> results = new ArrayList<BatchVO>();
-        if(batchnumber != null){
-            System.out.println("Searching data by batchnumber");
-            results = batchRepo.findAllByBatchnumber(Integer.valueOf(batchnumber));
-        }
-
-        // check to see if there are files uploaded related to this batchnumber
-        List<FileVO> filelist = techvvsFileHelper.getFilesByFileNumber(Integer.valueOf(batchnumber), UPLOAD_DIR);
-
-        if(filelist.size() > 0){
-            model.addAttribute("filelist", filelist);
-        } else {
-            model.addAttribute("filelist", null);
-        }
-
-        if("yes".equals(editmode)){
-            model.addAttribute("editmode",editmode)
-        } else {
-            model.addAttribute("editmode","no")
-        }
-
-        model.addAttribute("customJwtParameter", customJwtParameter);
-        model.addAttribute("batch", results.get(0));
-        bindBatchTypes(model)
-        bindProductTypes(model)
-     //   bindProducts(model, page)
-        bindFilterProducts(model, page, productTypeVO)
-
-        model.addAttribute("searchproducttype", productTypeVO) // this is a blank object for submitting a search term
+        model = batchControllerHelper.processModel(model, customJwtParameter, batchnumber, editmode, page, productTypeVO, true);
         return "service/editbatch.html";
     }
 
@@ -360,7 +232,7 @@ public class BatchViewController {
            // BatchVO result = batchRepo.save(batchVO);
 
             // check to see if there are files uploaded related to this batchnumber
-            List<FileVO> filelist = techvvsFileHelper.getFilesByFileNumber(batchVO.getBatchnumber(), UPLOAD_DIR);
+            List<FileVO> filelist = techvvsFileHelper.getFilesByFileNumber(batchVO.getBatchnumber(), appConstants.UPLOAD_DIR);
             if(filelist.size() > 0){
                 model.addAttribute("filelist", filelist);
             } else {
@@ -372,12 +244,12 @@ public class BatchViewController {
             model.addAttribute("batch", result);
         }
 
-        bindProducts(model, page)
-        bindProductTypes(model)
+        batchControllerHelper.bindProducts(model, page)
+        batchControllerHelper.bindProductTypes(model)
         //  bindFilterProducts(model, page, productTypeVO)
         model.addAttribute("searchproducttype", new ProductTypeVO()) // this is a blank object for submitting a search term
         model.addAttribute("customJwtParameter", customJwtParameter);
-        bindBatchTypes(model)
+        batchControllerHelper.bindBatchTypes(model)
         return "service/editbatch.html";
     }
 
@@ -416,7 +288,7 @@ public class BatchViewController {
         }
 
         model.addAttribute("customJwtParameter", customJwtParameter);
-        bindBatchTypes(model)
+        batchControllerHelper.bindBatchTypes(model)
         return "service/batch.html";
     }
 
