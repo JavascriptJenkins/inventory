@@ -1,6 +1,5 @@
 package com.techvvs.inventory.jparepo;
 
-import com.techvvs.inventory.model.BatchVO;
 import com.techvvs.inventory.model.ProductTypeVO;
 import com.techvvs.inventory.model.ProductVO;
 import org.springframework.data.domain.Page;

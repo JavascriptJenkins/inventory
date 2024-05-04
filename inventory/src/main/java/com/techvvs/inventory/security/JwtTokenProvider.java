@@ -148,13 +148,13 @@ public class JwtTokenProvider {
     return null;
   }
 
-  public String resolveTokenFromHiddenCustomParam(HttpServletRequest req) {
-
-    Object rerqatt = req.getAttribute("customJwtParameter");
-
-    return null;
-    // return String.valueOf(req.getAttribute("_csrf"));
-  }
+//  public String resolveTokenFromHiddenCustomParam(HttpServletRequest req) {
+//
+//    Object rerqatt = req.getAttribute("customJwtParameter");
+//
+//    return null;
+//    // return String.valueOf(req.getAttribute("_csrf"));
+//  }
 
   public String resolveTokenFromCSFR(HttpServletRequest req) {
 

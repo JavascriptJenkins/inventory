@@ -15,9 +15,9 @@
 	<name>inventory</name>
 	<description>Track Student enrollment </description>
 	<properties>
-		<java.version>11</java.version>
-		<maven.compiler.source>11</maven.compiler.source>
-		<maven.compiler.target>11</maven.compiler.target>
+		<java.version>17</java.version>
+		<maven.compiler.source>17</maven.compiler.source>
+		<maven.compiler.target>17</maven.compiler.target>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -29,6 +29,15 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
+
+		<!-- We are using this to connect to a Milvus Database -->
+		<!-- https://mvnrepository.com/artifact/org.springframework.ai/spring-ai-milvus-store-spring-boot-starter -->
+		<dependency>
+			<groupId>org.springframework.ai</groupId>
+			<artifactId>spring-ai-milvus-store-spring-boot-starter</artifactId>
+			<version>0.8.1</version>
+		</dependency>
+
 
 		<!-- this is needed to connect to mysql database-->
 <!--		<dependency>-->
@@ -166,25 +175,22 @@
 			<version>1.1.0</version>
 		</dependency>
 
-
-		<!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-devtools -->
 <!--		<dependency>-->
-<!--			<groupId>org.springframework.boot</groupId>-->
-<!--			<artifactId>spring-boot-devtools</artifactId>-->
-<!--			<version>2.5.5</version>-->
+<!--			<groupId>org.codehaus.groovy</groupId>-->
+<!--			<artifactId>groovy-all</artifactId>-->
+<!--			<version>3.0.15</version>-->
+<!--			<type>pom</type>-->
 <!--		</dependency>-->
 
+		<!-- https://mvnrepository.com/artifact/org.apache.groovy/groovy-all -->
 		<dependency>
-			<groupId>org.codehaus.groovy</groupId>
+			<groupId>org.apache.groovy</groupId>
 			<artifactId>groovy-all</artifactId>
-			<version>3.0.15</version>
+			<version>5.0.0-alpha-8</version>
 			<type>pom</type>
 		</dependency>
-		<!--		<dependency>-->
-		<!--			<groupId>org.codehaus.groovy</groupId>-->
-		<!--			<artifactId>groovy-backports-compat23</artifactId>-->
-		<!--			<version>2.4.5</version>-->
-		<!--		</dependency>-->
+
+
 		<!-- https://mvnrepository.com/artifact/org.spockframework/spock-core -->
 		<dependency>
 			<groupId>org.spockframework</groupId>
@@ -218,7 +224,8 @@
 					<dependency>
 						<groupId>org.codehaus.groovy</groupId>
 						<artifactId>groovy-eclipse-batch</artifactId>
-						<version>3.0.8-01</version>
+						<version>4.0.21-03</version><!-- "01" for JDK 8; "02" for JDK 11; "03" for JDK 17+ -->
+<!--						<version>3.0.8-01</version>-->
 					</dependency>
 				</dependencies>
 			</plugin>
@@ -307,5 +314,22 @@
 		</pluginRepository>
 
 	</pluginRepositories>
+
+	<repositories>
+		<!-- Your repositories go here -->
+
+		<repository>
+			<id>spring</id>
+			<url>https://repo.spring.io/milestone/</url>
+		</repository>
+
+		<repository>
+			<id>central</id>
+			<url>https://repo.maven.apache.org/maven2</url>
+		</repository>
+
+
+	</repositories>
+
 
 </project>
