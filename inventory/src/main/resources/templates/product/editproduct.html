@@ -95,6 +95,13 @@
 
                 <div class="row" style="margin-bottom: 5px;">
                     <div class="col-md-4" style="margin-bottom: 5px;">
+                        <label class="form-label">Sell Price</label>
+                        <input type="number" th:field="*{sellPrice}" class="form-control" placeholder="sell price" aria-label="sell price" readonly>
+                    </div>
+                </div>
+
+                <div class="row" style="margin-bottom: 5px;">
+                    <div class="col-md-4" style="margin-bottom: 5px;">
                         <label class="form-label required">Product Type</label>
                         <select class="form-control" th:field="${product.producttypeid}"  id="producttypeid" readonly="">
                             <!--                        <option value="">select operator</option>-->
@@ -175,6 +182,13 @@
                         <input type="number" th:field="*{price}" class="form-control" placeholder="price" aria-label="price">
                     </div>
                 </div>
+
+            <div class="row" style="margin-bottom: 5px;">
+                <div class="col-md-4" style="margin-bottom: 5px;">
+                    <label class="form-label">Sell Price</label>
+                    <input type="number" th:field="*{sellPrice}" class="form-control" placeholder="sell price" aria-label="sell price">
+                </div>
+            </div>
 
 
                 <br>
@@ -267,6 +281,7 @@
                         <input type="hidden" th:field="*{notes}">
                         <input type="hidden" th:field="*{updateTimeStamp}">
                         <input type="hidden" th:field="*{createTimeStamp}">
+                        <input type="hidden" th:field="*{sellPrice}">
                     </div>
                     <br>
 
