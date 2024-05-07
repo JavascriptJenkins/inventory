@@ -23,7 +23,7 @@ import java.io.IOException;
 class BarcodeGenerator {
 
 
-        void generateBarcodes() throws IOException {
+        void generateBarcodes(String filenameExtension) throws IOException {
 
 
 
@@ -46,7 +46,7 @@ class BarcodeGenerator {
                             float x = leftMargin + col * labelWidth;
                             float y = PDRectangle.LETTER.getHeight() - topMargin - (row + 1) * labelHeight;
 
-                            String barcodeData = generateBarcodeData(row, col); // Example method to generate barcode data
+                            String barcodeData = generateBarcodeData(row, col, filenameExtension); // Example method to generate barcode data
                             BufferedImage barcodeImage = generateUPCABarcodeImage(barcodeData, labelWidth, labelHeight);
 
                             // Convert BufferedImage to PDImageXObject
@@ -63,7 +63,7 @@ class BarcodeGenerator {
             //                // Close the content stream
             contentStream.close();
                 // Save the PDF document
-                document.save(new File("multiple_upc_barcodes.pdf"));
+                document.save(new File("multiple_upc_barcodes+"+filenameExtension+".pdf"));
 
 
 
@@ -103,9 +103,9 @@ class BarcodeGenerator {
 
 
 
-    private static String generateBarcodeData(int row, int col) {
+    private static String generateBarcodeData(int row, int col, String filenameExtension) {
         // Example method to generate unique barcode data based on row and column
-        String baseData = "123456"; // Base data for the barcode
+        String baseData = "12345"+filenameExtension; // Base data for the barcode
         String rowColData = String.format("%02d%02d", row, col); // Row and column indices padded with leading zeros
 
         // Combine base data with row and column data
