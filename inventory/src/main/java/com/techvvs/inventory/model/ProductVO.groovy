@@ -25,6 +25,8 @@ public class ProductVO implements Serializable {
     @JsonProperty
     Integer quantity;
     @JsonProperty
+    Integer quantityremaining;
+    @JsonProperty
     String notes
     @JsonProperty
     String name;
