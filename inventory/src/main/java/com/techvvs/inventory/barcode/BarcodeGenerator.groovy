@@ -135,11 +135,13 @@ class BarcodeGenerator {
 
     private static BufferedImage generateUPCABarcodeImage(String barcodeData, float width, float height) {
         UPCABean bean = new UPCABean();
-        bean.setModuleWidth(0.3); // Adjust module width as needed
+        bean.setModuleWidth(0.2); // Adjust module width as needed
         bean.setBarHeight(10f); // Adjust bar height as needed
+        bean.setQuietZone(5f)
+//        bean.setVerticalQuietZone(10f)
 
 //        BitmapCanvasProvider canvas = new BitmapCanvasProvider(width, height, BufferedImage.TYPE_BYTE_BINARY, false, 0);
-        BitmapCanvasProvider canvas = new BitmapCanvasProvider(160, BufferedImage.TYPE_BYTE_BINARY, false, 0);
+        BitmapCanvasProvider canvas = new BitmapCanvasProvider(260, BufferedImage.TYPE_BYTE_BINARY, false, 0);
 
         bean.generateBarcode(canvas, barcodeData);
 
