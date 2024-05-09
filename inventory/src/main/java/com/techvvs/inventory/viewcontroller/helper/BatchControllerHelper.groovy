@@ -88,8 +88,21 @@ class BatchControllerHelper {
                 totalIndoorQuantity = productVO.quantityremaining + totalIndoorQuantity
             }
 
+            // todo: move this to database inserts instead
             // this is assuming quantity is not boxes of product but individual products
-            batchValueTotal = (Integer.valueOf(productVO.sellPrice) * Integer.valueOf(productVO.quantity)) + batchValueTotal
+            if(productVO.price == null){
+                productVO.price = "0"
+            }
+
+            if(productVO.sellPrice == null){
+                productVO.sellPrice = 0
+            }
+
+            if(productVO.quantityremaining == null){
+                productVO.quantityremaining = 0
+            }
+
+            batchValueTotal = (Integer.valueOf(productVO?.sellPrice) * Integer.valueOf(productVO.quantity)) + batchValueTotal
             batchValueRemainingTotal = (Integer.valueOf(productVO.sellPrice) * productVO.quantityremaining) + batchValueRemainingTotal
         }
 
