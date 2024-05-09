@@ -71,6 +71,32 @@ class BatchControllerHelper {
     }
 
 
+    void calculateStaticPageData(Model model, BatchVO batchVO){
+
+        // todo: map these id's better?
+        int INDOOR_PRODUCT_TYPE_ID = 35;
+        int totalIndoorQuantityRemaining = 0;
+        int batchValueTotal = 0;
+        int batchValueRemainingTotal = 0;
+        int totalCartQuantityRemaining = 0;
+        int totalEdibleQuantityRemaining = 0;
+        for(ProductVO productVO : batchVO.product_set){
+            // calculate indoor quantity
+            if(INDOOR_PRODUCT_TYPE_ID == productVO.producttypeid.producttypeid){
+                totalIndoorQuantityRemaining = productVO.quantity + totalIndoorQuantityRemaining
+            }
+
+            // this is assuming quantity is not boxes of product but individual products
+            batchValueTotal = (Integer.valueOf(productVO.sellPrice) * Integer.valueOf(productVO.quantity)) + batchValueTotal
+            batchValueRemainingTotal = (Integer.valueOf(productVO.sellPrice) * productVO.quantityremaining) + batchValueRemainingTotal
+        }
+
+
+        model.addAttribute("totalIndoorQuantityRemaining", totalIndoorQuantityRemaining)
+        model.addAttribute("batchValueTotal", batchValueTotal)
+        model.addAttribute("batchValueRemainingTotal", batchValueRemainingTotal)
+
+    }
 
 
     void bindCommonElements(Model model, String customJwtParameter, String batchnumber, String editmode){
@@ -98,12 +124,15 @@ class BatchControllerHelper {
             model.addAttribute("editmode","no")
         }
 
+
         String[] options = ["5", "10", "20", "100", "1000"]
         model.addAttribute("options", options);
         model.addAttribute("customJwtParameter", customJwtParameter);
         model.addAttribute("batch", results.get(0));
         bindBatchTypes(model)
         bindProductTypes(model)
+        // once products are bound, add the static data
+        calculateStaticPageData(model, results.get(0))
     }
 
 

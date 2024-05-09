@@ -29,6 +29,10 @@
 </head>
 <body>
 
+<!--model.addAttribute("totalIndoorQuantityRemaining", totalIndoorQuantityRemaining)-->
+<!--model.addAttribute("batchValueTotal", batchValueTotal)-->
+<!--model.addAttribute("batchValueRemainingTotal", batchValueRemainingTotal)-->
+
 
 
 <div th:insert="auth/navbar.html :: navbarfragment"> </div>
@@ -38,6 +42,17 @@
 
 
     <div class="alert alert-primary" role="alert" >Edit Batch Data</div>
+
+    <div class="row" style="margin-bottom: 5px;">
+
+        <label class="form-label"><b>Total Indoor Units</b></label>
+        <div th:text="${totalIndoorQuantityRemaining}"> </div>
+        <label class="form-label"><b>Value of Total Original Batch</b></label>
+        <div th:text="${batchValueTotal}"> </div>
+        <label class="form-label"><b>Value of Remaining Batch</b></label>
+        <div th:text="${batchValueRemainingTotal}"> </div>
+
+    </div>
     <br>
 
 
