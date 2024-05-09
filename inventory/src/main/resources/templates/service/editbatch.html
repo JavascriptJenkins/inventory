@@ -66,6 +66,26 @@
         </form>
 
 
+        <!-- Make a form that sends a product similarity search term to the server -->
+        <form th:action="@{/newbatch/likesearch?batchnumber=__${batch.batchnumber}__&customJwtParameter=__${customJwtParameter}__&editmode=no&size=__${#lists.size(productPage.content)}__&page=1}" th:object="${searchproducttype}" method="post">
+            Enter one or more search fields to find records
+            <!--            <div class="row">-->
+            <!--                <div class="col" style="margin-bottom: 5px;">-->
+            <!--                    <input type="text" th:field="*{producttypeid}" class="form-control" placeholder="producttypeid" aria-label="producttypeid">-->
+            <!--                </div>-->
+            <!--            </div>-->
+
+            <label class="form-label required">Product Name Search</label>
+            <div class="col-sm-2" style="margin-bottom: 5px;">
+                <label class="form-label"><b>Product Name</b></label>
+                <input type="text" th:field="*{name}" class="form-control" placeholder="name" aria-label="name">
+            </div>
+
+
+            <button style="margin-top:5px;" type="submit" class="btn btn-primary">Filter Products By Name</button>
+        </form>
+
+
             <form th:action="@{/newbatch/createNewBatch?customJwtParameter=__${customJwtParameter}__}" th:object="${batch}" method="post">
                 <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
                 <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>

@@ -49,15 +49,19 @@ class BatchControllerHelper {
                        String editmode,
                        Optional<Integer> page,
                        ProductTypeVO productTypeVO,
-                       boolean isFilteredView
+                       boolean isFilteredView,
+                       boolean isProductNameLikeSearch
     ){
 
         bindCommonElements(model, customJwtParameter, batchnumber, editmode)
 
-        if(isFilteredView){
+        if(isFilteredView && !isProductNameLikeSearch){
             bindFilterProducts(model, page, productTypeVO)
             model.addAttribute("searchproducttype", productTypeVO) // this is a blank object for submitting a search term
 
+        } else if (isFilteredView && isProductNameLikeSearch){
+            bindFilterProductsLikeSearch(model, page, productTypeVO.name)
+            model.addAttribute("searchproducttype", productTypeVO) // this is a blank object for submitting a search term
         } else {
             bindProducts(model, page)
             model.addAttribute("searchproducttype", new ProductTypeVO()) // this is a blank object for submitting a search term
@@ -126,6 +130,37 @@ class BatchControllerHelper {
         }
 
         Page<ProductVO> pageOfProduct = productRepo.findAll(pageable);
+
+        int totalPages = pageOfProduct.getTotalPages();
+
+        List<Integer> pageNumbers = new ArrayList<>();
+
+        while(totalPages > 0){
+            pageNumbers.add(totalPages);
+            totalPages = totalPages - 1;
+        }
+
+        model.addAttribute("pageNumbers", pageNumbers);
+        model.addAttribute("page", currentPage);
+        model.addAttribute("size", pageOfProduct.getTotalPages());
+        model.addAttribute("productPage", pageOfProduct);
+    }
+
+    void bindFilterProductsLikeSearch(Model model, Optional<Integer> page, String name){
+
+
+        //pagination
+        int currentPage = page.orElse(0);
+        int pageSize = 5;
+        Pageable pageable;
+        if(currentPage == 0){
+            pageable = PageRequest.of(0 , pageSize);
+        } else {
+            pageable = PageRequest.of(currentPage - 1, pageSize);
+        }
+
+        Page<ProductVO> pageOfProduct = productRepo.findAllByNameContaining(name, pageable);
+
 
         int totalPages = pageOfProduct.getTotalPages();
 

@@ -183,7 +183,7 @@ public class BatchViewController {
 
     ){
 
-        model = batchControllerHelper.processModel(model, customJwtParameter, batchnumber, editmode, page,null , false);
+        model = batchControllerHelper.processModel(model, customJwtParameter, batchnumber, editmode, page, null, false , false);
         return "service/editbatch.html";
     }
 
@@ -199,7 +199,23 @@ public class BatchViewController {
 
     ){
 
-        model = batchControllerHelper.processModel(model, customJwtParameter, batchnumber, editmode, page, productTypeVO, true);
+        model = batchControllerHelper.processModel(model, customJwtParameter, batchnumber, editmode, page, productTypeVO, true, false);
+        return "service/editbatch.html";
+    }
+
+    @PostMapping("/likesearch")
+    String viewLikeSearch(
+            Model model,
+            @ModelAttribute( "searchproducttype" ) ProductTypeVO productTypeVO,
+            @RequestParam("customJwtParameter") String customJwtParameter,
+            @RequestParam("editmode") String editmode,
+            @RequestParam("batchnumber") String batchnumber,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size
+
+    ){
+
+        model = batchControllerHelper.processModel(model, customJwtParameter, batchnumber, editmode, page, productTypeVO, true, true);
         return "service/editbatch.html";
     }
 
