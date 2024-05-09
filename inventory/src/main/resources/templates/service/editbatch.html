@@ -85,8 +85,29 @@
             <button style="margin-top:5px;" type="submit" class="btn btn-primary">Filter Products By Name</button>
         </form>
 
+        <!-- Make a form that sends a search term to the server -->
+        <form th:action="@{/newbatch/filtereditform?batchnumber=__${batch.batchnumber}__&customJwtParameter=__${customJwtParameter}__&editmode=no&size=__${#lists.size(productPage.content)}__&page=1}" th:object="${searchproducttype}" method="post">
+            Enter one or more search fields to find records
+            <!--            <div class="row">-->
+            <!--                <div class="col" style="margin-bottom: 5px;">-->
+            <!--                    <input type="text" th:field="*{producttypeid}" class="form-control" placeholder="producttypeid" aria-label="producttypeid">-->
+            <!--                </div>-->
+            <!--            </div>-->
 
-            <form th:action="@{/newbatch/createNewBatch?customJwtParameter=__${customJwtParameter}__}" th:object="${batch}" method="post">
+            <label class="form-label required">Record Size</label>
+            <select class="form-control" th:field="${searchproducttype.pagesize}"  >
+                <!--                        <option value="">select operator</option>-->
+                <!--                        <option th:each="operator : ${}" th:value="${operator.id}" th:text="${operator.operatorName}"></option>-->
+                <option th:each="option : ${options}" th:value="${option}" th:text="${option}"></option>
+
+            </select>
+
+            <button style="margin-top:5px;" type="submit" class="btn btn-primary">Filter by Record Size</button>
+        </form>
+
+
+
+        <form th:action="@{/newbatch/createNewBatch?customJwtParameter=__${customJwtParameter}__}" th:object="${batch}" method="post">
                 <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
                 <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
 

@@ -51,19 +51,20 @@ class BatchControllerHelper {
                        ProductTypeVO productTypeVO,
                        boolean isFilteredView,
                        boolean isProductNameLikeSearch
+
     ){
 
         bindCommonElements(model, customJwtParameter, batchnumber, editmode)
 
-        if(isFilteredView && !isProductNameLikeSearch){
+        if(isFilteredView && !isProductNameLikeSearch && productTypeVO.getProducttypeid() != null){
             bindFilterProducts(model, page, productTypeVO)
             model.addAttribute("searchproducttype", productTypeVO) // this is a blank object for submitting a search term
 
         } else if (isFilteredView && isProductNameLikeSearch){
-            bindFilterProductsLikeSearch(model, page, productTypeVO.name)
+            bindFilterProductsLikeSearch(model, page, productTypeVO.name, productTypeVO)
             model.addAttribute("searchproducttype", productTypeVO) // this is a blank object for submitting a search term
         } else {
-            bindProducts(model, page)
+            bindProducts(model, page, productTypeVO)
             model.addAttribute("searchproducttype", new ProductTypeVO()) // this is a blank object for submitting a search term
         }
 
@@ -97,6 +98,8 @@ class BatchControllerHelper {
             model.addAttribute("editmode","no")
         }
 
+        String[] options = ["5", "10", "20", "100", "1000"]
+        model.addAttribute("options", options);
         model.addAttribute("customJwtParameter", customJwtParameter);
         model.addAttribute("batch", results.get(0));
         bindBatchTypes(model)
@@ -116,12 +119,12 @@ class BatchControllerHelper {
         model.addAttribute("producttypelist", productTypeVOS);
     }
 
-    void bindProducts(Model model, Optional<Integer> page){
+    void bindProducts(Model model, Optional<Integer> page,ProductTypeVO productTypeVO){
 
 
         //pagination
         int currentPage = page.orElse(0);
-        int pageSize = 5;
+        int pageSize = productTypeVO?.pagesize == null ? 5 : productTypeVO.pagesize;
         Pageable pageable;
         if(currentPage == 0){
             pageable = PageRequest.of(0 , pageSize);
@@ -146,12 +149,12 @@ class BatchControllerHelper {
         model.addAttribute("productPage", pageOfProduct);
     }
 
-    void bindFilterProductsLikeSearch(Model model, Optional<Integer> page, String name){
+    void bindFilterProductsLikeSearch(Model model, Optional<Integer> page, String name, ProductTypeVO productTypeVO){
 
 
         //pagination
         int currentPage = page.orElse(0);
-        int pageSize = 5;
+        int pageSize = productTypeVO?.pagesize == null ? 5 : productTypeVO.pagesize;
         Pageable pageable;
         if(currentPage == 0){
             pageable = PageRequest.of(0 , pageSize);
@@ -183,7 +186,7 @@ class BatchControllerHelper {
 
         //pagination
         int currentPage = page.orElse(0);
-        int pageSize = 5;
+        int pageSize = productTypeVO?.pagesize == null ? 5 : productTypeVO.pagesize;;
         Pageable pageable;
         if(currentPage == 0){
             pageable = PageRequest.of(0 , pageSize);

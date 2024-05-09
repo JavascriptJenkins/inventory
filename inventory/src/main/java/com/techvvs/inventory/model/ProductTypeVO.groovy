@@ -25,5 +25,8 @@ class ProductTypeVO implements Serializable {
     @JsonProperty
     LocalDateTime createTimeStamp;
 
+    @Transient
+    Integer pagesize
+
 }
 
