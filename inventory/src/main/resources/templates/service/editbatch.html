@@ -88,7 +88,7 @@
                             <th scope="col">#</th>
                             <th scope="col">Product Number</th>
                             <th scope="col">Product Name</th>
-                            <th scope="col">Product Desc</th>
+                            <th scope="col">Quantity Remaining</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -99,7 +99,7 @@
                             <td th:text="${product.product_id}"></td>
                             <td><a th:href="@{/product/editform?productnumber=__${product.productnumber}__&customJwtParameter=__${customJwtParameter}__&editmode=no}" th:text="${product.productnumber}"></a></td>
                             <td th:text="${product.name}"></td>
-                            <td th:text="${product.description}"></td>
+                            <td th:text="${product.quantityremaining}"></td>
 
                         </tr>
 
