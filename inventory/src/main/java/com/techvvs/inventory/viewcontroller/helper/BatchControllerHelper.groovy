@@ -76,6 +76,7 @@ class BatchControllerHelper {
         // todo: map these id's better?
         int INDOOR_PRODUCT_TYPE_ID = 35;
         int totalIndoorQuantityRemaining = 0;
+        int totalIndoorQuantity = 0;
         int batchValueTotal = 0;
         int batchValueRemainingTotal = 0;
         int totalCartQuantityRemaining = 0;
@@ -84,6 +85,7 @@ class BatchControllerHelper {
             // calculate indoor quantity
             if(INDOOR_PRODUCT_TYPE_ID == productVO.producttypeid.producttypeid){
                 totalIndoorQuantityRemaining = productVO.quantity + totalIndoorQuantityRemaining
+                totalIndoorQuantity = productVO.quantityremaining + totalIndoorQuantity
             }
 
             // this is assuming quantity is not boxes of product but individual products
@@ -92,6 +94,7 @@ class BatchControllerHelper {
         }
 
 
+        model.addAttribute("totalIndoorQuantity", totalIndoorQuantity)
         model.addAttribute("totalIndoorQuantityRemaining", totalIndoorQuantityRemaining)
         model.addAttribute("batchValueTotal", batchValueTotal)
         model.addAttribute("batchValueRemainingTotal", batchValueRemainingTotal)
