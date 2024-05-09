@@ -33,7 +33,6 @@ class ValidateAuth {
         if (systemUserDAO.getEmail().length() < 6
                 || systemUserDAO.getEmail().length() > 200
                 || !systemUserDAO.getEmail().contains("@")
-                || !systemUserDAO.getEmail().contains(".com")
         // todo: write method here to make sure there is text between @ and .com in the string
 
         ) {
@@ -63,7 +62,6 @@ class ValidateAuth {
         if (systemUserDAO.getEmail().length() < 6
                 || systemUserDAO.getEmail().length() > 200
                 || !systemUserDAO.getEmail().contains("@")
-                || !systemUserDAO.getEmail().contains(".com")
 
         ) {
             return "email must be between 6-200 characters and contain @ and .com";
@@ -92,7 +90,6 @@ class ValidateAuth {
         if (systemUserDAO.getEmail().length() < 6
                 || systemUserDAO.getEmail().length() > 200
                 || !systemUserDAO.getEmail().contains("@")
-                || !systemUserDAO.getEmail().contains(".com")
 
         ) {
             return "email must be between 6-200 characters and contain @ and .com";
