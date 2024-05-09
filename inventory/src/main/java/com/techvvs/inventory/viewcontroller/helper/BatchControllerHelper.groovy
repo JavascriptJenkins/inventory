@@ -82,11 +82,6 @@ class BatchControllerHelper {
         int totalCartQuantityRemaining = 0;
         int totalEdibleQuantityRemaining = 0;
         for(ProductVO productVO : batchVO.product_set){
-            // calculate indoor quantity
-            if(INDOOR_PRODUCT_TYPE_ID == productVO.producttypeid.producttypeid){
-                totalIndoorQuantityRemaining = productVO.quantity + totalIndoorQuantityRemaining
-                totalIndoorQuantity = productVO.quantityremaining + totalIndoorQuantity
-            }
 
             // todo: move this to database inserts instead
             // this is assuming quantity is not boxes of product but individual products
@@ -101,6 +96,14 @@ class BatchControllerHelper {
             if(productVO.quantityremaining == null){
                 productVO.quantityremaining = 0
             }
+
+
+            // calculate indoor quantity
+            if(INDOOR_PRODUCT_TYPE_ID == productVO.producttypeid.producttypeid){
+                totalIndoorQuantityRemaining = productVO.quantity + totalIndoorQuantityRemaining
+                totalIndoorQuantity = productVO.quantityremaining + totalIndoorQuantity
+            }
+
 
             batchValueTotal = (Integer.valueOf(productVO?.sellPrice) * Integer.valueOf(productVO.quantity)) + batchValueTotal
             batchValueRemainingTotal = (Integer.valueOf(productVO.sellPrice) * productVO.quantityremaining) + batchValueRemainingTotal
