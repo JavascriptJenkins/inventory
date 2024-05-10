@@ -11,6 +11,7 @@ import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.modelnonpersist.FileVO
 import com.techvvs.inventory.util.TechvvsFileHelper
+import com.techvvs.inventory.viewcontroller.constants.ControllerConstants
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -54,18 +55,22 @@ class BatchControllerHelper {
 
     ){
 
-        bindCommonElements(model, customJwtParameter, batchnumber, editmode)
+        bindCommonElements(model, customJwtParameter, batchnumber, editmode);
 
-        if(isFilteredView && !isProductNameLikeSearch && productTypeVO.getProducttypeid() != null){
-            bindFilterProducts(model, page, productTypeVO)
-            model.addAttribute("searchproducttype", productTypeVO) // this is a blank object for submitting a search term
+        boolean hasProductTypeId = productTypeVO?.producttypeid != null
 
-        } else if (isFilteredView && isProductNameLikeSearch){
-            bindFilterProductsLikeSearch(model, page, productTypeVO.name, productTypeVO)
-            model.addAttribute("searchproducttype", productTypeVO) // this is a blank object for submitting a search term
+        if (isFilteredView) {
+            if (isProductNameLikeSearch) {
+                bindFilterProductsLikeSearch(model, page, productTypeVO.name, productTypeVO);
+            } else if (hasProductTypeId) {
+                bindFilterProducts(model, page, productTypeVO);
+            } else {
+                bindProducts(model, page, productTypeVO);
+            }
+            model.addAttribute("searchproducttype", productTypeVO); // use the existing object for submitting a search term
         } else {
-            bindProducts(model, page, productTypeVO)
-            model.addAttribute("searchproducttype", new ProductTypeVO()) // this is a blank object for submitting a search term
+            bindProducts(model, page, productTypeVO);
+            model.addAttribute("searchproducttype", new ProductTypeVO()); // create a new object for submitting a search term
         }
 
     }
@@ -144,8 +149,9 @@ class BatchControllerHelper {
         }
 
 
-        String[] options = ["5", "10", "20", "100", "1000"]
-        model.addAttribute("options", options);
+
+        model.addAttribute("options", ["5", "10", "20", "100", "1000"]);
+        model.addAttribute("menuoptions", ["All","Indoor"]);
         model.addAttribute("customJwtParameter", customJwtParameter);
         model.addAttribute("batch", results.get(0));
         bindBatchTypes(model)

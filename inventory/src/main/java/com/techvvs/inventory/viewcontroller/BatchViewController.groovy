@@ -203,6 +203,24 @@ public class BatchViewController {
         return "service/editbatch.html";
     }
 
+    //    This will text the user a link to a menu pdf they can send people
+    @PostMapping("/printmenu")
+    String printmenu(
+            Model model,
+            @ModelAttribute( "searchproducttype" ) ProductTypeVO productTypeVO,
+            @RequestParam("customJwtParameter") String customJwtParameter,
+            @RequestParam("editmode") String editmode,
+            @RequestParam("batchnumber") String batchnumber,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size
+    ){
+
+        model = batchControllerHelper.processModel(model, customJwtParameter, batchnumber, editmode, page, productTypeVO, true, false);
+        // I need to do here is build a pdf / excel document, store it in uploads folder, then send a download link back to the user
+
+        return "service/editbatch.html";
+    }
+
     @PostMapping("/likesearch")
     String viewLikeSearch(
             Model model,

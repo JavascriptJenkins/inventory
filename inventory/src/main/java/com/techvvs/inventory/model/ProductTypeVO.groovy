@@ -28,5 +28,8 @@ class ProductTypeVO implements Serializable {
     @Transient
     Integer pagesize
 
+    @Transient
+    String menutype
+
 }
 
