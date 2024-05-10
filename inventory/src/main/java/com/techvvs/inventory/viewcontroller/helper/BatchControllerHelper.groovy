@@ -11,7 +11,6 @@ import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.modelnonpersist.FileVO
 import com.techvvs.inventory.util.TechvvsFileHelper
-import com.techvvs.inventory.viewcontroller.constants.ControllerConstants
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
