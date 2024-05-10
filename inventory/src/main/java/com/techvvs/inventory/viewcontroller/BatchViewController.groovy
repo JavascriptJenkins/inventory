@@ -25,7 +25,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponse
+import java.nio.file.Files;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 
@@ -217,6 +218,11 @@ public class BatchViewController {
 
         model = batchControllerHelper.processModel(model, customJwtParameter, batchnumber, editmode, page, productTypeVO, true, false);
         // I need to do here is build a pdf / excel document, store it in uploads folder, then send a download link back to the user
+
+
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        batchControllerHelper.sendTextMessageWithDownloadLink(model, authentication.getPrincipal().username, batchnumber)
 
         return "service/editbatch.html";
     }

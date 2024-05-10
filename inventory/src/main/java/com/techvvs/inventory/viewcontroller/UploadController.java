@@ -212,4 +212,46 @@ public class UploadController {
 //        return "redirect: /newform/viewNewForm";
     }
 
+
+
+    // TODO: make getting a download link popup so people click a link in a popup box
+    // note: must return null otherwise file download sucks
+    @RequestMapping(value="/smsdownload", method=RequestMethod.GET)
+    public void smsdownload(@RequestParam("filename") String filename,
+                             HttpServletResponse response,
+                             @RequestParam("customJwtParameter") String customJwtParameter
+    ) {
+        File file;
+
+        try {
+
+            // todo: set .xlsx filetype here
+            if(filename.contains(".pdf")){
+                response.setContentType("application/pdf");
+            }
+
+            response.setHeader("Content-Disposition","attachment; filename="+filename);
+
+            file = new File(filename);
+
+            byte[] fileContent = Files.readAllBytes(file.toPath());
+
+            // get your file as InputStream
+            InputStream is = new ByteArrayInputStream(fileContent);
+
+            // copy it to response's OutputStream
+            org.apache.commons.io.IOUtils.copy(is, response.getOutputStream());
+            response.flushBuffer();
+
+        } catch (IOException ex) {
+            System.out.println("Error writing file to output stream. Filename was: " +filename);
+            System.out.println("Error writing file to output stream. exception: " +ex.getMessage());
+            throw new RuntimeException("IOError writing file to output stream");
+        }
+
+
+//        return "redirect: /newform/viewNewForm";
+    }
+
+
 }

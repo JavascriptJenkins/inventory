@@ -14,6 +14,7 @@ public interface BatchRepo extends JpaRepository<BatchVO, Integer> {
     List<BatchVO> findAll();
     List<BatchVO> findAllByBatchnumber(Integer batchnumber);
     BatchVO findByBatchid(Integer batchid);
+    BatchVO findByName(String name);
     List<BatchVO> findAllByName(String name);
     List<BatchVO> findAllByDescription(String name);
 

@@ -5,19 +5,26 @@ import com.techvvs.inventory.jparepo.BatchRepo
 import com.techvvs.inventory.jparepo.BatchTypeRepo
 import com.techvvs.inventory.jparepo.ProductRepo
 import com.techvvs.inventory.jparepo.ProductTypeRepo
+import com.techvvs.inventory.jparepo.SystemUserRepo
 import com.techvvs.inventory.model.BatchTypeVO
 import com.techvvs.inventory.model.BatchVO
 import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.ProductVO
+import com.techvvs.inventory.model.SystemUserDAO
 import com.techvvs.inventory.modelnonpersist.FileVO
 import com.techvvs.inventory.util.TechvvsFileHelper
+import com.techvvs.inventory.util.TwilioTextUtil
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.core.env.Environment
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
 import org.springframework.ui.Model
 
+import java.nio.file.Files
+import org.apache.poi.xssf.usermodel.XSSFWorkbook
+import org.apache.poi.ss.usermodel.*
 
 /* This class exists to keep the main batch controller code clean and avoid duplication. */
 @Component
@@ -41,6 +48,14 @@ class BatchControllerHelper {
     @Autowired
     BatchRepo batchRepo
 
+    @Autowired
+    TwilioTextUtil textUtil
+
+    @Autowired
+    Environment env
+
+    @Autowired
+    SystemUserRepo systemUserRepo
 
     // method for combining logic of editform and filtereditform
     Model processModel(Model model,
@@ -264,6 +279,65 @@ class BatchControllerHelper {
         model.addAttribute("page", currentPage);
         model.addAttribute("size", pageOfProduct.getTotalPages());
         model.addAttribute("productPage", pageOfProduct);
+    }
+
+
+    String UPLOAD_DIR = "./uploads/menus/";
+
+    void sendTextMessageWithDownloadLink(Model model, String username, String batchnumber){
+
+        BatchVO batchVO = batchRepo.findAllByBatchnumber(Integer.valueOf(batchnumber))?.get(0)
+
+        SystemUserDAO systemUserDAO = systemUserRepo.findByEmail(username)
+
+
+        if(batchVO != null && systemUserDAO != null){
+            // create the file and put it in /uploads/menus
+            String filename = createExcelFile(UPLOAD_DIR+batchVO.name+".xlsx", batchVO)
+
+            boolean isDev1 = "dev1".equals(env.getProperty("spring.profiles.active"));
+
+            // SystemUserDAO systemUserDAO, String token, boolean isDev1
+            // send a text message with a download link
+            textUtil.actuallySendOutDownloadLinkWithToken(filename, systemUserDAO, isDev1)
+        }
+
+
+
+    }
+
+
+    String createExcelFile(String filename, BatchVO batchVO) {
+
+        // Create a workbook and a sheet
+        Workbook workbook = new XSSFWorkbook()
+        Sheet sheet = workbook.createSheet("SampleSheet")
+
+        // set the column header names
+        Row row = sheet.createRow(0)
+        row.createCell(0).setCellValue("Name")
+        row.createCell(1).setCellValue("Price")
+        row.createCell(2).setCellValue("Stock")
+
+        // set the values
+        for(int i=1;i<batchVO.product_set.size();i++){
+            row = sheet.createRow(i)
+            ProductVO productVO = batchVO.product_set[i]
+            row.createCell(0).setCellValue(productVO.name)
+            row.createCell(1).setCellValue(productVO.price)
+            row.createCell(2).setCellValue(productVO.quantityremaining)
+        }
+
+
+
+        // Write the output to a file
+        FileOutputStream fileOut = new FileOutputStream(filename)
+        workbook.write(fileOut)
+        fileOut.close()
+        workbook.close()
+
+        println("Excel file '$filename' created successfully.")
+        return filename
     }
 
 }

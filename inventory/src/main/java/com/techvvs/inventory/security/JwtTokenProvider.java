@@ -51,6 +51,9 @@ public class JwtTokenProvider {
     @Value("${security.jwt.token.expire-length:86400000}")
     private long validityInMillisecondsEmailValidation = 86400000; // 24 hour
 
+  @Value("${security.jwt.token.expire-length:86400000}")
+  private long validityInMillisecondsPhoneDownload = 3600000 ; // 1 hour
+
   @Autowired
   private MyUserDetails myUserDetails;
 
@@ -78,6 +81,24 @@ public class JwtTokenProvider {
                 .signWith(SignatureAlgorithm.HS256, secretKey)//
                 .compact();
     }
+
+  // this should probably be signed with a different key than regular user tokens
+  public String createTokenForSmsDownloadLinks(String email, List<Role> roles) {
+
+    Claims claims = Jwts.claims().setSubject(email);
+    claims.put("auth", roles.stream().map(s -> new SimpleGrantedAuthority(s.getAuthority())).filter(Objects::nonNull).collect(Collectors.toList()));
+
+    Date now = new Date();
+    Date validity = new Date(now.getTime() + validityInMillisecondsPhoneDownload);
+
+    return Jwts.builder()//
+            .setClaims(claims)//
+            .setIssuedAt(now)//
+            .setExpiration(validity)//
+            .signWith(SignatureAlgorithm.HS256, secretKey)//
+            .compact();
+  }
+
 
   public String createToken(String username, List<Role> roles) {
 
