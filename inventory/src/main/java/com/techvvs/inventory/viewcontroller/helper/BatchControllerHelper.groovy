@@ -324,7 +324,7 @@ class BatchControllerHelper {
             row = sheet.createRow(i)
             ProductVO productVO = batchVO.product_set[i]
             row.createCell(0).setCellValue(productVO.name)
-            row.createCell(1).setCellValue(productVO.price)
+            row.createCell(1).setCellValue(productVO.sellPrice)
             row.createCell(2).setCellValue(productVO.quantityremaining)
         }
 
