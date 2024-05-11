@@ -246,7 +246,8 @@ public class BatchViewController {
     // todo: add the pagination crap here too
     @PostMapping ("/editBatch")
     String editBatch(@ModelAttribute( "batch" ) BatchVO batchVO,
-                                Model model,
+                     @ModelAttribute( "searchproducttype" ) ProductTypeVO productTypeVO,
+                     Model model,
                                 HttpServletResponse response,
                                 @RequestParam("customJwtParameter") String customJwtParameter,
                      @RequestParam("page") Optional<Integer> page,
@@ -284,7 +285,7 @@ public class BatchViewController {
             model.addAttribute("batch", result);
         }
 
-        batchControllerHelper.bindProducts(model, page)
+        batchControllerHelper.bindProducts(model, page, productTypeVO)
         batchControllerHelper.bindProductTypes(model)
         //  bindFilterProducts(model, page, productTypeVO)
         model.addAttribute("searchproducttype", new ProductTypeVO()) // this is a blank object for submitting a search term
