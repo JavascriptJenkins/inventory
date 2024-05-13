@@ -317,9 +317,13 @@ class BatchControllerHelper {
         Workbook workbook = new XSSFWorkbook()
         Sheet sheet = workbook.createSheet("SampleSheet")
 
+        // NOTE: default column width is 2048. (256*8)
+        // TODO: write code to set column width based on character size
+
         // set the column header names
         Row row = sheet.createRow(0)
         row.createCell(0).setCellValue("Name")
+       // sheet.setColumnWidth(0, 8000); // Set width of the first column for name
         row.createCell(1).setCellValue("Price")
         row.createCell(2).setCellValue("Stock")
 
@@ -327,9 +331,12 @@ class BatchControllerHelper {
         for(int i=1;i<batchVO.product_set.size()+1;i++){
             row = sheet.createRow(i)
             ProductVO productVO = batchVO.product_set[i - 1] // need to subtract 1 here to account for header row at index 0
+            setColumnWidthBasedOnString(sheet, 0,productVO.name) // set width of each name cell based on length
             row.createCell(0).setCellValue(productVO.name)
             row.createCell(1).setCellValue(productVO.sellPrice)
             row.createCell(2).setCellValue(productVO.quantityremaining)
+
+
         }
 
 
@@ -342,6 +349,15 @@ class BatchControllerHelper {
 
         println("Excel file '$filename' created successfully.")
         return filename
+    }
+
+    public static void setColumnWidthBasedOnString(Sheet sheet, int columnIndex, String inputString) {
+        int stringLength = inputString.length();
+        int widthMultiplier = 256; // 1 character width = 256 units
+        int additionalSpace = 2; // Add 2 characters worth of space for padding
+        int adjustedWidth = (stringLength + additionalSpace) * widthMultiplier;
+
+        sheet.setColumnWidth(columnIndex, adjustedWidth);
     }
 
 }
