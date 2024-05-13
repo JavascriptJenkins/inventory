@@ -16,6 +16,9 @@ public class ProductVO implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     @JsonProperty
     Integer product_id;
+    @ManyToOne
+    @JoinColumn(name = "batchid")
+    BatchVO batch;
     @JsonProperty
     @OneToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name="producttypeid")

@@ -79,16 +79,22 @@ public class ProductViewController {
         model.addAttribute("product", productVOToBind);
         model.addAttribute("batch", new BatchVO()); // provide a default object for thymeleaf
         bindProductTypes(model)
-        bindBatches(model)
+        bindBatchList(model) // bind list of batches so we can assign a new product to them?
         return "product/product.html";
     }
 
 
 
-    void bindBatches(Model model){
+    void bindBatches(Model model, BatchVO batchVO){
         // get all the batch objects and bind them to select dropdown
-        List<BatchVO> batchVOS = batchRepo.findAll();
+       // List<BatchVO> batchVOS = batchRepo.findAll();
+        model.addAttribute("batch", batchVO);
+    }
+
+    void bindBatchList(Model model){
+         List<BatchVO> batchVOS = batchRepo.findAll();
         model.addAttribute("batchlist", batchVOS);
+
     }
 
 
@@ -200,8 +206,8 @@ public class ProductViewController {
         model.addAttribute("product", results.get(0));
         model.addAttribute("editmode", editmode);
         bindProductTypes(model)
-        bindBatches(model)
-        model.addAttribute("batch", new BatchVO()); // provide a default object for thymeleaf
+        bindBatches(model, results.get(0).batch)
+        //model.addAttribute("batch", new BatchVO()); // provide a default object for thymeleaf
         return "product/editproduct.html";
     }
 
@@ -234,8 +240,6 @@ public class ProductViewController {
 
 
             productresult = productDao.updateProduct(productVO)
-
-
 
 
             // check to see if there are files uploaded related to this productnumber
@@ -278,6 +282,9 @@ public class ProductViewController {
             model.addAttribute("disableupload","true"); // if there is an error submitting the new form we keep this disabled
             model.addAttribute("errorMessage",errorResult);
         } else {
+
+            productVO.setBatch(batchVO)
+
             // add the product to the database
             ProductVO result = saveNewProduct(model, productVO)
 
@@ -290,7 +297,7 @@ public class ProductViewController {
         model.addAttribute("batch",batchVO) // bind the object back to the ui
         model.addAttribute("customJwtParameter", customJwtParameter);
         bindProductTypes(model)
-        bindBatches(model)
+      //  bindBatches(model)
         return "product/product.html";
     }
 

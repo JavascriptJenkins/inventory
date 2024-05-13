@@ -131,6 +131,7 @@
                     <div class="alert alert-warning" role="alert" ><a th:href="@{/product/editform?productnumber=__${product.productnumber}__&customJwtParameter=__${customJwtParameter}__&editmode=yes}">Click here to edit this form</a>
                     </div>
                     <button style="margin-top:5px;" type="submit" class="btn btn-primary" disabled>Submit</button>
+                    <input type="hidden" th:field="*{batch}">
             </form>
 
     </div> <!-- end readonly view -->
@@ -243,6 +244,7 @@
 
 
                 <button style="margin-top:5px;" type="submit" class="btn btn-primary">Submit Edit</button>
+            <input type="hidden" th:field="*{batch}">
         </form>
 
     </div> <!-- end edit view -->

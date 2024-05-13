@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>New Checkout Data Entry</title>
+
+
+    <script
+            src="https://code.jquery.com/jquery-3.6.0.js"
+            integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="
+            crossorigin="anonymous"></script>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <!-- JavaScript Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-kQtW33rZJAHjgefvhyyzcGF3C5TFyBQBA13V1RKPf4uH+bwyzQxZ6CmMZHmNBEfJ" crossorigin="anonymous"></script>
+
+
+    <link rel="stylesheet" type="text/css" media="all" href="/css/table.css" th:href="@{/css/table.css}" />
+    <!-- Bootstrap Font Icon CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+
+    <style>
+      .required:after {
+        content:" *";
+        color: red;
+      }
+    </style>
+
+</head>
+<body>
+
+
+
+<div th:insert="auth/navbar.html :: navbarfragment"> </div>
+
+
+<div class="container">
+
+
+    <div class="alert alert-primary" role="alert" >Create a new Batch Data Form entry in the database</div>
+    <br>
+
+
+<!--    <div th:if="${filelist != null || (successMessage == 'Record Successfully Saved.')}">-->
+    <div th:if="${filelist != null || batch.createTimeStamp != null}">
+            <form th:action="@{/newbatch/createNewBatch?customJwtParameter=__${customJwtParameter}__}" th:object="${batch}" method="post">
+                <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
+                <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
+
+                <div class="row" style="margin-bottom: 5px;">
+                    <div class="col-sm-2" style="margin-bottom: 5px;">
+                        <label class="form-label"><b>Batch Number</b></label>
+                        <input type="text" th:field="*{batchnumber}" class="form-control" placeholder="batchnumber" aria-label="batchnumber" readonly>
+                    </div>
+
+                </div>
+
+                <div class="row" style="margin-bottom: 5px;">
+                    <div class="col-md-4" style="margin-bottom: 5px;">
+                        <label class="form-label required">Batch Name</label>
+                        <input type="text" th:field="*{name}" class="form-control" placeholder="name" aria-label="name" readonly>
+                    </div>
+                    <div class="col-md-4" style="margin-bottom: 5px;">
+                        <label class="form-label">Batch Description</label>
+                        <input type="text" th:field="*{description}" class="form-control" placeholder="description" aria-label="description" readonly>
+                    </div>
+                </div>
+
+                <div class="row" style="margin-bottom: 5px;">
+                    <div class="col-md-4" style="margin-bottom: 5px;">
+                        <label class="form-label required">Batch Type</label>
+                        <select class="form-control" th:field="${batch.batch_type_id}"  id="batchtypeid" readonly="">
+                            <!--                        <option value="">select operator</option>-->
+                            <!--                        <option th:each="operator : ${}" th:value="${operator.id}" th:text="${operator.operatorName}"></option>-->
+                            <option th:each="batchtype : ${batchtypes}" th:value="${batchtype.batch_type_id}" th:text="${batchtype.name}"></option>
+
+                        </select>
+                    </div>
+
+                    <br>
+                    <br>
+                    <div class="row" style="margin-bottom: 5px;">
+                        <div class="alert alert-info" role="alert" >Notes</div>
+                        <div class="col" style="margin-bottom: 5px;">
+                            <label class="form-label required">Notes</label>
+                            <textarea style="width:648px;height:163px;" th:field="*{notes}" class="form-control" placeholder="notes" aria-label="notes" readonly></textarea>
+                        </div>
+                    </div>
+                    <div class="alert alert-warning" role="alert" ><a th:href="@{/newbatch/editform?batchnumber=__${batch.batchnumber}__&customJwtParameter=__${customJwtParameter}__&editmode=yes}">Click here to edit this form</a>
+                    </div>
+                    <button style="margin-top:5px;" type="submit" class="btn btn-primary" disabled>Submit</button>
+            </form>
+
+    </div> <!-- end filelist view -->
+
+
+
+
+    <!-- if th-->
+    <div th:if="${batch.createTimeStamp == null}">
+        <form th:action="@{/newbatch/createNewBatch?customJwtParameter=__${customJwtParameter}__}" th:object="${batch}" method="post">
+            <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
+            <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
+
+            <div class="row" style="margin-bottom: 5px;">
+                <div class="col-sm-2" style="margin-bottom: 5px;">
+                    <label class="form-label"><b>Batch Number</b></label>
+                    <input type="text" th:field="*{batchnumber}" class="form-control" placeholder="batchnumber" aria-label="batchnumber" readonly>
+                </div>
+            </div>
+
+            <div class="row" style="margin-bottom: 5px;">
+                <div class="col-md-4" style="margin-bottom: 5px;">
+                    <label class="form-label required">Batch Name</label>
+                    <input type="text" th:field="*{name}" class="form-control" placeholder="name" aria-label="name">
+                </div>
+                <div class="col-md-4" style="margin-bottom: 5px;">
+                    <label class="form-label">Batch Description</label>
+                    <input type="text" th:field="*{description}" class="form-control" placeholder="description" aria-label="description">
+                </div>
+            </div>
+
+
+            <br>
+            <br>
+
+            <div class="row" style="margin-bottom: 5px;">
+                <div class="col-md-4" style="margin-bottom: 5px;">
+                    <label class="form-label required">Batch Type</label>
+                    <select class="form-control" th:field="${batch.batch_type_id}"  id="batchtypeid">
+<!--                        <option value="">select operator</option>-->
+<!--                        <option th:each="operator : ${}" th:value="${operator.id}" th:text="${operator.operatorName}"></option>-->
+                        <option th:each="batchtype : ${batchtypes}" th:value="${batchtype.batch_type_id}" th:text="${batchtype.name}"></option>
+
+                    </select>
+                </div>
+<!--                    <select  th:field="*{batch_type_id}" class="form-control" placeholder="batchtype" aria-label="batchtype">-->
+            </div>
+
+
+            <br>
+            <br>
+
+            <div class="row" style="margin-bottom: 5px;">
+                <div class="alert alert-info" role="alert" >Notes</div>
+                <div class="col" style="margin-bottom: 5px;">
+                    <label class="form-label required">Notes</label>
+                    <textarea style="width:648px;height:163px;" th:field="*{notes}" class="form-control" placeholder="notes" aria-label="notes"></textarea>
+                </div>
+            </div>
+            <button style="margin-top:5px;" type="submit" class="btn btn-primary">Submit</button>
+        </form>
+
+    </div> <!-- end non filelist -->
+
+
+
+            <br>
+            <br>
+
+
+            <!-- Show list of uploaded files -->
+            <div th:if="${filelist != null}">
+                <div class="alert alert-primary" role="alert" >Files Previously Uploaded</div>
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th scope="col">File Name</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="file : ${filelist}">
+                        <td th:text="${file.filename}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+
+            <div style="margin-bottom: 5px;" class="mx-auto">
+
+                <div class="alert alert-info" role="alert" >Upload a file</div>
+                <!-- pass the batch object to the upload file controller to get the correct ID to save it under -->
+                <form method="post" th:object="${batch}" th:action="@{/file/upload?customJwtParameter=__${customJwtParameter}__}" enctype="multipart/form-data">
+                    <div class="form-group">
+
+                        <div th:if="${disableupload}">
+                            <input type="file" disabled="disabled" name="file" class="form-control-file">
+                        </div>
+
+                        <div th:if="${disableupload == null}">
+                            <input type="file" name="file" class="form-control-file">
+                        </div>
+
+
+
+                        <!-- pass all these hidden attributes with so the data stays on page after uploading the file -->
+                        <input type="hidden" th:field="*{batchnumber}">
+                        <input type="hidden" th:field="*{name}">
+                        <input type="hidden" th:field="*{description}">
+                        <input type="hidden" th:field="*{notes}">
+                        <input type="hidden" th:field="*{updateTimeStamp}">
+                        <input type="hidden" th:field="*{createTimeStamp}">
+                    </div>
+                    <br>
+
+
+                    <div th:if="${disableupload}">
+
+                        <button type="submit" disabled="disabled" class="btn btn-primary">Upload File</button>
+                    </div>
+
+                    <!-- if it is first download then it is ok.  second download will throw 403 is upload is performed right after  -->
+                    <div th:if="${disableupload == null}">
+                        <button type="submit" class="btn btn-primary">Upload File</button>
+                    </div>
+
+
+<!--                    <button type="submit" class="btn btn-primary">Upload File</button>-->
+                </form>
+            </div>
+
+
+        </div>
+
+
+
+
+
+
+
+</div>
+
+
+</body>
+</html>

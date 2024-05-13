@@ -10,16 +10,16 @@ import java.time.LocalDateTime
 //@IdClass(BatchCompositeID.class)
 @JsonIgnoreProperties
 @Entity
-@Table(name="batch")
-class BatchVO implements Serializable {
+@Table(name="customer")
+class CustomerVO implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @JsonProperty
-    Integer batchid // need to plz batchid to batchId in all usages
+    Integer customerid
 
     @JsonProperty
-    Integer batchnumber;
+    Integer customernumber;
 
     @JsonProperty
     String name
@@ -28,20 +28,19 @@ class BatchVO implements Serializable {
     String description
 
     @JsonProperty
+    String email
+
+    @JsonProperty
+    String address
+
+    @JsonProperty
+    String address2
+
+    @JsonProperty
+    String phone
+
+    @JsonProperty
     String notes
-
-    @JsonProperty
-    @ElementCollection(fetch = FetchType.EAGER)
-    Set<ProductVO> product_set
-
-    @JsonProperty
-    @OneToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn(name="batch_type_id")
-    BatchTypeVO batch_type_id
-
-    @JsonProperty
-    @ElementCollection(fetch = FetchType.EAGER)
-    Set<TaskVO> task_set
 
     // generic fields below
     @JsonProperty

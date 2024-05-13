@@ -48,6 +48,9 @@
                     <li class="nav-item">
                         <a class="nav-link" th:href="@{/producttype?customJwtParameter=__${customJwtParameter}__}">New Product Type</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/checkout?customJwtParameter=__${customJwtParameter}__}">Checkout</a>
+                    </li>
                     <li th:if="${customJwtParameter != null}" class="nav-item">
                         <a class="nav-link active" aria-current="page" href="javascript:{}" onclick="postLogout()">Logout</a>
                     </li>

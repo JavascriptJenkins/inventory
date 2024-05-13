@@ -69,21 +69,22 @@ class BatchControllerHelper {
 
     ){
 
-        bindCommonElements(model, customJwtParameter, batchnumber, editmode);
+        // bind the common elements to the batch and return the parent batchVO object
+        BatchVO batchVO =bindCommonElements(model, customJwtParameter, batchnumber, editmode);
 
         boolean hasProductTypeId = productTypeVO?.producttypeid != null
 
         if (isFilteredView) {
             if (isProductNameLikeSearch) {
-                bindFilterProductsLikeSearch(model, page, productTypeVO.name, productTypeVO);
+                bindFilterProductsLikeSearch(model, page, productTypeVO.name, productTypeVO, batchVO);
             } else if (hasProductTypeId) {
-                bindFilterProducts(model, page, productTypeVO);
+                bindFilterProducts(model, page, productTypeVO, batchVO);
             } else {
-                bindProducts(model, page, productTypeVO);
+                bindProducts(model, page, productTypeVO, batchVO);
             }
             model.addAttribute("searchproducttype", productTypeVO); // use the existing object for submitting a search term
         } else {
-            bindProducts(model, page, productTypeVO);
+            bindProducts(model, page, productTypeVO, batchVO);
             model.addAttribute("searchproducttype", new ProductTypeVO()); // create a new object for submitting a search term
         }
 
@@ -137,7 +138,7 @@ class BatchControllerHelper {
     }
 
 
-    void bindCommonElements(Model model, String customJwtParameter, String batchnumber, String editmode){
+    BatchVO bindCommonElements(Model model, String customJwtParameter, String batchnumber, String editmode){
 
         System.out.println("customJwtParam on batch controller: "+customJwtParameter);
 
@@ -172,6 +173,7 @@ class BatchControllerHelper {
         bindProductTypes(model)
         // once products are bound, add the static data
         calculateStaticPageData(model, results.get(0))
+        return results.get(0)
     }
 
 
@@ -187,7 +189,7 @@ class BatchControllerHelper {
         model.addAttribute("producttypelist", productTypeVOS);
     }
 
-    void bindProducts(Model model, Optional<Integer> page,ProductTypeVO productTypeVO){
+    void bindProducts(Model model, Optional<Integer> page,ProductTypeVO productTypeVO, BatchVO batchVO){
 
 
         //pagination
@@ -200,7 +202,9 @@ class BatchControllerHelper {
             pageable = PageRequest.of(currentPage - 1, pageSize);
         }
 
-        Page<ProductVO> pageOfProduct = productRepo.findAll(pageable);
+
+        // this needs to only find these based on their batchid
+        Page<ProductVO> pageOfProduct = productRepo.findAllByBatch(batchVO,pageable);
 
         int totalPages = pageOfProduct.getTotalPages();
 
@@ -217,7 +221,7 @@ class BatchControllerHelper {
         model.addAttribute("productPage", pageOfProduct);
     }
 
-    void bindFilterProductsLikeSearch(Model model, Optional<Integer> page, String name, ProductTypeVO productTypeVO){
+    void bindFilterProductsLikeSearch(Model model, Optional<Integer> page, String name, ProductTypeVO productTypeVO, BatchVO batchVO){
 
 
         //pagination
@@ -230,7 +234,7 @@ class BatchControllerHelper {
             pageable = PageRequest.of(currentPage - 1, pageSize);
         }
 
-        Page<ProductVO> pageOfProduct = productRepo.findAllByNameContaining(name, pageable);
+        Page<ProductVO> pageOfProduct = productRepo.findAllByNameContainingAndBatch(name, batchVO, pageable);
 
 
         int totalPages = pageOfProduct.getTotalPages();
@@ -249,7 +253,7 @@ class BatchControllerHelper {
     }
 
 
-    void bindFilterProducts(Model model, Optional<Integer> page, ProductTypeVO productTypeVO){
+    void bindFilterProducts(Model model, Optional<Integer> page, ProductTypeVO productTypeVO, BatchVO batchVO){
 
 
         //pagination
@@ -262,7 +266,7 @@ class BatchControllerHelper {
             pageable = PageRequest.of(currentPage - 1, pageSize);
         }
 
-        Page<ProductVO> pageOfProduct = productRepo.findAllByProducttypeid(productTypeVO, pageable);
+        Page<ProductVO> pageOfProduct = productRepo.findAllByProducttypeidAndBatch(productTypeVO, batchVO, pageable);
 
 
 
