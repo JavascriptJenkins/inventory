@@ -324,7 +324,7 @@ class BatchControllerHelper {
         row.createCell(2).setCellValue("Stock")
 
         // set the values
-        for(int i=1;i<batchVO.product_set.size();i++){
+        for(int i=1;i<batchVO.product_set.size()+1;i++){
             row = sheet.createRow(i)
             ProductVO productVO = batchVO.product_set[i]
             row.createCell(0).setCellValue(productVO.name)
