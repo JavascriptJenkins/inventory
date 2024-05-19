@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 //@IdClass(ProductCompositeID.class)
 @JsonIgnoreProperties
 @Entity
-@Table(name="Product")
+@Table(name="product")
 public class ProductVO implements Serializable {
 
     @Id
@@ -19,6 +19,9 @@ public class ProductVO implements Serializable {
     @ManyToOne
     @JoinColumn(name = "batchid")
     BatchVO batch;
+//    @ManyToOne
+//    @JoinColumn(name = "transactionid")
+//    OrderVO order;
     @JsonProperty
     @OneToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name="producttypeid")

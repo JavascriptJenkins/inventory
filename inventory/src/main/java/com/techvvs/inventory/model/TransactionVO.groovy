@@ -26,6 +26,10 @@ class TransactionVO implements Serializable {
     Set<ProductVO> product_set
 
     @JsonProperty
+    @ElementCollection(fetch = FetchType.EAGER)
+    Set<PaymentVO> payment_set
+
+    @JsonProperty
     @OneToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name="customerid")
     CustomerVO customervo;

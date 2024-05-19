@@ -25,9 +25,6 @@ class CustomerVO implements Serializable {
     String name
 
     @JsonProperty
-    String description
-
-    @JsonProperty
     String email
 
     @JsonProperty

@@ -24,17 +24,18 @@ class PaymentVO implements Serializable {
     @JsonProperty
     Integer amountpaid;
 
-//    @JsonProperty
-//    @OneToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
-//    @JoinColumn(name="customerid")
-//    CustomerVO customervo;
+    @JsonProperty
+    String paymenttype;
 
-    // todo: make sure this is correct
+    @JsonProperty
+    @ManyToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name="transactionid")
+    TransactionVO order;
+
     @JsonProperty
     @ManyToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name="customerid")
-    CustomerVO customervo;
-
+    CustomerVO customer;
 
     @JsonProperty
     String notes

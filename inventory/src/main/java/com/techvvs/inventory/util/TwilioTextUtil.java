@@ -145,7 +145,7 @@ public class TwilioTextUtil {
             // only send the text message after everything else went smoothly
             // todo : check result of this
             if(!isDev1){
-                result = sendDownloadLink(systemUserDAO, "https://inventory.techvvs.io/file/smsdownload?customJwtParameter="+cellphonetoken+"&filename="+filename, isDev1);
+                result = sendDownloadLink(systemUserDAO, "http://localhost:8080/file/smsdownload?customJwtParameter="+cellphonetoken+"&filename="+filename, isDev1);
             } else {
                 result = "success"; // set it to success if we are in dev1 and skipped sending the validation text
                 System.out.println("Did NOT send validation text because we in dev1");

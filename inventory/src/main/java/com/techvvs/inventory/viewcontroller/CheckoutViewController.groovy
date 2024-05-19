@@ -9,6 +9,7 @@ import com.techvvs.inventory.jparepo.ProductTypeRepo
 import com.techvvs.inventory.model.BatchTypeVO
 import com.techvvs.inventory.model.BatchVO
 import com.techvvs.inventory.model.ProductTypeVO
+import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.modelnonpersist.FileVO
 import com.techvvs.inventory.util.TechvvsFileHelper
 import com.techvvs.inventory.validation.ValidateBatch
@@ -73,8 +74,9 @@ public class CheckoutViewController {
     //default home mapping
     @GetMapping
     String viewNewForm(
-            @ModelAttribute( "batch" ) BatchVO batchVO, 
-                       Model model,
+            @ModelAttribute( "batch" ) BatchVO batchVO,
+            @ModelAttribute( "order" ) TransactionVO orderVO,
+            Model model,
             @RequestParam("customJwtParameter") String customJwtParameter
     ){
 
