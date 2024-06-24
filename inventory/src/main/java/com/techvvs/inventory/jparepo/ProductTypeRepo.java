@@ -8,5 +8,8 @@ import java.util.List;
 public interface ProductTypeRepo extends JpaRepository<ProductTypeVO, Integer> {
 
     List<ProductTypeVO> findAll();
+    ProductTypeVO findByName(String name);
+
+
 
 }

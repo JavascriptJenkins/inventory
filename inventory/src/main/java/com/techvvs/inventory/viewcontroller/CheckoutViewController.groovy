@@ -74,7 +74,7 @@ public class CheckoutViewController {
     //default home mapping
     @GetMapping
     String viewNewForm(
-            @ModelAttribute( "batch" ) BatchVO batchVO,
+            @ModelAttribute( "transaction" ) BatchVO batchVO,
             @ModelAttribute( "order" ) TransactionVO orderVO,
             Model model,
             @RequestParam("customJwtParameter") String customJwtParameter
