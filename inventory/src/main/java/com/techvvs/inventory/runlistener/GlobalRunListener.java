@@ -64,7 +64,7 @@ public class GlobalRunListener implements ApplicationListener<ApplicationReadyEv
 
         refDataLoader.loadRefData();
 
-        xlsxImporter.testImportXLSXFile();
+  //      xlsxImporter.testImportXLSXFile();
 
         // todo: move this somewhere else
 //        int currentPage = 0;

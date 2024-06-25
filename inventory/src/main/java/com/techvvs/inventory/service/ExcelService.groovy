@@ -15,6 +15,7 @@ class ExcelService {
 
     boolean importExcelPriceSheet(String filename){
 
+        xlsxImporter.importBatchFromExistingXlsxFile(filename)
 
         return true;
     }

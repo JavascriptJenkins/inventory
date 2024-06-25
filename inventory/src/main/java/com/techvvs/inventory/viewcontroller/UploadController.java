@@ -4,6 +4,7 @@ import com.techvvs.inventory.jparepo.BatchTypeRepo;
 import com.techvvs.inventory.model.BatchTypeVO;
 import com.techvvs.inventory.model.BatchVO;
 import com.techvvs.inventory.modelnonpersist.FileVO;
+import com.techvvs.inventory.service.ExcelService;
 import com.techvvs.inventory.util.TechvvsFileHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -41,6 +42,9 @@ public class UploadController {
 
     @Autowired
     BatchTypeRepo batchTypeRepo;
+
+    @Autowired
+    ExcelService excelService;
 
     @PostMapping("/upload")
     public String uploadFile(@ModelAttribute( "batch" ) BatchVO batchVO,
@@ -145,8 +149,17 @@ public class UploadController {
         System.out.println("file upload 10");
 
 
-        // return success response
-        model.addAttribute("successMessage","You successfully uploaded " + fileName + '!');
+        // now read the xlsx file and create a batch based on it in the database
+        boolean success = excelService.importExcelPriceSheet(fileName); // passing in filename like "filename.xlsx"
+
+        if(success){
+            model.addAttribute("successMessage","You successfully uploaded and created a batch from file: " + fileName + '!');
+
+        } else {
+            // this should never happen
+            model.addAttribute("errorMessage","Problem creating batch in database from file: " + fileName + '!');
+        }
+
         model.addAttribute("customJwtParameter",customJwtParameter);
         return "/service/xlsxbatch.html";
     }
