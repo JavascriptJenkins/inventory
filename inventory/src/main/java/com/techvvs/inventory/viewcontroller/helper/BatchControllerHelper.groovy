@@ -109,8 +109,8 @@ class BatchControllerHelper {
                 productVO.price = "0"
             }
 
-            if(productVO.sellPrice == null){
-                productVO.sellPrice = 0
+            if(productVO.cost == null){
+                productVO.cost = 0
             }
 
             if(productVO.quantityremaining == null){
@@ -125,8 +125,8 @@ class BatchControllerHelper {
             }
 
 
-            batchValueTotal = (Integer.valueOf(productVO?.sellPrice) * Integer.valueOf(productVO.quantity)) + batchValueTotal
-            batchValueRemainingTotal = (Integer.valueOf(productVO.sellPrice) * productVO.quantityremaining) + batchValueRemainingTotal
+            batchValueTotal = (Integer.valueOf(productVO?.cost) * Integer.valueOf(productVO.quantity)) + batchValueTotal
+            batchValueRemainingTotal = (Integer.valueOf(productVO.cost) * productVO.quantityremaining) + batchValueRemainingTotal
         }
 
 
@@ -333,7 +333,7 @@ class BatchControllerHelper {
             ProductVO productVO = batchVO.product_set[i - 1] // need to subtract 1 here to account for header row at index 0
         //    setColumnWidthBasedOnString(sheet, 0 ,productVO.name) // set width of each name cell based on length
             row.createCell(0).setCellValue(productVO.name)
-            row.createCell(1).setCellValue(productVO.sellPrice)
+            row.createCell(1).setCellValue(productVO.cost)
             row.createCell(2).setCellValue(productVO.quantityremaining)
 
 

@@ -28,14 +28,14 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            var toggleButton = document.getElementById('togglePrice');
-            var priceInput = document.getElementById('price');
+            var toggleButton = document.getElementById('toggleCost');
+            var costInput = document.getElementById('cost');
 
             toggleButton.addEventListener('click', function() {
-                if (priceInput.style.display === 'none') {
-                    priceInput.style.display = 'block';
+                if (costInput.style.display === 'none') {
+                    costInput.style.display = 'block';
                 } else {
-                    priceInput.style.display = 'none';
+                    costInput.style.display = 'none';
                 }
             });
         });
@@ -99,12 +99,12 @@
                 <div class="row" style="margin-bottom: 5px;">
                     <div class="col-md-4" style="margin-bottom: 5px;">
                         <label class="form-label">Price</label>
-                        <input style="display: none;" type="number" th:field="*{price}" class="form-control" placeholder="price" aria-label="price" readonly>
-                        <button type="button" id="togglePrice" class="btn btn-sm btn-primary mt-2">Show/Hide Price</button>
+                        <input type="number" th:field="*{price}" class="form-control" placeholder="price" aria-label="price" readonly>
                     </div>
                     <div class="col-md-4" style="margin-bottom: 5px;">
-                        <label class="form-label">Sell Price</label>
-                        <input type="number" th:field="*{sellPrice}" class="form-control" placeholder="sell price" aria-label="sell price" readonly>
+                        <label class="form-label">Cost</label>
+                        <input style="display: none;" type="number" th:field="*{cost}" class="form-control" placeholder="cost" aria-label="cost" readonly>
+                        <button type="button" id="toggleCost" class="btn btn-sm btn-primary mt-2">Show/Hide Cost</button>
                     </div>
                 </div>
 
@@ -201,8 +201,8 @@
                     <input type="number" th:field="*{price}" class="form-control" placeholder="price" aria-label="price">
                 </div>
                 <div class="col-md-4" style="margin-bottom: 5px;">
-                    <label class="form-label">Sell Price</label>
-                    <input type="number" th:field="*{sellPrice}" class="form-control" placeholder="sell price" aria-label="sell price">
+                    <label class="form-label">Cost</label>
+                    <input type="number" th:field="*{cost}" class="form-control" placeholder="cost" aria-label="cost">
                 </div>
             </div>
 
@@ -309,7 +309,7 @@
                         <input type="hidden" th:field="*{notes}">
                         <input type="hidden" th:field="*{updateTimeStamp}">
                         <input type="hidden" th:field="*{createTimeStamp}">
-                        <input type="hidden" th:field="*{sellPrice}">
+                        <input type="hidden" th:field="*{cost}">
                     </div>
                     <br>
 

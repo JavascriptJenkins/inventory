@@ -43,7 +43,7 @@ public class ProductVO implements Serializable {
     @JsonProperty
     String price;
     @JsonProperty
-    Integer sellPrice;
+    Integer cost;
     @JsonProperty
     Integer salePrice;
     @JsonProperty
