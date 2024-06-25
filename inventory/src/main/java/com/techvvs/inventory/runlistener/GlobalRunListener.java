@@ -141,7 +141,8 @@ public class GlobalRunListener implements ApplicationListener<ApplicationReadyEv
                     productVO.setQuantity((int) row.getCell(0).getNumericCellValue());
                     productVO.setQuantityremaining((int) row.getCell(0).getNumericCellValue());
                     productVO.setName(row.getCell(1).getStringCellValue());
-                    productVO.setPrice(String.valueOf(row.getCell(2).getNumericCellValue()));
+                    String price = String.valueOf(row.getCell(2).getNumericCellValue());
+                    productVO.setPrice(price.substring(0, price.length() - 2));
                     productVO.setProductnumber(secureRandom.nextInt(10000000)); // assuming this will be unique ...
 
                     Optional<ProductTypeVO> productTypeVO = productTypeRepo.findById(2);
