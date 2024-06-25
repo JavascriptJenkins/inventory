@@ -38,6 +38,10 @@
 
 
     <div class="alert alert-primary" role="alert" >Upload an xlslx price sheet to make a batch</div>
+
+    <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
+    <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
+
     <br>
 
 
@@ -49,7 +53,7 @@
 
                 <div class="alert alert-info" role="alert" >Upload a file</div>
                 <!-- pass the batch object to the upload file controller to get the correct ID to save it under -->
-                <form method="post" th:object="${batch}" th:action="@{/file/upload?customJwtParameter=__${customJwtParameter}__}" enctype="multipart/form-data">
+                <form method="post" th:action="@{/file/xlsx/upload?customJwtParameter=__${customJwtParameter}__}" enctype="multipart/form-data">
                     <div class="form-group">
                             <input type="file" name="file" class="form-control-file">
                     </div>

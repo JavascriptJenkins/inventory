@@ -29,6 +29,7 @@ import java.util.List;
 public class UploadController {
 
     private final String UPLOAD_DIR = "./uploads/";
+    private final String UPLOAD_DIR_XLSX = "./uploads/xlsx/";
 
     @GetMapping("/")
     public String homepage() {
@@ -115,21 +116,20 @@ public class UploadController {
             model.addAttribute("errorMessage","Please select a file to upload.");
             System.out.println("file upload 2");
             model.addAttribute("customJwtParameter",customJwtParameter);
-            return "/newbatch/browsebatch.html";
+            return "/service/xlsxbatch.html";
         }
         System.out.println("file upload 3");
         String fileName = "";
         if(file.getOriginalFilename() != null){
             System.out.println("file upload 4");
-//            file.getOriginalFilename() =  file.getOriginalFilename().replaceAll("-","");
-            // normalize the file path
-          //  fileName = "/"+batchVO.getBatchnumber()+"---"+StringUtils.cleanPath(file.getOriginalFilename());
+            fileName = file.getOriginalFilename().replaceAll("-",""); // remove the dashes to avoid file path issues
+            fileName = StringUtils.cleanPath(file.getOriginalFilename());
         }
 
         // save the file on the local file system
         try {
             System.out.println("file upload 5");
-            Path path = Paths.get(UPLOAD_DIR + fileName);
+            Path path = Paths.get(UPLOAD_DIR_XLSX + fileName);
             System.out.println("file upload 6");
             Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
             System.out.println("file upload 7");
@@ -138,7 +138,7 @@ public class UploadController {
             e.printStackTrace();
             model.addAttribute("errorMessage","file upload failed");
             model.addAttribute("customJwtParameter",customJwtParameter);
-            return "service/batch.html";
+            return "service/xlsxbatch.html";
         }
 
 
@@ -148,7 +148,7 @@ public class UploadController {
         // return success response
         model.addAttribute("successMessage","You successfully uploaded " + fileName + '!');
         model.addAttribute("customJwtParameter",customJwtParameter);
-        return "/newbatch/browsebatch.html";
+        return "/service/xlsxbatch.html";
     }
 
     void bindBatchTypes(Model model){
