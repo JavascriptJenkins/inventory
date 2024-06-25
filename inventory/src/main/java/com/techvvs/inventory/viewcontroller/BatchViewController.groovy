@@ -97,6 +97,35 @@ public class BatchViewController {
         return "service/batch.html";
     }
 
+    // uploadxlsx
+    @GetMapping("/uploadxlsx")
+    String viewUploadXslxNewBatch(
+            @ModelAttribute( "batch" ) BatchVO batchVO,
+                                  Model model,
+            @RequestParam("customJwtParameter") String customJwtParameter
+
+    ){
+
+        System.out.println("customJwtParam on batch controller: "+customJwtParameter);
+
+        BatchVO batchVOToBind;
+        if(batchVO != null && batchVO.getBatchid() != null){
+            batchVOToBind = batchVO;
+        } else {
+            batchVOToBind = new BatchVO();
+            batchVOToBind.setBatchnumber(0);
+            batchVOToBind.setBatchnumber(secureRandom.nextInt(10000000));
+            batchVOToBind.batch_type_id = new BatchTypeVO()
+        }
+
+
+        model.addAttribute("disableupload","true"); // disable uploading a file until we actually have a record submitted successfully
+        model.addAttribute("customJwtParameter", customJwtParameter);
+        model.addAttribute("batch", batchVOToBind);
+        batchControllerHelper.bindBatchTypes(model)
+        return "service/xlsxbatch.html";
+    }
+
 
     @GetMapping("/browseBatch")
     String browseBatch(@ModelAttribute( "batch" ) BatchVO batchVO,

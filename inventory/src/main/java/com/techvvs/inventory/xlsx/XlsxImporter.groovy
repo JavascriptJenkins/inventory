@@ -79,7 +79,8 @@ class XlsxImporter {
                 productVO.setCost(Integer.valueOf(productVO.price) - 400) // todo: replace this with actual cost data
                 productVO.setProductnumber(secureRandom.nextInt(10000000)); // assuming this will be unique ...
 
-                Optional<ProductTypeVO> productTypeVO = productTypeRepo.findById(2);
+                // todo: reference this in a constants class
+                Optional<ProductTypeVO> productTypeVO = productTypeRepo.findByName("INDOOR.UNIT");
 
                 productVO.setCreateTimeStamp(LocalDateTime.now());
                 productVO.setUpdateTimeStamp(LocalDateTime.now());
@@ -128,13 +129,14 @@ class XlsxImporter {
     BatchVO createBatchRecord(String nameOfBatch){
 
 
-        Optional<BatchTypeVO> batchTypeVO = batchTypeRepo.findById(1);
+
+        Optional<BatchTypeVO> batchTypeVO = batchTypeRepo.findByName("INDOOR.MIXED");
 
         // set the batch data
         BatchVO batchVO = new BatchVO();
         batchVO.setName(nameOfBatch);
         batchVO.setDescription("default batch description"); // insert date imported into here?
-        batchVO.setBatchid(7);
+        batchVO.setBatchid(0);
         batchVO.setBatchnumber(secureRandom.nextInt(10000000)); // assuming this will be unique ...
         batchVO.setBatch_type_id(batchTypeVO.get()); // assume we always have the ref data loaded
 

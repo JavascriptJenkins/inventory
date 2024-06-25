@@ -101,6 +101,56 @@ public class UploadController {
         return "service/batch.html";
     }
 
+
+    // This method is for uploading XLSX file price sheets
+    @PostMapping("/xlsx/upload")
+    public String uploadXlsxFile(Model model,
+                             @RequestParam("file") MultipartFile file,
+                             RedirectAttributes attributes,
+                             @RequestParam("customJwtParameter") String customJwtParameter) {
+
+        System.out.println("file upload 1");
+        // check if file is empty
+        if (file.isEmpty()) {
+            model.addAttribute("errorMessage","Please select a file to upload.");
+            System.out.println("file upload 2");
+            model.addAttribute("customJwtParameter",customJwtParameter);
+            return "/newbatch/browsebatch.html";
+        }
+        System.out.println("file upload 3");
+        String fileName = "";
+        if(file.getOriginalFilename() != null){
+            System.out.println("file upload 4");
+//            file.getOriginalFilename() =  file.getOriginalFilename().replaceAll("-","");
+            // normalize the file path
+          //  fileName = "/"+batchVO.getBatchnumber()+"---"+StringUtils.cleanPath(file.getOriginalFilename());
+        }
+
+        // save the file on the local file system
+        try {
+            System.out.println("file upload 5");
+            Path path = Paths.get(UPLOAD_DIR + fileName);
+            System.out.println("file upload 6");
+            Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
+            System.out.println("file upload 7");
+        } catch (IOException e) {
+            System.out.println("file upload 8");
+            e.printStackTrace();
+            model.addAttribute("errorMessage","file upload failed");
+            model.addAttribute("customJwtParameter",customJwtParameter);
+            return "service/batch.html";
+        }
+
+
+        System.out.println("file upload 10");
+
+
+        // return success response
+        model.addAttribute("successMessage","You successfully uploaded " + fileName + '!');
+        model.addAttribute("customJwtParameter",customJwtParameter);
+        return "/newbatch/browsebatch.html";
+    }
+
     void bindBatchTypes(Model model){
         // get all the batchtype objects and bind them to select dropdown
         List<BatchTypeVO> batchTypeVOS = batchTypeRepo.findAll();
