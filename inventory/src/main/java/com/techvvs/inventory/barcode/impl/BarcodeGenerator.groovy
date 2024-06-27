@@ -58,7 +58,7 @@ class BarcodeGenerator {
                         float x = leftMargin + col * labelWidth;
                         float y = PDRectangle.LETTER.getHeight() - topMargin - (row + 1) * labelHeight;
 
-                        String barcodeData = generateBarcodeData(row, col, filenameExtension, batchnumber);
+                        String barcodeData = generateBarcodeData(row, col, filenameExtension, batchnumber, pagenumber);
 
 
 
@@ -94,12 +94,12 @@ class BarcodeGenerator {
         }
 
 
-
+    // todo: this can handle up to 950 products in a single batch.  Need to write logic to handle more than 950
     // passing the batchnumber into here for first part of upc barcode
-    private static String generateBarcodeData(int row, int col, String filenameExtension, int batchnumber) {
+    private static String generateBarcodeData(int row, int col, String filenameExtension, int batchnumber, int pagenumber) {
         // Example method to generate unique barcode data based on row and column
         // note: this baseData can only be 6 characters long - batchnumbers are 7 characters so we are removing the last char
-        String baseData = removeLastCharacter(String.valueOf(batchnumber)); // Base data for the barcode
+        String baseData = removeLast2Character(String.valueOf(batchnumber))+String.valueOf(pagenumber); // Base data for the barcode
         String rowColData = String.format("%02d%02d", row, col); // Row and column indices padded with leading zeros
 
         // Combine base data with row and column data
@@ -143,11 +143,11 @@ class BarcodeGenerator {
     }
 
 
-    public static String removeLastCharacter(String str) {
+    public static String removeLast2Character(String str) {
         if (str == null || str.isEmpty()) {
             return str; // Return the original string if it's null or empty.
         }
-        return str.substring(0, str.length() - 1); // Use substring to remove the last character.
+        return str.substring(0, str.length() - 2); // Use substring to remove the last character.
     }
 
 
