@@ -1,8 +1,11 @@
 package com.techvvs.inventory.barcode.impl
 
+import com.techvvs.inventory.jparepo.ProductRepo
 import com.techvvs.inventory.model.ProductVO
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject
 import org.krysalis.barcode4j.impl.upcean.UPCABean
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.security.core.parameters.P
 import org.springframework.stereotype.Component
 
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -16,6 +19,9 @@ import java.awt.image.BufferedImage
 
 @Component
 class BarcodeGenerator {
+
+    @Autowired
+    ProductRepo productRepo
 
     List producthashes = new ArrayList()
     String currentBarcodeData = ""
@@ -71,9 +77,14 @@ class BarcodeGenerator {
                         // Draw the barcode image on the PDF
                         contentStream.drawImage(pdImage, x, y, labelWidth, labelHeight);
 
+
                         int toremove = productset.size() - 1
                         // iterate through productset to remove things
                         ProductVO productVO = productset.getAt(toremove)
+
+                        //write method here to add barcode data to product in database
+                        addBarcodeToProduct(productVO, barcodeData);
+
                          productset.remove(productVO)
                     }
                 }
@@ -104,6 +115,7 @@ class BarcodeGenerator {
 
         // Combine base data with row and column data
         String barcodeData = baseData + rowColData;
+
 
         // Calculate and append the checksum
         int checksum = calculateUPCAChecksum(barcodeData);
@@ -150,6 +162,21 @@ class BarcodeGenerator {
         return str.substring(0, str.length() - 2); // Use substring to remove the last character.
     }
 
+    void addBarcodeToProduct(ProductVO productVO, String barcodedata){
+
+        Optional<ProductVO> existingproduct = productRepo.findById(productVO.getProduct_id())
+
+        // if we have an existing barcode do NOT overwrite it.
+        if(existingproduct.get().barcode != null && existingproduct.get().barcode.length() > 0){
+            // do nothing
+        } else {
+            productVO.setBarcode(barcodedata)
+            productRepo.save(productVO)
+        }
+
+
+
+    }
 
 
 
