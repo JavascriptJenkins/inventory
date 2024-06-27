@@ -1,4 +1,4 @@
-package com.techvvs.inventory.barcode
+package com.techvvs.inventory.barcode.impl
 
 import org.krysalis.barcode4j.impl.upcean.UPCEANBean
 import org.krysalis.barcode4j.impl.upcean.UPCEANLogicImpl

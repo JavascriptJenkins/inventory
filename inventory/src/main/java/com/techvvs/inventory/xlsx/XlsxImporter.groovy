@@ -70,6 +70,11 @@ class XlsxImporter {
                     continue;
                 }
 
+                // skip adding product if the name is missing from a row to prevent bad data
+                if(row.getCell(1).getStringCellValue().isEmpty()){
+                    continue;
+                }
+
                 // now take each row and create a product entry
                 ProductVO productVO = new ProductVO();
                 productVO.setQuantity((int) row.getCell(0).getNumericCellValue());

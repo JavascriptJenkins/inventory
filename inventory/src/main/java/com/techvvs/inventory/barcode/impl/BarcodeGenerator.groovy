@@ -1,4 +1,4 @@
-package com.techvvs.inventory.barcode
+package com.techvvs.inventory.barcode.impl
 
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject
 import org.krysalis.barcode4j.impl.upcean.UPCABean
@@ -7,25 +7,22 @@ import org.springframework.stereotype.Component
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.krysalis.barcode4j.impl.upcean.UPCEANBean;
-import org.krysalis.barcode4j.output.bitmap.BitmapCanvasProvider;
-import javax.imageio.ImageIO;
-
-
+import org.apache.pdfbox.pdmodel.common.PDRectangle
+import org.krysalis.barcode4j.output.bitmap.BitmapCanvasProvider
 import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
 
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
+import java.awt.image.BufferedImage
 
 @Component
 class BarcodeGenerator {
 
 
+    String PDF_BATCH_DIR = "./uploads/pdf/"
+
         void generateBarcodes(String filenameExtension) throws IOException {
 
 
+            System.out.println("Generating barcodes for " + filenameExtension);
 
                 PDDocument document = new PDDocument()
                 PDPage page = new PDPage(PDRectangle.LETTER); // 8.5" x 11"
@@ -60,45 +57,12 @@ class BarcodeGenerator {
                     }
 
 
-            //                // Close the content stream
+            // Close the content stream
             contentStream.close();
-                // Save the PDF document
-                document.save(new File("multiple_upc_barcodes+"+filenameExtension+".pdf"));
-
-
-
-
-
-//
-//            // Create a new PDF document
-//            PDDocument document = new PDDocument();
-//
-//
-//                // Create a new page
-//                PDPage page = new PDPage(PDRectangle.LETTER); // 8.5" x 11"
-//                document.addPage(page);
-//
-//                // Create content stream for the page
-//                PDPageContentStream contentStream = new PDPageContentStream(document, page);
-//
-//                // Generate UPC barcode
-//                BufferedImage barcodeImage = generateBarcodeImage("123456789012", LABEL_WIDTH, LABEL_HEIGHT);
-//
-//            // Convert BufferedImage to PDImageXObject
-//            PDImageXObject pdImage = LosslessFactory.createFromImage(document, barcodeImage);
-//
-//
-//                // Draw the barcode image on the page
-//                contentStream.drawImage(pdImage, 0.floatValue(), 0.floatValue(), LABEL_WIDTH, LABEL_HEIGHT);
-//
-//
-//                // Close the content stream
-//                contentStream.close();
-
-
             // Save the PDF document
-//            document.save(new File("upc_barcodes.pdf"));
-//            document.close();
+            document.save(new File(PDF_BATCH_DIR+"upc_batch"+filenameExtension+".pdf"));
+
+
         }
 
 
@@ -147,36 +111,6 @@ class BarcodeGenerator {
 
         return canvas.getBufferedImage();
     }
-
-
-
-
-
-
-        private BufferedImage generateBarcodeImage(String barcodeData, float width, float height) {
-
-            UPCABean barcodeGenerator = new UPCABean();
-//
-//            barcodeGenerator.setModuleWidth(width)
-//            barcodeGenerator.setBarHeight(height)
-
-            barcodeGenerator.setModuleWidth(0.3)
-            barcodeGenerator.setBarHeight(10f)
-
-//            UPCEANBean bean = new UPCBean();
-//            bean.setModuleWidth(0.3);
-//            bean.doQuietZone(true);
-//            bean.setQuietZone(10);
-
-            //    public BitmapCanvasProvider(OutputStream out, String mime, int resolution, int imageType, boolean antiAlias, int orientation) {
-            //    public BitmapCanvasProvider(int resolution, int imageType, boolean antiAlias, int orientation) {
-            BitmapCanvasProvider canvas = new BitmapCanvasProvider(160, BufferedImage.TYPE_BYTE_BINARY, false, 0);
-
-            barcodeGenerator.generateBarcode(canvas, barcodeData);
-
-            return canvas.getBufferedImage();
-        }
-
 
 
 
