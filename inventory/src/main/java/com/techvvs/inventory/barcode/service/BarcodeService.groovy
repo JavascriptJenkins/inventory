@@ -2,6 +2,7 @@ package com.techvvs.inventory.barcode.service
 
 import com.techvvs.inventory.barcode.impl.BarcodeGenerator
 import com.techvvs.inventory.model.BatchVO
+import com.techvvs.inventory.model.ProductVO
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
@@ -33,11 +34,17 @@ class BarcodeService {
            int numberOfProducts = batchVO.product_set.size();
 
 
+           LinkedHashSet linkedHashSet = convertToLinkedHashSet(batchVO.product_set)
+           List<Set<ProductVO>> result = removeItemsInChunksOf50(linkedHashSet);
+
+
+           System.out.println("result of rounding up: " + result);
 
             // todo: verify this is running the correct number of times and the 0 index thing isn't messing it up
-            // run it 8 times 8*50 = 400
-            for(int i = 0; i < numberOfProducts; i++) {
-                barcodeGenerator.generateBarcodes(batchVO.name+"-"+batchVO.batchnumber);
+
+
+            for(int i = 0; i < result.size(); i++) {
+                barcodeGenerator.generateBarcodes(batchVO.name, batchVO.batchnumber, i, result.get(i));
             }
 
 
@@ -49,6 +56,36 @@ class BarcodeService {
     }
 
 
+    public static int divideAndRoundUp(int num) {
+        double result = num / 50.0; // Ensure the division is performed in floating-point.
+        return (int) Math.ceil(result); // Use Math.ceil to round up and cast to int.
+    }
+
+
+
+    public static <T> List<Set<T>> removeItemsInChunksOf50(LinkedHashSet<T> originalSet) {
+        List<Set<T>> chunks = new ArrayList<>();
+        Iterator<T> iterator = originalSet.iterator();
+
+        while (iterator.hasNext()) {
+            Set<T> chunk = new LinkedHashSet<>();
+            int count = 0;
+            while (iterator.hasNext() && count < 50) {
+                T item = iterator.next();
+                chunk.add(item);
+                iterator.remove();  // Remove the item from the original set
+                count++;
+            }
+            chunks.add(chunk);
+        }
+
+        return chunks;
+    }
+
+
+    public static <T> LinkedHashSet<T> convertToLinkedHashSet(Set<T> originalSet) {
+        return new LinkedHashSet<>(originalSet);
+    }
 
 
 

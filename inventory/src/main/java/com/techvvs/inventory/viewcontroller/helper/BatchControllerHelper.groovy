@@ -1,5 +1,6 @@
 package com.techvvs.inventory.viewcontroller.helper
 
+import com.techvvs.inventory.barcode.service.BarcodeService
 import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.jparepo.BatchRepo
 import com.techvvs.inventory.jparepo.BatchTypeRepo
@@ -56,6 +57,24 @@ class BatchControllerHelper {
 
     @Autowired
     SystemUserRepo systemUserRepo
+
+    @Autowired
+    BarcodeService barcodeService
+
+    // todo: add another method for generating barcodes for specific prodcuct types
+    boolean generateBarcodesForBatch(String batchnumber){
+
+        List<BatchVO> results = new ArrayList<BatchVO>();
+        if(batchnumber != null){
+            System.out.println("Searching data by batchnumber");
+            results = batchRepo.findAllByBatchnumber(Integer.valueOf(batchnumber));
+        }
+
+        barcodeService.createSingleMenuBarcodesForBatch(results.get(0))
+
+        return true
+    }
+
 
     // method for combining logic of editform and filtereditform
     Model processModel(Model model,
@@ -167,6 +186,7 @@ class BatchControllerHelper {
 
         model.addAttribute("options", ["5", "10", "20", "100", "1000"]);
         model.addAttribute("menuoptions", ["All","Indoor"]);
+        model.addAttribute("menuoptionsBarcode", ["All"]);
         model.addAttribute("customJwtParameter", customJwtParameter);
         model.addAttribute("batch", results.get(0));
         bindBatchTypes(model)
