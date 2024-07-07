@@ -13,8 +13,10 @@ import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle
 import org.krysalis.barcode4j.output.bitmap.BitmapCanvasProvider
-import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
+import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory
 
+import java.awt.Color
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage
 
 @Component
@@ -38,10 +40,10 @@ class BarcodeGenerator {
                 PDPage page = new PDPage(PDRectangle.LETTER); // 8.5" x 11"
                 document.addPage(page);
 
-                PDPageContentStream contentStream = new PDPageContentStream(document, page)
+            PDPageContentStream contentStream = new PDPageContentStream(document, page)
                     // Define margins and layout parameters
-                    float topMargin = 0.5f * 72; // 0.5" in points
-                    float bottomMargin = 0.5f * 72; // 0.5" in points
+            float topMargin = (6.0f / 16.0f) * 72; // 6/16 inches to points
+             float bottomMargin = (1.0f / 16.0f) * 72; // 6/16 inches to points
                     float leftMargin = 0.25f * 72; // 0.25" in points
                     float rightMargin = 0.25f * 72; // 0.25" in points
                     float labelWidth = (PDRectangle.LETTER.getWidth() - leftMargin - rightMargin) / 5; // 5 barcodes per row
@@ -139,19 +141,53 @@ class BarcodeGenerator {
         return (10 - (sum % 10)) % 10;
     }
 
+//    private static BufferedImage generateUPCABarcodeImage(String barcodeData, float width, float height) {
+//        UPCABean bean = new UPCABean();
+//        bean.setModuleWidth(0.2); // Adjust module width as needed
+//        bean.setBarHeight(10f); // Adjust bar height as needed
+//        bean.setQuietZone(5f)
+////        bean.setVerticalQuietZone(10f)
+//
+////        BitmapCanvasProvider canvas = new BitmapCanvasProvider(width, height, BufferedImage.TYPE_BYTE_BINARY, false, 0);
+//        BitmapCanvasProvider canvas = new BitmapCanvasProvider(260, BufferedImage.TYPE_BYTE_BINARY, false, 0);
+//
+//        bean.generateBarcode(canvas, barcodeData);
+//
+//        return canvas.getBufferedImage();
+//    }
+
     private static BufferedImage generateUPCABarcodeImage(String barcodeData, float width, float height) {
         UPCABean bean = new UPCABean();
         bean.setModuleWidth(0.2); // Adjust module width as needed
-        bean.setBarHeight(10f); // Adjust bar height as needed
-        bean.setQuietZone(5f)
-//        bean.setVerticalQuietZone(10f)
+        bean.setBarHeight(10f);   // Adjust bar height as needed
+        bean.setQuietZone(5f);    // Adjust quiet zone as needed
 
-//        BitmapCanvasProvider canvas = new BitmapCanvasProvider(width, height, BufferedImage.TYPE_BYTE_BINARY, false, 0);
+        // Set up the canvas provider
         BitmapCanvasProvider canvas = new BitmapCanvasProvider(260, BufferedImage.TYPE_BYTE_BINARY, false, 0);
 
+        // Generate the barcode
         bean.generateBarcode(canvas, barcodeData);
 
-        return canvas.getBufferedImage();
+        // Get the generated barcode image
+        BufferedImage barcodeImage = canvas.getBufferedImage();
+
+        // Define the bottom margin (1/16th of an inch in points)
+        float bottomMargin = 2.0f / 16 * 72; // 1/16th of an inch in points
+        int marginPixels = (int) (bottomMargin * 260 / 72);
+
+        // Create a new image with the bottom margin
+        int widthWithMargin = barcodeImage.getWidth();
+        int heightWithMargin = barcodeImage.getHeight() + marginPixels
+        BufferedImage imageWithMargin = new BufferedImage(widthWithMargin, heightWithMargin, BufferedImage.TYPE_BYTE_BINARY);
+
+        // Draw the original barcode image onto the new image
+        Graphics2D g2d = imageWithMargin.createGraphics();
+        g2d.setColor(Color.WHITE);
+        g2d.fillRect(0, barcodeImage.getHeight(), widthWithMargin, marginPixels);
+        g2d.drawImage(barcodeImage, 0, 0, null);
+        g2d.dispose();
+
+        return imageWithMargin;
     }
 
 
