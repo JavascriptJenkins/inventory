@@ -85,7 +85,8 @@ public class BatchViewController {
         } else {
             batchVOToBind = new BatchVO();
             batchVOToBind.setBatchnumber(0);
-            int batchNumber = 100000 + secureRandom.nextInt(900000); // Generates a random number between 100000 and 999999
+//            int batchNumber = 100000 + secureRandom.nextInt(900000); // Generates a random number between 100000 and 999999
+            int batchNumber = Integer.valueOf(batchControllerHelper.generateBatchNumber()); // Generates a random number between 100000 and 999999
             batchVOToBind.setBatchnumber(batchNumber);
             batchVOToBind.batch_type_id = new BatchTypeVO()
         }
@@ -115,7 +116,8 @@ public class BatchViewController {
         } else {
             batchVOToBind = new BatchVO();
             batchVOToBind.setBatchnumber(0);
-            batchVOToBind.setBatchnumber(secureRandom.nextInt(10000000));
+            batchVOToBind.setBatchnumber(Integer.valueOf(batchControllerHelper.generateBatchNumber()));
+//            batchVOToBind.setBatchnumber(secureRandom.nextInt(10000000));
             batchVOToBind.batch_type_id = new BatchTypeVO()
         }
 

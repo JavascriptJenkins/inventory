@@ -155,6 +155,7 @@ class BarcodeGenerator {
     }
 
 
+    // todo: problem - this works with 7 character batch numbers but not 6 character ones
     public static String removeLast2Character(String str) {
         if (str == null || str.isEmpty()) {
             return str; // Return the original string if it's null or empty.

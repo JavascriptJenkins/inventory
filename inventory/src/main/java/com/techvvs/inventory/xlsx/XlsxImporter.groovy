@@ -8,6 +8,7 @@ import com.techvvs.inventory.model.BatchTypeVO
 import com.techvvs.inventory.model.BatchVO
 import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.ProductVO
+import com.techvvs.inventory.viewcontroller.helper.BatchControllerHelper
 import org.apache.poi.ss.usermodel.Row
 import org.apache.poi.ss.usermodel.Sheet
 import org.apache.poi.ss.usermodel.Workbook
@@ -34,6 +35,9 @@ class XlsxImporter {
 
     @Autowired
     BatchRepo batchRepo;
+
+    @Autowired
+    BatchControllerHelper batchControllerHelper
 
     SecureRandom secureRandom = new SecureRandom();
 
@@ -219,7 +223,7 @@ class XlsxImporter {
         batchVO.setName(nameOfBatch);
         batchVO.setDescription("default batch description"); // insert date imported into here?
         batchVO.setBatchid(0);
-        batchVO.setBatchnumber(secureRandom.nextInt(10000000)); // assuming this will be unique ...
+        batchVO.setBatchnumber(Integer.valueOf(batchControllerHelper.generateBatchNumber())); // assuming this will be unique ...
         batchVO.setBatch_type_id(batchTypeVO.get()); // assume we always have the ref data loaded
 
         // when creating a new processData entry, set the last attempt visit to now - this may change in future

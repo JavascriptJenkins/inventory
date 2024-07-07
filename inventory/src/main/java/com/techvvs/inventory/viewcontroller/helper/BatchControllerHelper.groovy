@@ -27,6 +27,8 @@ import java.nio.file.Files
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import org.apache.poi.ss.usermodel.*
 
+import java.security.SecureRandom
+
 /* This class exists to keep the main batch controller code clean and avoid duplication. */
 @Component
 class BatchControllerHelper {
@@ -60,6 +62,9 @@ class BatchControllerHelper {
 
     @Autowired
     BarcodeService barcodeService
+
+    SecureRandom secureRandom = new SecureRandom();
+
 
     // todo: add another method for generating barcodes for specific prodcuct types
     boolean generateBarcodesForBatch(String batchnumber){
@@ -379,6 +384,21 @@ class BatchControllerHelper {
         int adjustedWidth = (stringLength + additionalSpace) * widthMultiplier;
 
         sheet.setColumnWidth(columnIndex, adjustedWidth);
+    }
+
+    String generateBatchNumber() {
+        int length = 7; // Set the length to 8 digits
+        StringBuilder batchNumber = new StringBuilder(length);
+
+        // Ensure the first digit is non-zero
+        batchNumber.append(secureRandom.nextInt(9) + 1);
+
+        // Append remaining digits
+        for (int i = 1; i < length; i++) {
+            batchNumber.append(secureRandom.nextInt(10));
+        }
+
+        return batchNumber.toString();
     }
 
 }

@@ -88,7 +88,7 @@ public class CheckoutViewController {
         } else {
             batchVOToBind = new BatchVO();
             batchVOToBind.setBatchnumber(0);
-            batchVOToBind.setBatchnumber(secureRandom.nextInt(10000000));
+           // batchVOToBind.setBatchnumber(secureRandom.nextInt(10000000));
             batchVOToBind.batch_type_id = new BatchTypeVO()
         }
 
