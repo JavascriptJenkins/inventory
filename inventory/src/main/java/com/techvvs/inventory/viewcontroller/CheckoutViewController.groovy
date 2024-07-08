@@ -14,6 +14,7 @@ import com.techvvs.inventory.modelnonpersist.FileVO
 import com.techvvs.inventory.util.TechvvsFileHelper
 import com.techvvs.inventory.validation.ValidateBatch
 import com.techvvs.inventory.viewcontroller.helper.BatchControllerHelper
+import com.techvvs.inventory.viewcontroller.helper.CheckoutHelper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -67,6 +68,9 @@ public class CheckoutViewController {
     @Autowired
     BatchControllerHelper batchControllerHelper;
 
+    @Autowired
+    CheckoutHelper checkoutHelper
+
 
     SecureRandom secureRandom = new SecureRandom();
 
@@ -74,29 +78,49 @@ public class CheckoutViewController {
     //default home mapping
     @GetMapping
     String viewNewForm(
-            @ModelAttribute( "transaction" ) BatchVO batchVO,
-            @ModelAttribute( "order" ) TransactionVO orderVO,
+            @ModelAttribute( "transaction" ) TransactionVO transactionVO,
             Model model,
             @RequestParam("customJwtParameter") String customJwtParameter
     ){
 
+        // fetch all customers from database and bind them to model
+        checkoutHelper.getAllCustomers(model)
+
         System.out.println("customJwtParam on checkout controller: "+customJwtParameter);
 
-        BatchVO batchVOToBind;
-        if(batchVO != null && batchVO.getBatchid() != null){
-            batchVOToBind = batchVO;
-        } else {
-            batchVOToBind = new BatchVO();
-            batchVOToBind.setBatchnumber(0);
-           // batchVOToBind.setBatchnumber(secureRandom.nextInt(10000000));
-            batchVOToBind.batch_type_id = new BatchTypeVO()
-        }
-
+        transactionVO.setTotal(0) // set total to 0 initially
 
         model.addAttribute("disableupload","true"); // disable uploading a file until we actually have a record submitted successfully
         model.addAttribute("customJwtParameter", customJwtParameter);
-        model.addAttribute("batch", batchVOToBind);
-        batchControllerHelper.bindBatchTypes(model)
+        model.addAttribute("transaction", transactionVO);
+        return "checkout/checkout.html";
+    }
+
+    // this is the scanning screen that allows user to scan list of products and create a transaction
+    @PostMapping("/scan")
+    String scan(@ModelAttribute( "transaction" ) TransactionVO transactionVO,
+                Model model,
+                @RequestParam("customJwtParameter") String customJwtParameter){
+
+        System.out.println("customJwtParam on checkout controller: "+customJwtParameter);
+
+        // todo: add a simple customers form so user can add customers to the database for use in checkout flow
+        // todo: put a dropdown of "customers" that is loaded initially from ref data
+
+        // when a barcode is scanned, first create a new transaction in the database
+
+        // after transaction is created, search for the product based on barcode
+
+        // after product is added to transaction, update the fields in transaction like "total", etc.
+
+        // add it to the transaction table in database with all updated fields
+
+        // return the fully hydrated and updated transaction object back to the user
+
+
+        model.addAttribute("customJwtParameter", customJwtParameter);
+        model.addAttribute("transaction", transactionVO);
+
         return "checkout/checkout.html";
     }
 

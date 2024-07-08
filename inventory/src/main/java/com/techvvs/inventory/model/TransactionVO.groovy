@@ -49,6 +49,14 @@ class TransactionVO implements Serializable {
     @JsonProperty
     String cashier
 
+    // This will be 0 until the transaction is actually processed
+    @JsonProperty
+    Integer isprocessed
+
+    // transient field for passing barcode on checkout page back to controller
+    @Transient
+    String barcode
+
     // generic fields below
     @JsonProperty
     LocalDateTime updateTimeStamp

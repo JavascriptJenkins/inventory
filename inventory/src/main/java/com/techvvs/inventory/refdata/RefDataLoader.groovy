@@ -1,8 +1,10 @@
 package com.techvvs.inventory.refdata
 
 import com.techvvs.inventory.jparepo.BatchTypeRepo
+import com.techvvs.inventory.jparepo.CustomerRepo
 import com.techvvs.inventory.jparepo.ProductTypeRepo
 import com.techvvs.inventory.model.BatchTypeVO
+import com.techvvs.inventory.model.CustomerVO
 import com.techvvs.inventory.model.ProductTypeVO
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -19,10 +21,14 @@ class RefDataLoader {
     @Autowired
     ProductTypeRepo productTypeRepo
 
+    @Autowired
+    CustomerRepo customerRepo
+
 
     void loadRefData(){
         loadBatchTypes()
         loadProductTypes()
+        loadCustomers()
     }
 
     void loadBatchTypes(){
@@ -95,6 +101,32 @@ class RefDataLoader {
         productTypeRepo.save(productTypeVO5)
 
         System.out.println("ProductType ref data loaded")
+    }
+
+    void loadCustomers(){
+        CustomerVO customerVO = new CustomerVO();
+        customerVO.name = "John Doe"
+        customerVO.email = "mrchihuahua@techvvs.io"
+        customerVO.phone = "6127673388"
+        customerVO.address = "6969 420 ave"
+        customerVO.address2 = "apartment 9"
+        customerVO.notes = "likes to touch your butt"
+        customerVO.setCreateTimeStamp(LocalDateTime.now());
+        customerVO.setUpdateTimeStamp(LocalDateTime.now());
+        customerRepo.save(customerVO)
+
+        CustomerVO customerVO2 = new CustomerVO();
+        customerVO2.name = "Dildino Baggins"
+        customerVO2.email = "bagboi@techvvs.io"
+        customerVO2.phone = "7872228888"
+        customerVO2.address = "69 425 ave"
+        customerVO2.address2 = "apartment 8"
+        customerVO2.notes = "long hair doesnt care"
+        customerVO2.setCreateTimeStamp(LocalDateTime.now());
+        customerVO2.setUpdateTimeStamp(LocalDateTime.now());
+        customerRepo.save(customerVO2)
+
+        System.out.println("Customer ref data loaded")
     }
 
 

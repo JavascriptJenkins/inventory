@@ -26,20 +26,6 @@
       }
     </style>
 
-    <script>
-        $(document).ready(function() {
-            $('#barcodeInput').focus();
-        });
-
-        $('#barcodeInput').on('input', function() {
-            var barcode = $(this).val();
-            if (barcode.length >= 11) {
-                $(this).val(barcode.substring(0, 11));
-                $('#barcodeForm').submit();
-            }
-        });
-    </script>
-
 </head>
 <body>
 
@@ -65,18 +51,7 @@
         <div class="row" style="margin-bottom: 5px;">
             <div class="col-md-4" style="margin-bottom: 5px;">
                 <label class="form-label required">Scan Barcode: </label>
-                <input id="barcodeInput" type="text" th:field="*{barcode}" class="form-control" placeholder="barcode" aria-label="barcode">
-            </div>
-        </div>
-
-        <div class="row" style="margin-bottom: 5px;">
-            <div class="col-md-4" style="margin-bottom: 5px;">
-                <label class="form-label required">Customer</label>
-                <select class="form-control" th:field="${transaction.customervo.customerid}"  id="customerselectid">
-                    <option value="" selected="selected">Select a customer</option>
-                    <option th:each="customer : ${customers}" th:value="${customer.customerid}" th:text="${customer.name}"></option>
-
-                </select>
+                <input type="text" th:field="*{barcode}" class="form-control" placeholder="barcode" aria-label="barcode">
             </div>
         </div>
 
@@ -91,6 +66,19 @@
         <button style="margin-top:5px;" type="submit" class="btn btn-primary">Submit</button>
     </form>
 
+
+    <!--   One form for submitting the transaction for actual final processing -->
+    <form th:action="@{/checkout/transaction?customJwtParameter=__${customJwtParameter}__}" th:object="${transaction}" method="post">
+
+        <div class="row" style="margin-bottom: 5px;">
+            <div class="col-md-4" style="margin-bottom: 5px;">
+                <label class="form-label required">Total Price</label>
+                <input type="text" th:field="*{total}" class="form-control" placeholder="total" aria-label="total" readonly>
+            </div>
+
+        </div>
+        <button style="margin-top:5px;" type="submit" class="btn btn-primary">Submit</button>
+    </form>
 
 
 
