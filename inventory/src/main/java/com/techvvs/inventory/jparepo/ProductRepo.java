@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ProductRepo extends JpaRepository<ProductVO, Integer> {
 
@@ -21,6 +22,8 @@ public interface ProductRepo extends JpaRepository<ProductVO, Integer> {
     List<ProductVO> findAllByDescription(String desc);
 
     Page<ProductVO> findAllByBatch(BatchVO batchVO, Pageable pageable);
+
+    Optional<ProductVO> findByBarcode(String barcode);
 
 //    @Query("SELECT * FROM Product p JOIN Batch b ON p.product_id = b.product_id WHERE o.customer.name = :name")
 //    Page<ProductVO> findByBatch(BatchVO batch, Pageable pageable);

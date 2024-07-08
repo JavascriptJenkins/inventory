@@ -191,14 +191,14 @@ class BarcodeGenerator {
     }
 
 
-    // todo: problem - this works with 7 character batch numbers but not 6 character ones
-    public static String removeLast2Character(String str) {
+    static String removeLast2Character(String str) {
         if (str == null || str.isEmpty()) {
             return str; // Return the original string if it's null or empty.
         }
         return str.substring(0, str.length() - 2); // Use substring to remove the last character.
     }
 
+    // todo: add a check here to make sure barcodes are unique before adding....
     void addBarcodeToProduct(ProductVO productVO, String barcodedata){
 
         Optional<ProductVO> existingproduct = productRepo.findById(productVO.getProduct_id())

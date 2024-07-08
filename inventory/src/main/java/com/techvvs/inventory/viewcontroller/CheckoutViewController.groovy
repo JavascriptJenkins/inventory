@@ -83,14 +83,15 @@ public class CheckoutViewController {
             @RequestParam("customJwtParameter") String customJwtParameter
     ){
 
-        // fetch all customers from database and bind them to model
-        checkoutHelper.getAllCustomers(model)
-
         System.out.println("customJwtParam on checkout controller: "+customJwtParameter);
 
-        transactionVO.setTotal(0) // set total to 0 initially
+        // if it is the first time loading the page
+        if(transactionVO.product_set == null){
+            transactionVO.setTotal(0) // set total to 0 initially
+        }
 
-        model.addAttribute("disableupload","true"); // disable uploading a file until we actually have a record submitted successfully
+        // fetch all customers from database and bind them to model
+        checkoutHelper.getAllCustomers(model)
         model.addAttribute("customJwtParameter", customJwtParameter);
         model.addAttribute("transaction", transactionVO);
         return "checkout/checkout.html";
@@ -104,22 +105,30 @@ public class CheckoutViewController {
 
         System.out.println("customJwtParam on checkout controller: "+customJwtParameter);
 
-        // todo: add a simple customers form so user can add customers to the database for use in checkout flow
-        // todo: put a dropdown of "customers" that is loaded initially from ref data
+        transactionVO = checkoutHelper.validateTransactionVO(transactionVO, model)
 
-        // when a barcode is scanned, first create a new transaction in the database
+        // only proceed if there is no error
+        if(model.getAttribute("errorMessage") == null){
+            // save a new transaction object in database if we don't have one
+            transactionVO = checkoutHelper.saveTransactionIfNew(transactionVO)
 
-        // after transaction is created, search for the product based on barcode
+            // after transaction is created, search for the product based on barcode
+            transactionVO = checkoutHelper.searchForProductByBarcode(transactionVO, model)
 
-        // after product is added to transaction, update the fields in transaction like "total", etc.
+            // after product is added to transaction, update the fields in transaction like "total", etc.
 
-        // add it to the transaction table in database with all updated fields
+            // add it to the transaction table in database with all updated fields
 
-        // return the fully hydrated and updated transaction object back to the user
+            // return the fully hydrated and updated transaction object back to the user
+        }
+
+
 
 
         model.addAttribute("customJwtParameter", customJwtParameter);
         model.addAttribute("transaction", transactionVO);
+        // fetch all customers from database and bind them to model
+        checkoutHelper.getAllCustomers(model)
 
         return "checkout/checkout.html";
     }
