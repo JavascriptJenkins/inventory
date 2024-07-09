@@ -9,6 +9,7 @@ import com.techvvs.inventory.jparepo.ProductTypeRepo
 import com.techvvs.inventory.model.BatchTypeVO
 import com.techvvs.inventory.model.BatchVO
 import com.techvvs.inventory.model.ProductTypeVO
+import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.modelnonpersist.FileVO
 import com.techvvs.inventory.util.TechvvsFileHelper
@@ -80,30 +81,95 @@ public class CheckoutViewController {
     String viewNewForm(
             @ModelAttribute( "transaction" ) TransactionVO transactionVO,
             Model model,
-            @RequestParam("customJwtParameter") String customJwtParameter
+            @RequestParam("customJwtParameter") String customJwtParameter,
+            @RequestParam("transactionid") String transactionid
+
     ){
+
+
+        // if transactionid == 0 then load normally, otherwise load the existing transaction
+        if(transactionid == "0"){
+            // do nothing
+            // if it is the first time loading the page
+            if(transactionVO.product_set == null){
+                transactionVO.setTotal(0) // set total to 0 initially
+            }
+            model.addAttribute("transaction", transactionVO);
+
+        } else {
+            checkoutHelper.bindExistingTransaction(transactionid, model)
+        }
+
+        // todo: add a button on the ui to pull the latest transaction for customer (so if someone clicks off page
+        //  you can come back and finish the transaction)
 
         System.out.println("customJwtParam on checkout controller: "+customJwtParameter);
 
-        // if it is the first time loading the page
-        if(transactionVO.product_set == null){
-            transactionVO.setTotal(0) // set total to 0 initially
-        }
+
 
         // fetch all customers from database and bind them to model
         checkoutHelper.getAllCustomers(model)
         model.addAttribute("customJwtParameter", customJwtParameter);
-        model.addAttribute("transaction", transactionVO);
         return "checkout/checkout.html";
+    }
+
+    //get the pending transactions
+    @GetMapping("pendingtransactions")
+    String viewPendingTransactions(
+            @ModelAttribute( "transaction" ) TransactionVO transactionVO,
+            Model model,
+            @RequestParam("customJwtParameter") String customJwtParameter,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size
+    ){
+
+        System.out.println("customJwtParam on checkout controller: "+customJwtParameter);
+
+        // bind the page of transactions
+        checkoutHelper.findPendingTransactions(model, page, size)
+        // fetch all customers from database and bind them to model
+        checkoutHelper.getAllCustomers(model)
+        model.addAttribute("customJwtParameter", customJwtParameter);
+        model.addAttribute("transaction", transactionVO);
+        return "checkout/pendingtransactions.html";
     }
 
     // this is the scanning screen that allows user to scan list of products and create a transaction
     @PostMapping("/scan")
     String scan(@ModelAttribute( "transaction" ) TransactionVO transactionVO,
                 Model model,
-                @RequestParam("customJwtParameter") String customJwtParameter){
+                @RequestParam("customJwtParameter") String customJwtParameter,
+                @RequestParam("page") Optional<Integer> page,
+                @RequestParam("size") Optional<Integer> size){
 
         System.out.println("customJwtParam on checkout controller: "+customJwtParameter);
+
+        // START PAGINATION
+        // https://www.baeldung.com/spring-data-jpa-pagination-sorting
+        //pagination
+        int currentPage = page.orElse(0);
+        int pageSize = 5;
+        Pageable pageable;
+        if(currentPage == 0){
+            pageable = PageRequest.of(0 , pageSize);
+        } else {
+            pageable = PageRequest.of(currentPage - 1, pageSize);
+        }
+
+        Page<ProductVO> pageOfProduct = productRepo.findAll(pageable);
+
+        int totalPages = pageOfProduct.getTotalPages();
+
+        List<Integer> pageNumbers = new ArrayList<>();
+
+        while(totalPages > 0){
+            pageNumbers.add(totalPages);
+            totalPages = totalPages - 1;
+        }
+        // END PAGINATION
+
+
+
 
         transactionVO = checkoutHelper.validateTransactionVO(transactionVO, model)
 
@@ -115,16 +181,11 @@ public class CheckoutViewController {
             // after transaction is created, search for the product based on barcode
             transactionVO = checkoutHelper.searchForProductByBarcode(transactionVO, model)
 
-            // after product is added to transaction, update the fields in transaction like "total", etc.
-
-            // add it to the transaction table in database with all updated fields
-
-            // return the fully hydrated and updated transaction object back to the user
         }
 
-
-
-
+        model.addAttribute("pageNumbers", pageNumbers);
+        model.addAttribute("page", currentPage);
+        model.addAttribute("size", pageOfProduct.getTotalPages());
         model.addAttribute("customJwtParameter", customJwtParameter);
         model.addAttribute("transaction", transactionVO);
         // fetch all customers from database and bind them to model

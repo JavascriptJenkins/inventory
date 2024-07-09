@@ -51,46 +51,44 @@
 <div class="container">
 
 
-    <div class="alert alert-primary" role="alert" >Scan Products to Checkout</div>
+    <div class="alert alert-primary" role="alert" >Pending Transactions</div>
     <br>
 
     <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
     <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
 
 
-    <!--    One form for passing back the barcode on every scan and updating the transaction in db -->
-    <form th:action="@{/checkout/scan?customJwtParameter=__${customJwtParameter}__&transactionid=__${transaction.transactionid != null ? transaction.transactionid : '0'}__}" th:object="${transaction}" method="post">
+    <table class="table" border="1">
+        <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Transaction ID</th>
+            <th scope="col">Customer Name</th>
+            <th scope="col">Total Amount</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="transaction, iStat : ${transactionPage.content}"
+            th:style="${iStat.odd}? 'font-weight: bold;'"
+            th:alt-title="${iStat.even}? 'even' : 'odd'">
 
-        <!-- todo: bind a new transaction number just like -->
-        <div class="row" style="margin-bottom: 5px;">
-            <div class="col-md-4" style="margin-bottom: 5px;">
-                <label class="form-label required">Scan Barcode: </label>
-                <input id="barcodeInput" type="text" th:field="*{barcode}" class="form-control" placeholder="barcode" aria-label="barcode">
-            </div>
-        </div>
+            <td th:text="${transaction.transactionid}"></td>
+            <td><a th:href="@{/checkout?transactionid=__${transaction.transactionid}__&customJwtParameter=__${customJwtParameter}__}" th:text="${transaction.transactionid}"></a></td>
+            <td th:text="${transaction.customervo.name}"></td>
+            <td th:text="${transaction.total}"></td>
 
-        <div class="row" style="margin-bottom: 5px;">
-            <div class="col-md-4" style="margin-bottom: 5px;">
-                <label class="form-label required">Customer</label>
+        </tr>
 
-                <select class="form-control" th:field="${transaction.customervo.customerid}"  id="customerselectid">
-                    <option value="" selected="selected">Select a customer</option>
-                    <option th:each="customer : ${customers}" th:value="${customer.customerid}" th:text="${customer.name}"></option>
 
-                </select>
-            </div>
-        </div>
+        </tbody>
+    </table>
+    <div th:if="${transactionPage.totalPages > 0}" class="pagination"
+         th:each="pageNumber : ${pageNumbers}">
+        <a th:href="@{/checkout/pendingtransactions?customJwtParameter=__${customJwtParameter}__&size=__${#lists.size(transactionPage.content)}__&page=__${pageNumber}__}"
+           th:text=${pageNumber}
+           th:class="${pageNumber==transactionPage.number + 1} ? active"></a>
+    </div>
 
-        <div class="row" style="margin-bottom: 5px;">
-            <div class="col-md-4" style="margin-bottom: 5px;">
-                <label class="form-label required">Total Price</label>
-                <input type="text" th:field="*{total}" class="form-control" placeholder="total" aria-label="total" readonly>
-            </div>
-
-        </div>
-
-        <button style="margin-top:5px;" type="submit" class="btn btn-primary">Submit</button>
-    </form>
 
 
 

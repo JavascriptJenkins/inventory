@@ -162,9 +162,9 @@ public class BatchViewController {
         model.addAttribute("pageNumbers", pageNumbers);
         model.addAttribute("page", currentPage);
         model.addAttribute("size", pageOfBatch.getTotalPages());
+        model.addAttribute("batchPage", pageOfBatch);
         model.addAttribute("customJwtParameter", customJwtParameter);
         model.addAttribute("batch", new BatchVO());
-        model.addAttribute("batchPage", pageOfBatch);
         return "service/browsebatch.html";
     }
 

@@ -7,6 +7,9 @@ import com.techvvs.inventory.model.CustomerVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.TransactionVO
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
 import org.springframework.ui.Model
 
@@ -45,16 +48,55 @@ class CheckoutHelper {
 
     TransactionVO saveTransactionIfNew(TransactionVO transactionVO){
 
-        if(transactionVO.transactionid == null){
+        String barcode = transactionVO.barcode
+
+        if(transactionVO.transactionid == 0 || transactionVO.transactionid == null){
             transactionVO.customervo = customerRepo.findById(transactionVO.customervo.customerid).get()
             transactionVO.isprocessed = 0
             transactionVO.createTimeStamp = LocalDateTime.now()
             transactionVO.updateTimeStamp = LocalDateTime.now()
             transactionVO = transactionRepo.save(transactionVO)
+            transactionVO.barcode = barcode // need to re-bind this so that on first save it will not be null
         }
 
 
         return transactionVO
+    }
+
+    void findPendingTransactions(Model model, Optional<Integer> page, Optional<Integer> size){
+
+        // START PAGINATION
+        // https://www.baeldung.com/spring-data-jpa-pagination-sorting
+        //pagination
+        int currentPage = page.orElse(0);
+        int pageSize = 5;
+        Pageable pageable;
+        if(currentPage == 0){
+            pageable = PageRequest.of(0 , pageSize);
+        } else {
+            pageable = PageRequest.of(currentPage - 1, pageSize);
+        }
+
+        Page<TransactionVO> pageOfTransaction = transactionRepo.findAll(pageable);
+
+        int totalPages = pageOfTransaction.getTotalPages();
+
+        List<Integer> pageNumbers = new ArrayList<>();
+
+        while(totalPages > 0){
+            pageNumbers.add(totalPages);
+            totalPages = totalPages - 1;
+        }
+
+
+        model.addAttribute("pageNumbers", pageNumbers);
+        model.addAttribute("page", currentPage);
+        model.addAttribute("size", pageOfTransaction.getTotalPages());
+        model.addAttribute("transactionPage", pageOfTransaction);
+        // END PAGINATION
+
+
+
     }
 
 
@@ -75,6 +117,13 @@ class CheckoutHelper {
 
             transactionVO.total += Integer.valueOf(productVO.get().price) // add the product price to the total
 
+
+//            // grab the customer object before updating
+//            transactionVO.customervo = customerRepo.findById(transactionVO.customervo.customerid).get()
+//            transactionVO.isprocessed = 0
+//            transactionVO = transactionRepo.save(transactionVO)
+
+
             transactionVO.updateTimeStamp = LocalDateTime.now()
             transactionVO = transactionRepo.save(transactionVO) // save the transaction with the new product associated
             model.addAttribute("successMessage","Product: "+productVO.get().name + " added successfully")
@@ -87,6 +136,16 @@ class CheckoutHelper {
         return transactionVO
     }
 
+
+    void bindExistingTransaction(String transactionID, Model model){
+
+        Optional<TransactionVO> transactionVO = transactionRepo.findById(Integer.valueOf(transactionID))
+
+        if(!transactionVO.empty){
+            model.addAttribute("transaction", transactionVO.get())
+        }
+
+    }
 
 
 
