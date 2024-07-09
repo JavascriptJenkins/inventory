@@ -144,29 +144,6 @@ public class CheckoutViewController {
 
         System.out.println("customJwtParam on checkout controller: "+customJwtParameter);
 
-        // START PAGINATION
-        // https://www.baeldung.com/spring-data-jpa-pagination-sorting
-        //pagination
-        int currentPage = page.orElse(0);
-        int pageSize = 5;
-        Pageable pageable;
-        if(currentPage == 0){
-            pageable = PageRequest.of(0 , pageSize);
-        } else {
-            pageable = PageRequest.of(currentPage - 1, pageSize);
-        }
-
-        Page<ProductVO> pageOfProduct = productRepo.findAll(pageable);
-
-        int totalPages = pageOfProduct.getTotalPages();
-
-        List<Integer> pageNumbers = new ArrayList<>();
-
-        while(totalPages > 0){
-            pageNumbers.add(totalPages);
-            totalPages = totalPages - 1;
-        }
-        // END PAGINATION
 
 
 
@@ -179,13 +156,15 @@ public class CheckoutViewController {
             transactionVO = checkoutHelper.saveTransactionIfNew(transactionVO)
 
             // after transaction is created, search for the product based on barcode
-            transactionVO = checkoutHelper.searchForProductByBarcode(transactionVO, model)
+            transactionVO = checkoutHelper.searchForProductByBarcode(transactionVO, model, page, size)
 
         }
 
-        model.addAttribute("pageNumbers", pageNumbers);
-        model.addAttribute("page", currentPage);
-        model.addAttribute("size", pageOfProduct.getTotalPages());
+        transactionVO.barcode = "" // reset barcode to empty
+//
+//        model.addAttribute("pageNumbers", pageNumbers);
+//        model.addAttribute("page", currentPage);
+//        model.addAttribute("size", pageOfProduct.getTotalPages());
         model.addAttribute("customJwtParameter", customJwtParameter);
         model.addAttribute("transaction", transactionVO);
         // fetch all customers from database and bind them to model

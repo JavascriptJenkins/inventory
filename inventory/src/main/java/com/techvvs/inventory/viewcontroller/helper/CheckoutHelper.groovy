@@ -40,7 +40,7 @@ class CheckoutHelper {
         if(transactionVO?.customervo?.customerid == null){
             model.addAttribute("errorMessage","Please select a customer")
         }
-        if(transactionVO?.barcode == null){
+        if(transactionVO?.barcode == null || transactionVO?.barcode?.empty){
             model.addAttribute("errorMessage","Please enter a barcode")
         }
         return transactionVO
@@ -50,7 +50,8 @@ class CheckoutHelper {
 
         String barcode = transactionVO.barcode
 
-        if(transactionVO.transactionid == 0 || transactionVO.transactionid == null){
+        if(transactionVO.transactionid == 0 || transactionVO.transactionid == null
+                && transactionVO.product_set == null || transactionVO?.product_set?.size() == 0){
             transactionVO.customervo = customerRepo.findById(transactionVO.customervo.customerid).get()
             transactionVO.isprocessed = 0
             transactionVO.createTimeStamp = LocalDateTime.now()
@@ -100,13 +101,20 @@ class CheckoutHelper {
     }
 
 
-    TransactionVO searchForProductByBarcode(TransactionVO transactionVO, Model model){
+    TransactionVO searchForProductByBarcode(TransactionVO transactionVO, Model model, Optional<Integer> page, Optional<Integer> size){
 
 
         Optional<ProductVO> productVO = productRepo.findByBarcode(transactionVO.barcode)
 
+        // todo: on second time thru we need to fully hydrate the customer and product_set before saving
 
         if(!productVO.empty){
+
+            // todo: possiblity will need to pass in existing fully hydrated transactionvo
+            // this will bind the paginated products to the model
+            transactionVO.product_set = bindExistingListOfProducts(transactionVO, model)
+//            transactionVO.product_set = bindPaginatedListOfProducts(transactionVO, model, page, size)
+
 
             // if it's the first time adding a product we need to create the set to hold them
             if(transactionVO.product_set == null){
@@ -119,9 +127,9 @@ class CheckoutHelper {
 
 
 //            // grab the customer object before updating
-//            transactionVO.customervo = customerRepo.findById(transactionVO.customervo.customerid).get()
-//            transactionVO.isprocessed = 0
-//            transactionVO = transactionRepo.save(transactionVO)
+            transactionVO.customervo = customerRepo.findById(transactionVO.customervo.customerid).get()
+            transactionVO.isprocessed = 0
+          //  transactionVO = transactionRepo.save(transactionVO)
 
 
             transactionVO.updateTimeStamp = LocalDateTime.now()
@@ -135,6 +143,47 @@ class CheckoutHelper {
 
         return transactionVO
     }
+
+    Set<ProductVO> bindExistingListOfProducts(TransactionVO transactionVO, Model model){
+        //            // bind the exsiting list of products
+            Optional<TransactionVO> existingTransaction =transactionRepo.findById(transactionVO.transactionid)
+            return existingTransaction?.get()?.product_set
+    }
+
+//    void bindPaginatedListOfProducts(TransactionVO transactionVO, Model model, Optional<Integer> page, Optional<Integer> size){
+//
+//                // START PAGINATION
+//        // https://www.baeldung.com/spring-data-jpa-pagination-sorting
+//        //pagination
+//        int currentPage = page.orElse(0);
+//        int pageSize = 5;
+//        Pageable pageable;
+//        if(currentPage == 0){
+//            pageable = PageRequest.of(0 , pageSize);
+//        } else {
+//            pageable = PageRequest.of(currentPage - 1, pageSize);
+//        }
+//
+//        // todo: change this to find by transaction
+////        Page<ProductVO> pageOfProduct = productRepo.findAll(pageable);
+////        Page<ProductVO> pageOfProduct = productRepo.findAllByTransaction(transactionVO, pageable);
+////        Page<ProductVO> pageOfProduct = transactionRepo.findByTransaction(transactionVO, pageable);
+//
+//        int totalPages = pageOfProduct.getTotalPages();
+//
+//        List<Integer> pageNumbers = new ArrayList<>();
+//
+//        while(totalPages > 0){
+//            pageNumbers.add(totalPages);
+//            totalPages = totalPages - 1;
+//        }
+//
+//        model.addAttribute("pageNumbers", pageNumbers);
+//        model.addAttribute("page", currentPage);
+//        model.addAttribute("size", pageOfProduct.getTotalPages());
+//        model.addAttribute("productPage", pageOfProduct);
+//        // END PAGINATION
+//    }
 
 
     void bindExistingTransaction(String transactionID, Model model){

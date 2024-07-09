@@ -19,9 +19,6 @@ public class ProductVO implements Serializable {
     @ManyToOne
     @JoinColumn(name = "batchid")
     BatchVO batch;
-//    @ManyToOne
-//    @JoinColumn(name = "transactionid")
-//    OrderVO order;
     @JsonProperty
     @OneToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name="producttypeid")

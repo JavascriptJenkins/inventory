@@ -54,6 +54,9 @@
                     <li class="nav-item">
                         <a class="nav-link" th:href="@{/checkout?customJwtParameter=__${customJwtParameter}__&transactionid=0}">Checkout</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/checkout/pendingtransactions?customJwtParameter=__${customJwtParameter}__}">Pending Transactions</a>
+                    </li>
                     <li th:if="${customJwtParameter != null}" class="nav-item">
                         <a class="nav-link active" aria-current="page" href="javascript:{}" onclick="postLogout()">Logout</a>
                     </li>
