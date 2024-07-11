@@ -155,7 +155,9 @@ public class CheckoutViewController {
             // save a new transaction object in database if we don't have one
             transactionVO = checkoutHelper.saveTransactionIfNew(transactionVO)
 
+            //  if the transactionVO comes back here without a
             // after transaction is created, search for the product based on barcode
+
             transactionVO = checkoutHelper.searchForProductByBarcode(transactionVO, model, page, size)
 
         }

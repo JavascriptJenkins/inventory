@@ -51,10 +51,10 @@ class CheckoutHelper {
         // need to check to make sure there isn't an existing transaction with the same customer and no objects
         String barcode = transactionVO.barcode
 
-        if(transactionVO.transactionid == 0 || transactionVO.transactionid == null
-                && transactionVO.product_set == null || transactionVO?.product_set?.size() == 0
+        if((transactionVO.transactionid == 0 || transactionVO.transactionid == null
+                && transactionVO.product_set == null || transactionVO?.product_set?.size() == 0)
         &&
-            !doesTransactionExist(transactionVO.customervo)
+            !doesTransactionExist(transactionVO.customervo, barcode)
         ){
             transactionVO.customervo = customerRepo.findById(transactionVO.customervo.customerid).get()
             transactionVO.isprocessed = 0
@@ -68,19 +68,29 @@ class CheckoutHelper {
         return transactionVO
     }
 
-    boolean doesTransactionExist(CustomerVO customerVO){
+    boolean doesTransactionExist(CustomerVO customerVO, String barcode){
 
 
-//        List<TransactionVO> existingtransactions = transactionRepo.findAllByCustomer(customerVO)
+        List<TransactionVO> existingtransactions = transactionRepo.findAllByCustomervo(customerVO)
 
-//        // if the customer already has a transaction that exists
-//        for(TransactionVO transactionVO : existingtransactions){
-//            if(transactionVO.isprocessed == 0 && transactionVO?.product_set?.size() == 0){
-//
-//            }
-//        }
-//
-//        return transactionRepo.existsByCustomervoCustomerid(customerVO)
+        // if the customer already has a transaction that exists
+        for(TransactionVO transactionVO : existingtransactions){
+            if(transactionVO.isprocessed == 0 && transactionVO?.product_set?.size() == 0){
+
+                // this covers a situation where customer has an existing transaction with no products
+                // instead of creating another redundant record in the database we are are just updating it
+                transactionVO.customervo = customerRepo.findById(transactionVO.customervo.customerid).get()
+                transactionVO.updateTimeStamp = LocalDateTime.now()
+                transactionVO.barcode = barcode // need to re-bind this so that on first save it will not be null
+                transactionVO = transactionRepo.save(transactionVO)
+
+
+
+                return true
+            }
+        }
+
+        return false
     }
 
     void findPendingTransactions(Model model, Optional<Integer> page, Optional<Integer> size){
@@ -131,7 +141,7 @@ class CheckoutHelper {
 
             // todo: possiblity will need to pass in existing fully hydrated transactionvo
             // this will bind the paginated products to the model
-            transactionVO.product_set = bindExistingListOfProducts(transactionVO, model)
+            transactionVO.product_set = bindExistingListOfProductsAndCustomer(transactionVO, model)
 //            transactionVO.product_set = bindPaginatedListOfProducts(transactionVO, model, page, size)
 
 
@@ -165,9 +175,11 @@ class CheckoutHelper {
         return transactionVO
     }
 
-    Set<ProductVO> bindExistingListOfProducts(TransactionVO transactionVO, Model model){
+    // being lazy here and binding the customer each time the user enters a barcode
+    Set<ProductVO> bindExistingListOfProductsAndCustomer(TransactionVO transactionVO, Model model){
         //            // bind the exsiting list of products
             Optional<TransactionVO> existingTransaction =transactionRepo.findById(transactionVO.transactionid)
+            transactionVO.customervo = existingTransaction?.get()?.customervo
             return existingTransaction?.get()?.product_set
     }
 

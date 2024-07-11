@@ -35,8 +35,19 @@
                     $('#barcodeForm').submit();
                 }
             });
+
+            function focusInputAfterDelay(selector, delay) {
+                setTimeout(function() {
+                    console.log("Focusing on input");
+                    $(selector).focus();
+                }, delay);
+            }
+
+            // Example usage: Wait 0.1 seconds (100 milliseconds) and then focus on the input field with ID 'barcodeInput'
+            focusInputAfterDelay('#barcodeInput', 100);
         });
     </script>
+
 </head>
 <body>
 <div th:insert="auth/navbar.html :: navbarfragment"></div>
@@ -61,6 +72,7 @@
                        <b> <label th:classappend="${transaction.transactionid != null ? '' : 'required'}" class="form-label">Customer</label></b>
                         <div th:if="${transaction.transactionid}">
                             <p th:each="customer : ${customers}" th:if="${customer.customerid == transaction.customervo.customerid}" th:text="${customer.name}">Customer Name</p>
+                            <input type="hidden" th:field="*{customervo.customerid}">
                         </div>
                         <div th:if="${transaction.transactionid == 0}">
                             <select class="form-control" th:field="${transaction.customervo.customerid}" id="customerselectid">
