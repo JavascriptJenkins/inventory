@@ -45,40 +45,31 @@
 
 
     <!--    One form for passing back the barcode on every scan and updating the transaction in db -->
-    <form th:action="@{/checkout/scan?customJwtParameter=__${customJwtParameter}__}" th:object="${transaction}" method="post">
+    <form th:action="@{/checkout/transaction?customJwtParameter=__${customJwtParameter}__}" th:object="${cart}" method="post">
 
-        <!-- todo: bind a new transaction number just like -->
-        <div class="row" style="margin-bottom: 5px;">
-            <div class="col-md-4" style="margin-bottom: 5px;">
-                <label class="form-label required">Scan Barcode: </label>
-                <input type="text" th:field="*{barcode}" class="form-control" placeholder="barcode" aria-label="barcode">
-            </div>
-        </div>
-
-        <div class="row" style="margin-bottom: 5px;">
-            <div class="col-md-4" style="margin-bottom: 5px;">
-                <label class="form-label required">Total Price</label>
-                <input type="text" th:field="*{total}" class="form-control" placeholder="total" aria-label="total" readonly>
-            </div>
-
+        <!-- Table Section -->
+        <div style="overflow-x: auto;">
+            <table class="table table-striped table-bordered">
+                <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Price</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="item : ${cart.product_cart_list}">
+                    <td th:text="${item.name}">Item Name</td>
+                    <td th:text="${item.price}">Price</td>
+                </tr>
+                </tbody>
+            </table>
+            <input type="hidden" th:field="*{product_cart_list}">
         </div>
 
         <button style="margin-top:5px;" type="submit" class="btn btn-primary">Submit</button>
     </form>
 
 
-    <!--   One form for submitting the transaction for actual final processing -->
-    <form th:action="@{/checkout/transaction?customJwtParameter=__${customJwtParameter}__}" th:object="${transaction}" method="post">
-
-        <div class="row" style="margin-bottom: 5px;">
-            <div class="col-md-4" style="margin-bottom: 5px;">
-                <label class="form-label required">Total Price</label>
-                <input type="text" th:field="*{total}" class="form-control" placeholder="total" aria-label="total" readonly>
-            </div>
-
-        </div>
-        <button style="margin-top:5px;" type="submit" class="btn btn-primary">Submit</button>
-    </form>
 
 
 

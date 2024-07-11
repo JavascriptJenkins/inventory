@@ -146,10 +146,6 @@ public class CheckoutViewController {
 
         System.out.println("customJwtParam on checkout controller: "+customJwtParameter);
 
-
-
-
-
         cartVO = checkoutHelper.validateCartVO(cartVO, model)
 
         // only proceed if there is no error
@@ -178,6 +174,45 @@ public class CheckoutViewController {
         return "checkout/checkout.html";
     }
 
+
+    @PostMapping("/reviewcart")
+    String reviewcart(@ModelAttribute( "cart" ) CartVO cartVO,
+                Model model,
+                @RequestParam("customJwtParameter") String customJwtParameter,
+                @RequestParam("page") Optional<Integer> page,
+                @RequestParam("size") Optional<Integer> size){
+
+        System.out.println("customJwtParam on checkout controller: "+customJwtParameter);
+
+        cartVO = checkoutHelper.validateCartReviewVO(cartVO, model)
+
+        // only proceed if there is no error
+        if(model.getAttribute("errorMessage") == null){
+            // save a new transaction object in database if we don't have one
+
+            // bind objects for reviewing the cart
+            //cartVO = checkoutHelper.reviewCart(cartVO, model)
+
+            //  if the transactionVO comes back here without a
+            // after transaction is created, search for the product based on barcode
+
+//            cartVO = checkoutHelper.searchForProductByBarcode(cartVO, model, page, size)
+
+        }
+
+        cartVO.barcode = "" // reset barcode to empty
+//
+//        model.addAttribute("pageNumbers", pageNumbers);
+//        model.addAttribute("page", currentPage);
+//        model.addAttribute("size", pageOfProduct.getTotalPages());
+        model.addAttribute("customJwtParameter", customJwtParameter);
+        model.addAttribute("cart", cartVO);
+        model.addAttribute("successMessage", "Review the cart")
+        // fetch all customers from database and bind them to model
+        checkoutHelper.getAllCustomers(model)
+
+        return "checkout/reviewcart.html";
+    }
 
     @GetMapping("/browseBatch")
     String browseBatch(@ModelAttribute( "batch" ) BatchVO batchVO,

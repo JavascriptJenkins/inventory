@@ -88,7 +88,7 @@
                         <input type="text" th:field="*{total}" class="form-control" placeholder="total" aria-label="total" readonly>
                     </div>
                 </div>
-                <button style="margin-top: 5px;" type="submit" class="btn btn-primary">Submit</button>
+                <button  style="margin-top: 5px;visibility: hidden; " type="submit" class="btn btn-primary">Submit</button>
             </div>
             <div class="col-md-4">
                 <!-- Table Section -->
@@ -112,6 +112,14 @@
             </div>
         </div>
     </form>
+
+    <form id="submitTransactionForm" th:action="@{/checkout/reviewcart?customJwtParameter=__${customJwtParameter}__&cartid=__${cart.cartid != null ? cart.cartid : '0'}__}" th:object="${cart}" method="post">
+        <input type="hidden" th:field="*{product_cart_list}">
+        <input type="hidden" th:field="*{customer.customerid}">
+        <button  style="margin-top: 5px;" type="submit" class="btn btn-primary">Submit</button>
+
+    </form>
+
 </div>
 </body>
 </html>
