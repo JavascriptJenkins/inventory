@@ -65,6 +65,13 @@ class CheckoutHelper {
         }
         return cartVO
     }
+
+    CartVO validateTransaction(CartVO cartVO, Model model){
+        if(cartVO?.customer?.customerid == null){
+            model.addAttribute("errorMessage","Please select a customer")
+        }
+        return cartVO
+    }
     CartVO saveCartIfNew(CartVO cartVO){
 
         // need to check to make sure there isn't an existing transaction with the same customer and no objects
