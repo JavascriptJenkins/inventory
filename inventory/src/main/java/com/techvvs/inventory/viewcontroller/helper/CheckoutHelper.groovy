@@ -48,10 +48,14 @@ class CheckoutHelper {
 
     TransactionVO saveTransactionIfNew(TransactionVO transactionVO){
 
+        // need to check to make sure there isn't an existing transaction with the same customer and no objects
         String barcode = transactionVO.barcode
 
         if(transactionVO.transactionid == 0 || transactionVO.transactionid == null
-                && transactionVO.product_set == null || transactionVO?.product_set?.size() == 0){
+                && transactionVO.product_set == null || transactionVO?.product_set?.size() == 0
+        &&
+            !doesTransactionExist(transactionVO.customervo)
+        ){
             transactionVO.customervo = customerRepo.findById(transactionVO.customervo.customerid).get()
             transactionVO.isprocessed = 0
             transactionVO.createTimeStamp = LocalDateTime.now()
@@ -62,6 +66,21 @@ class CheckoutHelper {
 
 
         return transactionVO
+    }
+
+    boolean doesTransactionExist(CustomerVO customerVO){
+
+
+//        List<TransactionVO> existingtransactions = transactionRepo.findAllByCustomer(customerVO)
+
+//        // if the customer already has a transaction that exists
+//        for(TransactionVO transactionVO : existingtransactions){
+//            if(transactionVO.isprocessed == 0 && transactionVO?.product_set?.size() == 0){
+//
+//            }
+//        }
+//
+//        return transactionRepo.existsByCustomervoCustomerid(customerVO)
     }
 
     void findPendingTransactions(Model model, Optional<Integer> page, Optional<Integer> size){
@@ -136,6 +155,8 @@ class CheckoutHelper {
             transactionVO = transactionRepo.save(transactionVO) // save the transaction with the new product associated
             model.addAttribute("successMessage","Product: "+productVO.get().name + " added successfully")
         } else {
+            // need to bind the selected customer here otherwise the dropdown wont work
+            transactionVO.customervo = customerRepo.findById(transactionVO.customervo.customerid).get()
             model.addAttribute("errorMessage","Product not found")
         }
 

@@ -13,4 +13,7 @@ public interface TransactionRepo extends JpaRepository<TransactionVO, Integer> {
 
     List<TransactionVO> findAll();
 
+
+//    List<TransactionVO> findAllByCustomer(CustomerVO customerVO);
+
 }

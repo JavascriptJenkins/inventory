@@ -12,22 +12,29 @@
 
     <style>
         .required:after {
-            content:" *";
+            content: " *";
             color: red;
         }
     </style>
 
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
             $('#barcodeInput').focus();
-        });
 
-        $('#barcodeInput').on('input', function() {
-            var barcode = $(this).val();
-            if (barcode.length >= 11) {
-                $(this).val(barcode.substring(0, 11));
-                $('#barcodeForm').submit();
-            }
+            // Refocus cursor in barcode input if empty after selecting a customer
+            $('#customerselectid').on('change', function() {
+                if ($('#barcodeInput').val().trim() === '') {
+                    $('#barcodeInput').focus();
+                }
+            });
+
+            $('#barcodeInput').on('input', function () {
+                var barcode = $(this).val();
+                if (barcode.length >= 11) {
+                    $(this).val(barcode.substring(0, 11));
+                    $('#barcodeForm').submit();
+                }
+            });
         });
     </script>
 </head>
@@ -39,49 +46,51 @@
     <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
     <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
 
-    <form th:action="@{/checkout/scan?customJwtParameter=__${customJwtParameter}__&transactionid=__${transaction.transactionid != null ? transaction.transactionid : '0'}__}" th:object="${transaction}" method="post">
-
+    <form id="barcodeForm" th:action="@{/checkout/scan?customJwtParameter=__${customJwtParameter}__&transactionid=__${transaction.transactionid != null ? transaction.transactionid : '0'}__}" th:object="${transaction}" method="post">
         <div class="row">
             <div class="col-md-8">
                 <!-- Form Section -->
-                    <div class="row" style="margin-bottom: 5px;">
-                        <div class="col-md-6" style="margin-bottom: 5px;">
-                            <label class="form-label required">Scan Barcode: </label>
-                            <input id="barcodeInput" type="text" th:field="*{barcode}" class="form-control" placeholder="barcode" aria-label="barcode">
-                        </div>
+                <div class="row" style="margin-bottom: 5px;">
+                    <div class="col-md-6" style="margin-bottom: 5px;">
+                        <label class="form-label required">Scan Barcode: </label>
+                        <input id="barcodeInput" type="text" th:field="*{barcode}" class="form-control" placeholder="barcode" aria-label="barcode">
                     </div>
-                    <div class="row" style="margin-bottom: 5px;">
-                        <div class="col-md-6" style="margin-bottom: 5px;">
-                            <label class="form-label required">Customer</label>
+                </div>
+                <div class="row" style="margin-bottom: 5px;">
+                    <div class="col-md-6" style="margin-bottom: 5px;">
+                       <b> <label th:classappend="${transaction.transactionid != null ? '' : 'required'}" class="form-label">Customer</label></b>
+                        <div th:if="${transaction.transactionid}">
+                            <p th:each="customer : ${customers}" th:if="${customer.customerid == transaction.customervo.customerid}" th:text="${customer.name}">Customer Name</p>
+                        </div>
+                        <div th:if="${transaction.transactionid == 0}">
                             <select class="form-control" th:field="${transaction.customervo.customerid}" id="customerselectid">
                                 <option value="" selected="selected">Select a customer</option>
                                 <option th:each="customer : ${customers}" th:value="${customer.customerid}" th:text="${customer.name}"></option>
                             </select>
                         </div>
                     </div>
-                    <div class="row" style="margin-bottom: 5px;">
-                        <div class="col-md-6" style="margin-bottom: 5px;">
-                            <label class="form-label required">Total Price</label>
-                            <input type="text" th:field="*{total}" class="form-control" placeholder="total" aria-label="total" readonly>
-                        </div>
+                </div>
+                <div class="row" style="margin-bottom: 5px;">
+                    <div class="col-md-6" style="margin-bottom: 5px;">
+                        <label class="form-label required">Total Price</label>
+                        <input type="text" th:field="*{total}" class="form-control" placeholder="total" aria-label="total" readonly>
                     </div>
-                    <button style="margin-top:5px;" type="submit" class="btn btn-primary">Submit</button>
+                </div>
+                <button style="margin-top: 5px;" type="submit" class="btn btn-primary">Submit</button>
             </div>
             <div class="col-md-4">
                 <!-- Table Section -->
-                <div style="overflow-x:auto;">
+                <div style="overflow-x: auto;">
                     <table class="table table-striped table-bordered">
                         <thead>
                         <tr>
                             <th>Item</th>
-    <!--                        <th>Quantity</th>-->
                             <th>Price</th>
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:each="item : ${transaction.product_set}" >
+                        <tr th:each="item : ${transaction.product_set}">
                             <td th:text="${item.name}">Item Name</td>
-    <!--                        <td th:text="${item.quantity}">Quantity</td>-->
                             <td th:text="${item.price}">Price</td>
                         </tr>
                         </tbody>
