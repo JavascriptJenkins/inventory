@@ -21,9 +21,13 @@ class TransactionVO implements Serializable {
     @JsonProperty
     Integer transactionnumber;
 
-    @JsonProperty
-    @ElementCollection(fetch = FetchType.EAGER)
-    Set<ProductVO> product_set
+    @ManyToMany
+    @JoinTable(
+            name = "transaction_product",
+            joinColumns = @JoinColumn(name = "transactionid"),
+            inverseJoinColumns = @JoinColumn(name = "productid")
+    )
+    List<ProductVO> product_list
 
     @JsonProperty
     @ElementCollection(fetch = FetchType.EAGER)
@@ -57,10 +61,10 @@ class TransactionVO implements Serializable {
     @Transient
     String barcode
 
-    @JsonProperty
-    @OneToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn(name="cartid")
-    CartVO cart
+//    @JsonProperty
+//    @OneToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
+//    @JoinColumn(name="cartid")
+//    CartVO cart
 
     // generic fields below
     @JsonProperty

@@ -24,6 +24,12 @@ public class ProductVO implements Serializable {
     @JoinColumn(name="producttypeid")
     ProductTypeVO producttypeid;
     @JsonProperty
+    @ManyToMany(mappedBy = "product_cart_list")
+    List<CartVO> cart_list
+    @JsonProperty
+    @ManyToMany(mappedBy = "product_list")
+    List<TransactionVO> transaction_list
+    @JsonProperty
     Integer productnumber;
     @JsonProperty
     Integer quantity;

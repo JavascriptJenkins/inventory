@@ -191,16 +191,19 @@ class CheckoutHelper {
 
         if(!productVO.empty){
 
-            // todo: possiblity will need to pass in existing fully hydrated transactionvo
-            // this will bind the paginated products to the model
-            transactionVO.cart?.product_list = bindExistingListOfProductsAndCustomer(transactionVO, model)
-//            transactionVO.product_set = bindPaginatedListOfProducts(transactionVO, model, page, size)
 
-
+            // todo: do we have a cart here??
             // if it's the first time adding a product we need to create the set to hold them
             if(transactionVO.cart?.product_list == null){
-                transactionVO.cart?.product_list = new HashSet<ProductVO>()
+                transactionVO.cart?.product_list = new ArrayList<ProductVO>()
             }
+
+            // todo: pass in the cartid from ui into this
+            // this will bind the paginated products to the model
+//            transactionVO.cart?.product_list = bindExistingCart(transactionVO, model)
+            transactionVO = bindExistingListOfProductsAndCustomer(transactionVO, model)
+//            transactionVO.product_set = bindPaginatedListOfProducts(transactionVO, model, page, size)
+
 
             transactionVO?.cart?.product_list?.add(productVO.get())
 
@@ -212,6 +215,14 @@ class CheckoutHelper {
             transactionVO.isprocessed = 0
           //  transactionVO = transactionRepo.save(transactionVO)
 
+            if(productVO.cart_list == null){
+                productVO.cart_list = new ArrayList<>()
+            }
+            productVO.cart_list.add(transactionVO.cart)
+            productRepo.save(productVO)
+
+            transactionVO.cart.updateTimeStamp = LocalDateTime.now()
+            transactionVO.cart = cartRepo.save(transactionVO.cart)
 
             transactionVO.updateTimeStamp = LocalDateTime.now()
             transactionVO = transactionRepo.save(transactionVO) // save the transaction with the new product associated
@@ -227,17 +238,34 @@ class CheckoutHelper {
         return transactionVO
     }
 
-    // todo: this needs to handle cart stuff - pickup here
+    // todo: question -= are the products save dhwile we are here??
     // being lazy here and binding the customer each time the user enters a barcode
-    List<ProductVO> bindExistingListOfProductsAndCustomer(TransactionVO transactionVO, Model model){
+    TransactionVO bindExistingListOfProductsAndCustomer(TransactionVO transactionVO, Model model){
         //            // bind the exsiting list of products
-        if(transactionVO.transactionid == 0){
-            return new ArrayList<ProductVO>()
-        }
+
+        // Convert the Set to a List
+
+
             Optional<TransactionVO> existingTransaction =transactionRepo.findById(transactionVO.transactionid)
             transactionVO.customervo = existingTransaction?.get()?.customervo
-            return existingTransaction?.get()?.cart?.product_list
+            transactionVO.cart = existingTransaction.get().cart
+            def myList = existingTransaction.get().product_set as List
+            transactionVO.cart.product_list = myList// todo: convert this set to list
+            return transactionVO
     }
+
+//    public static <T> LinkedHashSet<T> convertListToLinkedHashSet(List<T> originalList) {
+//        if (originalList == null) {
+//            throw new NullPointerException("The original list cannot be null");
+//        }
+//        return new LinkedHashSet<>(originalList);
+//    }
+
+//    CartVO bindExistingCart(TransactionVO transactionVO, Model model){
+//        Optional<TransactionVO> existingTransaction =transactionRepo.findById(transactionVO.transactionid)
+//        transactionVO.customervo = existingTransaction?.get()?.customervo
+//        return existingTransaction?.get()?.cart?.product_list
+//    }
 
 //    void bindPaginatedListOfProducts(TransactionVO transactionVO, Model model, Optional<Integer> page, Optional<Integer> size){
 //
