@@ -61,10 +61,10 @@ class TransactionVO implements Serializable {
     @Transient
     String barcode
 
-//    @JsonProperty
-//    @OneToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
-//    @JoinColumn(name="cartid")
-//    CartVO cart
+    @JsonProperty
+    @OneToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name="cartid")
+    CartVO cart // only gets saved here after the user submits the transaction
 
     // generic fields below
     @JsonProperty

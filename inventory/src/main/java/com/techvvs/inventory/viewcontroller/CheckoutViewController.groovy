@@ -8,6 +8,7 @@ import com.techvvs.inventory.jparepo.ProductRepo
 import com.techvvs.inventory.jparepo.ProductTypeRepo
 import com.techvvs.inventory.model.BatchTypeVO
 import com.techvvs.inventory.model.BatchVO
+import com.techvvs.inventory.model.CartVO
 import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.TransactionVO
@@ -79,25 +80,25 @@ public class CheckoutViewController {
     //default home mapping
     @GetMapping
     String viewNewForm(
-            @ModelAttribute( "transaction" ) TransactionVO transactionVO,
+            @ModelAttribute( "cart" ) CartVO cartVO,
             Model model,
             @RequestParam("customJwtParameter") String customJwtParameter,
-            @RequestParam("transactionid") String transactionid
+            @RequestParam("cartid") String cartid
 
     ){
 
 
-        // if transactionid == 0 then load normally, otherwise load the existing transaction
-        if(transactionid == "0"){
+        // if cartid == 0 then load normally, otherwise load the existing transaction
+        if(cartid == "0"){
             // do nothing
             // if it is the first time loading the page
-            if(transactionVO?.cart?.product_list == null){
-                transactionVO.setTotal(0) // set total to 0 initially
+            if(cartVO.product_cart_list == null){
+                cartVO.setTotal(0) // set total to 0 initially
             }
-            model.addAttribute("transaction", transactionVO);
+            model.addAttribute("transaction", cartVO);
 
         } else {
-            checkoutHelper.bindExistingTransaction(transactionid, model)
+            checkoutHelper.bindExistingCart(cartid, model)
         }
 
         // todo: add a button on the ui to pull the latest transaction for customer (so if someone clicks off page
@@ -134,9 +135,10 @@ public class CheckoutViewController {
         return "checkout/pendingtransactions.html";
     }
 
-    // this is the scanning screen that allows user to scan list of products and create a transaction
+    // first user creates a cart by scanning items.
+    // on next page "final checkout", the cart will be transformed into a transaction
     @PostMapping("/scan")
-    String scan(@ModelAttribute( "transaction" ) TransactionVO transactionVO,
+    String scan(@ModelAttribute( "cart" ) CartVO cartVO,
                 Model model,
                 @RequestParam("customJwtParameter") String customJwtParameter,
                 @RequestParam("page") Optional<Integer> page,
@@ -148,27 +150,28 @@ public class CheckoutViewController {
 
 
 
-        transactionVO = checkoutHelper.validateTransactionVO(transactionVO, model)
+        cartVO = checkoutHelper.validateCartVO(cartVO, model)
 
         // only proceed if there is no error
         if(model.getAttribute("errorMessage") == null){
             // save a new transaction object in database if we don't have one
-            transactionVO = checkoutHelper.saveTransactionIfNew(transactionVO)
+
+            cartVO = checkoutHelper.saveCartIfNew(cartVO)
 
             //  if the transactionVO comes back here without a
             // after transaction is created, search for the product based on barcode
 
-            transactionVO = checkoutHelper.searchForProductByBarcode(transactionVO, model, page, size)
+            cartVO = checkoutHelper.searchForProductByBarcode(cartVO, model, page, size)
 
         }
 
-        transactionVO.barcode = "" // reset barcode to empty
+        cartVO.barcode = "" // reset barcode to empty
 //
 //        model.addAttribute("pageNumbers", pageNumbers);
 //        model.addAttribute("page", currentPage);
 //        model.addAttribute("size", pageOfProduct.getTotalPages());
         model.addAttribute("customJwtParameter", customJwtParameter);
-        model.addAttribute("transaction", transactionVO);
+        model.addAttribute("cart", cartVO);
         // fetch all customers from database and bind them to model
         checkoutHelper.getAllCustomers(model)
 

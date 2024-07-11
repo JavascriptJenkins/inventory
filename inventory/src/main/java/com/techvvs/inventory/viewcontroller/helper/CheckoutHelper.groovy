@@ -43,70 +43,56 @@ class CheckoutHelper {
         model.addAttribute("customers", customers)
     }
 
-    TransactionVO validateTransactionVO(TransactionVO transactionVO, Model model){
-        if(transactionVO?.customervo?.customerid == null){
+    CartVO validateCartVO(CartVO cartVO, Model model){
+        if(cartVO?.customer?.customerid == null){
             model.addAttribute("errorMessage","Please select a customer")
         }
-        if(transactionVO?.barcode == null || transactionVO?.barcode?.empty){
+        if(cartVO?.barcode == null || cartVO?.barcode?.empty){
             model.addAttribute("errorMessage","Please enter a barcode")
         } else {
             // only run this database check if barcode is not null
-            if(!checkoutHelper.doesProductExist(transactionVO.barcode)){
+            if(!checkoutHelper.doesProductExist(cartVO.barcode)){
                 model.addAttribute("errorMessage","Product does not exist")
             }
         }
 
-        return transactionVO
+        return cartVO
     }
 
-    TransactionVO saveTransactionIfNew(TransactionVO transactionVO){
+    CartVO saveCartIfNew(CartVO cartVO){
 
         // need to check to make sure there isn't an existing transaction with the same customer and no objects
-        String barcode = transactionVO.barcode
+        String barcode = cartVO.barcode
 
-        if((transactionVO.transactionid == 0 || transactionVO.transactionid == null
-                && transactionVO?.cart == null || transactionVO?.cart?.product_list?.size() == 0)
+        if((cartVO.cartid == 0 || cartVO.cartid == null
+                && cartVO == null || cartVO?.product_cart_list?.size() == 0)
+//        &&
+//                !doesTransactionExist(transactionVO.customervo, barcode) // dont think we need to do this
         &&
-            !doesTransactionExist(transactionVO.customervo, barcode)
-
-            &&
-
-                !doesCartExist(transactionVO)
+                !doesCartExist(cartVO)
         ){
 
-            CustomerVO customerVO = customerRepo.findById(transactionVO.customervo.customerid).get()
+            CustomerVO customerVO = customerRepo.findById(cartVO.customer.customerid).get()
 
-            def myList = transactionVO.product_set as List
-            CartVO cart = new CartVO(
-                    product_list : myList,
-                    customer : customerVO,
-                    updateTimeStamp: LocalDateTime.now(),
-                    createTimeStamp: LocalDateTime.now()
-            )
+            cartVO.setUpdateTimeStamp(LocalDateTime.now())
+            cartVO.setCreateTimeStamp(LocalDateTime.now())
+            cartVO.setCustomer(customerVO)
 
-           CartVO savedcart = cartRepo.save(cart)
-
-            transactionVO.cart = savedcart
-
-            transactionVO.customervo = customerVO
-            transactionVO.isprocessed = 0
-            transactionVO.createTimeStamp = LocalDateTime.now()
-            transactionVO.updateTimeStamp = LocalDateTime.now()
-            transactionVO = transactionRepo.save(transactionVO)
-            transactionVO.barcode = barcode // need to re-bind this so that on first save it will not be null
+            cartVO = cartRepo.save(cartVO)
+            cartVO.barcode = barcode // need to re-bind this so that on first save it will not be null
         }
 
         // todo: handle case where a cart does exist
 
-        return transactionVO
+        return cartVO
     }
 
 
-    boolean doesCartExist(TransactionVO transactionVO){
-        if(transactionVO?.cart == null){
+    boolean doesCartExist(CartVO cartVO){
+        if(cartVO == null || cartVO.cartid == null){
             return false
         }
-        Optional<CartVO> existingcart = cartRepo.findById(transactionVO?.cartid)
+        Optional<CartVO> existingcart = cartRepo.findById(cartVO.cartid)
         return !existingcart.empty
     }
 
@@ -127,7 +113,7 @@ class CheckoutHelper {
         // todo: remove this stupid check for a case that shoulndt happen
         // if the customer already has a transaction that exists
         for(TransactionVO transactionVO : existingtransactions){
-            if(transactionVO.isprocessed == 0 && transactionVO?.cart?.product_list?.size() == 0){
+            if(transactionVO.isprocessed == 0 && transactionVO?.cart?.product_cart_list?.size() == 0){
 
                 // this covers a situation where customer has an existing transaction with no products
                 // instead of creating another redundant record in the database we are are just updating it
@@ -182,77 +168,66 @@ class CheckoutHelper {
     }
 
 
-    TransactionVO searchForProductByBarcode(TransactionVO transactionVO, Model model, Optional<Integer> page, Optional<Integer> size){
+    // add product to cart and then update the cart and product associations
+    CartVO  searchForProductByBarcode(CartVO cartVO, Model model, Optional<Integer> page, Optional<Integer> size){
 
 
-        Optional<ProductVO> productVO = productRepo.findByBarcode(transactionVO.barcode)
+        Optional<ProductVO> productVO = productRepo.findByBarcode(cartVO.barcode)
 
         // todo: on second time thru we need to fully hydrate the customer and product_set before saving
 
         if(!productVO.empty){
 
+            // update the product cart list association
+            if(productVO.get().cart_list == null){
+                productVO.get().cart_list = new ArrayList<>()
+            }
+            productVO.get().cart_list.add(cartVO)
 
-            // todo: do we have a cart here??
+            productVO.get().updateTimeStamp = LocalDateTime.now()
+            ProductVO savedProduct = productRepo.save(productVO.get())
+
+
+            /* Cart code below */
+            cartVO.total += Integer.valueOf(productVO.get().price) // add the product price to the total
+
+            // handle quantity here (have to iterate thru all product cert list and update the quantity)
+
             // if it's the first time adding a product we need to create the set to hold them
-            if(transactionVO.cart?.product_list == null){
-                transactionVO.cart?.product_list = new ArrayList<ProductVO>()
+            if(cartVO.product_cart_list == null){
+                cartVO.product_cart_list = new ArrayList<ProductVO>()
             }
-
-            // todo: pass in the cartid from ui into this
-            // this will bind the paginated products to the model
-//            transactionVO.cart?.product_list = bindExistingCart(transactionVO, model)
-            transactionVO = bindExistingListOfProductsAndCustomer(transactionVO, model)
-//            transactionVO.product_set = bindPaginatedListOfProducts(transactionVO, model, page, size)
-
-
-            transactionVO?.cart?.product_list?.add(productVO.get())
-
-            transactionVO.total += Integer.valueOf(productVO.get().price) // add the product price to the total
-
-
-//            // grab the customer object before updating
-            transactionVO.customervo = customerRepo.findById(transactionVO.customervo.customerid).get()
-            transactionVO.isprocessed = 0
-          //  transactionVO = transactionRepo.save(transactionVO)
-
-            if(productVO.cart_list == null){
-                productVO.cart_list = new ArrayList<>()
-            }
-            productVO.cart_list.add(transactionVO.cart)
-            productRepo.save(productVO)
-
-            transactionVO.cart.updateTimeStamp = LocalDateTime.now()
-            transactionVO.cart = cartRepo.save(transactionVO.cart)
-
-            transactionVO.updateTimeStamp = LocalDateTime.now()
-            transactionVO = transactionRepo.save(transactionVO) // save the transaction with the new product associated
+            // now save the cart side of the many to many
+            cartVO.product_cart_list.add(savedProduct)
+            cartVO.updateTimeStamp = LocalDateTime.now()
+            cartVO = cartRepo.save(cartVO)
             model.addAttribute("successMessage","Product: "+productVO.get().name + " added successfully")
         } else {
             // need to bind the selected customer here otherwise the dropdown wont work
-            transactionVO.customervo = customerRepo.findById(transactionVO.customervo.customerid).get()
+            cartVO.customer = customerRepo.findById(cartVO.customer.customerid).get()
             model.addAttribute("errorMessage","Product not found")
         }
 
 
 
-        return transactionVO
+        return cartVO
     }
 
-    // todo: question -= are the products save dhwile we are here??
-    // being lazy here and binding the customer each time the user enters a barcode
-    TransactionVO bindExistingListOfProductsAndCustomer(TransactionVO transactionVO, Model model){
-        //            // bind the exsiting list of products
-
-        // Convert the Set to a List
-
-
-            Optional<TransactionVO> existingTransaction =transactionRepo.findById(transactionVO.transactionid)
-            transactionVO.customervo = existingTransaction?.get()?.customervo
-            transactionVO.cart = existingTransaction.get().cart
-            def myList = existingTransaction.get().product_set as List
-            transactionVO.cart.product_list = myList// todo: convert this set to list
-            return transactionVO
-    }
+//    // todo: question -= are the products save dhwile we are here??
+//    // being lazy here and binding the customer each time the user enters a barcode
+//    TransactionVO bindExistingListOfProductsAndCustomer(CartVO cartVO, Model model){
+//        //            // bind the exsiting list of products
+//
+//        // Convert the Set to a List
+//
+//
+//            Optional<CartVO> existingCart =cartRepo.findById(cartVO.cartid)
+//            cartVO.customer = existingCart?.get()?.customer
+//            cartVO = existingCart.get()
+//            def myList = existingTransaction.get().product_set as List
+//            cartVO.product_cart_list = myList// todo: convert this set to list
+//            return transactionVO
+//    }
 
 //    public static <T> LinkedHashSet<T> convertListToLinkedHashSet(List<T> originalList) {
 //        if (originalList == null) {
@@ -303,12 +278,12 @@ class CheckoutHelper {
 //    }
 
 
-    void bindExistingTransaction(String transactionID, Model model){
+    void bindExistingCart(String cartid, Model model){
 
-        Optional<TransactionVO> transactionVO = transactionRepo.findById(Integer.valueOf(transactionID))
+        Optional<CartVO> cartVO = cartRepo.findById(Integer.valueOf(cartid))
 
-        if(!transactionVO.empty){
-            model.addAttribute("transaction", transactionVO.get())
+        if(!cartVO.empty){
+            model.addAttribute("cart", cartVO.get())
         }
 
     }

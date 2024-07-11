@@ -57,7 +57,7 @@
     <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
     <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
 
-    <form id="barcodeForm" th:action="@{/checkout/scan?customJwtParameter=__${customJwtParameter}__&transactionid=__${transaction.transactionid != null ? transaction.transactionid : '0'}__}" th:object="${transaction}" method="post">
+    <form id="barcodeForm" th:action="@{/checkout/scan?customJwtParameter=__${customJwtParameter}__&cartid=__${cart.cartid != null ? cart.cartid : '0'}__}" th:object="${cart}" method="post">
         <div class="row">
             <div class="col-md-8">
                 <!-- Form Section -->
@@ -69,13 +69,13 @@
                 </div>
                 <div class="row" style="margin-bottom: 5px;">
                     <div class="col-md-6" style="margin-bottom: 5px;">
-                       <b> <label th:classappend="${transaction.transactionid != null ? '' : 'required'}" class="form-label">Customer</label></b>
-                        <div th:if="${transaction.transactionid}">
-                            <p th:each="customer : ${customers}" th:if="${customer.customerid == transaction.customervo.customerid}" th:text="${customer.name}">Customer Name</p>
-                            <input type="hidden" th:field="*{customervo.customerid}">
+                       <b> <label th:classappend="${cart.cartid != null ? '' : 'required'}" class="form-label">Customer</label></b>
+                        <div th:if="${cart.cartid}">
+                            <p th:each="customer : ${customers}" th:if="${customer.customerid == cart.customer.customerid}" th:text="${customer.name}">Customer Name</p>
+                            <input type="hidden" th:field="*{customer.customerid}">
                         </div>
-                        <div th:if="${transaction.transactionid == 0}">
-                            <select class="form-control" th:field="${transaction.customervo.customerid}" id="customerselectid">
+                        <div th:if="${cart.cartid == 0}">
+                            <select class="form-control" th:field="${cart.customer.customerid}" id="customerselectid">
                                 <option value="" selected="selected">Select a customer</option>
                                 <option th:each="customer : ${customers}" th:value="${customer.customerid}" th:text="${customer.name}"></option>
                             </select>
@@ -101,7 +101,7 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:each="item : ${transaction.product_set}">
+                        <tr th:each="item : ${cart.product_cart_list}">
                             <td th:text="${item.name}">Item Name</td>
                             <td th:text="${item.price}">Price</td>
                         </tr>

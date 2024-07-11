@@ -14,6 +14,7 @@ import javax.persistence.ManyToOne
 import javax.persistence.OneToMany
 import javax.persistence.OneToOne
 import javax.persistence.Table
+import javax.persistence.Transient
 import java.time.LocalDateTime
 
 
@@ -39,6 +40,12 @@ class CartVO implements Serializable{
     @JoinColumn(name = "customerid")
     CustomerVO customer
 
+    // transient field for passing barcode on checkout page back to controller
+    @Transient
+    String barcode
+
+    @JsonProperty
+    Integer total;
 
     @JsonProperty
     LocalDateTime updateTimeStamp;
