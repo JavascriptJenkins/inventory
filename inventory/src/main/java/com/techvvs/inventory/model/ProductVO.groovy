@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name="product")
 public class ProductVO implements Serializable {
-
+// todo: make a productsale object
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @JsonProperty

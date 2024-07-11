@@ -91,7 +91,7 @@ public class CheckoutViewController {
         if(transactionid == "0"){
             // do nothing
             // if it is the first time loading the page
-            if(transactionVO.product_set == null){
+            if(transactionVO?.cart?.product_list == null){
                 transactionVO.setTotal(0) // set total to 0 initially
             }
             model.addAttribute("transaction", transactionVO);

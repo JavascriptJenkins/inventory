@@ -87,6 +87,12 @@ class BarcodeService {
         return new LinkedHashSet<>(originalSet);
     }
 
+    public static <T> LinkedHashSet<T> convertListToLinkedHashSet(List<T> originalList) {
+        if (originalList == null) {
+            throw new NullPointerException("The original list cannot be null");
+        }
+        return new LinkedHashSet<>(originalList);
+    }
 
 
 }

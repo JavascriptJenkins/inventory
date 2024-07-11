@@ -1,0 +1,44 @@
+package com.techvvs.inventory.model
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonProperty
+
+import javax.persistence.Entity
+import javax.persistence.GeneratedValue
+import javax.persistence.GenerationType
+import javax.persistence.Id
+import javax.persistence.JoinColumn
+import javax.persistence.ManyToOne
+import javax.persistence.OneToMany
+import javax.persistence.OneToOne
+import javax.persistence.Table
+import java.time.LocalDateTime
+
+
+@JsonIgnoreProperties
+@Entity
+@Table(name="cart")
+class CartVO implements Serializable{
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @JsonProperty
+    Integer cartid
+
+    @OneToMany
+    @JoinColumn(name = "productid")
+    List<ProductVO> product_list
+
+    @OneToOne
+    @JoinColumn(name = "customerid")
+    CustomerVO customer
+
+
+    @JsonProperty
+    LocalDateTime updateTimeStamp;
+
+    @JsonProperty
+    LocalDateTime createTimeStamp;
+
+
+}
