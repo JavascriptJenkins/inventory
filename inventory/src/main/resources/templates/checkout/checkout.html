@@ -87,6 +87,9 @@
                         <label class="form-label required">Total Price</label>
                         <input type="text" th:field="*{total}" class="form-control" placeholder="total" aria-label="total" readonly>
                     </div>
+                    <input type="hidden" th:field="*{isprocessed}">
+                    <input type="hidden" th:field="*{updateTimeStamp}">
+                    <input type="hidden" th:field="*{createTimeStamp}">
                 </div>
                 <button  style="margin-top: 5px;visibility: hidden; " type="submit" class="btn btn-primary">Submit</button>
             </div>

@@ -87,8 +87,9 @@ class CheckoutHelper {
 
             CustomerVO customerVO = customerRepo.findById(cartVO.customer.customerid).get()
 
-            cartVO.setUpdateTimeStamp(LocalDateTime.now())
-            cartVO.setCreateTimeStamp(LocalDateTime.now())
+            cartVO.updateTimeStamp = LocalDateTime.now()
+            cartVO.createTimeStamp = LocalDateTime.now()
+            cartVO.isprocessed = 0
             cartVO.setCustomer(customerVO)
 
             cartVO = cartRepo.save(cartVO)
@@ -142,6 +143,42 @@ class CheckoutHelper {
         }
 
         return false
+    }
+
+    void findPendingCarts(Model model, Optional<Integer> page, Optional<Integer> size){
+
+        // START PAGINATION
+        // https://www.baeldung.com/spring-data-jpa-pagination-sorting
+        //pagination
+        int currentPage = page.orElse(0);
+        int pageSize = 5;
+        Pageable pageable;
+        if(currentPage == 0){
+            pageable = PageRequest.of(0 , pageSize);
+        } else {
+            pageable = PageRequest.of(currentPage - 1, pageSize);
+        }
+
+        Page<CartVO> pageOfCart = cartRepo.findAll(pageable);
+
+        int totalPages = pageOfCart.getTotalPages();
+
+        List<Integer> pageNumbers = new ArrayList<>();
+
+        while(totalPages > 0){
+            pageNumbers.add(totalPages);
+            totalPages = totalPages - 1;
+        }
+
+
+        model.addAttribute("pageNumbers", pageNumbers);
+        model.addAttribute("page", currentPage);
+        model.addAttribute("size", pageOfCart.getTotalPages());
+        model.addAttribute("cartPage", pageOfCart);
+        // END PAGINATION
+
+
+
     }
 
     void findPendingTransactions(Model model, Optional<Integer> page, Optional<Integer> size){

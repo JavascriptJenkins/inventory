@@ -135,6 +135,27 @@ public class CheckoutViewController {
         return "checkout/pendingtransactions.html";
     }
 
+    //get the pending carts
+    @GetMapping("pendingcarts")
+    String viewPendingTransactions(
+            @ModelAttribute( "cart" ) CartVO cartVO,
+            Model model,
+            @RequestParam("customJwtParameter") String customJwtParameter,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size
+    ){
+
+        System.out.println("customJwtParam on checkout controller: "+customJwtParameter);
+
+        // bind the page of transactions
+        checkoutHelper.findPendingCarts(model, page, size)
+        // fetch all customers from database and bind them to model
+        checkoutHelper.getAllCustomers(model)
+        model.addAttribute("customJwtParameter", customJwtParameter);
+        model.addAttribute("cart", cartVO);
+        return "checkout/pendingcarts.html";
+    }
+
     // first user creates a cart by scanning items.
     // on next page "final checkout", the cart will be transformed into a transaction
     @PostMapping("/scan")
@@ -250,7 +271,7 @@ public class CheckoutViewController {
         // fetch all customers from database and bind them to model
         checkoutHelper.getAllCustomers(model)
 
-        return "checkout/reviewcart.html";
+        return "checkout/transaction.html";
     }
 
 

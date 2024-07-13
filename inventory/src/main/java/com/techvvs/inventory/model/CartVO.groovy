@@ -48,6 +48,9 @@ class CartVO implements Serializable{
     Integer total;
 
     @JsonProperty
+    Integer isprocessed;
+
+    @JsonProperty
     LocalDateTime updateTimeStamp;
 
     @JsonProperty
