@@ -101,12 +101,14 @@
                         <tr>
                             <th>Item</th>
                             <th>Price</th>
+                            <th>Quantity</th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr th:each="item : ${cart.product_cart_list}">
                             <td th:text="${item.name}">Item Name</td>
                             <td th:text="${item.price}">Price</td>
+                            <td th:text="${item.displayquantity}">Quantity</td>
                         </tr>
                         </tbody>
                     </table>
