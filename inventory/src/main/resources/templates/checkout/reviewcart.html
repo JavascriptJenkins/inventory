@@ -26,6 +26,37 @@
       }
     </style>
 
+    <script>
+
+
+
+        $(document).ready(function () {
+
+
+            processTableItems();
+
+        });
+
+
+        function processTableItems() {
+            const seenBarcodes = new Set();
+
+            $('#reviewCartForm tbody tr').each(function() {
+                const itemBarcode = $(this).data('barcode'); // Assuming you have data-barcode attribute in your <tr> elements
+
+                if (seenBarcodes.has(itemBarcode)) {
+                    $(this).hide(); // Hide the row if the barcode is already seen
+                } else {
+                    seenBarcodes.add(itemBarcode);
+                    $(this).show(); // Ensure the row is visible (in case it was hidden previously)
+                }
+            });
+
+            console.log(Array.from(seenBarcodes)); // This will log the unique barcodes
+        }
+
+    </script>
+
 </head>
 <body>
 
@@ -45,7 +76,7 @@
 
 
     <!--    One form for passing back the barcode on every scan and updating the transaction in db -->
-    <form th:action="@{/checkout/transaction?customJwtParameter=__${customJwtParameter}__}" th:object="${cart}" method="post">
+    <form id="reviewCartForm" th:action="@{/checkout/transaction?customJwtParameter=__${customJwtParameter}__}" th:object="${cart}" method="post">
 
         <!-- Table Section -->
         <div style="overflow-x: auto;">
@@ -54,12 +85,14 @@
                 <tr>
                     <th>Item</th>
                     <th>Price</th>
+                    <th>Quantity</th>
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="item : ${cart.product_cart_list}">
-                    <td th:text="${item.name}">Item Name</td>
+                <tr th:each="item : ${cart.product_cart_list}" th:data-barcode="${item.barcode}">
+                    <td th:text="${item.name}" data-barcode="${item.barcode}">Item Name</td>
                     <td th:text="${item.price}">Price</td>
+                    <td th:text="${item.displayquantity}">Quantity</td>
                 </tr>
                 </tbody>
             </table>

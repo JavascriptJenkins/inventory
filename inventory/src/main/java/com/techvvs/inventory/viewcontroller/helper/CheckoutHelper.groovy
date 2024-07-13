@@ -217,6 +217,23 @@ class CheckoutHelper {
 
     }
 
+    CartVO hydrateTransientQuantitiesForDisplay(CartVO cartVO){
+
+        // cycle thru here and if the productid is the same then update the quantity
+        ProductVO previous = new ProductVO(barcode: 0)
+        for(ProductVO productVO : cartVO.product_cart_list){
+            if(productVO.displayquantity == null){
+                productVO.displayquantity = 1
+            }
+            if(productVO.barcode == previous.barcode){
+                    productVO.displayquantity = productVO.displayquantity + 1
+            }
+            previous = productVO
+        }
+
+        return cartVO
+
+    }
 
     // add product to cart and then update the cart and product associations
     CartVO  searchForProductByBarcode(CartVO cartVO, Model model, Optional<Integer> page, Optional<Integer> size){
@@ -263,14 +280,15 @@ class CheckoutHelper {
         return cartVO
     }
 
-    void bindExistingCart(String cartid, Model model){
+    CartVO getExistingCart(String cartid){
 
         Optional<CartVO> cartVO = cartRepo.findById(Integer.valueOf(cartid))
 
         if(!cartVO.empty){
-            model.addAttribute("cart", cartVO.get())
+            return cartVO.get()
+        } else {
+            return new CartVO(cartid: 0)
         }
-
     }
 
 

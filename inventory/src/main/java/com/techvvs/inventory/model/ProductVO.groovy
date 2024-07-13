@@ -53,6 +53,11 @@ public class ProductVO implements Serializable {
     Integer laborCostPricePerUnit;
     @JsonProperty
     Integer marginPercent;
+
+    // for display purposes only
+    @Transient
+    Integer displayquantity
+
     // generic fields below
     @JsonProperty
     LocalDateTime updateTimeStamp;

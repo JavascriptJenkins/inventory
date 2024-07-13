@@ -95,10 +95,12 @@ public class CheckoutViewController {
             if(cartVO.product_cart_list == null){
                 cartVO.setTotal(0) // set total to 0 initially
             }
-            model.addAttribute("transaction", cartVO);
+            model.addAttribute("cart", cartVO);
 
         } else {
-            checkoutHelper.bindExistingCart(cartid, model)
+            cartVO = checkoutHelper.getExistingCart(cartid)
+            cartVO = checkoutHelper.hydrateTransientQuantitiesForDisplay(cartVO)
+            model.addAttribute("cart", cartVO)
         }
 
         // todo: add a button on the ui to pull the latest transaction for customer (so if someone clicks off page
@@ -180,6 +182,8 @@ public class CheckoutViewController {
 
             cartVO = checkoutHelper.searchForProductByBarcode(cartVO, model, page, size)
 
+            cartVO = checkoutHelper.hydrateTransientQuantitiesForDisplay(cartVO)
+
         }
 
         cartVO.barcode = "" // reset barcode to empty
@@ -218,6 +222,7 @@ public class CheckoutViewController {
             // after transaction is created, search for the product based on barcode
 
 //            cartVO = checkoutHelper.searchForProductByBarcode(cartVO, model, page, size)
+            cartVO = checkoutHelper.hydrateTransientQuantitiesForDisplay(cartVO)
 
         }
 
@@ -235,6 +240,7 @@ public class CheckoutViewController {
         return "checkout/reviewcart.html";
     }
 
+    // this will process the cart and create transaction records
     @PostMapping("/transaction")
     String transaction(@ModelAttribute( "cart" ) CartVO cartVO,
                       Model model,
