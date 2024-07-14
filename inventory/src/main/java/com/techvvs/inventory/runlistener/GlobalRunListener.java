@@ -2,7 +2,8 @@ package com.techvvs.inventory.runlistener;
 
 import com.techvvs.inventory.barcode.impl.BarcodeGenerator;
 import com.techvvs.inventory.barcode.service.BarcodeService;
-import com.techvvs.inventory.model.BatchVO;
+
+import com.techvvs.inventory.printers.PrinterService;
 import com.techvvs.inventory.refdata.RefDataLoader;
 import com.techvvs.inventory.util.SimpleCache;
 import com.techvvs.inventory.viewcontroller.helper.BatchControllerHelper;
@@ -35,6 +36,9 @@ public class GlobalRunListener implements ApplicationListener<ApplicationReadyEv
     @Autowired
     BarcodeService barcodeService;
 
+    @Autowired
+    PrinterService printerService;
+
     String UPLOAD_DIR = "./uploads/menus/";
     String IMPORT_DIR = "./uploads/import/";
 
@@ -48,6 +52,9 @@ public class GlobalRunListener implements ApplicationListener<ApplicationReadyEv
 
         refDataLoader.loadRefData();
 
+
+
+        printerService.print("Hello World");
   //      xlsxImporter.testImportXLSXFile();
 
         // todo: move this somewhere else
