@@ -42,4 +42,17 @@ class ProductService {
 
 
     }
+
+    ProductVO saveProduct(ProductVO productVO){
+        return productRepo.save(productVO)
+    }
+
+    ProductVO findProductByID(ProductVO productVO){
+        return productRepo.findById(productVO.product_id).get()
+    }
+
+    List<ProductVO> getAllProducts(){
+        List<ProductVO> products = productRepo.findAll()
+        return products
+    }
 }

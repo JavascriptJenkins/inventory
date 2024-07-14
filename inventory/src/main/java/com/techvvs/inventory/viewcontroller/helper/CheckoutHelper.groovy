@@ -59,7 +59,7 @@ class CheckoutHelper {
             } else {
                 int cartcount = getCountOfProductInCartByBarcode(cartVO)
                 // check here if the quantity we are trying to add will exceed the quantity in stock
-                if(cartcount >= productVO.get().quantity){
+                if(cartcount >= productVO.get().quantityremaining){
                     model.addAttribute("errorMessage","Quantity exceeds quantity in stock")
                 }
             }

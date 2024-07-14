@@ -32,7 +32,7 @@ public class ProductVO implements Serializable {
     @JsonProperty
     Integer productnumber;
     @JsonProperty
-    Integer quantity;
+    Integer quantity; // this is the original quantity in the batch
     @JsonProperty
     Integer quantityremaining;
     @JsonProperty
