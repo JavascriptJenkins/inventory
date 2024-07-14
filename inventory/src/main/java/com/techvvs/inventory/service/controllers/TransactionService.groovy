@@ -82,6 +82,45 @@ class TransactionService {
     }
 
 
+    List<ProductVO> getAggregatedProductList(TransactionVO transactionVO){
+        Set<String> seen = new HashSet<>()
+        List<ProductVO> originallist = transactionVO.product_list
+        List<ProductVO> newlist = new ArrayList<>()
+
+        for(ProductVO productVO : originallist){
+
+            if(seen.contains(productVO.barcode)){
+                continue
+            }
+            seen.add(productVO.barcode)
+            newlist.add(productVO)
+        }
+
+        return newlist
+
+
+    }
+
+    List<ProductVO> getAggregatedCartProductList(CartVO cartVO){
+        Set<String> seen = new HashSet<>()
+        List<ProductVO> originallist = cartVO.product_cart_list
+        List<ProductVO> newlist = new ArrayList<>()
+
+        for(ProductVO productVO : originallist){
+
+            if(seen.contains(productVO.barcode)){
+                continue
+            }
+            seen.add(productVO.barcode)
+            newlist.add(productVO)
+        }
+
+        return newlist
+
+
+    }
+
+
 
 
 }

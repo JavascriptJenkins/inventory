@@ -2,6 +2,8 @@ package com.techvvs.inventory.printers.receipts
 
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.TransactionVO
+import com.techvvs.inventory.service.controllers.TransactionService
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
 import java.text.DecimalFormat
@@ -10,6 +12,9 @@ import java.time.format.DateTimeFormatter
 @Component
 class ReceiptGenerator {
 
+
+    @Autowired
+    TransactionService transactionService
 
     String generateTransactioonReciept(TransactionVO transactionVO) {
         return generateReceipt(transactionVO)
@@ -32,11 +37,15 @@ class ReceiptGenerator {
         receipt.append('Transaction #: '+transactionVO.transactionid+'\n');
         receipt.append('Date: '+transactionVO.updateTimeStamp.format(formatter)+'  Time: '+transactionVO.updateTimeStamp.format(timeFormatter)+'\n');
         receipt.append('--------------------------------\n');
-        receipt.append('Item                Qty    Price\n');
+        receipt.append(String.format("%-20s %5s %8s\n", "Item", "Qty", "Price"));
+//        receipt.append('Item                Qty    Price\n');
         receipt.append('--------------------------------\n');
 
-        for(ProductVO item : transactionVO.product_list) {
-            receipt.append(item.name+'               '+item.quantity+'    $'+item.price+'\n');
+        transactionVO.cart.product_cart_list = transactionService.getAggregatedCartProductList(transactionVO.cart)
+
+        for(ProductVO item : transactionVO.cart.product_cart_list) {
+            receipt.append(formatReceiptItem(item.name, item.displayquantity, Double.valueOf(item.price)));
+//            receipt.append(item.name+'               '+item.quantity+'    $'+item.price+'\n');
         }
         receipt.append("--------------------------------\n");
         receipt.append('Subtotal                  $'+transactionVO.total+'\n');
@@ -55,6 +64,10 @@ class ReceiptGenerator {
         receipt.append('                         \n');
         receipt.append("\n\n\n"); // Feed to cut
         return receipt.toString();
+    }
+
+    private String formatReceiptItem(String name, int quantity, Double price) {
+        return String.format("%-20s %5d %8.2f\n", name, quantity, price);
     }
 
     public static int calculateTotalWithTax(int total, int taxPercentage) {

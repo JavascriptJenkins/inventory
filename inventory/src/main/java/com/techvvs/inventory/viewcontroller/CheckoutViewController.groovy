@@ -13,6 +13,7 @@ import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.modelnonpersist.FileVO
+import com.techvvs.inventory.printers.PrinterService
 import com.techvvs.inventory.service.controllers.CartService
 import com.techvvs.inventory.service.controllers.TransactionService
 import com.techvvs.inventory.util.TechvvsFileHelper
@@ -81,6 +82,9 @@ public class CheckoutViewController {
 
     @Autowired
     TransactionService transactionService
+
+    @Autowired
+    PrinterService printerService
 
 
     SecureRandom secureRandom = new SecureRandom();
@@ -302,6 +306,62 @@ public class CheckoutViewController {
 
         } else {
             return "checkout/transaction.html";// return same page with errors
+        }
+
+    }
+
+
+    @PostMapping("/printreceipt")
+    String printreceipt(@ModelAttribute( "transaction" ) TransactionVO transactionVO,
+                       Model model,
+                       @RequestParam("customJwtParameter") String customJwtParameter,
+                       @RequestParam("page") Optional<Integer> page,
+                       @RequestParam("size") Optional<Integer> size){
+
+        System.out.println("customJwtParam on checkout controller: "+customJwtParameter);
+
+       // cartVO = checkoutHelper.validateCartReviewVO(transactionVO, model)
+       // TransactionVO transactionVO = new TransactionVO()
+
+
+        String name = ""
+
+        // only proceed if there is no error
+        if(model.getAttribute("errorMessage") == null){
+
+            transactionVO = transactionService.getExistingTransaction(transactionVO.transactionid)
+
+
+            CartVO cartVO = checkoutHelper.hydrateTransientQuantitiesForDisplay(transactionVO.cart)
+
+
+            printerService.printReceipt(transactionVO)
+
+            name = transactionVO.cart.customer.name
+
+
+        //    CartVO cartVO = checkoutHelper.hydrateTransientQuantitiesForDisplay(transactionVO.cart)
+
+
+        }
+
+//
+//        model.addAttribute("pageNumbers", pageNumbers);
+//        model.addAttribute("page", currentPage);
+//        model.addAttribute("size", pageOfProduct.getTotalPages());
+        model.addAttribute("customJwtParameter", customJwtParameter);
+        model.addAttribute("transaction", transactionVO);
+        //model.addAttribute("successMessage", "Review the cart")
+        // fetch all customers from database and bind them to model
+        checkoutHelper.getAllCustomers(model)
+
+        if(model.getAttribute("errorMessage") == null){
+            model.addAttribute("successMessage", "Successfully printed receipt! Thanks "+name+"!")
+
+            return "checkout/transactionsuccess.html";
+
+        } else {
+            return "checkout/transactionsuccess.html";// return same page with errors
         }
 
     }
