@@ -41,7 +41,7 @@
         function processTableItems() {
             const seenBarcodes = new Set();
 
-            $('#reviewCartForm tbody tr').each(function() {
+            $('#transactionSuccessForm tbody tr').each(function() {
                 const itemBarcode = $(this).data('barcode'); // Assuming you have data-barcode attribute in your <tr> elements
 
                 if (seenBarcodes.has(itemBarcode)) {
@@ -76,7 +76,7 @@
 
 
     <!--    One form for passing back the barcode on every scan and updating the transaction in db -->
-    <form id="reviewCartForm" th:action="@{/checkout/transaction?customJwtParameter=__${customJwtParameter}__}" th:object="${cart}" method="post">
+    <form id="transactionSuccessForm" th:action="@{/checkout/printreceipt?customJwtParameter=__${customJwtParameter}__}" th:object="${transaction}" method="post">
 
         <!-- Table Section -->
         <div style="overflow-x: auto;">
@@ -89,7 +89,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="item : ${cart.product_cart_list}" th:data-barcode="${item.barcode}">
+                <tr th:each="item : ${transaction.product_list}" th:data-barcode="${item.barcode}">
                     <td th:text="${item.name}">Item Name</td>
                     <td th:text="${item.price}">Price</td>
                     <td th:text="${item.displayquantity}">Quantity</td>
@@ -97,6 +97,10 @@
                 </tbody>
             </table>
         </div>
+
+        <input type="hidden" th:field="*{transactionid}">
+        <button style="margin-top:5px;" type="submit" class="btn btn-primary">Print Receipt</button>
+
 
     </form>
 

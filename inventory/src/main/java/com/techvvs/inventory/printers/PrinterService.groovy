@@ -1,5 +1,6 @@
 package com.techvvs.inventory.printers
 
+import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.printers.service.BrotherHLL2300DSeriesSevice
 import com.techvvs.inventory.printers.service.MunbynITPP905Service
 import org.springframework.beans.factory.annotation.Autowired
@@ -25,8 +26,9 @@ class PrinterService {
 
 
 
-    void printReceipt(String data) {
-        munbynITPP905Service.print(data);
+    void printReceipt(TransactionVO transactionVO) {
+      //  munbynITPP905Service.print(data);
+        munbynITPP905Service.printReceipt(transactionVO);
     }
 
     void printInvoice(String data) {

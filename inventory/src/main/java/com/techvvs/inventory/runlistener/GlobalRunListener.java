@@ -54,7 +54,7 @@ public class GlobalRunListener implements ApplicationListener<ApplicationReadyEv
 
 
 
-        printerService.print("Hello World");
+   //     printerService.printReceipt("Hello World");
   //      xlsxImporter.testImportXLSXFile();
 
         // todo: move this somewhere else

@@ -45,7 +45,7 @@ class TransactionVO implements Serializable {
     Integer paid;
 
     @JsonProperty
-    Integer taxes;
+    Integer taxpercentage;
 
     @JsonProperty
     String notes

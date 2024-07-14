@@ -39,6 +39,7 @@ class TransactionService {
                 customervo: cartVO.customer,
                 total: cartVO.total,
                 paid: 0,
+                taxpercentage: 10,
                 isprocessed: 0
 
         )
@@ -74,6 +75,10 @@ class TransactionService {
 
             return newtransaction
 
+    }
+
+    TransactionVO getExistingTransaction(Integer transactionid){
+        return transactionRepo.findById(transactionid).get()
     }
 
 
