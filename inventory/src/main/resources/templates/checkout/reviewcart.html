@@ -78,6 +78,38 @@
     <!--    One form for passing back the barcode on every scan and updating the transaction in db -->
     <form id="reviewCartForm" th:action="@{/checkout/transaction?customJwtParameter=__${customJwtParameter}__}" th:object="${cart}" method="post">
 
+
+
+        <!-- hidden imput/bound data section -->
+        <div class="row" style="margin-bottom: 5px;">
+            <div class="col-md-6" style="margin-bottom: 5px;">
+                <b> <label th:classappend="${cart.cartid != null ? '' : 'required'}" class="form-label">Customer</label></b>
+                <div th:if="${cart.cartid}">
+                    <p th:each="customer : ${customers}" th:if="${customer.customerid == cart.customer.customerid}" th:text="${customer.name}">Customer Name</p>
+                    <input type="hidden" th:field="*{customer.customerid}">
+                </div>
+                <div th:if="${cart.cartid == 0}">
+                    <select class="form-control" th:field="${cart.customer.customerid}" id="customerselectid">
+                        <option value="" selected="selected">Select a customer</option>
+                        <option th:each="customer : ${customers}" th:value="${customer.customerid}" th:text="${customer.name}"></option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="row" style="margin-bottom: 5px;">
+            <div class="col-md-6" style="margin-bottom: 5px;">
+                <label class="form-label"><b>Total Price</b></label>
+                <input type="hidden" th:field="*{total}" class="form-control" placeholder="total" aria-label="total" readonly>
+                <p th:text="${cart.total}"></p>
+            </div>
+            <input type="hidden" th:field="*{isprocessed}">
+            <input type="hidden" th:field="*{updateTimeStamp}">
+            <input type="hidden" th:field="*{createTimeStamp}">
+        </div>
+
+
+
+
         <!-- Table Section -->
         <div style="overflow-x: auto;">
             <table class="table table-striped table-bordered">

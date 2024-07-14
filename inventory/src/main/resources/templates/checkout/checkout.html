@@ -111,8 +111,9 @@ function processTableItems() {
                 </div>
                 <div class="row" style="margin-bottom: 5px;">
                     <div class="col-md-6" style="margin-bottom: 5px;">
-                        <label class="form-label required">Total Price</label>
-                        <input type="text" th:field="*{total}" class="form-control" placeholder="total" aria-label="total" readonly>
+                        <label class="form-label required"><b>Total Price</b></label>
+                        <input type="hidden" th:field="*{total}" class="form-control" placeholder="total" aria-label="total" readonly>
+                        <p th:text="${cart.total}"></p>
                     </div>
                     <input type="hidden" th:field="*{isprocessed}">
                     <input type="hidden" th:field="*{updateTimeStamp}">

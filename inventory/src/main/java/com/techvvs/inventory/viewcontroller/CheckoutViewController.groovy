@@ -13,6 +13,7 @@ import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.modelnonpersist.FileVO
+import com.techvvs.inventory.service.controllers.TransactionService
 import com.techvvs.inventory.util.TechvvsFileHelper
 import com.techvvs.inventory.validation.ValidateBatch
 import com.techvvs.inventory.viewcontroller.helper.BatchControllerHelper
@@ -72,6 +73,9 @@ public class CheckoutViewController {
 
     @Autowired
     CheckoutHelper checkoutHelper
+
+    @Autowired
+    TransactionService transactionService
 
 
     SecureRandom secureRandom = new SecureRandom();
@@ -158,6 +162,7 @@ public class CheckoutViewController {
         return "checkout/pendingcarts.html";
     }
 
+    // todo: write in a validation check to make sure you can't add more than is available in the batch
     // first user creates a cart by scanning items.
     // on next page "final checkout", the cart will be transformed into a transaction
     @PostMapping("/scan")
@@ -182,9 +187,10 @@ public class CheckoutViewController {
 
             cartVO = checkoutHelper.searchForProductByBarcode(cartVO, model, page, size)
 
-            cartVO = checkoutHelper.hydrateTransientQuantitiesForDisplay(cartVO)
 
         }
+
+        cartVO = checkoutHelper.hydrateTransientQuantitiesForDisplay(cartVO)
 
         cartVO.barcode = "" // reset barcode to empty
 //
@@ -214,6 +220,8 @@ public class CheckoutViewController {
         // only proceed if there is no error
         if(model.getAttribute("errorMessage") == null){
             // save a new transaction object in database if we don't have one
+            cartVO = checkoutHelper.getExistingCart(String.valueOf(cartVO.cartid))
+
 
             // bind objects for reviewing the cart
             //cartVO = checkoutHelper.reviewCart(cartVO, model)
@@ -255,6 +263,7 @@ public class CheckoutViewController {
         // only proceed if there is no error
         if(model.getAttribute("errorMessage") == null){
             // save a new transaction object in database if we don't have one
+            TransactionVO transactionVO = transactionService.processCartGenerateNewTransaction(cartVO)
 
             // bind objects for reviewing the cart
             //cartVO = checkoutHelper.reviewCart(cartVO, model)
@@ -273,7 +282,7 @@ public class CheckoutViewController {
 //        model.addAttribute("size", pageOfProduct.getTotalPages());
         model.addAttribute("customJwtParameter", customJwtParameter);
         model.addAttribute("cart", cartVO);
-        model.addAttribute("successMessage", "Review the cart")
+        //model.addAttribute("successMessage", "Review the cart")
         // fetch all customers from database and bind them to model
         checkoutHelper.getAllCustomers(model)
 

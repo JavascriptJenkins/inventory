@@ -33,8 +33,6 @@ class CheckoutHelper {
     @Autowired
     CartRepo cartRepo
 
-    @Autowired
-    CheckoutHelper checkoutHelper
 
     // method to get all customers from db
     void getAllCustomers(Model model){
@@ -51,12 +49,30 @@ class CheckoutHelper {
             model.addAttribute("errorMessage","Please enter a barcode")
         } else {
             // only run this database check if barcode is not null
-            if(!checkoutHelper.doesProductExist(cartVO.barcode)){
+            Optional<ProductVO> productVO = doesProductExist(cartVO.barcode)
+            if(productVO.empty){
                 model.addAttribute("errorMessage","Product does not exist")
+            } else {
+                int cartcount = getCountOfProductInCartByBarcode(cartVO)
+                // check here if the quantity we are trying to add will exceed the quantity in stock
+                if(cartcount >= productVO.get().quantity){
+                    model.addAttribute("errorMessage","Quantity exceeds quantity in stock")
+                }
             }
+
         }
 
         return cartVO
+    }
+
+    int getCountOfProductInCartByBarcode(CartVO cartVO){
+        int count = 0
+        for(ProductVO productincart : cartVO.product_cart_list){
+            if(productincart.barcode.equals(cartVO.barcode)){
+                count = count + 1
+            }
+        }
+        return count
     }
 
     CartVO validateCartReviewVO(CartVO cartVO, Model model){
@@ -110,10 +126,10 @@ class CheckoutHelper {
         return !existingcart.empty
     }
 
-    boolean doesProductExist(String barcode){
+    Optional<ProductVO> doesProductExist(String barcode){
 
         Optional<ProductVO> existingproduct = productRepo.findByBarcode(barcode)
-        return !existingproduct.empty
+        return existingproduct
     }
 
     boolean doesTransactionExist(CustomerVO customerVO, String barcode){
