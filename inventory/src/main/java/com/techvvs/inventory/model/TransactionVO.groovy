@@ -57,10 +57,6 @@ class TransactionVO implements Serializable {
     @JsonProperty
     Integer isprocessed
 
-    // transient field for passing barcode on checkout page back to controller
-    @Transient
-    String barcode
-
     @JsonProperty
     @OneToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name="cartid")
