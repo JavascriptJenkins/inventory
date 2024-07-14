@@ -280,6 +280,8 @@ public class CheckoutViewController {
             // save a new transaction object in database if we don't have one
             transactionVO = transactionService.processCartGenerateNewTransaction(cartVO)
 
+            cartVO = checkoutHelper.hydrateTransientQuantitiesForDisplay(transactionVO.cart)
+
 
         }
 
