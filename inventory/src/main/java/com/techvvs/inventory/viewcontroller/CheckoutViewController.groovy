@@ -13,6 +13,7 @@ import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.modelnonpersist.FileVO
+import com.techvvs.inventory.service.controllers.CartService
 import com.techvvs.inventory.service.controllers.TransactionService
 import com.techvvs.inventory.util.TechvvsFileHelper
 import com.techvvs.inventory.validation.ValidateBatch
@@ -24,6 +25,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.core.parameters.P
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.*
@@ -73,6 +75,9 @@ public class CheckoutViewController {
 
     @Autowired
     CheckoutHelper checkoutHelper
+
+    @Autowired
+    CartService cartService
 
     @Autowired
     TransactionService transactionService
@@ -185,7 +190,7 @@ public class CheckoutViewController {
             //  if the transactionVO comes back here without a
             // after transaction is created, search for the product based on barcode
 
-            cartVO = checkoutHelper.searchForProductByBarcode(cartVO, model, page, size)
+            cartVO = cartService.searchForProductByBarcode(cartVO, model, page, size)
 
 
         }
@@ -259,34 +264,44 @@ public class CheckoutViewController {
         System.out.println("customJwtParam on checkout controller: "+customJwtParameter);
 
         cartVO = checkoutHelper.validateCartReviewVO(cartVO, model)
+        TransactionVO transactionVO = new TransactionVO()
+
+
+        String name = ""
 
         // only proceed if there is no error
         if(model.getAttribute("errorMessage") == null){
+
+            cartVO = cartService.getExistingCart(cartVO)
+
+
+            name =cartVO.customer.name
+
             // save a new transaction object in database if we don't have one
-            TransactionVO transactionVO = transactionService.processCartGenerateNewTransaction(cartVO)
+            transactionVO = transactionService.processCartGenerateNewTransaction(cartVO)
 
-            // bind objects for reviewing the cart
-            //cartVO = checkoutHelper.reviewCart(cartVO, model)
-
-            //  if the transactionVO comes back here without a
-            // after transaction is created, search for the product based on barcode
-
-//            cartVO = checkoutHelper.searchForProductByBarcode(cartVO, model, page, size)
 
         }
 
-        cartVO.barcode = "" // reset barcode to empty
 //
 //        model.addAttribute("pageNumbers", pageNumbers);
 //        model.addAttribute("page", currentPage);
 //        model.addAttribute("size", pageOfProduct.getTotalPages());
         model.addAttribute("customJwtParameter", customJwtParameter);
-        model.addAttribute("cart", cartVO);
+        model.addAttribute("transaction", transactionVO);
         //model.addAttribute("successMessage", "Review the cart")
         // fetch all customers from database and bind them to model
         checkoutHelper.getAllCustomers(model)
 
-        return "checkout/transaction.html";
+        if(model.getAttribute("errorMessage") == null){
+            model.addAttribute("successMessage", "Successfully completed transaction! Thanks "+name+"!")
+
+            return "checkout/transactionsuccess.html";
+
+        } else {
+            return "checkout/transaction.html";// return same page with errors
+        }
+
     }
 
 

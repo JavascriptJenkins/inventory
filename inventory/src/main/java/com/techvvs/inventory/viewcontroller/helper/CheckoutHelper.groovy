@@ -8,6 +8,7 @@ import com.techvvs.inventory.model.CartVO
 import com.techvvs.inventory.model.CustomerVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.TransactionVO
+import com.techvvs.inventory.service.controllers.CartService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -32,6 +33,9 @@ class CheckoutHelper {
 
     @Autowired
     CartRepo cartRepo
+
+    @Autowired
+    CartService cartService
 
 
     // method to get all customers from db
@@ -98,7 +102,7 @@ class CheckoutHelper {
 //        &&
 //                !doesTransactionExist(transactionVO.customervo, barcode) // dont think we need to do this
         &&
-                !doesCartExist(cartVO)
+                !cartService.doesCartExist(cartVO)
         ){
 
             CustomerVO customerVO = customerRepo.findById(cartVO.customer.customerid).get()
@@ -117,48 +121,10 @@ class CheckoutHelper {
         return cartVO
     }
 
-
-    boolean doesCartExist(CartVO cartVO){
-        if(cartVO == null || cartVO.cartid == null){
-            return false
-        }
-        Optional<CartVO> existingcart = cartRepo.findById(cartVO.cartid)
-        return !existingcart.empty
-    }
-
     Optional<ProductVO> doesProductExist(String barcode){
 
         Optional<ProductVO> existingproduct = productRepo.findByBarcode(barcode)
         return existingproduct
-    }
-
-    boolean doesTransactionExist(CustomerVO customerVO, String barcode){
-
-
-        List<TransactionVO> existingtransactions = transactionRepo.findAllByCustomervo(customerVO)
-
-
-
-
-        // todo: remove this stupid check for a case that shoulndt happen
-        // if the customer already has a transaction that exists
-        for(TransactionVO transactionVO : existingtransactions){
-            if(transactionVO.isprocessed == 0 && transactionVO?.cart?.product_cart_list?.size() == 0){
-
-                // this covers a situation where customer has an existing transaction with no products
-                // instead of creating another redundant record in the database we are are just updating it
-                transactionVO.customervo = customerRepo.findById(transactionVO.customervo.customerid).get()
-                transactionVO.updateTimeStamp = LocalDateTime.now()
-                transactionVO.barcode = barcode // need to re-bind this so that on first save it will not be null
-                transactionVO = transactionRepo.save(transactionVO)
-
-
-
-                return true
-            }
-        }
-
-        return false
     }
 
     void findPendingCarts(Model model, Optional<Integer> page, Optional<Integer> size){
@@ -251,50 +217,7 @@ class CheckoutHelper {
 
     }
 
-    // add product to cart and then update the cart and product associations
-    CartVO  searchForProductByBarcode(CartVO cartVO, Model model, Optional<Integer> page, Optional<Integer> size){
 
-
-        Optional<ProductVO> productVO = productRepo.findByBarcode(cartVO.barcode)
-
-        // todo: on second time thru we need to fully hydrate the customer and product_set before saving
-
-        if(!productVO.empty){
-
-            // update the product cart list association
-            if(productVO.get().cart_list == null){
-                productVO.get().cart_list = new ArrayList<>()
-            }
-            productVO.get().cart_list.add(cartVO)
-
-            productVO.get().updateTimeStamp = LocalDateTime.now()
-            ProductVO savedProduct = productRepo.save(productVO.get())
-
-
-            /* Cart code below */
-            cartVO.total += Integer.valueOf(productVO.get().price) // add the product price to the total
-
-            // handle quantity here (have to iterate thru all product cert list and update the quantity)
-
-            // if it's the first time adding a product we need to create the set to hold them
-            if(cartVO.product_cart_list == null){
-                cartVO.product_cart_list = new ArrayList<ProductVO>()
-            }
-            // now save the cart side of the many to many
-            cartVO.product_cart_list.add(savedProduct)
-            cartVO.updateTimeStamp = LocalDateTime.now()
-            cartVO = cartRepo.save(cartVO)
-            model.addAttribute("successMessage","Product: "+productVO.get().name + " added successfully")
-        } else {
-            // need to bind the selected customer here otherwise the dropdown wont work
-            cartVO.customer = customerRepo.findById(cartVO.customer.customerid).get()
-            model.addAttribute("errorMessage","Product not found")
-        }
-
-
-
-        return cartVO
-    }
 
     CartVO getExistingCart(String cartid){
 

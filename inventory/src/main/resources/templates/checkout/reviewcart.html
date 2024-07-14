@@ -88,6 +88,7 @@
                     <p th:each="customer : ${customers}" th:if="${customer.customerid == cart.customer.customerid}" th:text="${customer.name}">Customer Name</p>
                     <input type="hidden" th:field="*{customer.customerid}">
                 </div>
+                <input type="hidden" th:field="*{cartid}">
                 <div th:if="${cart.cartid == 0}">
                     <select class="form-control" th:field="${cart.customer.customerid}" id="customerselectid">
                         <option value="" selected="selected">Select a customer</option>
