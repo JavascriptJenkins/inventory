@@ -1,12 +1,21 @@
 package com.techvvs.inventory.barcode.impl
 
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.WriterException
+import com.google.zxing.client.j2se.MatrixToImageWriter
+import com.google.zxing.common.BitMatrix
+import com.google.zxing.qrcode.QRCodeWriter
+import com.techvvs.inventory.model.ProductVO
 import org.krysalis.barcode4j.impl.upcean.UPCABean
 import org.krysalis.barcode4j.output.bitmap.BitmapCanvasProvider
 import org.springframework.stereotype.Component
 
+import javax.imageio.ImageIO
 import java.awt.Color
 import java.awt.Graphics2D
 import java.awt.image.BufferedImage
+import java.nio.file.FileSystems
+import java.nio.file.Path
 
 
 @Component
@@ -45,6 +54,34 @@ class ImageGenerator {
 
         return imageWithMargin;
     }
+
+
+
+
+//    static void generateQRCodes(List<ProductVO> products) {
+//        for (ProductVO product : products) {
+//            String qrText = "https://northstar.techvvs.io/qr"
+//            String filePath = "qr_codes/" + product.getName() + ".png"
+//            generateQRCodeImage(qrText, 350, 350, filePath)
+//        }
+//    }
+//
+//    static void generateQRCodeImage(String text, int width, int height, String filePath) {
+//        QRCodeWriter qrCodeWriter = new QRCodeWriter()
+//        BitMatrix bitMatrix
+//        try {
+//            bitMatrix = qrCodeWriter.encode(text, BarcodeFormat.QR_CODE, width, height)
+//        } catch (WriterException e) {
+//            e.printStackTrace()
+//            return
+//        }
+//        Path path = FileSystems.getDefault().getPath(filePath)
+//        try {
+//            ImageIO.write(MatrixToImageWriter.toBufferedImage(bitMatrix), "PNG", path.toFile())
+//        } catch (IOException e) {
+//            e.printStackTrace()
+//        }
+//    }
 
 
 

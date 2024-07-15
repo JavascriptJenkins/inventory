@@ -1,5 +1,10 @@
 package com.techvvs.inventory.barcode.impl
 
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.WriterException
+import com.google.zxing.client.j2se.MatrixToImageWriter
+import com.google.zxing.common.BitMatrix
+import com.google.zxing.qrcode.QRCodeWriter
 import com.techvvs.inventory.jparepo.ProductRepo
 import com.techvvs.inventory.model.ProductVO
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject
@@ -11,6 +16,10 @@ import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle
 import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory
+
+import javax.imageio.ImageIO
+import java.nio.file.FileSystems
+import java.nio.file.Path
 
 import java.awt.image.BufferedImage
 

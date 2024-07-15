@@ -13,6 +13,7 @@ import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.SystemUserDAO
 import com.techvvs.inventory.modelnonpersist.FileVO
+import com.techvvs.inventory.qrcode.QrCodeService
 import com.techvvs.inventory.util.TechvvsFileHelper
 import com.techvvs.inventory.util.TwilioTextUtil
 import org.springframework.beans.factory.annotation.Autowired
@@ -63,6 +64,9 @@ class BatchControllerHelper {
     @Autowired
     BarcodeService barcodeService
 
+    @Autowired
+    QrCodeService qrCodeService
+
     SecureRandom secureRandom = new SecureRandom();
 
 
@@ -76,6 +80,20 @@ class BatchControllerHelper {
         }
 
         barcodeService.createSingleMenuBarcodesForBatch(results.get(0))
+
+        return true
+    }
+
+    // todo: add another method for generating barcodes for specific prodcuct types
+    boolean generateQrcodesForBatch(String batchnumber){
+
+        List<BatchVO> results = new ArrayList<BatchVO>();
+        if(batchnumber != null){
+            System.out.println("Searching data by batchnumber");
+            results = batchRepo.findAllByBatchnumber(Integer.valueOf(batchnumber));
+        }
+
+        qrCodeService.createSingleMenuQrsForBatch(results.get(0))
 
         return true
     }
@@ -192,6 +210,7 @@ class BatchControllerHelper {
         model.addAttribute("options", ["5", "10", "20", "100", "1000"]);
         model.addAttribute("menuoptions", ["All","Indoor"]);
         model.addAttribute("menuoptionsBarcode", ["All"]);
+        model.addAttribute("menuoptionsQrcode", ["All"]);
         model.addAttribute("customJwtParameter", customJwtParameter);
         model.addAttribute("batch", results.get(0));
         bindBatchTypes(model)
