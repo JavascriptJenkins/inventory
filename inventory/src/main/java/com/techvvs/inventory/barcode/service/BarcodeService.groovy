@@ -48,4 +48,45 @@ class BarcodeService {
     }
 
 
+
+    void createAllBarcodesForBatch(BatchVO batchVO) {
+
+        // NOTE: right now this is going to generate barcodes for every product in batch regardless of product type
+        try {
+
+            LinkedHashSet linkedHashSet = barcodeHelper.convertToLinkedHashSet(batchVO.product_set)
+
+            List<ProductVO> expandedList =expandAndDuplicateProductQuantities(linkedHashSet)
+
+         //  LinkedHashSet expandedHashSet = barcodeHelper.convertListToLinkedHashSet(expandedList)
+
+            // todo: for some reason the removeItemsInChunksOf50ReturnList isn't working properly
+            // This needs to be a list of lists
+            List<List<ProductVO>> result = barcodeHelper.removeItemsInChunksOf50ReturnList(expandedList);
+
+            System.out.println("result of rounding up: " + result);
+
+            for(int i = 0; i < result.size(); i++) {
+                barcodeGenerator.generateBarcodesForAllItems(batchVO.name, batchVO.batchnumber, i, result.get(i));
+            }
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    public static List<ProductVO> expandAndDuplicateProductQuantities(LinkedHashSet<ProductVO> originalSet) {
+        List<ProductVO> expandedList = new ArrayList<>();
+
+        for (ProductVO product : originalSet) {
+            for (int i = 0; i < product.getQuantity(); i++) {
+                expandedList.add(product) // for each quantity add the product again to the list
+            }
+        }
+
+        return expandedList;
+    }
+
+
 }

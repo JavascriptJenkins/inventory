@@ -70,8 +70,8 @@ class BatchControllerHelper {
     SecureRandom secureRandom = new SecureRandom();
 
 
-    // todo: add another method for generating barcodes for specific prodcuct types
-    boolean generateBarcodesForBatch(String batchnumber){
+
+    boolean generateSingleMenuBarcodesForBatch(String batchnumber){
 
         List<BatchVO> results = new ArrayList<BatchVO>();
         if(batchnumber != null){
@@ -84,7 +84,20 @@ class BatchControllerHelper {
         return true
     }
 
-    // todo: add another method for generating barcodes for specific prodcuct types
+    // will generate a barcode for every single product in the batch
+    boolean generateAllBarcodesForBatch(String batchnumber){
+
+        List<BatchVO> results = new ArrayList<BatchVO>();
+        if(batchnumber != null){
+            System.out.println("Searching data by batchnumber");
+            results = batchRepo.findAllByBatchnumber(Integer.valueOf(batchnumber));
+        }
+
+        barcodeService.createAllBarcodesForBatch(results.get(0))
+
+        return true
+    }
+
     boolean generateQrcodesForBatch(String batchnumber){
 
         List<BatchVO> results = new ArrayList<BatchVO>();
@@ -209,8 +222,8 @@ class BatchControllerHelper {
 
         model.addAttribute("options", ["5", "10", "20", "100", "1000"]);
         model.addAttribute("menuoptions", ["All","Indoor"]);
-        model.addAttribute("menuoptionsBarcode", ["All"]);
-        model.addAttribute("menuoptionsQrcode", ["All"]);
+        model.addAttribute("menuoptionsBarcode", ["All", "Single Menu"]);
+        model.addAttribute("menuoptionsQrcode", ["All", "Single Menu"]);
         model.addAttribute("customJwtParameter", customJwtParameter);
         model.addAttribute("batch", results.get(0));
         bindBatchTypes(model)

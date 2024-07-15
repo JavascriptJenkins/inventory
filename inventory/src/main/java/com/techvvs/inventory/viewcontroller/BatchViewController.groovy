@@ -13,6 +13,7 @@ import com.techvvs.inventory.model.ProductVO;
 import com.techvvs.inventory.modelnonpersist.FileVO;
 import com.techvvs.inventory.util.TechvvsFileHelper
 import com.techvvs.inventory.validation.ValidateBatch
+import com.techvvs.inventory.viewcontroller.constants.ControllerConstants
 import com.techvvs.inventory.viewcontroller.helper.BatchControllerHelper;
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page;
@@ -68,6 +69,9 @@ public class BatchViewController {
 
     @Autowired
     BatchControllerHelper batchControllerHelper;
+
+    @Autowired
+    ControllerConstants controllerConstants
 
 
     SecureRandom secureRandom = new SecureRandom();
@@ -294,7 +298,16 @@ public class BatchViewController {
 
         model = batchControllerHelper.processModel(model, customJwtParameter, batchnumber, editmode, page, productTypeVO, true, false);
 
-        batchControllerHelper.generateBarcodesForBatch(batchnumber)
+        switch(productTypeVO.menutype){
+            case controllerConstants.ALL:
+                batchControllerHelper.generateAllBarcodesForBatch(batchnumber)
+                break
+            case controllerConstants.SINGLE_MENU:
+                batchControllerHelper.generateSingleMenuBarcodesForBatch(batchnumber)
+                break
+        }
+
+
 
         model.addAttribute("successMessage","Successfully created barcodes for this batch. ")
 

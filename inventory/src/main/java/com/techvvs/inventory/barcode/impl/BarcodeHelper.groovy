@@ -29,7 +29,7 @@ class BarcodeHelper {
 
     // todo: this can handle up to 950 products in a single batch.  Need to write logic to handle more than 950
     // passing the batchnumber into here for first part of upc barcode
-    static String generateBarcodeData(int row, int col, String filenameExtension, int batchnumber, int pagenumber) {
+    static String generateBarcodeData(int row, int col, int batchnumber, int pagenumber) {
         // Example method to generate unique barcode data based on row and column
         // note: this baseData can only be 6 characters long - batchnumbers are 7 characters so we are removing the last char
         String baseData = removeLast2Character(String.valueOf(batchnumber))+String.valueOf(pagenumber); // Base data for the barcode
@@ -78,6 +78,45 @@ class BarcodeHelper {
             throw new NullPointerException("The original list cannot be null");
         }
         return new LinkedHashSet<>(originalList);
+    }
+
+    public static <T> List<List<T>> removeItemsInChunksOf50ReturnList(LinkedHashSet<T> originalSet) {
+        List<List<T>> chunks = new ArrayList<>();
+        Iterator<T> iterator = originalSet.iterator();
+
+        while (iterator.hasNext()) {
+            List<T> chunk = new ArrayList<>();
+            int count = 0;
+            while (iterator.hasNext() && count < 50) {
+                T item = iterator.next();
+                chunk.add(item);
+                iterator.remove();  // Remove the item from the original set
+                count++;
+            }
+            chunks.add(chunk);
+        }
+
+        return chunks;
+    }
+
+
+    public static <T> List<List<T>> removeItemsInChunksOf50ReturnList(List<T> originalList) {
+        List<List<T>> chunks = new ArrayList<>();
+        Iterator<T> iterator = originalList.iterator();
+
+        while (iterator.hasNext()) {
+            List<T> chunk = new ArrayList<>();
+            int count = 0;
+            while (iterator.hasNext() && count < 50) {
+                T item = iterator.next();
+                chunk.add(item);
+                iterator.remove();  // Remove the item from the original list
+                count++;
+            }
+            chunks.add(chunk);
+        }
+
+        return chunks;
     }
 
 

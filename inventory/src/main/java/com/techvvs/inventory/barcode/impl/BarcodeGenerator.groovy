@@ -105,6 +105,115 @@ class BarcodeGenerator {
     }
 
 
+
+    public static List<ProductVO> sortProductsById(List<ProductVO> products) {
+        Collections.sort(products, new Comparator<ProductVO>() {
+            @Override
+            public int compare(ProductVO p1, ProductVO p2) {
+                return Integer.compare(p1.getProduct_id(), p2.getProduct_id());
+            }
+        });
+        return products;
+    }
+
+
+
+
+    ProductVO productinscope = new ProductVO(product_id: 0)
+    boolean skip = false
+    //
+    void generateBarcodesForAllItems(String filenameExtension, int batchnumber, int pagenumber, List<ProductVO> productlist) throws IOException {
+
+
+
+         productlist = sortProductsById(productlist)
+
+        System.out.println("Generating barcodes for " + filenameExtension + " | pagenumber: "+pagenumber);
+
+        PDDocument document = new PDDocument()
+        PDPage page = new PDPage(PDRectangle.LETTER); // 8.5" x 11"
+        document.addPage(page);
+
+        PDPageContentStream contentStream = new PDPageContentStream(document, page)
+        // Define margins and layout parameters
+        float topMargin = (6.0f / 16.0f) * 72; // 6/16 inches to points
+        float bottomMargin = (1.0f / 16.0f) * 72; // 6/16 inches to points
+        float leftMargin = 0.25f * 72; // 0.25" in points
+        float rightMargin = 0.25f * 72; // 0.25" in points
+        float labelWidth = (PDRectangle.LETTER.getWidth() - leftMargin - rightMargin) / 5; // 5 barcodes per row
+        float labelHeight = (PDRectangle.LETTER.getHeight() - topMargin - bottomMargin) / 10; // 10 rows
+
+
+        // Generate and draw UPC-A barcodes
+        for (int row = 0; row < 10; row++) {
+            for (int col = 0; col < 5; col++) {
+
+                // this will prevent duplicate barcodes
+                if(productlist.size() == 0){
+                    break
+                }
+
+                int toremove = productlist.size() - 1
+                ProductVO productVO = productlist.getAt(toremove)
+                if(productinscope.product_id == productVO.product_id){
+                    skip = true
+                }
+
+
+
+
+
+
+                float x = leftMargin + col * labelWidth;
+                float y = PDRectangle.LETTER.getHeight() - topMargin - (row + 1) * labelHeight;
+
+                String barcodeData = "";
+                if(skip){
+                    barcodeData = productinscope.barcode
+                } else {
+                    // this only needs to be done one time for each product
+                    barcodeData = barcodeHelper.generateBarcodeData(row, col, batchnumber, pagenumber);
+                }
+
+                // Example method to generate barcode data
+                BufferedImage barcodeImage = imageGenerator.generateUPCABarcodeImage(barcodeData, labelWidth, labelHeight);
+
+                // Convert BufferedImage to PDImageXObject
+                PDImageXObject pdImage = LosslessFactory.createFromImage(document, barcodeImage);
+
+                // Draw the barcode image on the PDF
+                contentStream.drawImage(pdImage, x, y, labelWidth, labelHeight);
+
+
+//                if(){
+//
+//                }
+
+                //write method here to add barcode data to product in database
+                addBarcodeToProduct(productVO, barcodeData);
+
+                productlist.remove(productVO)
+                productinscope = productVO // bind this so we only process barcodes for unique products
+                skip = false
+            }
+        }
+
+
+
+
+
+        // todo: add some functionality here so the user knows if barcodes are already generated or not
+        // Close the content stream
+        contentStream.close();
+
+        String filename = pagenumber+"-"+filenameExtension+"-"+batchnumber
+        // Save the PDF document
+        document.save(new File(PDF_BATCH_DIR+"upc_batch-"+filename+".pdf"));
+
+
+    }
+
+
     // todo: add a check here to make sure barcodes are unique before adding....
     void addBarcodeToProduct(ProductVO productVO, String barcodedata){
 
