@@ -44,8 +44,66 @@ class QrCodeService {
 
     }
 
+
+    void createAllQrsForBatch(BatchVO batchVO) {
+
+        // NOTE: right now this is going to generate barcodes for every product in batch regardless of product type
+        try {
+
+            LinkedHashSet linkedHashSet = barcodeHelper.convertToLinkedHashSet(batchVO.product_set)
+
+            List<ProductVO> expandedList =expandAndDuplicateProductQuantities(linkedHashSet)
+
+            List<ProductVO> sortedlist = sortProductsByIdDescending(expandedList)
+
+            List<List<ProductVO>> result1 = barcodeHelper.removeItemsInChunksOf50ReturnList(sortedlist);
+
+            List<List<ProductVO>> result = reverseOrder(result1)
+
+            System.out.println("result of rounding up: " + result);
+
+            for(int i = 0; i < result.size(); i++) {
+                qrCodeGenerator.generateQrcodesForAllItems(batchVO.name, batchVO.batchnumber, i, result.get(i));
+            }
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
     public static List<ProductVO> convertSetToList(Set<ProductVO> productSet) {
         return new ArrayList<>(productSet);
     }
 
+    public static List<ProductVO> expandAndDuplicateProductQuantities(LinkedHashSet<ProductVO> originalSet) {
+        List<ProductVO> expandedList = new ArrayList<>();
+
+        for (ProductVO product : originalSet) {
+            for (int i = 0; i < product.getQuantity(); i++) {
+                expandedList.add(product) // for each quantity add the product again to the list
+            }
+        }
+
+        return expandedList;
+    }
+
+    public static List<ProductVO> sortProductsByIdAscending(List<ProductVO> products) {
+        Collections.sort(products, new Comparator<ProductVO>() {
+            @Override
+            public int compare(ProductVO p1, ProductVO p2) {
+                return Integer.compare(p1.getProduct_id(), p2.getProduct_id());
+            }
+        });
+        return products;
+    }
+
+    static List<List> reverseOrder(List<List> listOfLists) {
+        listOfLists.reverse()
+    }
+
+    static List<ProductVO> sortProductsByIdDescending(List<ProductVO> products) {
+        products.sort { a, b -> b.product_id <=> a.product_id }
+        return products
+    }
 }

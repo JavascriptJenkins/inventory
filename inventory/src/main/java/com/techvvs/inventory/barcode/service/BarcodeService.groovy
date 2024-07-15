@@ -60,11 +60,6 @@ class BarcodeService {
 
             List<ProductVO> sortedlist = sortProductsByIdDescending(expandedList)
 
-
-         //  LinkedHashSet expandedHashSet = barcodeHelper.convertListToLinkedHashSet(expandedList)
-
-            // todo: for some reason the removeItemsInChunksOf50ReturnList isn't working properly
-            // This needs to be a list of lists
             List<List<ProductVO>> result1 = barcodeHelper.removeItemsInChunksOf50ReturnList(sortedlist);
 
             List<List<ProductVO>> result = reverseOrder(result1)

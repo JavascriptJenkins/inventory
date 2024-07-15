@@ -334,6 +334,16 @@ public class BatchViewController {
 
         model = batchControllerHelper.processModel(model, customJwtParameter, batchnumber, editmode, page, productTypeVO, true, false);
 
+        switch(productTypeVO.menutype){
+            case controllerConstants.ALL:
+                batchControllerHelper.generateAllQrcodesForBatch(batchnumber)
+                break
+            case controllerConstants.SINGLE_MENU:
+                batchControllerHelper.generateQrcodesForBatch(batchnumber)
+                break
+        }
+
+
         batchControllerHelper.generateQrcodesForBatch(batchnumber)
 
         model.addAttribute("successMessage","Successfully created qr codes for this batch. ")

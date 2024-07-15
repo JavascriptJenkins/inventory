@@ -111,6 +111,19 @@ class BatchControllerHelper {
         return true
     }
 
+    boolean generateAllQrcodesForBatch(String batchnumber){
+
+        List<BatchVO> results = new ArrayList<BatchVO>();
+        if(batchnumber != null){
+            System.out.println("Searching data by batchnumber");
+            results = batchRepo.findAllByBatchnumber(Integer.valueOf(batchnumber));
+        }
+
+        qrCodeService.createAllQrsForBatch(results.get(0))
+
+        return true
+    }
+
 
     // method for combining logic of editform and filtereditform
     Model processModel(Model model,
