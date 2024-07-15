@@ -106,16 +106,6 @@ class BarcodeGenerator {
 
 
 
-    public static List<ProductVO> sortProductsById(List<ProductVO> products) {
-        Collections.sort(products, new Comparator<ProductVO>() {
-            @Override
-            public int compare(ProductVO p1, ProductVO p2) {
-                return Integer.compare(p1.getProduct_id(), p2.getProduct_id());
-            }
-        });
-        return products;
-    }
-
 
 
 
@@ -125,8 +115,6 @@ class BarcodeGenerator {
     void generateBarcodesForAllItems(String filenameExtension, int batchnumber, int pagenumber, List<ProductVO> productlist) throws IOException {
 
 
-
-         productlist = sortProductsById(productlist)
 
         System.out.println("Generating barcodes for " + filenameExtension + " | pagenumber: "+pagenumber);
 
@@ -195,6 +183,7 @@ class BarcodeGenerator {
                 productlist.remove(productVO)
                 productinscope = productVO // bind this so we only process barcodes for unique products
                 skip = false
+                toremove = toremove + 1
             }
         }
 

@@ -58,11 +58,16 @@ class BarcodeService {
 
             List<ProductVO> expandedList =expandAndDuplicateProductQuantities(linkedHashSet)
 
+            List<ProductVO> sortedlist = sortProductsByIdDescending(expandedList)
+
+
          //  LinkedHashSet expandedHashSet = barcodeHelper.convertListToLinkedHashSet(expandedList)
 
             // todo: for some reason the removeItemsInChunksOf50ReturnList isn't working properly
             // This needs to be a list of lists
-            List<List<ProductVO>> result = barcodeHelper.removeItemsInChunksOf50ReturnList(expandedList);
+            List<List<ProductVO>> result1 = barcodeHelper.removeItemsInChunksOf50ReturnList(sortedlist);
+
+            List<List<ProductVO>> result = reverseOrder(result1)
 
             System.out.println("result of rounding up: " + result);
 
@@ -86,6 +91,31 @@ class BarcodeService {
         }
 
         return expandedList;
+    }
+
+    public static List<ProductVO> sortProductsByIdAscending(List<ProductVO> products) {
+        Collections.sort(products, new Comparator<ProductVO>() {
+            @Override
+            public int compare(ProductVO p1, ProductVO p2) {
+                return Integer.compare(p1.getProduct_id(), p2.getProduct_id());
+            }
+        });
+        return products;
+    }
+
+    // this is pure java version
+//    public static List<ProductVO> sortProductsByIdDescending(List<ProductVO> products) {
+//        Collections.sort(products, Comparator.comparingInt(ProductVO::getProduct_id).reversed());
+//        return products;
+//    }
+
+    static List<ProductVO> sortProductsByIdDescending(List<ProductVO> products) {
+        products.sort { a, b -> b.product_id <=> a.product_id }
+        return products
+    }
+
+    static List<List> reverseOrder(List<List> listOfLists) {
+        listOfLists.reverse()
     }
 
 
