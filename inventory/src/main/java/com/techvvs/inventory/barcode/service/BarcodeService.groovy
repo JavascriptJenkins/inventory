@@ -103,12 +103,6 @@ class BarcodeService {
         return products;
     }
 
-    // this is pure java version
-//    public static List<ProductVO> sortProductsByIdDescending(List<ProductVO> products) {
-//        Collections.sort(products, Comparator.comparingInt(ProductVO::getProduct_id).reversed());
-//        return products;
-//    }
-
     static List<ProductVO> sortProductsByIdDescending(List<ProductVO> products) {
         products.sort { a, b -> b.product_id <=> a.product_id }
         return products
