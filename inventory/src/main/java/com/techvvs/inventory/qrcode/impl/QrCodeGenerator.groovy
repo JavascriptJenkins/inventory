@@ -58,6 +58,10 @@ class QrCodeGenerator {
                     break
                 }
 
+                int toremove = productset.size() - 1
+                // iterate through productset to remove things
+                ProductVO productVO = productset.getAt(toremove)
+
                 float x = leftMargin + col * labelWidth;
                 float y = PDRectangle.LETTER.getHeight() - topMargin - (row + 1) * labelHeight;
 
@@ -65,17 +69,13 @@ class QrCodeGenerator {
                 String qrcodeData = "https://qr.techvvs.io"
 
                 // Example method to generate barcode data
-                BufferedImage qrImage = qrImageGenerator.generateQrImage(qrcodeData, labelWidth, labelHeight);
+                BufferedImage qrImage = qrImageGenerator.generateQrImage(qrcodeData, limitStringTo20Chars(productVO.name));
 
                 // Convert BufferedImage to PDImageXObject
                 PDImageXObject pdImage = LosslessFactory.createFromImage(document, qrImage);
 
                 // Draw the barcode image on the PDF
                 contentStream.drawImage(pdImage, x, y, labelWidth, labelHeight);
-
-                int toremove = productset.size() - 1
-                // iterate through productset to remove things
-                ProductVO productVO = productset.getAt(toremove)
 
                 //write method here to add barcode data to product in database
                 // todo: add a qr link column to product in database
@@ -147,7 +147,7 @@ class QrCodeGenerator {
                 if(skip){
                     qrImage = qrImageInScope
                 } else {
-                    qrImage = qrImageGenerator.generateQrImage(qrcodeData, labelWidth, labelHeight);
+                    qrImage = qrImageGenerator.generateQrImage(qrcodeData, limitStringTo20Chars(productVO.name));
                 }
 
                 // Convert BufferedImage to PDImageXObject
@@ -183,7 +183,12 @@ class QrCodeGenerator {
 
     }
 
-
+    public static String limitStringTo20Chars(String input) {
+        if (input == null) {
+            return null;
+        }
+        return input.length() > 20 ? input.substring(0, 20) : input;
+    }
 
 
 

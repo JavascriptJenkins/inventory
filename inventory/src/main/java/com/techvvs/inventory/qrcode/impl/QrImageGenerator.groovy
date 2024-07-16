@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component
 
 import javax.imageio.ImageIO
 import java.awt.Color
+import java.awt.Font
 import java.awt.Graphics2D
 import java.awt.image.BufferedImage
 import java.nio.file.FileSystems
@@ -20,31 +21,45 @@ import java.nio.file.Path
 @Component
 class QrImageGenerator {
 
-    public static BufferedImage generateQrImage(String qrcodeData, float width, float height) {
 
-        // Set up the canvas provider
-//        BitmapCanvasProvider canvas = new BitmapCanvasProvider(260, BufferedImage.TYPE_BYTE_BINARY, false, 0);
 
-        // Get the generated barcode image
-        BufferedImage qrcodeImage = createQRCodeImage(qrcodeData, 350, 350)
+    public static BufferedImage generateQrImage(String qrcodeData, String text) throws WriterException {
+        int qrSize = 175; // QR code size
+        QRCodeWriter qrCodeWriter = new QRCodeWriter();
+        BitMatrix bitMatrix = qrCodeWriter.encode(qrcodeData, BarcodeFormat.QR_CODE, qrSize, qrSize);
 
-        // Define the bottom margin (1/16th of an inch in points)
-        float bottomMargin = 2.0f / 16 * 72; // 1/16th of an inch in points
-        int marginPixels = (int) (bottomMargin * 260 / 72);
+        // Convert BitMatrix to BufferedImage
+        BufferedImage qrcodeImage = MatrixToImageWriter.toBufferedImage(bitMatrix);
 
-        // Create a new image with the bottom margin
-        int widthWithMargin = qrcodeImage.getWidth();
-        int heightWithMargin = qrcodeImage.getHeight() + marginPixels
-        BufferedImage imageWithMargin = new BufferedImage(widthWithMargin, heightWithMargin, BufferedImage.TYPE_BYTE_BINARY);
+        // Define the total size of the final image
+        int finalWidth = qrSize * 2; // Make the final image twice the width of the QR code
+        int finalHeight = qrSize * 2; // Keep the same height as the QR code
 
-        // Draw the original qrcode image onto the new image
-        Graphics2D g2d = imageWithMargin.createGraphics();
+        // Create a new image with the final dimensions
+        BufferedImage imageWithText = new BufferedImage(finalWidth, finalHeight, BufferedImage.TYPE_INT_RGB);
+
+        // Draw the original QR code image onto the new image
+        Graphics2D g2d = imageWithText.createGraphics();
         g2d.setColor(Color.WHITE);
-        g2d.fillRect(0, qrcodeImage.getHeight(), widthWithMargin, marginPixels);
+        g2d.fillRect(0, 0, finalWidth, finalHeight); // Fill the entire image with white
+
+        // Draw the QR code in the top-left corner, taking up half the space
         g2d.drawImage(qrcodeImage, 0, 0, null);
+
+        // Set font and color for the text
+        g2d.setFont(new Font("Arial", Font.PLAIN, 24));
+        g2d.setColor(Color.BLACK);
+
+        // Calculate the position for the text to be centered below the QR code
+        int textX = 0; // Adjust the X position as needed to center text in the right half
+        int textY = qrSize; // Adjust the Y position as needed
+
+        // Draw the text on the right side of the image
+        g2d.drawString(text, textX, textY);
+
         g2d.dispose();
 
-        return imageWithMargin;
+        return imageWithText;
     }
 
 
