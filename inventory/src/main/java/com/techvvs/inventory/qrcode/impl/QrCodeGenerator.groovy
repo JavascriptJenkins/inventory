@@ -106,7 +106,7 @@ class QrCodeGenerator {
     // need to make a qr code generator that generates a QR for every barcode
     void generateQrcodesForAllItems(String filenameExtension, int batchnumber, int pagenumber, List<ProductVO> productlist) throws IOException {
 
-        System.out.println("Generating barcodes for " + filenameExtension + " | pagenumber: "+pagenumber);
+        System.out.println("Generating qrcodes for " + filenameExtension + " | pagenumber: "+pagenumber);
 
         PDDocument document = new PDDocument()
         PDPage page = new PDPage(PDRectangle.LETTER); // 8.5" x 11"
@@ -159,11 +159,10 @@ class QrCodeGenerator {
                 //write method here to add barcode data to product in database
                 // todo: add a qr link column to product in database
                 // addBarcodeToProduct(productVO, barcodeData);
-
-                productlist.remove(productVO)
                 productinscope = productVO // bind this so we only process barcodes for unique products
                 skip = false
                 qrImageInScope = qrImage
+                productlist.remove(productVO)
                 toremove = toremove + 1
             }
         }

@@ -344,8 +344,6 @@ public class BatchViewController {
         }
 
 
-        batchControllerHelper.generateQrcodesForBatch(batchnumber)
-
         model.addAttribute("successMessage","Successfully created qr codes for this batch. ")
 
         return "service/editbatch.html";
