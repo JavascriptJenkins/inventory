@@ -63,7 +63,7 @@ class QrCodeService {
             System.out.println("result of rounding up: " + result);
 
             for(int i = 0; i < result.size(); i++) {
-                qrCodeGenerator.generateQrcodesForAllItems(batchVO.name, batchVO.batchnumber, i, result.get(i));
+                qrCodeGenerator.generateQrcodesForAllItems(batchVO.name, batchVO.batchnumber, i, result.get(i), batchVO.name);
             }
 
         } catch (IOException e) {

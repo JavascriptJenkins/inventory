@@ -349,6 +349,37 @@ public class BatchViewController {
         return "service/editbatch.html";
     }
 
+    @PostMapping("/generateweightlabels")
+    String generateWeightLabels(
+            Model model,
+            @ModelAttribute( "searchproducttype" ) ProductTypeVO productTypeVO,
+            @RequestParam("customJwtParameter") String customJwtParameter,
+            @RequestParam("editmode") String editmode,
+            @RequestParam("batchnumber") String batchnumber,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size
+
+    ){
+
+        // todo: the "searchmenutype" field in dropdown is bound to productTypeVO which we are not currently using
+        // todo: right now we are giving user option of "All" but we are not actually processing that option here.
+        // todo: all we are doing is routing the button to this method and then generating the barcode sheets for this batch
+
+
+        model = batchControllerHelper.processModel(model, customJwtParameter, batchnumber, editmode, page, productTypeVO, true, false);
+
+        switch(productTypeVO.menutype){
+            case controllerConstants.SINGLE_PAGE:
+                batchControllerHelper.generateSinglePageWeightLabelsForBatch(batchnumber)
+                break
+        }
+
+
+        model.addAttribute("successMessage","Successfully created qr codes for this batch. ")
+
+        return "service/editbatch.html";
+    }
+
     // todo: add the pagination crap here too
     @PostMapping ("/editBatch")
     String editBatch(@ModelAttribute( "batch" ) BatchVO batchVO,

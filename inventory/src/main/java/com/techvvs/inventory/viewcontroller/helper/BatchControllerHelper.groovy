@@ -7,6 +7,7 @@ import com.techvvs.inventory.jparepo.BatchTypeRepo
 import com.techvvs.inventory.jparepo.ProductRepo
 import com.techvvs.inventory.jparepo.ProductTypeRepo
 import com.techvvs.inventory.jparepo.SystemUserRepo
+import com.techvvs.inventory.labels.service.LabelPrintingService
 import com.techvvs.inventory.model.BatchTypeVO
 import com.techvvs.inventory.model.BatchVO
 import com.techvvs.inventory.model.ProductTypeVO
@@ -16,6 +17,7 @@ import com.techvvs.inventory.modelnonpersist.FileVO
 import com.techvvs.inventory.qrcode.QrCodeService
 import com.techvvs.inventory.util.TechvvsFileHelper
 import com.techvvs.inventory.util.TwilioTextUtil
+import com.techvvs.inventory.viewcontroller.constants.ControllerConstants
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
 import org.springframework.data.domain.Page
@@ -66,6 +68,12 @@ class BatchControllerHelper {
 
     @Autowired
     QrCodeService qrCodeService
+
+    @Autowired
+    LabelPrintingService labelPrintingService
+
+    @Autowired
+    ControllerConstants controllerConstants
 
     SecureRandom secureRandom = new SecureRandom();
 
@@ -120,6 +128,19 @@ class BatchControllerHelper {
         }
 
         qrCodeService.createAllQrsForBatch(results.get(0))
+
+        return true
+    }
+
+    boolean generateSinglePageWeightLabelsForBatch(String batchnumber){
+
+        List<BatchVO> results = new ArrayList<BatchVO>();
+        if(batchnumber != null){
+            System.out.println("Searching data by batchnumber");
+            results = batchRepo.findAllByBatchnumber(Integer.valueOf(batchnumber));
+        }
+
+        labelPrintingService.generate50StaticWeightLabels(results.get(0))
 
         return true
     }
@@ -234,9 +255,10 @@ class BatchControllerHelper {
 
 
         model.addAttribute("options", ["5", "10", "20", "100", "1000"]);
-        model.addAttribute("menuoptions", ["All","Indoor"]);
-        model.addAttribute("menuoptionsBarcode", ["All", "Single Menu"]);
-        model.addAttribute("menuoptionsQrcode", ["All", "Single Menu"]);
+        model.addAttribute(controllerConstants.MENU_OPTIONS_INDOOR, ["All","Indoor"]);
+        model.addAttribute(controllerConstants.MENU_OPTIONS_BARCODE, ["All", "Single Menu"]);
+        model.addAttribute(controllerConstants.MENU_OPTIONS_QR_CODES, ["All", "Single Menu"]);
+        model.addAttribute(controllerConstants.MENU_OPTIONS_WEIGHT_LABELS, [controllerConstants.SINGLE_PAGE]);
         model.addAttribute("customJwtParameter", customJwtParameter);
         model.addAttribute("batch", results.get(0));
         bindBatchTypes(model)

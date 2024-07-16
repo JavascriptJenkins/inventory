@@ -67,7 +67,7 @@ class BarcodeService {
             System.out.println("result of rounding up: " + result);
 
             for(int i = 0; i < result.size(); i++) {
-                barcodeGenerator.generateBarcodesForAllItems(batchVO.name, batchVO.batchnumber, i, result.get(i));
+                barcodeGenerator.generateBarcodesForAllItems(batchVO.name, batchVO.batchnumber, i, result.get(i), batchVO.name);
             }
 
         } catch (IOException e) {

@@ -11,15 +11,20 @@ import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.PDPage
 import org.apache.pdfbox.pdmodel.PDPageContentStream
 import org.apache.pdfbox.pdmodel.common.PDRectangle
+import org.apache.pdfbox.pdmodel.font.PDType0Font
 import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import org.apache.pdfbox.pdmodel.font.PDType1Font
+
 
 import javax.imageio.ImageIO
 import java.awt.image.BufferedImage
 import java.nio.file.FileSystems
 import java.nio.file.Path
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 @Component
 class QrCodeGenerator {
@@ -104,7 +109,7 @@ class QrCodeGenerator {
     boolean skip = false
     BufferedImage qrImageInScope = null
     // need to make a qr code generator that generates a QR for every barcode
-    void generateQrcodesForAllItems(String filenameExtension, int batchnumber, int pagenumber, List<ProductVO> productlist) throws IOException {
+    void generateQrcodesForAllItems(String filenameExtension, int batchnumber, int pagenumber, List<ProductVO> productlist, String batchname) throws IOException {
 
         System.out.println("Generating qrcodes for " + filenameExtension + " | pagenumber: "+pagenumber);
 
@@ -120,6 +125,29 @@ class QrCodeGenerator {
         float rightMargin = 0.25f * 72; // 0.25" in points
         float labelWidth = (PDRectangle.LETTER.getWidth() - leftMargin - rightMargin) / 5; // 5 barcodes per row
         float labelHeight = (PDRectangle.LETTER.getHeight() - topMargin - bottomMargin) / 10; // 10 rows
+
+
+        // Example of using a TrueType font
+        PDType0Font ttfFont = PDType0Font.load(document, new File("./uploads/font/Oswald-VariableFont_wght.ttf"));
+
+
+        // Print page number on the upper left corner
+        contentStream.beginText();
+        contentStream.setFont(ttfFont, 12);
+        contentStream.newLineAtOffset(leftMargin, PDRectangle.LETTER.getHeight() - topMargin / 2 as float);
+        contentStream.showText("Page " + pagenumber);
+        contentStream.endText();
+
+        // metadata accross the top
+        contentStream.beginText();
+        contentStream.setFont(ttfFont, 12);
+        contentStream.newLineAtOffset(leftMargin+100 as float, PDRectangle.LETTER.getHeight() - topMargin / 2 as float);
+        contentStream.showText(
+                "Date: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+                + " | Batch #: " + batchnumber
+                + " | Batch Name: " + batchname
+                 );
+        contentStream.endText();
 
 
         // Generate and draw UPC-A barcodes
@@ -153,7 +181,7 @@ class QrCodeGenerator {
                 // Convert BufferedImage to PDImageXObject
                 PDImageXObject pdImage = LosslessFactory.createFromImage(document, qrImage);
 
-                // Draw the barcode image on the PDF
+                // Draw the image on the PDF
                 contentStream.drawImage(pdImage, x, y, labelWidth, labelHeight);
 
                 //write method here to add barcode data to product in database

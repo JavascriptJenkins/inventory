@@ -7,6 +7,7 @@ import com.google.zxing.common.BitMatrix
 import com.google.zxing.qrcode.QRCodeWriter
 import com.techvvs.inventory.jparepo.ProductRepo
 import com.techvvs.inventory.model.ProductVO
+import org.apache.pdfbox.pdmodel.font.PDType0Font
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -22,6 +23,8 @@ import java.nio.file.FileSystems
 import java.nio.file.Path
 
 import java.awt.image.BufferedImage
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 @Component
 class BarcodeGenerator {
@@ -112,7 +115,7 @@ class BarcodeGenerator {
     ProductVO productinscope = new ProductVO(product_id: 0)
     boolean skip = false
     //
-    void generateBarcodesForAllItems(String filenameExtension, int batchnumber, int pagenumber, List<ProductVO> productlist) throws IOException {
+    void generateBarcodesForAllItems(String filenameExtension, int batchnumber, int pagenumber, List<ProductVO> productlist, String batchname) throws IOException {
 
 
 
@@ -130,6 +133,29 @@ class BarcodeGenerator {
         float rightMargin = 0.25f * 72; // 0.25" in points
         float labelWidth = (PDRectangle.LETTER.getWidth() - leftMargin - rightMargin) / 5; // 5 barcodes per row
         float labelHeight = (PDRectangle.LETTER.getHeight() - topMargin - bottomMargin) / 10; // 10 rows
+
+
+        // Example of using a TrueType font
+        PDType0Font ttfFont = PDType0Font.load(document, new File("./uploads/font/Oswald-VariableFont_wght.ttf"));
+
+
+        // Print page number on the upper left corner
+        contentStream.beginText();
+        contentStream.setFont(ttfFont, 12);
+        contentStream.newLineAtOffset(leftMargin, PDRectangle.LETTER.getHeight() - topMargin / 2 as float);
+        contentStream.showText("Page " + pagenumber);
+        contentStream.endText();
+
+        // metadata accross the top
+        contentStream.beginText();
+        contentStream.setFont(ttfFont, 12);
+        contentStream.newLineAtOffset(leftMargin+100 as float, PDRectangle.LETTER.getHeight() - topMargin / 2 as float);
+        contentStream.showText(
+                "Date: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+                        + " | Batch #: " + batchnumber
+                        + " | Batch Name: " + batchname
+        );
+        contentStream.endText();
 
 
         // Generate and draw UPC-A barcodes
