@@ -190,13 +190,18 @@ class BarcodeGenerator {
                 }
 
                 // Example method to generate barcode data
-                BufferedImage barcodeImage = imageGenerator.generateUPCABarcodeImage(barcodeData, labelWidth, labelHeight);
+                BufferedImage barcodeImage = imageGenerator.generateUPCABarcodeImage(barcodeData, labelWidth, labelHeight, col);
 
                 // Convert BufferedImage to PDImageXObject
                 PDImageXObject pdImage = LosslessFactory.createFromImage(document, barcodeImage);
 
-                // Draw the barcode image on the PDF
-                contentStream.drawImage(pdImage, x, y, labelWidth, labelHeight);
+                if(col == 4){
+                    // Draw the barcode image on the PDF
+                    contentStream.drawImage(pdImage, x + 8 as float, y, labelWidth, labelHeight);
+                } else {
+                    // Draw the barcode image on the PDF
+                    contentStream.drawImage(pdImage, x, y, labelWidth, labelHeight);
+                }
 
 
 //                if(){
