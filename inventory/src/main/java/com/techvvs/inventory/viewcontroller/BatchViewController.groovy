@@ -296,20 +296,27 @@ public class BatchViewController {
         // todo: all we are doing is routing the button to this method and then generating the barcode sheets for this batch
 
 
+        boolean success = false
+
         model = batchControllerHelper.processModel(model, customJwtParameter, batchnumber, editmode, page, productTypeVO, true, false);
 
         switch(productTypeVO.menutype){
             case controllerConstants.ALL:
-                batchControllerHelper.generateAllBarcodesForBatch(batchnumber)
+                success = batchControllerHelper.generateAllBarcodesForBatch(batchnumber)
                 break
             case controllerConstants.SINGLE_MENU:
-                batchControllerHelper.generateSingleMenuBarcodesForBatch(batchnumber)
+                success = batchControllerHelper.generateSingleMenuBarcodesForBatch(batchnumber)
                 break
         }
 
 
 
-        model.addAttribute("successMessage","Successfully created barcodes for this batch. ")
+        if(success){
+            model.addAttribute("successMessage","Successfully created barcodes for this batch. ")
+        } else {
+            model.addAttribute("errorMessage","Barcodes already exist for this batch. ")
+        }
+
 
         return "service/editbatch.html";
     }

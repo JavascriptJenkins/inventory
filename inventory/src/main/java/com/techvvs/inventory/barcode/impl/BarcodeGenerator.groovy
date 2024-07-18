@@ -20,9 +20,11 @@ import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory
 
 import javax.imageio.ImageIO
 import java.nio.file.FileSystems
+import java.nio.file.Files
 import java.nio.file.Path
 
 import java.awt.image.BufferedImage
+import java.nio.file.Paths
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -39,6 +41,8 @@ class BarcodeGenerator {
     ImageGenerator imageGenerator
 
     String PDF_BATCH_DIR = "./uploads/pdf/"
+    String PARENT_LEVEL_DIR = "./topdir/"
+    String filenameprefix = "upca_"
 
     void generateBarcodes(String filenameExtension, int batchnumber, int pagenumber, Set<ProductVO> productset) throws IOException {
 
@@ -226,10 +230,14 @@ class BarcodeGenerator {
         // Close the content stream
         contentStream.close();
 
-        String filename = pagenumber+"-"+filenameExtension+"-"+batchnumber
-        // Save the PDF document
-        document.save(new File(PDF_BATCH_DIR+"upc_batch-"+filename+".pdf"));
+        String filename = pagenumber+"-"+batchname+"-"+batchnumber
 
+        // create a directory with the batchnumber and /barcodes dir if it doesn't exist yet
+        Files.createDirectories(Paths.get(PARENT_LEVEL_DIR+batchnumber+"/barcodes/"));
+
+        // save the actual file
+        document.save(PARENT_LEVEL_DIR+batchnumber+"/barcodes/"+filename+".pdf");
+        document.close();
 
     }
 

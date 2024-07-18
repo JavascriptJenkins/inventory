@@ -129,6 +129,17 @@
                 </form>
             </div>
 
+            <div class="col-sm-2" style="margin-bottom: 5px;">
+                <!--  -->
+                <form th:action="@{/newbatch/generateweightlabels?batchnumber=__${batch.batchnumber}__&customJwtParameter=__${customJwtParameter}__&editmode=no&size=__${#lists.size(productPage.content)}__&page=1}" th:object="${searchproducttype}" method="post">
+                    <label class="form-label required">Generate QR Codes</label>
+                    <select class="form-control" th:field="${searchproducttype.menutype}"  >
+                        <option th:each="menuoption : ${menuoptionsWeightLabels}" th:value="${menuoption}" th:text="${menuoption}"></option>
+                    </select>
+                    <button style="margin-top:5px;" type="submit" class="btn btn-primary">Generate QR Codes</button>
+                </form>
+            </div>
+
         </div>
 
         <br>

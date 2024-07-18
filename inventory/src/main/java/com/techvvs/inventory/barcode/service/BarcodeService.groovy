@@ -8,11 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
 
-// todo: enhancements
-/*
-** Add functionality to let barcodes be printed for specific product types
-* */
-
+//UPCA format
+//0: Number system character
+//12345: Manufacturer code
+//67890: Product code
+//5: Check digit
+//https://www.gs1us.org/upcs-barcodes-prefixes/how-to-get-a-upc-barcode
 @Component
 class BarcodeService {
 

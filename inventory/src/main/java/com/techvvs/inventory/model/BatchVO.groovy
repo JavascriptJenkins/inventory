@@ -31,6 +31,12 @@ class BatchVO implements Serializable {
     String notes
 
     @JsonProperty
+    Integer barcodesgenerated
+
+    @JsonProperty
+    Integer qrcodesgenerated
+
+    @JsonProperty
     @ElementCollection(fetch = FetchType.EAGER)
     Set<ProductVO> product_set
 
