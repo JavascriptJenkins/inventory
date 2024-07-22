@@ -6,6 +6,7 @@ import com.google.zxing.client.j2se.MatrixToImageWriter
 import com.google.zxing.common.BitMatrix
 import com.google.zxing.qrcode.QRCodeWriter
 import com.techvvs.inventory.barcode.impl.BarcodeHelper
+import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.model.ProductVO
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.PDPage
@@ -22,7 +23,9 @@ import org.apache.pdfbox.pdmodel.font.PDType1Font
 import javax.imageio.ImageIO
 import java.awt.image.BufferedImage
 import java.nio.file.FileSystems
+import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -35,10 +38,13 @@ class QrCodeGenerator {
 
     static String QR_BATCH_DIR = "./uploads/qr/"
 
+    @Autowired
+    AppConstants appConstants
+
     // need to make a qr code generator that generates a QR for every barcode
     void generateQrcodes(String filenameExtension, int batchnumber, int pagenumber, Set<ProductVO> productset) throws IOException {
 
-        System.out.println("Generating barcodes for " + filenameExtension + " | pagenumber: "+pagenumber);
+        System.out.println("Generating qrcodes for " + filenameExtension + " | pagenumber: "+pagenumber);
 
         PDDocument document = new PDDocument()
         PDPage page = new PDPage(PDRectangle.LETTER); // 8.5" x 11"
@@ -195,18 +201,17 @@ class QrCodeGenerator {
             }
         }
 
-
-
-
-
-        // todo: add some functionality here so the user knows if barcodes are already generated or not
         // Close the content stream
         contentStream.close();
 
-        String filename = pagenumber+"-"+filenameExtension+"-"+batchnumber
-        // Save the PDF document
-        document.save(new File(QR_BATCH_DIR+"upc_batch-"+filename+".pdf"));
+        String filename = pagenumber+"-"+batchname+"-"+batchnumber
 
+        // create a directory with the batchnumber and /barcodes dir if it doesn't exist yet
+        Files.createDirectories(Paths.get(appConstants.PARENT_LEVEL_DIR+batchnumber+appConstants.QR_ALL_DIR));
+
+        // save the actual file
+        document.save(appConstants.PARENT_LEVEL_DIR+batchnumber+appConstants.QR_ALL_DIR+appConstants.filenameprefix_qr+filename+".pdf");
+        document.close();
 
     }
 

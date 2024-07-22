@@ -41,6 +41,10 @@ class BatchVO implements Serializable {
     Set<ProductVO> product_set
 
     @JsonProperty
+    @ElementCollection(fetch = FetchType.EAGER)
+    Set<MenuVO> menu_set
+
+    @JsonProperty
     @OneToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name="batch_type_id")
     BatchTypeVO batch_type_id

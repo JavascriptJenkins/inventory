@@ -6,11 +6,10 @@ import java.io.Serializable;
 import javax.persistence.*
 import java.time.LocalDateTime;
 
-//@IdClass(ProductCompositeID.class)
 @JsonIgnoreProperties
 @Entity
 @Table(name="product")
-public class ProductVO implements Serializable {
+class ProductVO implements Serializable {
 // todo: make a productsale object
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -29,6 +28,9 @@ public class ProductVO implements Serializable {
     @JsonProperty
     @ManyToMany(mappedBy = "product_list")
     List<TransactionVO> transaction_list
+    @JsonProperty
+    @ManyToMany(mappedBy = "menu_product_list")
+    List<MenuVO> menu_list
     @JsonProperty
     Integer productnumber;
     @JsonProperty

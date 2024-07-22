@@ -5,6 +5,7 @@ import com.google.zxing.WriterException
 import com.google.zxing.client.j2se.MatrixToImageWriter
 import com.google.zxing.common.BitMatrix
 import com.google.zxing.qrcode.QRCodeWriter
+import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.jparepo.ProductRepo
 import com.techvvs.inventory.model.ProductVO
 import org.apache.pdfbox.pdmodel.font.PDType0Font
@@ -40,9 +41,9 @@ class BarcodeGenerator {
     @Autowired
     ImageGenerator imageGenerator
 
-    String PDF_BATCH_DIR = "./uploads/pdf/"
-    String PARENT_LEVEL_DIR = "./topdir/"
-    String filenameprefix = "upca_"
+    @Autowired
+    AppConstants appConstants
+
 
     void generateBarcodes(String filenameExtension, int batchnumber, int pagenumber, Set<ProductVO> productset) throws IOException {
 
@@ -74,10 +75,10 @@ class BarcodeGenerator {
                     float x = leftMargin + col * labelWidth;
                     float y = PDRectangle.LETTER.getHeight() - topMargin - (row + 1) * labelHeight;
 
-                    String barcodeData = barcodeHelper.generateBarcodeData(row, col, filenameExtension, batchnumber, pagenumber);
+                    String barcodeData = barcodeHelper.generateBarcodeData(row, col, batchnumber, pagenumber);
 
                     // Example method to generate barcode data
-                    BufferedImage barcodeImage = imageGenerator.generateUPCABarcodeImage(barcodeData, labelWidth, labelHeight);
+                    BufferedImage barcodeImage = imageGenerator.generateUPCABarcodeImage(barcodeData, labelWidth, labelHeight, col);
 
                     // Convert BufferedImage to PDImageXObject
                     PDImageXObject pdImage = LosslessFactory.createFromImage(document, barcodeImage);
@@ -105,8 +106,13 @@ class BarcodeGenerator {
         contentStream.close();
 
         String filename = pagenumber+"-"+filenameExtension+"-"+batchnumber
-        // Save the PDF document
-        document.save(new File(PDF_BATCH_DIR+"upc_batch-"+filename+".pdf"));
+
+        // create a directory with the batchnumber and /barcodes dir if it doesn't exist yet
+        Files.createDirectories(Paths.get(appConstants.PARENT_LEVEL_DIR+batchnumber+appConstants.BARCODES_MENU_DIR));
+
+        // save the actual file
+        document.save(appConstants.PARENT_LEVEL_DIR+batchnumber+appConstants.BARCODES_MENU_DIR+appConstants.filenameprefix+filename+".pdf");
+        document.close();
 
 
     }
@@ -226,17 +232,16 @@ class BarcodeGenerator {
 
 
 
-        // todo: add some functionality here so the user knows if barcodes are already generated or not
         // Close the content stream
         contentStream.close();
 
         String filename = pagenumber+"-"+batchname+"-"+batchnumber
 
         // create a directory with the batchnumber and /barcodes dir if it doesn't exist yet
-        Files.createDirectories(Paths.get(PARENT_LEVEL_DIR+batchnumber+"/barcodes/"));
+        Files.createDirectories(Paths.get(appConstants.PARENT_LEVEL_DIR+batchnumber+appConstants.BARCODES_ALL_DIR));
 
         // save the actual file
-        document.save(PARENT_LEVEL_DIR+batchnumber+"/barcodes/"+filename+".pdf");
+        document.save(appConstants.PARENT_LEVEL_DIR+batchnumber+appConstants.BARCODES_ALL_DIR+appConstants.filenameprefix+filename+".pdf");
         document.close();
 
     }

@@ -30,6 +30,7 @@ import java.nio.file.Files
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import org.apache.poi.ss.usermodel.*
 
+import java.nio.file.Path
 import java.security.SecureRandom
 
 /* This class exists to keep the main batch controller code clean and avoid duplication. */
@@ -101,6 +102,12 @@ class BatchControllerHelper {
             results = batchRepo.findAllByBatchnumber(Integer.valueOf(batchnumber));
         }
 
+//        Path filePath = Paths.get("path/to/your/file.txt");
+//
+//        if(Files.exists()){
+//
+//        }
+
         if(results.get(0).product_set.getAt(0).barcode != null && results.get(0).product_set.getAt(0).barcode != ""){
             // if one of the products has a barcode in this batch we are going to assume that
             // we already have barcodes for this batch
@@ -132,6 +139,12 @@ class BatchControllerHelper {
             System.out.println("Searching data by batchnumber");
             results = batchRepo.findAllByBatchnumber(Integer.valueOf(batchnumber));
         }
+
+        //        Path filePath = Paths.get("path/to/your/file.txt");
+//
+//        if(Files.exists()){
+//
+//        }
 
         qrCodeService.createAllQrsForBatch(results.get(0))
 
