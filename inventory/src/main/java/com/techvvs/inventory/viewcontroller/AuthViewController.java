@@ -12,6 +12,7 @@ import com.techvvs.inventory.security.UserService;
 import com.techvvs.inventory.util.SendgridEmailUtil;
 import com.techvvs.inventory.util.TwilioTextUtil;
 import com.techvvs.inventory.validation.ValidateAuth;
+import com.techvvs.inventory.viewcontroller.helper.MenuHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -70,6 +71,9 @@ public class AuthViewController {
     @Autowired
     ValidateAuth validateAuth;
 
+    @Autowired
+    MenuHelper menuHelper;
+
     //default home mapping
     @GetMapping
     String viewAuthPage(Model model) {
@@ -114,6 +118,13 @@ public class AuthViewController {
         } else {
             model.addAttribute("isDev1",0);
         }
+    }
+
+
+    void bindObjectsForMenuFunctionality(Model model){
+        Optional<Integer> page = Optional.of(0);
+        Optional<Integer> size = Optional.of(0);
+        menuHelper.findMenus(model,  page, size);
     }
 
     // display the page for typing in the token when user clicks link on phone
@@ -267,6 +278,7 @@ public class AuthViewController {
                     model.addAttribute("successMessage", "Phone token verified. ");
                     model.addAttribute("tknfromcontroller", tokenDAO);
                     checkForDev1(model);
+                    bindObjectsForMenuFunctionality(model);
                     return "auth/index.html";
 
                 }

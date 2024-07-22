@@ -1,17 +1,18 @@
 package com.techvvs.inventory.viewcontroller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.techvvs.inventory.model.CartVO;
+import com.techvvs.inventory.model.MenuVO;
+import com.techvvs.inventory.viewcontroller.helper.MenuHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Optional;
 
 @RequestMapping("/dashboard")
 @Controller
@@ -25,19 +26,29 @@ public class HomeViewController {
     @Autowired
     HttpServletResponse httpServletResponse;
 
+    @Autowired
+    MenuHelper menuHelper;
+
 
 
     @GetMapping("/index")
-    String index(Model model, @RequestParam("customJwtParameter") String token){
+    String index(Model model,
+                 @ModelAttribute( "menu" ) MenuVO menuVO,
+                 @RequestParam("customJwtParameter") String token,
+                 @RequestParam("page") Optional<Integer> page,
+                 @RequestParam("size") Optional<Integer> size){
 
         System.out.println("hit the dashboard index page");
-        model.addAttribute("customJwtParameter",token);
-//        model.addAttribute(Objects.requireNonNull(model.getAttribute("customJwtParameter")));
-//
-//        System.out.println("PARAM ON CONTROLLER: " + model.getAttribute("customJwtParameter"));
-//        System.out.println( httpServletRequest);
 
-       // model.addAttribute("student", new StudentDAO());
+
+
+        // bind the menu options here
+        menuHelper.findMenus(model, page, size);
+
+
+
+        model.addAttribute("customJwtParameter",token);
+        model.addAttribute("menu",menuVO);
         return "auth/index.html";
     }
 
