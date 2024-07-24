@@ -67,4 +67,19 @@ class ProductVO implements Serializable {
     @JsonProperty
     LocalDateTime createTimeStamp;
 
+
+
+    // Method to get unique products based on barcode
+    // Method to get unique products based on barcode and return as a list
+    static List<ProductVO> getUniqueProducts(List<ProductVO> products) {
+        Set<String> seenBarcodes = new HashSet<>();
+        List<ProductVO> uniqueProducts = new ArrayList<>();
+        for (ProductVO product : products) {
+            if (seenBarcodes.add(product.getBarcode())) {
+                uniqueProducts.add(product);
+            }
+        }
+        return uniqueProducts;
+    }
+
     }

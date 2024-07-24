@@ -64,7 +64,7 @@
             th:alt-title="${iStat.even}? 'even' : 'odd'">
 
             <td th:text="${menu.menuid}"></td>
-            <td><a th:href="@{/checkout?menuid=__${menu.menuid}__&customJwtParameter=__${customJwtParameter}__}" th:text="${menu.menuid}"></a></td>
+            <td><a th:href="@{/menu?menuid=__${menu.menuid}__&cartid=0&customJwtParameter=__${customJwtParameter}__}" th:text="${menu.menuid}"></a></td>
             <td th:text="${menu.name}"></td>
 
         </tr>
@@ -74,7 +74,7 @@
     </table>
     <div th:if="${menuPage.totalPages > 0}" class="pagination"
          th:each="pageNumber : ${pageNumbers}">
-        <a th:href="@{/checkout/pendingcarts?customJwtParameter=__${customJwtParameter}__&size=__${#lists.size(menuPage.content)}__&page=__${pageNumber}__}"
+        <a th:href="@{/menu?customJwtParameter=__${customJwtParameter}__&size=__${#lists.size(menuPage.content)}__&page=__${pageNumber}__}"
            th:text=${pageNumber}
            th:class="${pageNumber==menuPage.number + 1} ? active"></a>
     </div>

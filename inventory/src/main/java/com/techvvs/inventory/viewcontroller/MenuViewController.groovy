@@ -10,6 +10,7 @@ import com.techvvs.inventory.model.BatchVO
 import com.techvvs.inventory.model.CartVO
 import com.techvvs.inventory.model.MenuVO
 import com.techvvs.inventory.model.ProductTypeVO
+import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.modelnonpersist.FileVO
 import com.techvvs.inventory.printers.PrinterService
@@ -98,25 +99,17 @@ public class MenuViewController {
             @ModelAttribute( "menu" ) MenuVO menuVO,
             Model model,
             @RequestParam("customJwtParameter") String customJwtParameter,
-            @RequestParam("menuid") String menuid
-
+            @RequestParam("menuid") String menuid,
+            @RequestParam("cartid") String cartid,
+            @ModelAttribute( "cart" ) CartVO cartVO
     ){
 
 
-        // if cartid == 0 then load normally, otherwise load the existing transaction
-        if(menuid == "0"){
-            // do nothing
-            // if it is the first time loading the page
-            if(menuVO.menu_product_list == null){
-               // menuVO.setTotal(0) // set total to 0 initially
-            }
-            model.addAttribute("menu", menuVO);
+        model = menuHelper.loadMenu(menuid, model, menuVO)
 
-        } else {
-            menuVO = menuHelper.getExistingMenu(menuid)
-            menuVO = menuHelper.hydrateTransientQuantitiesForDisplay(menuVO)
-            model.addAttribute("menu", menuVO)
-        }
+        model = checkoutHelper.loadCart(cartid, model, cartVO)
+
+
 
         // todo: add a button on the ui to pull the latest transaction for customer (so if someone clicks off page
         //  you can come back and finish the transaction)
@@ -126,7 +119,7 @@ public class MenuViewController {
 
 
         // fetch all customers from database and bind them to model
-       // checkoutHelper.getAllCustomers(model)
+        checkoutHelper.getAllCustomers(model)
         model.addAttribute("customJwtParameter", customJwtParameter);
         return "menu/menu.html";
     }

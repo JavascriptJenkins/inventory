@@ -84,6 +84,28 @@ class MenuHelper {
         return menuVO
 
     }
+
+    Model loadMenu(String menuid, Model model, MenuVO menuVO){
+        // if cartid == 0 then load normally, otherwise load the existing transaction
+        if(menuid == "0"){
+            // do nothing
+            // if it is the first time loading the page
+            if(menuVO.menu_product_list == null){
+                // menuVO.setTotal(0) // set total to 0 initially
+            }
+            model.addAttribute("menu", menuVO);
+
+        } else {
+            menuVO = getExistingMenu(menuid)
+            menuVO = hydrateTransientQuantitiesForDisplay(menuVO)
+
+            List<ProductVO> uniqueproducts = ProductVO.getUniqueProducts(menuVO.menu_product_list)
+
+            menuVO.menu_product_list = uniqueproducts
+
+            model.addAttribute("menu", menuVO)
+        }
+    }
     
     
 }

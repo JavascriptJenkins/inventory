@@ -101,26 +101,12 @@ public class CheckoutViewController {
     ){
 
 
-        // if cartid == 0 then load normally, otherwise load the existing transaction
-        if(cartid == "0"){
-            // do nothing
-            // if it is the first time loading the page
-            if(cartVO.product_cart_list == null){
-                cartVO.setTotal(0) // set total to 0 initially
-            }
-            model.addAttribute("cart", cartVO);
-
-        } else {
-            cartVO = checkoutHelper.getExistingCart(cartid)
-            cartVO = checkoutHelper.hydrateTransientQuantitiesForDisplay(cartVO)
-            model.addAttribute("cart", cartVO)
-        }
+        model = checkoutHelper.loadCart(cartid, model, cartVO)
 
         // todo: add a button on the ui to pull the latest transaction for customer (so if someone clicks off page
         //  you can come back and finish the transaction)
 
         System.out.println("customJwtParam on checkout controller: "+customJwtParameter);
-
 
 
         // fetch all customers from database and bind them to model
