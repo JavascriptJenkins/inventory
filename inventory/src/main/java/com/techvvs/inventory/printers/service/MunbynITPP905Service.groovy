@@ -74,6 +74,7 @@ class MunbynITPP905Service {
         }
 
         if (selectedPrintService != null) {
+            println("Selected printer: " + selectedPrintService.getName())
             try {
                 DocPrintJob job = selectedPrintService.createPrintJob();
                 DocFlavor flavor = DocFlavor.INPUT_STREAM.AUTOSENSE;

@@ -105,6 +105,12 @@
     </form>
 
 
+    <!--    One form for passing back the barcode on every scan and updating the transaction in db -->
+    <form id="printInvoiceForm" th:action="@{/checkout/printinvoice?customJwtParameter=__${customJwtParameter}__}" th:object="${transaction}" method="post">
+        <input type="hidden" th:field="*{transactionid}">
+        <button style="margin-top:5px;" type="submit" class="btn btn-primary">Print Invoice</button>
+    </form>
+
 
 
 

@@ -257,6 +257,25 @@ class CheckoutHelper {
 
     }
 
+    Model loadCartForCheckout(String cartid, Model model, CartVO cartVO){
+        // if cartid == 0 then load normally, otherwise load the existing transaction
+        if(cartid == "0"){
+            // do nothing
+            // if it is the first time loading the page
+            if(cartVO.product_cart_list == null){
+                cartVO.setTotal(0) // set total to 0 initially
+                cartVO.product_cart_list = new ArrayList<>()
+            }
+            model.addAttribute("cart", cartVO);
+
+        } else {
+            cartVO = getExistingCart(cartid)
+            cartVO = hydrateTransientQuantitiesForDisplay(cartVO)
+            model.addAttribute("cart", cartVO)
+        }
+
+    }
+
 
 
 
