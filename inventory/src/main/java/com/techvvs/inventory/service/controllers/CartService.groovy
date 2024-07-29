@@ -46,6 +46,9 @@ class CartService {
             productVO.get().updateTimeStamp = LocalDateTime.now()
             ProductVO savedProduct = productRepo.save(productVO.get())
 
+            if(cartVO.total == null){
+                cartVO.total = 0
+            }
 
             /* Cart code below */
             cartVO.total += Integer.valueOf(productVO.get().price) // add the product price to the total

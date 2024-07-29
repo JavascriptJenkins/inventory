@@ -105,9 +105,9 @@ public class MenuViewController {
     ){
 
 
-        model = menuHelper.loadMenu(menuid, model, menuVO)
 
-        model = checkoutHelper.loadCart(cartid, model, cartVO)
+        menuVO = menuHelper.loadMenu(menuid, model)
+        model = checkoutHelper.loadCart(cartid, model, cartVO, menuid)
 
 
 
@@ -123,6 +123,55 @@ public class MenuViewController {
         model.addAttribute("customJwtParameter", customJwtParameter);
         return "menu/menu.html";
     }
+
+
+    @PostMapping("/scan")
+    String scan(@ModelAttribute( "cart" ) CartVO cartVO,
+                Model model,
+                @RequestParam("customJwtParameter") String customJwtParameter,
+                @RequestParam("page") Optional<Integer> page,
+                @RequestParam("size") Optional<Integer> size
+    ){
+
+        System.out.println("customJwtParam on checkout controller: "+customJwtParameter);
+
+        cartVO = menuHelper.validateMenuPageCartVO(cartVO, model)
+
+        String menuid = cartVO.menuid
+
+
+        MenuVO menuVO = menuHelper.loadMenu(menuid, model)
+
+        // only proceed if there is no error
+        if(model.getAttribute("errorMessage") == null){
+            // save a new transaction object in database if we don't have one
+
+            cartVO = checkoutHelper.saveCartIfNew(cartVO)
+
+            if(cartVO.barcode != null && cartVO.barcode != ""){
+                     cartVO = cartService.searchForProductByBarcode(cartVO, model, page, size)
+            }
+
+
+
+        }
+
+        cartVO = checkoutHelper.hydrateTransientQuantitiesForDisplay(cartVO)
+
+        cartVO.barcode = "" // reset barcode to empty
+        cartVO.menuid = menuid
+
+        model.addAttribute("customJwtParameter", customJwtParameter);
+        model.addAttribute("cart", cartVO);
+        // fetch all customers from database and bind them to model
+        checkoutHelper.getAllCustomers(model)
+
+        return "menu/menu.html";
+    }
+
+
+
+
 //
 //    //get the pending transactions
 //    @GetMapping("pendingtransactions")

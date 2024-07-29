@@ -40,6 +40,12 @@ class CartVO implements Serializable{
     @JoinColumn(name = "customerid")
     CustomerVO customer
 
+    @Transient
+    String menuid
+
+    @Transient
+    String customerid
+
     // transient field for passing barcode on checkout page back to controller
     @Transient
     String barcode

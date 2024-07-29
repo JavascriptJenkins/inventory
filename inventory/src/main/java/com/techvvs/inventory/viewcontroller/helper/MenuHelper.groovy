@@ -17,6 +17,9 @@ class MenuHelper {
     @Autowired
     MenuRepo menuRepo
 
+    @Autowired
+    CheckoutHelper checkoutHelper
+
 
     void findMenus(Model model, Optional<Integer> page, Optional<Integer> size){
 
@@ -85,7 +88,9 @@ class MenuHelper {
 
     }
 
-    Model loadMenu(String menuid, Model model, MenuVO menuVO){
+    MenuVO loadMenu(String menuid, Model model){
+
+        MenuVO menuVO = new MenuVO()
         // if cartid == 0 then load normally, otherwise load the existing transaction
         if(menuid == "0"){
             // do nothing
@@ -94,6 +99,7 @@ class MenuHelper {
                 // menuVO.setTotal(0) // set total to 0 initially
             }
             model.addAttribute("menu", menuVO);
+            return menuVO
 
         } else {
             menuVO = getExistingMenu(menuid)
@@ -104,7 +110,58 @@ class MenuHelper {
             menuVO.menu_product_list = uniqueproducts
 
             model.addAttribute("menu", menuVO)
+            return menuVO
         }
+    }
+
+
+
+    CartVO validateCartVO(CartVO cartVO, Model model){
+        if(cartVO?.customer?.customerid == null){
+            model.addAttribute("errorMessage","Please select a customer")
+        }
+        if(cartVO?.barcode == null || cartVO?.barcode?.empty){
+            model.addAttribute("primaryMessage","Add a product to your cart")
+        } else {
+            // only run this database check if barcode is not null
+            Optional<ProductVO> productVO = checkoutHelper.doesProductExist(cartVO.barcode)
+            if(productVO.empty){
+                model.addAttribute("errorMessage","Product does not exist")
+            } else {
+                int cartcount = checkoutHelper.getCountOfProductInCartByBarcode(cartVO)
+                // check here if the quantity we are trying to add will exceed the quantity in stock
+                if(cartcount >= productVO.get().quantityremaining){
+                    model.addAttribute("errorMessage","Quantity exceeds quantity in stock")
+                }
+            }
+
+        }
+
+        return cartVO
+    }
+
+    CartVO validateMenuPageCartVO(CartVO cartVO, Model model){
+        if(cartVO?.customer?.customerid == null && cartVO?.customerid == null){
+            model.addAttribute("errorMessage","Please select a customer")
+        }
+        if(cartVO?.barcode == null || cartVO?.barcode?.empty){
+            model.addAttribute("primaryMessage","Add a product to your cart")
+        } else {
+            // only run this database check if barcode is not null
+            Optional<ProductVO> productVO = checkoutHelper.doesProductExist(cartVO.barcode)
+            if(productVO.empty){
+                model.addAttribute("errorMessage","Product does not exist")
+            } else {
+                int cartcount = checkoutHelper.getCountOfProductInCartByBarcode(cartVO)
+                // check here if the quantity we are trying to add will exceed the quantity in stock
+                if(cartcount >= productVO.get().quantityremaining){
+                    model.addAttribute("errorMessage","Quantity exceeds quantity in stock")
+                }
+            }
+
+        }
+
+        return cartVO
     }
     
     

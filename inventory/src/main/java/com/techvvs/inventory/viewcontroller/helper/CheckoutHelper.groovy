@@ -236,7 +236,7 @@ class CheckoutHelper {
     }
 
 
-    Model loadCart(String cartid, Model model, CartVO cartVO){
+    Model loadCart(String cartid, Model model, CartVO cartVO, String menuid){
         // if cartid == 0 then load normally, otherwise load the existing transaction
         if(cartid == "0"){
             // do nothing
@@ -245,9 +245,11 @@ class CheckoutHelper {
                 cartVO.setTotal(0) // set total to 0 initially
                 cartVO.product_cart_list = new ArrayList<>()
             }
+            cartVO.menuid = menuid
             model.addAttribute("cart", cartVO);
 
         } else {
+            cartVO.menuid = menuid
             cartVO = getExistingCart(cartid)
             cartVO = hydrateTransientQuantitiesForDisplay(cartVO)
             model.addAttribute("cart", cartVO)
