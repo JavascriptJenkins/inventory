@@ -1,8 +1,10 @@
 package com.techvvs.inventory.viewcontroller.helper
 
+import com.techvvs.inventory.jparepo.CustomerRepo
 import com.techvvs.inventory.jparepo.MenuRepo
 import com.techvvs.inventory.jparepo.PaymentRepo
 import com.techvvs.inventory.model.CartVO
+import com.techvvs.inventory.model.CustomerVO
 import com.techvvs.inventory.model.MenuVO
 import com.techvvs.inventory.model.PaymentVO
 import com.techvvs.inventory.model.ProductVO
@@ -26,6 +28,9 @@ class PaymentHelper {
 
     @Autowired
     PaymentRepo paymentRepo
+
+    @Autowired
+    CustomerRepo customerRepo
 
     @Autowired
     TransactionService transactionService
@@ -78,6 +83,17 @@ class PaymentHelper {
         }
     }
 
+    CustomerVO getExistingCustomer(String customerid){
+
+        Optional<CustomerVO> customerVO = customerRepo.findById(Integer.valueOf(customerid))
+
+        if(!customerVO.empty){
+            return customerVO.get()
+        } else {
+            return new CustomerVO(customerid: 0)
+        }
+    }
+
 
     MenuVO hydrateTransientQuantitiesForDisplay(MenuVO menuVO){
 
@@ -125,6 +141,25 @@ class PaymentHelper {
 
     }
 
+    CustomerVO loadCustomer(String customerid, Model model){
+
+        CustomerVO customerVO = new CustomerVO()
+        // if cartid == 0 then load normally, otherwise load the existing transaction
+        if(customerid == "0"){
+            // do nothing
+            // if it is the first time loading the page
+
+            model.addAttribute("customer", customerVO);
+            return customerVO
+        } else {
+            customerVO = getExistingCustomer(customerid)
+
+            model.addAttribute("customer", customerVO);
+            return customerVO
+        }
+
+    }
+
 
     CartVO validateCartVO(CartVO cartVO, Model model){
         if(cartVO?.customer?.customerid == null){
@@ -150,28 +185,12 @@ class PaymentHelper {
         return cartVO
     }
 
-    CartVO validateMenuPageCartVO(CartVO cartVO, Model model){
-        if(cartVO?.customer?.customerid == null && cartVO?.customerid == null){
-            model.addAttribute("errorMessage","Please select a customer")
-        }
-        if(cartVO?.barcode == null || cartVO?.barcode?.empty){
-            model.addAttribute("primaryMessage","Add a product to your cart")
-        } else {
-            // only run this database check if barcode is not null
-            Optional<ProductVO> productVO = checkoutHelper.doesProductExist(cartVO.barcode)
-            if(productVO.empty){
-                model.addAttribute("errorMessage","Product does not exist")
-            } else {
-                int cartcount = checkoutHelper.getCountOfProductInCartByBarcode(cartVO)
-                // check here if the quantity we are trying to add will exceed the quantity in stock
-                if(cartcount >= productVO.get().quantityremaining){
-                    model.addAttribute("errorMessage","Quantity exceeds quantity in stock")
-                }
-            }
-
+    PaymentVO validatePaymentVO(PaymentVO paymentVO, Model model){
+        if(paymentVO?.amountpaid == null || paymentVO?.amountpaid == 0 || paymentVO?.amountpaid?.toString()?.isBlank()){
+            model.addAttribute("errorMessage","Please enter an amount")
         }
 
-        return cartVO
+        return paymentVO
     }
     
     

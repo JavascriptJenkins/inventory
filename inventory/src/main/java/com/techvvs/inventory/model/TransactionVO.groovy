@@ -69,4 +69,12 @@ class TransactionVO implements Serializable {
     @JsonProperty
     LocalDateTime createTimeStamp
 
+
+    PaymentVO getMostRecentPayment() {
+        if (payment_list == null || payment_list.isEmpty()) {
+            return new PaymentVO(paymentid: 0)
+        }
+        payment_list.max { it.createTimeStamp }
+    }
+
 }

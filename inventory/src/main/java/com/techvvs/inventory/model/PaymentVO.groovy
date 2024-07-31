@@ -19,9 +19,6 @@ class PaymentVO implements Serializable {
     Integer paymentid
 
     @JsonProperty
-    Integer paymentnumber;
-
-    @JsonProperty
     Integer amountpaid;
 
     @JsonProperty

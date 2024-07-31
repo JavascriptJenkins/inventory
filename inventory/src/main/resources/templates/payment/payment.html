@@ -29,7 +29,7 @@
     <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
     <div class="alert alert-primary" role="alert" th:if="${primaryMessage}" th:text="${primaryMessage}">Success</div>
 
-    <form th:action="@{/payment/submitpayment}" th:object="${payment}" method="post">
+    <form th:action="@{/payment/submitpayment?customJwtParameter=__${customJwtParameter}__&transactionid=__${transaction.transactionid}__&customerid=__${customer.customerid}__}" th:object="${payment}" method="post">
         <div class="mb-3">
             <label for="amountpaid" class="form-label required">Amount</label>
             <input type="number" class="form-control" id="amountpaid" th:field="*{amountpaid}" required>

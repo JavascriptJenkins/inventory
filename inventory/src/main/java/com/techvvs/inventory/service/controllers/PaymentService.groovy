@@ -9,6 +9,8 @@ import com.techvvs.inventory.model.TransactionVO
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
+import java.time.LocalDateTime
+
 @Component
 class PaymentService {
 
@@ -34,6 +36,8 @@ class PaymentService {
 
             paymentVO = savePayment(paymentVO)
 
+            // add up the amount paid onto the transaction
+            existingTransaction.paid = existingTransaction.paid == null ? 0 : existingTransaction.paid
             existingTransaction.paid = existingTransaction.paid + paymentVO.amountpaid
 
             // check for null and create if needed
@@ -49,6 +53,12 @@ class PaymentService {
     }
 
     PaymentVO savePayment(PaymentVO paymentVO){
+
+        paymentVO.createTimeStamp = LocalDateTime.now()
+        paymentVO.updateTimeStamp = LocalDateTime.now()
+        paymentVO.notes = "Payment for transaction " + paymentVO.transaction.transactionid
+        paymentVO.paymenttype = "CASH"
+
         paymentVO = paymentRepo.save(paymentVO)
         return paymentVO
     }

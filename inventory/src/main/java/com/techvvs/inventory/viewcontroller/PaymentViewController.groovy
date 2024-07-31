@@ -7,11 +7,13 @@ import com.techvvs.inventory.jparepo.BatchTypeRepo
 import com.techvvs.inventory.jparepo.ProductRepo
 import com.techvvs.inventory.jparepo.ProductTypeRepo
 import com.techvvs.inventory.model.CartVO
+import com.techvvs.inventory.model.CustomerVO
 import com.techvvs.inventory.model.MenuVO
 import com.techvvs.inventory.model.PaymentVO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.printers.PrinterService
 import com.techvvs.inventory.service.controllers.CartService
+import com.techvvs.inventory.service.controllers.PaymentService
 import com.techvvs.inventory.service.controllers.TransactionService
 import com.techvvs.inventory.util.TechvvsFileHelper
 import com.techvvs.inventory.validation.ValidateBatch
@@ -83,6 +85,9 @@ public class PaymentViewController {
     @Autowired
     PaymentHelper paymentHelper
 
+    @Autowired
+    PaymentService paymentService
+
 
     SecureRandom secureRandom = new SecureRandom();
 
@@ -123,47 +128,47 @@ public class PaymentViewController {
 
 
     @PostMapping("/submitpayment")
-    String submitpayment(@ModelAttribute( "cart" ) CartVO cartVO,
-                Model model,
-                @RequestParam("customJwtParameter") String customJwtParameter,
-                @RequestParam("page") Optional<Integer> page,
-                @RequestParam("size") Optional<Integer> size
+    String submitpayment(
+            @ModelAttribute( "payment" ) PaymentVO paymentVO,
+            @RequestParam( "transactionid" ) String transactionid,
+            @RequestParam( "customerid" ) String customerid,
+            Model model,
+            @RequestParam("customJwtParameter") String customJwtParameter
     ){
 
         System.out.println("customJwtParam on checkout controller: "+customJwtParameter);
 
-        cartVO = menuHelper.validateMenuPageCartVO(cartVO, model)
 
-        String menuid = cartVO.menuid
-
-
-        MenuVO menuVO = menuHelper.loadMenu(menuid, model)
+        paymentVO = paymentHelper.validatePaymentVO(paymentVO, model)
 
         // only proceed if there is no error
         if(model.getAttribute("errorMessage") == null){
-            // save a new transaction object in database if we don't have one
 
-            cartVO = checkoutHelper.saveCartIfNew(cartVO)
+            TransactionVO transactionVO = paymentService.submitPaymentForTransaction(Integer.valueOf(transactionid),Integer.valueOf(customerid),paymentVO)
 
-            if(cartVO.barcode != null && cartVO.barcode != ""){
-                     cartVO = cartService.searchForProductByBarcode(cartVO, model, page, size)
-            }
+            model.addAttribute("transaction", transactionVO)
+            model.addAttribute("transactionid", transactionVO.transactionid)
+            model.addAttribute("customer", transactionVO.customervo)
+            model.addAttribute("payment", transactionVO.getMostRecentPayment())
+
+            model.addAttribute("successMessage", "Payment submitted successfully!")
 
 
+        } else {
+             CustomerVO customerVO = paymentHelper.loadCustomer(customerid, model)
+             TransactionVO transactionVO = paymentHelper.loadTransaction(transactionid, model)
 
+
+            model.addAttribute("customer", customerVO)
+            model.addAttribute("transaction", transactionVO)
+            model.addAttribute("payment", paymentVO)
         }
 
-        cartVO = checkoutHelper.hydrateTransientQuantitiesForDisplay(cartVO)
-
-        cartVO.barcode = "" // reset barcode to empty
-        cartVO.menuid = menuid
 
         model.addAttribute("customJwtParameter", customJwtParameter);
-        model.addAttribute("cart", cartVO);
         // fetch all customers from database and bind them to model
-        checkoutHelper.getAllCustomers(model)
 
-        return "menu/menu.html";
+        return "payment/payment.html";
     }
 
 
