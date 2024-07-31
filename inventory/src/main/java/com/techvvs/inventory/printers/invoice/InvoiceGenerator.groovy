@@ -35,9 +35,6 @@ class InvoiceGenerator {
 
     String generateDefaultInvoice(TransactionVO transaction) {
 
-        // this will set the display quantities
-        transaction = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transaction)
-
         // this aggregates the products to their unique list
         transaction.product_list = getAggregatedTransactionProductList(transaction)
 

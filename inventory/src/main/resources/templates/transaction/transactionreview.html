@@ -41,7 +41,7 @@
         function processTableItems() {
             const seenBarcodes = new Set();
 
-            $('#transactionSuccessForm tbody tr').each(function() {
+            $('#transactionReviewForm tbody tr').each(function() {
                 const itemBarcode = $(this).data('barcode'); // Assuming you have data-barcode attribute in your <tr> elements
 
                 if (seenBarcodes.has(itemBarcode)) {
@@ -68,15 +68,18 @@
 <div class="container">
 
 
-    <div class="alert alert-primary" role="alert" >Transaction Successful</div>
+    <div class="alert alert-primary" role="alert" >Review Transaction</div>
     <br>
+    <div style="margin-top: 20px" class="alert alert-primary" role="alert">Reviewing Transaction ID: <span th:text="${transaction.transactionid}"></span></div>
+    <div style="margin-top: 20px" class="alert alert-primary" role="alert">Customer: <span th:text="${transaction.customervo.name}"></span></div>
+
 
     <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
     <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
 
 
     <!--    One form for passing back the barcode on every scan and updating the transaction in db -->
-    <form id="transactionSuccessForm" th:action="@{/checkout/printreceipt?customJwtParameter=__${customJwtParameter}__}" th:object="${transaction}" method="post">
+    <form id="transactionReviewForm" th:action="@{/checkout/printreceipt?customJwtParameter=__${customJwtParameter}__}" th:object="${transaction}" method="post">
 
         <!-- Table Section -->
         <div style="overflow-x: auto;">

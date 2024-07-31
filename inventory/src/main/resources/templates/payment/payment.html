@@ -43,6 +43,8 @@
 <!--        <input type="hidden" th:field="*{transactionid}">-->
     </form>
 
+    <a th:href="@{/transaction?transactionid=__${transaction.transactionid}__&customJwtParameter=__${customJwtParameter}__}" class="btn btn-primary" style="margin-top:5px;">Back To Transaction</a>
+
 
 
 </div>

@@ -314,7 +314,7 @@ public class CheckoutViewController {
 
             transactionVO = transactionService.getExistingTransaction(transactionVO.transactionid)
 
-            CartVO cartVO = checkoutHelper.hydrateTransientQuantitiesForDisplay(transactionVO.cart)
+            transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO)
 
             printerService.printReceipt(transactionVO)
 
@@ -356,7 +356,7 @@ public class CheckoutViewController {
 
             transactionVO = transactionService.getExistingTransaction(transactionVO.transactionid)
 
-            CartVO cartVO = checkoutHelper.hydrateTransientQuantitiesForDisplay(transactionVO.cart)
+            transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO)
 
             printerService.printInvoice(transactionVO)
 
