@@ -51,7 +51,7 @@ class CartVO implements Serializable{
     String barcode
 
     @JsonProperty
-    Integer total;
+    Double total;
 
     @JsonProperty
     Integer isprocessed;

@@ -186,7 +186,7 @@ class PaymentHelper {
     }
 
     PaymentVO validatePaymentVO(PaymentVO paymentVO, Model model){
-        if(paymentVO?.amountpaid == null || paymentVO?.amountpaid == 0 || paymentVO?.amountpaid?.toString()?.isBlank()){
+        if(paymentVO?.amountpaid == null || paymentVO?.amountpaid == 0.00 || paymentVO?.amountpaid?.toString()?.isBlank()){
             model.addAttribute("errorMessage","Please enter an amount")
         }
 

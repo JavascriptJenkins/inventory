@@ -224,7 +224,7 @@ class CheckoutHelper {
             // do nothing
             // if it is the first time loading the page
             if(cartVO.product_cart_list == null){
-                cartVO.setTotal(0) // set total to 0 initially
+                cartVO.setTotal(0.00) // set total to 0 initially
                 cartVO.product_cart_list = new ArrayList<>()
             }
             cartVO.menuid = menuid
@@ -245,7 +245,7 @@ class CheckoutHelper {
             // do nothing
             // if it is the first time loading the page
             if(cartVO.product_cart_list == null){
-                cartVO.setTotal(0) // set total to 0 initially
+                cartVO.setTotal(0.00) // set total to 0 initially
                 cartVO.product_cart_list = new ArrayList<>()
             }
             model.addAttribute("cart", cartVO);

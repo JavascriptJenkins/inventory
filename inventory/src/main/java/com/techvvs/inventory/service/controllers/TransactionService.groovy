@@ -38,7 +38,7 @@ class TransactionService {
                 createTimeStamp: LocalDateTime.now(),
                 customervo: cartVO.customer,
                 total: cartVO.total,
-                paid: 0,
+                paid: 0.00,
                 taxpercentage: 10,
                 isprocessed: 0
 

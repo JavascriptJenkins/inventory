@@ -46,9 +46,9 @@ class ProductVO implements Serializable {
     @JsonProperty
     String barcode;
     @JsonProperty
-    String price;
+    Double price;
     @JsonProperty
-    Integer cost;
+    Double cost;
     @JsonProperty
     Integer salePrice;
     @JsonProperty

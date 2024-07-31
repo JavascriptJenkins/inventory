@@ -47,11 +47,11 @@ class CartService {
             ProductVO savedProduct = productRepo.save(productVO.get())
 
             if(cartVO.total == null){
-                cartVO.total = 0
+                cartVO.total = 0.00
             }
 
             /* Cart code below */
-            cartVO.total += Integer.valueOf(productVO.get().price) // add the product price to the total
+            cartVO.total += Double.valueOf(productVO.get().price) // add the product price to the total
 
             // handle quantity here (have to iterate thru all product cert list and update the quantity)
 

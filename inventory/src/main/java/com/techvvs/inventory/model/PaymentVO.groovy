@@ -19,7 +19,7 @@ class PaymentVO implements Serializable {
     Integer paymentid
 
     @JsonProperty
-    Integer amountpaid;
+    Double amountpaid;
 
     @JsonProperty
     String paymenttype;

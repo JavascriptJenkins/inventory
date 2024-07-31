@@ -214,11 +214,11 @@ class BatchControllerHelper {
             // todo: move this to database inserts instead
             // this is assuming quantity is not boxes of product but individual products
             if(productVO.price == null){
-                productVO.price = "0"
+                productVO.price = 0.00
             }
 
             if(productVO.cost == null){
-                productVO.cost = 0
+                productVO.cost = 0.00
             }
 
             if(productVO.quantityremaining == null){

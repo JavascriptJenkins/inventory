@@ -84,9 +84,9 @@ class ImportBatch {
                 productVO.setQuantity((int) row.getCell(0).getNumericCellValue());
                 productVO.setQuantityremaining((int) row.getCell(0).getNumericCellValue());
                 productVO.setName(row.getCell(1).getStringCellValue());
-                String price = String.valueOf(row.getCell(2).getNumericCellValue());
-                productVO.setPrice(price.substring(0, price.length() - 2));
-                productVO.setCost(Integer.valueOf(productVO.price) - 400) // todo: replace this with actual cost data
+                Double price = Double.valueOf(row.getCell(2).getNumericCellValue());
+                productVO.setPrice(price);
+                productVO.setCost(price - 400.00) // todo: replace this with actual cost data
                 productVO.setProductnumber(secureRandom.nextInt(10000000)); // assuming this will be unique ...
 
                 // todo: reference this in a constants class
@@ -230,9 +230,9 @@ class ImportBatch {
                 productVO.setQuantity((int) row.getCell(0).getNumericCellValue());
                 productVO.setQuantityremaining((int) row.getCell(0).getNumericCellValue());
                 productVO.setName(row.getCell(1).getStringCellValue());
-                String price = String.valueOf(row.getCell(2).getNumericCellValue());
-                productVO.setPrice(price.substring(0, price.length() - 2));
-                productVO.setCost(Integer.valueOf(productVO.price) - 400) // todo: replace this with actual cost data
+                Double price = Double.valueOf(row.getCell(2).getNumericCellValue());
+                productVO.setPrice(price);
+                productVO.setCost(price - 400.00) // todo: replace this with actual cost data
                 productVO.setProductnumber(secureRandom.nextInt(10000000)); // assuming this will be unique ...
 
                 // todo: reference this in a constants class
