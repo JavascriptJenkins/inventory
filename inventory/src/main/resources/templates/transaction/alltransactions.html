@@ -51,7 +51,7 @@
 <div class="container">
 
 
-    <div class="alert alert-primary" role="alert" >Pending Transactions</div>
+    <div class="alert alert-primary" role="alert" >Transactions</div>
     <br>
 
     <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
@@ -73,7 +73,7 @@
             th:alt-title="${iStat.even}? 'even' : 'odd'">
 
             <td th:text="${transaction.transactionid}"></td>
-            <td><a th:href="@{/checkout?transactionid=__${transaction.transactionid}__&customJwtParameter=__${customJwtParameter}__}" th:text="${transaction.transactionid}"></a></td>
+            <td><a th:href="@{/transaction?transactionid=__${transaction.transactionid}__&customJwtParameter=__${customJwtParameter}__}" th:text="${transaction.transactionid}"></a></td>
             <td th:text="${transaction.customervo.name}"></td>
             <td th:text="${transaction.total}"></td>
 
@@ -84,7 +84,7 @@
     </table>
     <div th:if="${transactionPage.totalPages > 0}" class="pagination"
          th:each="pageNumber : ${pageNumbers}">
-        <a th:href="@{/checkout/pendingtransactions?customJwtParameter=__${customJwtParameter}__&size=__${#lists.size(transactionPage.content)}__&page=__${pageNumber}__}"
+        <a th:href="@{/transaction/listall?customJwtParameter=__${customJwtParameter}__&size=__${#lists.size(transactionPage.content)}__&page=__${pageNumber}__}"
            th:text=${pageNumber}
            th:class="${pageNumber==transactionPage.number + 1} ? active"></a>
     </div>

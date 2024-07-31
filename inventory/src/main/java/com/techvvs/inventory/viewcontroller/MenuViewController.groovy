@@ -191,7 +191,7 @@ public class MenuViewController {
 //        checkoutHelper.getAllCustomers(model)
 //        model.addAttribute("customJwtParameter", customJwtParameter);
 //        model.addAttribute("transaction", transactionVO);
-//        return "checkout/pendingtransactions.html";
+//        return "checkout/alltransactions.html";
 //    }
 //
 //    //get the pending carts

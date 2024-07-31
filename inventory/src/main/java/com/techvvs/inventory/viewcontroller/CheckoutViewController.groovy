@@ -115,27 +115,6 @@ public class CheckoutViewController {
         return "checkout/checkout.html";
     }
 
-    //get the pending transactions
-    @GetMapping("pendingtransactions")
-    String viewPendingTransactions(
-            @ModelAttribute( "transaction" ) TransactionVO transactionVO,
-            Model model,
-            @RequestParam("customJwtParameter") String customJwtParameter,
-            @RequestParam("page") Optional<Integer> page,
-            @RequestParam("size") Optional<Integer> size
-    ){
-
-        System.out.println("customJwtParam on checkout controller: "+customJwtParameter);
-
-        // bind the page of transactions
-        checkoutHelper.findPendingTransactions(model, page, size)
-        // fetch all customers from database and bind them to model
-        checkoutHelper.getAllCustomers(model)
-        model.addAttribute("customJwtParameter", customJwtParameter);
-        model.addAttribute("transaction", transactionVO);
-        return "checkout/pendingtransactions.html";
-    }
-
     //get the pending carts
     @GetMapping("pendingcarts")
     String viewPendingTransactions(
