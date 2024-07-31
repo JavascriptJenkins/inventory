@@ -30,7 +30,7 @@ class PaymentVO implements Serializable {
     @JsonProperty
     @ManyToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name="transactionid")
-    TransactionVO order;
+    TransactionVO transaction;
 
     @JsonProperty
     @ManyToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)

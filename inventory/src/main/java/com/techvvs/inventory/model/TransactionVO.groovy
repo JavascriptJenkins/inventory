@@ -31,7 +31,7 @@ class TransactionVO implements Serializable {
 
     @JsonProperty
     @ElementCollection(fetch = FetchType.EAGER)
-    Set<PaymentVO> payment_set
+    List<PaymentVO> payment_list
 
     @JsonProperty
     @OneToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
