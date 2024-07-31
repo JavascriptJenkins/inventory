@@ -3,6 +3,7 @@ package com.techvvs.inventory.printers.receipts
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.service.controllers.TransactionService
+import com.techvvs.inventory.util.FormattingUtil
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
@@ -15,6 +16,9 @@ class ReceiptGenerator {
 
     @Autowired
     TransactionService transactionService
+
+    @Autowired
+    FormattingUtil formattingUtil
 
     String generateTransactioonReciept(TransactionVO transactionVO) {
         return generateReceipt(transactionVO)
@@ -44,15 +48,15 @@ class ReceiptGenerator {
         transactionVO.cart.product_cart_list = transactionService.getAggregatedCartProductList(transactionVO.cart)
 
         for(ProductVO item : transactionVO.cart.product_cart_list) {
-            receipt.append(formatReceiptItem(item.name, item.displayquantity, Double.valueOf(item.price)));
+            receipt.append(formattingUtil.formatReceiptItem(item.name, item.displayquantity, Double.valueOf(item.price)));
 //            receipt.append(item.name+'               '+item.quantity+'    $'+item.price+'\n');
         }
         receipt.append("--------------------------------\n");
         receipt.append('Subtotal                  $'+transactionVO.total+'\n');
 
-        receipt.append('Tax ('+transactionVO.taxpercentage+'%)                 $'+calculateTaxAmount(transactionVO.total, transactionVO.taxpercentage)+'\n');
+        receipt.append('Tax ('+transactionVO.taxpercentage+'%)                 $'+formattingUtil.calculateTaxAmount(transactionVO.total, transactionVO.taxpercentage)+'\n');
 
-        receipt.append('Total                     $'+calculateTotalWithTax(transactionVO.total, transactionVO.taxpercentage)+'\n');
+        receipt.append('Total                     $'+formattingUtil.calculateTotalWithTax(transactionVO.total, transactionVO.taxpercentage)+'\n');
         receipt.append('\n');
         receipt.append('Thank you for shopping!\n');
         receipt.append('     www.northstar.com\n');
@@ -66,18 +70,18 @@ class ReceiptGenerator {
         return receipt.toString();
     }
 
-    private String formatReceiptItem(String name, int quantity, Double price) {
-        return String.format("%-20s %5d %8.2f\n", name, quantity, price);
-    }
-
-    public static int calculateTotalWithTax(int total, int taxPercentage) {
-        double taxAmount = total * (taxPercentage / 100.0);
-        return (int) Math.round(total + taxAmount);
-    }
-
-    public static int calculateTaxAmount(int total, int taxPercentage) {
-        return (int) Math.round(total * (taxPercentage / 100.0));
-    }
+//    private String formatReceiptItem(String name, int quantity, Double price) {
+//        return String.format("%-20s %5d %8.2f\n", name, quantity, price);
+//    }
+//
+//    public static int calculateTotalWithTax(int total, int taxPercentage) {
+//        double taxAmount = total * (taxPercentage / 100.0);
+//        return (int) Math.round(total + taxAmount);
+//    }
+//
+//    public static int calculateTaxAmount(int total, int taxPercentage) {
+//        return (int) Math.round(total * (taxPercentage / 100.0));
+//    }
 
     String generateSampleReceipt() {
         StringBuilder receipt = new StringBuilder();

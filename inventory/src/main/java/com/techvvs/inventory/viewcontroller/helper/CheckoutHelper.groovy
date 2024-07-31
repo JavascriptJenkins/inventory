@@ -217,6 +217,23 @@ class CheckoutHelper {
 
     }
 
+    TransactionVO hydrateTransientQuantitiesForTransactionDisplay(TransactionVO transactionVO){
+
+        // cycle thru here and if the productid is the same then update the quantity
+        ProductVO previous = new ProductVO(barcode: 0)
+        for(ProductVO productVO : transactionVO.product_list){
+            if(productVO.displayquantity == null){
+                productVO.displayquantity = 1
+            }
+            if(productVO.barcode == previous.barcode){
+                productVO.displayquantity = productVO.displayquantity + 1
+            }
+            previous = productVO
+        }
+
+        return transactionVO
+
+    }
 
 
     CartVO getExistingCart(String cartid){
