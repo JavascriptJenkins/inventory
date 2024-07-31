@@ -58,7 +58,7 @@
                         <a class="nav-link" th:href="@{/transaction/listall?customJwtParameter=__${customJwtParameter}__}">Transactions</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" th:href="@{/checkout/pendingcarts?customJwtParameter=__${customJwtParameter}__}">Carts</a>
+                        <a class="nav-link" th:href="@{/checkout/pendingcarts?customJwtParameter=__${customJwtParameter}__}">Pending Carts</a>
                     </li>
                     <li th:if="${customJwtParameter != null}" class="nav-item">
                         <a class="nav-link active" aria-current="page" href="javascript:{}" onclick="postLogout()">Logout</a>

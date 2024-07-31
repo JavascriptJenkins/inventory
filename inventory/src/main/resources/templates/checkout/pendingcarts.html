@@ -69,6 +69,7 @@
         </thead>
         <tbody>
         <tr th:each="cart, iStat : ${cartPage.content}"
+            th:if="${cart.isprocessed != 1}"
             th:style="${iStat.odd}? 'font-weight: bold;'"
             th:alt-title="${iStat.even}? 'even' : 'odd'">
 
