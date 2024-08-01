@@ -18,9 +18,6 @@ class TransactionVO implements Serializable {
     @JsonProperty
     Integer transactionid // need to plz batchid to batchId in all usages
 
-    @JsonProperty
-    Integer transactionnumber;
-
     @ManyToMany
     @JoinTable(
             name = "transaction_product",
