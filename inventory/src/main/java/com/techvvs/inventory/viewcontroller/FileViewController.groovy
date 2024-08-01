@@ -162,6 +162,7 @@ public class FileViewController {
                 size.get()
         );
 
+        // need to pass the original size of all files into this
         bindPageAttributesToModel(model, filePage, page, size);
         model.addAttribute(controllerConstants.MENU_OPTIONS_DIRECTORIES, [appConstants.BARCODES_ALL_DIR, appConstants.BARCODES_MENU_DIR]);
         model.addAttribute("customJwtParameter", customJwtParameter);

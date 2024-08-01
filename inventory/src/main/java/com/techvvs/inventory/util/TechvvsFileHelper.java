@@ -109,6 +109,11 @@ public class TechvvsFileHelper {
 
 
     public Page<FileVO> getPagedFilesByDirectory(String directoryPath, int page, int size) {
+
+        if(page != 0){
+            page = page - 1;
+        }
+
         List<FileVO> fileList = getFilesByDirectory(directoryPath);
         Pageable pageable = PageRequest.of(page, size);
         int start = Math.min((int) pageable.getOffset(), fileList.size());

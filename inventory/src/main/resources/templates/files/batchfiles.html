@@ -77,7 +77,7 @@
 
         <div th:if="${filePage.totalPages > 0}" class="pagination"
              th:each="pageNumber : ${pageNumbers}">
-            <a th:href="@{/viewfiles?batchid=__${batch.batchid}__&customJwtParameter=__${customJwtParameter}__&size=__${#lists.size(filePage.content)}__&page=__${pageNumber}__}"
+            <a th:href="@{/viewfiles?batchid=__${batch.batchid}__&customJwtParameter=__${customJwtParameter}__&size=5&page=__${pageNumber}__}"
                th:text=${pageNumber}
                th:class="${pageNumber==filePage.number + 1} ? active"></a>
         </div>
