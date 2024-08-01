@@ -38,21 +38,50 @@
     <div class="alert alert-primary" role="alert" >Batch #: <span th:text="${batch.batchnumber}"></span></div>
 
 
+    <div class="col-sm-2" style="margin-bottom: 5px;">
+        <!--  -->
+        <form th:action="@{/viewfiles/viewdirfiles?batchid=__${batch.batchid}__&customJwtParameter=__${customJwtParameter}__&size=5&page=1}" th:object="${menuoption}" method="post">
+            <label class="form-label required">View files in dir</label>
+            <select class="form-control" th:field="${menuoption.selected}"  >
+                <option th:each="menuoption : ${directoryoptions}" th:value="${menuoption}" th:text="${menuoption}"></option>
+            </select>
+            <button style="margin-top:5px;" type="submit" class="btn btn-primary">Select Directory</button>
+        </form>
+    </div>
+
+
     <!-- Show list of uploaded files -->
-    <div th:if="${filelist}">
-        <table class="table">
+<!--    <div th:if="${filelist}">-->
+
+
+        <table class="table" border="1">
             <thead>
             <tr>
-                <th scope="col">File Name</th>
+                <th scope="col">filename</th>
             </tr>
             </thead>
             <tbody>
-            <tr th:each="file : ${filelist}">
+            <tr th:each="file, iStat : ${filePage.content}"
+                th:style="${iStat.odd}? 'font-weight: bold;'"
+                th:alt-title="${iStat.even}? 'even' : 'odd'">
+
                 <td><a th:href="@{/file/download?filename=__${file.filename}__&customJwtParameter=__${customJwtParameter}__}" th:text="${file.filename}"></a></td>
+
             </tr>
             </tbody>
         </table>
-    </div>
+
+
+
+
+
+        <div th:if="${filePage.totalPages > 0}" class="pagination"
+             th:each="pageNumber : ${pageNumbers}">
+            <a th:href="@{/viewfiles?batchid=__${batch.batchid}__&customJwtParameter=__${customJwtParameter}__&size=__${#lists.size(filePage.content)}__&page=__${pageNumber}__}"
+               th:text=${pageNumber}
+               th:class="${pageNumber==filePage.number + 1} ? active"></a>
+        </div>
+<!--    </div>-->
 
 
 

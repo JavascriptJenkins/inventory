@@ -13,6 +13,7 @@ class ControllerConstants {
     public final String MENU_OPTIONS_QR_CODES = "menuoptionsQrcode" //  the selected menu option coming in on a post
     public final String MENU_OPTIONS_BARCODE = "menuoptionsBarcode" //  the selected menu option coming in on a post
     public final String MENU_OPTIONS_INDOOR = "menuoptions" //  the selected menu option coming in on a post
+    public final String MENU_OPTIONS_DIRECTORIES = "directoryoptions" //  the selected menu option coming in on a post
 
 
 }

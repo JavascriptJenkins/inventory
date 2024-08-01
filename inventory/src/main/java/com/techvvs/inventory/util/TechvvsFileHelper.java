@@ -1,6 +1,10 @@
 package com.techvvs.inventory.util;
 
 import com.techvvs.inventory.modelnonpersist.FileVO;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -47,7 +51,71 @@ public class TechvvsFileHelper {
     }
 
 
+    // get a list back with all the sub directories inside a top level directory
+    public List<FileVO> getFilesBySubDirectory(String topLevelDir) {
+        List<FileVO> fileList = new ArrayList<>();
 
+        try {
+            Path path = Paths.get(topLevelDir);
+            File dir = new File(String.valueOf(path));
+            File[] subDirectories = dir.listFiles(File::isDirectory);
+            if (subDirectories != null) {
+                for (File subDir : subDirectories) {
+                    File[] files = subDir.listFiles();
+                    if (files != null) {
+                        for (File file : files) {
+                            FileVO fileVO = new FileVO();
+                            fileVO.setFilename(file.getName());
+                            fileList.add(fileVO);
+                        }
+                    }
+                }
+            } else {
+                System.out.println("Error getting list of subdirectories, should never happen. ");
+            }
+        } catch (Exception ex) {
+            System.out.println("Exception in getFilesBySubDirectory");
+            System.out.println("Caught exception: " + ex.getMessage());
+        }
+
+        return fileList;
+    }
+
+    // this method will
+    public List<FileVO> getFilesByDirectory(String directoryPath) {
+        List<FileVO> fileList = new ArrayList<>();
+
+        try {
+            Path path = Paths.get(directoryPath);
+            File dir = new File(String.valueOf(path));
+            File[] files = dir.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    FileVO fileVO = new FileVO();
+                    fileVO.setFilename(file.getName());
+                    fileList.add(fileVO);
+                }
+            } else {
+                System.out.println("Error getting list of files, should never happen.");
+            }
+        } catch (Exception ex) {
+            System.out.println("Exception in getFilesByDirectory");
+            System.out.println("Caught exception: " + ex.getMessage());
+        }
+
+        return fileList;
+    }
+
+
+
+    public Page<FileVO> getPagedFilesByDirectory(String directoryPath, int page, int size) {
+        List<FileVO> fileList = getFilesByDirectory(directoryPath);
+        Pageable pageable = PageRequest.of(page, size);
+        int start = Math.min((int) pageable.getOffset() - size, fileList.size());
+        int end = Math.min((start + pageable.getPageSize()), fileList.size());
+        List<FileVO> pagedFiles = fileList.subList(start, end);
+        return new PageImpl<>(pagedFiles, pageable, fileList.size());
+    }
 
 
 }
