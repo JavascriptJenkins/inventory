@@ -10,6 +10,7 @@ import com.techvvs.inventory.jparepo.SystemUserRepo
 import com.techvvs.inventory.labels.service.LabelPrintingService
 import com.techvvs.inventory.model.BatchTypeVO
 import com.techvvs.inventory.model.BatchVO
+import com.techvvs.inventory.model.PaymentVO
 import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.SystemUserDAO
@@ -485,6 +486,39 @@ class BatchControllerHelper {
         }
 
         return batchNumber.toString();
+    }
+
+
+    BatchVO loadBatch(String batchid, Model model){
+
+        BatchVO batchVO = new BatchVO()
+        // if cartid == 0 then load normally, otherwise load the existing transaction
+        if(batchid == "0"){
+            // do nothing
+            // if it is the first time loading the page
+
+            model.addAttribute("batch", batchVO);
+            return batchVO
+
+        } else {
+            batchVO = getExistingBatch(batchid)
+
+            model.addAttribute("batch", batchVO);
+            return batchVO
+        }
+
+    }
+
+
+    BatchVO getExistingBatch(String batchid){
+
+        Optional<BatchVO> batchVO = batchRepo.findById(Integer.valueOf(batchid))
+
+        if(!batchVO.empty){
+            return batchVO.get()
+        } else {
+            return new BatchVO(batchid: 0)
+        }
     }
 
 }
