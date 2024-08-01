@@ -205,8 +205,8 @@ class BatchControllerHelper {
         int INDOOR_PRODUCT_TYPE_ID = 35;
         int totalIndoorQuantityRemaining = 0;
         int totalIndoorQuantity = 0;
-        int batchValueTotal = 0;
-        int batchValueRemainingTotal = 0;
+        Double batchValueTotal = 0;
+        Double batchValueRemainingTotal = 0;
         int totalCartQuantityRemaining = 0;
         int totalEdibleQuantityRemaining = 0;
         for(ProductVO productVO : batchVO.product_set){
@@ -233,8 +233,8 @@ class BatchControllerHelper {
             }
 
 
-            batchValueTotal = (Integer.valueOf(productVO?.cost) * Integer.valueOf(productVO.quantity)) + batchValueTotal
-            batchValueRemainingTotal = (Integer.valueOf(productVO.cost) * productVO.quantityremaining) + batchValueRemainingTotal
+            batchValueTotal = (Double.valueOf(productVO?.cost) * Integer.valueOf(productVO.quantity)) + batchValueTotal
+            batchValueRemainingTotal = (Double.valueOf(productVO.cost) * productVO.quantityremaining) + batchValueRemainingTotal
         }
 
 

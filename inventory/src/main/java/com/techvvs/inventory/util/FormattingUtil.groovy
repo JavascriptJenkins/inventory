@@ -3,8 +3,14 @@ package com.techvvs.inventory.util
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
+import java.text.DecimalFormat
+
 @Component
 class FormattingUtil {
+
+    // this returns a string after formatting but may be useful in the future
+    DecimalFormat decimalFormat00 = new DecimalFormat("#.00");
+
 
 
     static String formatReceiptItem(String name, int quantity, Double price) {
@@ -14,12 +20,6 @@ class FormattingUtil {
     static String formatInvoiceItem(String name, int quantity, Double price) {
         return String.format("%-30s %5d %10.2f\n", name, quantity, price);
     }
-//    public static int calculateTotalWithTax(int total, int taxPercentage) {
-//        double taxAmount = total * (taxPercentage / 100.0);
-//        return (int) Math.round(total + taxAmount);
-//    }
-
-
     public static double calculateTotalWithTax(double total, int taxPercentage) {
         // Validate input values
         if (total < 0 || taxPercentage < 0) {
