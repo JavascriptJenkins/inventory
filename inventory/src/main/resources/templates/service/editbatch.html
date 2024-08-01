@@ -101,7 +101,7 @@
 
                     <label class="form-label required">Record Size</label>
                     <select class="form-control" th:field="${searchproducttype.pagesize}"  >
-                        <option th:each="option : ${options}" th:value="${option}" th:text="${option}"></option>
+                        oIjpbeyJhdXRob3JpdHkiOiJST0xFX0NMSUVOVCJ9XSwiaWF0IjoxNzIyNDg4Mjk3LCJleHAiOjE3MjI1NzQ2OTd9.eT6jNLhLXbtPrmFYsnUsx-41kV-5xXiFiY7bDLUOq4g&page=1&size=5                        <option th:each="option : ${options}" th:value="${option}" th:text="${option}"></option>
                     </select>
                     <button style="margin-top:5px;" type="submit" class="btn btn-primary">Number of Records</button>
                 </form>
@@ -142,7 +142,7 @@
 
 
             <div class="col-sm-2" style="margin-bottom: 5px;">
-                <a th:href="@{/viewfiles?batchid=__${batch.batchid}__&customJwtParameter=__${customJwtParameter}__&page=1&size=5}" class="btn btn-primary" style="margin-top:5px;">View Files</a>
+                <a th:href="@{/viewfiles?batchid=__${batch.batchid}__&customJwtParameter=__${customJwtParameter}__&page=0&size=5}" class="btn btn-primary" style="margin-top:5px;">View Files</a>
             </div>
         </div>
 
