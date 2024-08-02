@@ -76,7 +76,7 @@
 
 
     <!--    One form for passing back the barcode on every scan and updating the transaction in db -->
-    <form id="transactionSuccessForm" th:action="@{/checkout/printreceipt?customJwtParameter=__${customJwtParameter}__}" th:object="${transaction}" method="post">
+    <form id="transactionSuccessForm" th:action="@{/checkout/printreceipt?customJwtParameter=__${customJwtParameter}__&page=1&size=5}" th:object="${transaction}" method="post">
 
         <!-- Table Section -->
         <div style="overflow-x: auto;">
@@ -106,7 +106,7 @@
 
 
     <!--    One form for passing back the barcode on every scan and updating the transaction in db -->
-    <form id="printInvoiceForm" th:action="@{/checkout/printinvoice?customJwtParameter=__${customJwtParameter}__}" th:object="${transaction}" method="post">
+    <form id="printInvoiceForm" th:action="@{/checkout/printinvoice?customJwtParameter=__${customJwtParameter}__&page=1&size=5}" th:object="${transaction}" method="post">
         <input type="hidden" th:field="*{transactionid}">
         <button style="margin-top:5px;" type="submit" class="btn btn-primary">Print Invoice</button>
     </form>

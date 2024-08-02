@@ -4,10 +4,13 @@ import com.techvvs.inventory.constants.AppConstants;
 import com.techvvs.inventory.jparepo.BatchTypeRepo;
 import com.techvvs.inventory.model.BatchTypeVO;
 import com.techvvs.inventory.model.BatchVO;
+import com.techvvs.inventory.model.TransactionVO;
 import com.techvvs.inventory.modelnonpersist.FileVO;
 import com.techvvs.inventory.service.ExcelService;
+import com.techvvs.inventory.service.controllers.TransactionService;
 import com.techvvs.inventory.util.TechvvsFileHelper;
 import com.techvvs.inventory.viewcontroller.helper.BatchControllerHelper;
+import com.techvvs.inventory.viewcontroller.helper.TransactionHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -50,6 +53,9 @@ public class UploadController {
 
     @Autowired
     BatchControllerHelper batchControllerHelper;
+
+    @Autowired
+    TransactionService transactionService;
 
     @Autowired
     AppConstants appConstants;
@@ -339,6 +345,62 @@ public class UploadController {
 //        return "redirect: /newform/viewNewForm";
     }
 
+
+    // CHATGPT: make this method open and execute in a new tab or a popup window, whatever is easier
+    // note: must return null otherwise file download sucks
+    @RequestMapping(value="/invoice/download", method=RequestMethod.GET)
+    public void downloadInvoiceFile(@RequestParam("filename") String filename,
+                                   HttpServletResponse response,
+                                   @RequestParam("customJwtParameter") String customJwtParameter,
+                                   @RequestParam("directory") String directory,
+                                   @RequestParam("transactionid") String transactionid,
+                                   Model model
+    ) {
+
+
+        TransactionVO transactionVO = transactionService.getExistingTransaction(Integer.valueOf(transactionid));
+        model.addAttribute("transaction", transactionVO);
+
+        File file;
+
+        try {
+            if(filename.contains(".pdf")){
+                response.setContentType("application/pdf");
+            }
+
+            response.setHeader("Content-Disposition","attachment; filename="+filename);
+
+            // todo: enforce that the incoming directory matches the allowed directories....
+            file = new File(directory+"/"+filename);
+
+            byte[] fileContent = Files.readAllBytes(file.toPath());
+
+
+            // get your file as InputStream
+            InputStream is = new ByteArrayInputStream(fileContent);
+
+
+            model.addAttribute("customJwtParameter",customJwtParameter);
+
+            model.addAttribute("customJwtParameter",customJwtParameter);
+            model.addAttribute("disableupload","true");
+
+
+            // copy it to response's OutputStream
+            org.apache.commons.io.IOUtils.copy(is, response.getOutputStream());
+            response.flushBuffer();
+//            response.getOutputStream().flush();
+//            response.getOutputStream().close();
+        } catch (IOException ex) {
+            System.out.println("Error writing file to output stream. Filename was: " +filename);
+            System.out.println("Error writing file to output stream. exception: " +ex.getMessage());
+            model.addAttribute("customJwtParameter",customJwtParameter);
+            throw new RuntimeException("IOError writing file to output stream");
+        }
+
+
+//        return "redirect: /newform/viewNewForm";
+    }
 
 
     // TODO: make getting a download link popup so people click a link in a popup box

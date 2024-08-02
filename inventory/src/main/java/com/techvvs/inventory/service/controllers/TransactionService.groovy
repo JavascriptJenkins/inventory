@@ -5,6 +5,7 @@ import com.techvvs.inventory.jparepo.TransactionRepo
 import com.techvvs.inventory.model.CartVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.TransactionVO
+import com.techvvs.inventory.util.TechvvsAppUtil
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
@@ -24,6 +25,8 @@ class TransactionService {
     @Autowired
     ProductService productService
 
+    @Autowired TechvvsAppUtil techvvsAppUtil
+
 
     //todo: make sure the customer is fully hydrated on the way in here
     TransactionVO processCartGenerateNewTransaction(CartVO cartVO) {
@@ -39,7 +42,7 @@ class TransactionService {
                 customervo: cartVO.customer,
                 total: cartVO.total,
                 paid: 0.00,
-                taxpercentage: 10,
+                taxpercentage: techvvsAppUtil.dev1 ? 10 : 0, // we are not going to set a tax percentage here in non dev environments
                 isprocessed: 0
 
         )

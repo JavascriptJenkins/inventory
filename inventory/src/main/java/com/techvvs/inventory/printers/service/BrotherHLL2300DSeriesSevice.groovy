@@ -2,6 +2,7 @@ package com.techvvs.inventory.printers.service
 
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.printers.invoice.InvoiceGenerator
+import com.techvvs.inventory.util.TechvvsFileHelper
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.PDPage
 import org.apache.pdfbox.pdmodel.PDPageContentStream
@@ -42,6 +43,9 @@ class BrotherHLL2300DSeriesSevice {
 
     @Autowired
     InvoiceGenerator invoiceGenerator
+
+    @Autowired
+    TechvvsFileHelper techvvsFileHelper
 
     void printInvoice(TransactionVO transactionVO) {
 
@@ -175,6 +179,9 @@ class BrotherHLL2300DSeriesSevice {
         PrintService[] printServices = PrintServiceLookup.lookupPrintServices(null, null)
         PrintService selectedPrintService = null
         String printerName = "Brother HL-L2300D series"
+
+        // chatgpt - write a method to save the PDDocument to the file system
+        techvvsFileHelper.saveInvoiceToFileSystem(document, transactionVO);
 
         for (PrintService printService : printServices) {
             println("Found printer: ${printService.getName()}")

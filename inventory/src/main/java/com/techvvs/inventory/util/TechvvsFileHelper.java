@@ -1,6 +1,11 @@
 package com.techvvs.inventory.util;
 
+import com.techvvs.inventory.constants.AppConstants;
+import com.techvvs.inventory.model.PaymentVO;
+import com.techvvs.inventory.model.TransactionVO;
 import com.techvvs.inventory.modelnonpersist.FileVO;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -8,6 +13,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -16,6 +23,8 @@ import java.util.List;
 @Component
 public class TechvvsFileHelper {
 
+    @Autowired
+    AppConstants appConstants;
 
     public List<FileVO> getFilesByFileNumber(Integer filenumber, String uploaddir){
         List<FileVO> filelist = new ArrayList<>(2);
@@ -123,6 +132,24 @@ public class TechvvsFileHelper {
         int end = Math.min((start + pageable.getPageSize()), fileList.size());
         List<FileVO> pagedFiles = fileList.subList(start, end);
         return new PageImpl<>(pagedFiles, pageable, fileList.size());
+    }
+
+
+    public void saveInvoiceToFileSystem(PDDocument document, TransactionVO transaction) throws IOException {
+
+        // first cycle through the list of payments and see which one is the most recent
+        PaymentVO payment = transaction.getMostRecentPayment();
+
+        // this will make it save a new version of the invoice every time a payment is applied
+        String filename = transaction.getCustomervo().getName() +
+                transaction.getCustomervo().getCustomerid() + "_invoice_"+"payment_"+payment.getPaymentid();
+
+        // create a directory with the batchnumber and /barcodes dir if it doesn't exist yet
+        Files.createDirectories(Paths.get(appConstants.getPARENT_LEVEL_DIR()+appConstants.getTRANSACTION_INVOICE_DIR()+transaction.getTransactionid()));
+
+        // save the actual file
+        document.save(appConstants.getPARENT_LEVEL_DIR()+appConstants.getTRANSACTION_INVOICE_DIR()+transaction.getTransactionid()+"/"+filename+".pdf");
+        //document.close();
     }
 
 

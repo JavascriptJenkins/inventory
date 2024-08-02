@@ -62,9 +62,6 @@
     </div>
 
 
-    <!-- Show list of uploaded files -->
-<!--    <div th:if="${filelist}">-->
-
 
         <table class="table" border="1">
             <thead>
@@ -83,18 +80,12 @@
             </tr>
             </tbody>
         </table>
-
-
-
-
-
         <div th:if="${filePage.totalPages > 0}" class="pagination"
              th:each="pageNumber : ${pageNumbers}">
             <a th:href="@{/viewfiles?batchid=__${batch.batchid}__&customJwtParameter=__${customJwtParameter}__&size=5&page=__${pageNumber}__}"
                th:text=${pageNumber}
                th:class="${pageNumber==filePage.number + 1} ? active"></a>
         </div>
-<!--    </div>-->
 
 
 

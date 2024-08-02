@@ -57,6 +57,17 @@
 
     </script>
 
+    <script>
+        function openDownloadWindow(button) {
+            const filename = button.getAttribute('data-filename');
+            const customJwtParameter = button.getAttribute('data-jwt');
+            const directory = button.getAttribute('data-directory');
+            const transactionid = button.getAttribute('data-transactionid');
+            const url = `/file/invoice/download?filename=${encodeURIComponent(filename)}&customJwtParameter=${encodeURIComponent(customJwtParameter)}&directory=${encodeURIComponent(directory)}&transactionid=${encodeURIComponent(transactionid)}`;
+            window.open(url, '_blank', 'width=600,height=400');
+        }
+    </script>
+
 </head>
 <body>
 
@@ -79,7 +90,7 @@
 
 
     <!--    One form for passing back the barcode on every scan and updating the transaction in db -->
-    <form id="transactionReviewForm" th:action="@{/checkout/printreceipt?customJwtParameter=__${customJwtParameter}__}" th:object="${transaction}" method="post">
+    <form id="transactionReviewForm" th:action="@{/checkout/printreceipt?customJwtParameter=__${customJwtParameter}__size=5&page=1}" th:object="${transaction}" method="post">
 
         <!-- Table Section -->
         <div style="overflow-x: auto;">
@@ -109,7 +120,7 @@
 
 
     <!--    One form for passing back the barcode on every scan and updating the transaction in db -->
-    <form id="printInvoiceForm" th:action="@{/checkout/printinvoice?customJwtParameter=__${customJwtParameter}__}" th:object="${transaction}" method="post">
+    <form id="printInvoiceForm" th:action="@{/checkout/printinvoice?customJwtParameter=__${customJwtParameter}__&size=5&page=1}" th:object="${transaction}" method="post">
         <input type="hidden" th:field="*{transactionid}">
         <button style="margin-top:5px;" type="submit" class="btn btn-primary">Print Invoice</button>
     </form>
@@ -117,6 +128,35 @@
 
 
     <a th:href="@{/payment?transactionid=__${transaction.transactionid}__&customJwtParameter=__${customJwtParameter}__}" class="btn btn-primary" style="margin-top:5px;">Submit A Payment</a>
+
+
+
+    <!-- File table pagination is below -->
+    <table class="table" border="1">
+        <thead>
+        <tr>
+            <th scope="col">filename</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="file, iStat : ${filePage.content}"
+            th:style="${iStat.odd}? 'font-weight: bold;'"
+            th:alt-title="${iStat.even}? 'even' : 'odd'">
+
+            <td><span th:text="${file.filename}"></span>
+                <button th:data-filename="${file.filename}" th:data-jwt="${customJwtParameter}" th:data-directory="${file.directory}" th:data-transactionid="${transaction.transactionid}" onclick="openDownloadWindow(this)">Download File</button></td>
+
+        </tr>
+        </tbody>
+    </table>
+    <div th:if="${filePage.totalPages > 0}" class="pagination"
+         th:each="pageNumber : ${pageNumbers}">
+        <a th:href="@{/viewfiles?transactionid=__${transaction.transactionid}__&customJwtParameter=__${customJwtParameter}__&size=5&page=__${pageNumber}__}"
+           th:text=${pageNumber}
+           th:class="${pageNumber==filePage.number + 1} ? active"></a>
+    </div>
+    <!-- END FILE PAGINATION -->
+
 
 </div>
 

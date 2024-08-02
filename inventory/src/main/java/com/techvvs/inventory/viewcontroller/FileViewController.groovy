@@ -16,6 +16,7 @@ import com.techvvs.inventory.printers.PrinterService
 import com.techvvs.inventory.service.controllers.CartService
 import com.techvvs.inventory.service.controllers.PaymentService
 import com.techvvs.inventory.service.controllers.TransactionService
+import com.techvvs.inventory.service.paging.FilePagingService
 import com.techvvs.inventory.util.TechvvsFileHelper
 import com.techvvs.inventory.validation.ValidateBatch
 import com.techvvs.inventory.viewcontroller.constants.ControllerConstants
@@ -52,6 +53,9 @@ public class FileViewController {
 
     @Autowired
     ControllerConstants controllerConstants
+
+    @Autowired
+    FilePagingService filePagingService
 
     @Autowired
     BatchRepo batchRepo;
@@ -120,14 +124,15 @@ public class FileViewController {
         // attach the paymentVO to the model
         batchVO = batchControllerHelper.loadBatch(batchid, model)
 
-        // attach the filelist to the model
-        Page<FileVO> filePage = techvvsFileHelper.getPagedFilesByDirectory(
-                appConstants.PARENT_LEVEL_DIR+batchVO.batchnumber+appConstants.BARCODES_ALL_DIR,
-                page.get(),
-                size.get()
-        );
 
-        bindPageAttributesToModel(model, filePage, page, size);
+        // start file paging
+        String dir = appConstants.PARENT_LEVEL_DIR+String.valueOf(batchVO.batchnumber)+appConstants.BARCODES_ALL_DIR
+        Page<FileVO> filePage = filePagingService.getFilePageFromDirectory(page.get(), size.get(), dir)
+        filePagingService.bindPageAttributesToModel(model, filePage, page, size);
+        // end file paging
+
+
+
         model.addAttribute(controllerConstants.MENU_OPTIONS_DIRECTORIES, [appConstants.BARCODES_ALL_DIR, appConstants.BARCODES_MENU_DIR]);
         model.addAttribute("customJwtParameter", customJwtParameter);
         model.addAttribute("menuoption", new MenuOptionVO(selected: ""));
@@ -155,15 +160,8 @@ public class FileViewController {
 
         String selected = menuoption.selected // this contains file path from the dropdown
 
-        // attach the filelist to the model
-        Page<FileVO> filePage = techvvsFileHelper.getPagedFilesByDirectory(
-                appConstants.PARENT_LEVEL_DIR+batchVO.batchnumber+selected,
-                page.get(),
-                size.get()
-        );
-
-        // need to pass the original size of all files into this
-        bindPageAttributesToModel(model, filePage, page, size);
+        Page<FileVO> filePage = filePagingService.getFilePage(batchVO, page, size, selected)
+        filePagingService.bindPageAttributesToModel(model, filePage, page, size);
         model.addAttribute(controllerConstants.MENU_OPTIONS_DIRECTORIES, [appConstants.BARCODES_ALL_DIR, appConstants.BARCODES_MENU_DIR]);
         model.addAttribute("customJwtParameter", customJwtParameter);
 
@@ -171,27 +169,6 @@ public class FileViewController {
         return "files/batchfiles.html";
     }
 
-
-
-    void bindPageAttributesToModel(Model model, Page<FileVO> filePage, Optional<Integer> page, Optional<Integer> size) {
-
-
-        int currentPage = page.orElse(0);
-        int totalPages = filePage.getTotalPages(); // for some reason there needs to be a -1 here ... dont ask ...
-
-        List<Integer> pageNumbers = new ArrayList<>();
-
-        while(totalPages > 0){
-            pageNumbers.add(totalPages);
-            totalPages = totalPages - 1;
-        }
-
-
-        model.addAttribute("pageNumbers", pageNumbers);
-        model.addAttribute("page", currentPage);
-        model.addAttribute("size", filePage.getTotalPages());
-        model.addAttribute("filePage", filePage);
-    }
 
 
 

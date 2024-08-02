@@ -14,6 +14,7 @@ import com.techvvs.inventory.modelnonpersist.FileVO
 import com.techvvs.inventory.printers.PrinterService
 import com.techvvs.inventory.service.controllers.CartService
 import com.techvvs.inventory.service.controllers.TransactionService
+import com.techvvs.inventory.service.paging.FilePagingService
 import com.techvvs.inventory.util.TechvvsFileHelper
 import com.techvvs.inventory.validation.ValidateBatch
 import com.techvvs.inventory.viewcontroller.helper.BatchControllerHelper
@@ -85,6 +86,9 @@ public class TransactionViewController {
     TransactionService transactionService
 
     @Autowired
+    FilePagingService filePagingService
+
+    @Autowired
     PrinterService printerService
 
 
@@ -96,7 +100,9 @@ public class TransactionViewController {
             @RequestParam(
                     "transactionid" ) String transactionid,
             @RequestParam("customJwtParameter") String customJwtParameter,
-            Model model
+            Model model,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size
                      ){
 
         System.out.println("customJwtParam on checkout controller: "+customJwtParameter);
@@ -105,18 +111,20 @@ public class TransactionViewController {
         String name = ""
         TransactionVO transactionVO = new TransactionVO()
 
-        // only proceed if there is no error
-        if(model.getAttribute("errorMessage") == null){
 
-            transactionVO = transactionService.getExistingTransaction(Integer.valueOf(transactionid))
+        transactionVO = transactionService.getExistingTransaction(Integer.valueOf(transactionid))
 
-            // this will set the display quantities
-            transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO)
+        // this will set the display quantities
+        transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO)
 
 
-            name = transactionVO.cart.customer.name
+        // start file paging
+        String dir = appConstants.PARENT_LEVEL_DIR+appConstants.TRANSACTION_INVOICE_DIR+String.valueOf(transactionVO.transactionid)+"/"
+        Page<FileVO> filePage = filePagingService.getFilePageFromDirectory(page.get(), size.get(), dir)
+        filePagingService.bindPageAttributesToModel(model, filePage, page, size);
+        // end file paging
 
-        }
+
 
 
         model.addAttribute("customJwtParameter", customJwtParameter);

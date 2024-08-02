@@ -16,6 +16,7 @@ import com.techvvs.inventory.modelnonpersist.FileVO
 import com.techvvs.inventory.printers.PrinterService
 import com.techvvs.inventory.service.controllers.CartService
 import com.techvvs.inventory.service.controllers.TransactionService
+import com.techvvs.inventory.service.paging.FilePagingService
 import com.techvvs.inventory.util.TechvvsFileHelper
 import com.techvvs.inventory.validation.ValidateBatch
 import com.techvvs.inventory.viewcontroller.helper.BatchControllerHelper
@@ -43,6 +44,9 @@ public class CheckoutViewController {
 
     @Autowired
     AppConstants appConstants
+
+    @Autowired
+    FilePagingService filePagingService
 
     @Autowired
     HttpServletRequest httpServletRequest;
@@ -301,6 +305,12 @@ public class CheckoutViewController {
 
         }
 
+        // start file paging
+        String dir = appConstants.PARENT_LEVEL_DIR+appConstants.TRANSACTION_INVOICE_DIR+String.valueOf(transactionVO.transactionid)+"/"
+        Page<FileVO> filePage = filePagingService.getFilePageFromDirectory(page.get(), size.get(), dir)
+        filePagingService.bindPageAttributesToModel(model, filePage, page, size);
+        // end file paging
+
 
         model.addAttribute("customJwtParameter", customJwtParameter);
         model.addAttribute("transaction", transactionVO);
@@ -309,10 +319,10 @@ public class CheckoutViewController {
         if(model.getAttribute("errorMessage") == null){
             model.addAttribute("successMessage", "Successfully printed receipt! Thanks "+name+"!")
 
-            return "checkout/transactionsuccess.html";
+            return "transaction/transactionreview.html";
 
         } else {
-            return "checkout/transactionsuccess.html";// return same page with errors
+            return "transaction/transactionreview.html";// return same page with errors
         }
 
     }
@@ -343,6 +353,11 @@ public class CheckoutViewController {
 
         }
 
+        // start file paging
+        String dir = appConstants.PARENT_LEVEL_DIR+appConstants.TRANSACTION_INVOICE_DIR+String.valueOf(transactionVO.transactionid)+"/"
+        Page<FileVO> filePage = filePagingService.getFilePageFromDirectory(page.get(), size.get(), dir)
+        filePagingService.bindPageAttributesToModel(model, filePage, page, size);
+        // end file paging
 
         model.addAttribute("customJwtParameter", customJwtParameter);
         model.addAttribute("transaction", transactionVO);
@@ -351,10 +366,10 @@ public class CheckoutViewController {
         if(model.getAttribute("errorMessage") == null){
             model.addAttribute("successMessage", "Successfully printed invoice! Thanks "+name+"!")
 
-            return "checkout/transactionsuccess.html";
+            return "transaction/transactionreview.html";
 
         } else {
-            return "checkout/transactionsuccess.html";// return same page with errors
+            return "transaction/transactionreview.html";// return same page with errors
         }
 
     }
