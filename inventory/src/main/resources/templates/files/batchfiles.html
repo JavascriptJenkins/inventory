@@ -77,8 +77,7 @@
                 th:style="${iStat.odd}? 'font-weight: bold;'"
                 th:alt-title="${iStat.even}? 'even' : 'odd'">
 
-                <td><a th:href="@{/file/simple/download?filename=__${file.filename}__&customJwtParameter=__${customJwtParameter}__}" th:text="${file.filename}"></a>
-<!--                <button th:onclick="'openDownloadWindow(\'__' + ${file.filename} + '__\', \'' + ${customJwtParameter} + '\')'">Download File</button></td>-->
+                <td><span th:text="${file.filename}"></span>
                     <button th:data-filename="${file.filename}" th:data-jwt="${customJwtParameter}" th:data-directory="${file.directory}" th:data-batchid="${batch.batchid}" onclick="openDownloadWindow(this)">Download File</button></td>
 
             </tr>
