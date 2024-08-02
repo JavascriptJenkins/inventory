@@ -32,6 +32,7 @@ public class TechvvsFileHelper {
                     if(child.getAbsoluteFile().getName().contains(String.valueOf(filenumber))){
                         FileVO fileVO = new FileVO();
                         fileVO.setFilename(child.getAbsoluteFile().getName());
+                        fileVO.setDirectory(child.getParent()); // .\topdir\2011253\barcodes\all
                         filelist.add(fileVO); // add it to a nonpersisted list that will be displayed on the ui
                     }
                 }
@@ -66,6 +67,7 @@ public class TechvvsFileHelper {
                         for (File file : files) {
                             FileVO fileVO = new FileVO();
                             fileVO.setFilename(file.getName());
+                            fileVO.setDirectory(file.getParent()); // .\topdir\2011253\barcodes\all
                             fileList.add(fileVO);
                         }
                     }
@@ -93,6 +95,7 @@ public class TechvvsFileHelper {
                 for (File file : files) {
                     FileVO fileVO = new FileVO();
                     fileVO.setFilename(file.getName());
+                    fileVO.setDirectory(file.getParent()); // .\topdir\2011253\barcodes\all
                     fileList.add(fileVO);
                 }
             } else {

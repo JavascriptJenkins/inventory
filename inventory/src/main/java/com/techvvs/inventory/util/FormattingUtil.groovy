@@ -12,6 +12,9 @@ class FormattingUtil {
     DecimalFormat decimalFormat00 = new DecimalFormat("#.00");
 
 
+    static calculateRemainingBalance(double total, double paid) {
+        return total - paid;
+    }
 
     static String formatReceiptItem(String name, int quantity, Double price) {
         return String.format("%-20s %5d %8.2f\n", name, quantity, price);

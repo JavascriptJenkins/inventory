@@ -33,6 +33,7 @@ class InvoiceGenerator {
 
 
 
+    // todo: make sure this can handle printing out more than 1 page ......
     String generateDefaultInvoice(TransactionVO transaction) {
 
         // this aggregates the products to their unique list
@@ -65,17 +66,21 @@ class InvoiceGenerator {
         }
         invoice.append("\n")
 
-//        invoice.append("Payments:\n")
-//        invoice.append("---------\n")
-//        transaction.payment_set.each { payment ->
-//            invoice.append("Payment ID: ${payment.paymentid}, Amount: ${payment.amount}, Method: ${payment.method}\n")
-//        }
-//        invoice.append("\n")
+        invoice.append("Payments:\n")
+        invoice.append("---------\n")
+        transaction.payment_list.each { payment ->
+            invoice.append("--------------------------------------------------\n")
+            invoice.append(String.format("Payment ID: %-10s Amount: %-10.2f Method: %-10s Date: %s\n",
+                    payment.paymentid, payment.amountpaid, payment.paymenttype, payment.createTimeStamp))
+        }
+        invoice.append("--------------------------------------------------\n\n")
+
 
         invoice.append('Subtotal                  $'+transaction.total+'\n');
         invoice.append('Tax ('+transaction.taxpercentage+'%)                 $'+formattingUtil.calculateTaxAmount(transaction.total, transaction.taxpercentage)+'\n')
         invoice.append('Total                     $'+formattingUtil.calculateTotalWithTax(transaction.total, transaction.taxpercentage)+'\n')
         invoice.append("Paid: ${transaction.paid == null ? '0' : transaction.paid}\n")
+        invoice.append("Remaining Balance: "+formattingUtil.calculateRemainingBalance(transaction.total, transaction.paid)+"\n")
         invoice.append("Notes: ${transaction.notes == null ? '' : transaction.notes}\n")
         invoice.append("Cashier: ${transaction.cashier == null ? '' : transaction.cashier}\n")
 //        invoice.append("Processed: ${transaction.isprocessed == 1 ? 'Yes' : 'No'}\n")
