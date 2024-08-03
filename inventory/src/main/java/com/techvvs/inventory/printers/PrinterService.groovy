@@ -34,9 +34,9 @@ class PrinterService {
         munbynITPP905Service.printReceipt(transactionVO);
     }
 
-    void printInvoice(TransactionVO transactionVO) {
+    void printInvoice(TransactionVO transactionVO, boolean printinvoice) {
 
-        brotherHLL2300DSeriesSevice.printInvoiceApachePDFBOX(transactionVO)
+        brotherHLL2300DSeriesSevice.printInvoiceApachePDFBOX(transactionVO, printinvoice)
     }
 
 

@@ -380,6 +380,7 @@ public class UploadController {
             InputStream is = new ByteArrayInputStream(fileContent);
 
 
+            // todo: maybe adding this paramter is the problem
             model.addAttribute("customJwtParameter",customJwtParameter);
 
             model.addAttribute("customJwtParameter",customJwtParameter);

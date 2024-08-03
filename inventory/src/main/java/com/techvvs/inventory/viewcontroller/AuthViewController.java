@@ -665,7 +665,7 @@ public class AuthViewController {
             newToken.setTokenused(0);
             newToken.setUsermetadata(tokenVO.getEmail());
             newToken.setEmail(tokenVO.getEmail());
-            newToken.setToken(String.valueOf(secureRandom.nextInt(1000000))); // todo: make this a phone token sent over text message
+            newToken.setToken(String.valueOf(secureRandom.nextInt(1000000)));
             newToken.setUpdatedtimestamp(LocalDateTime.now());
             newToken.setCreatetimestamp(LocalDateTime.now());
 

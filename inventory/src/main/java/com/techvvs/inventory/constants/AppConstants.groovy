@@ -24,4 +24,7 @@ class AppConstants {
 
     String DEV_1 = "dev1"
 
+    String TEXT_INVOICE = "text"
+String EMAIL_INVOICE = "email"
+
 }

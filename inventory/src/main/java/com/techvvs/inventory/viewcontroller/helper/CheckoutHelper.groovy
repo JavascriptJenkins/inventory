@@ -200,6 +200,13 @@ class CheckoutHelper {
 
     }
 
+    TransactionVO bindtransients(TransactionVO transactionVO, String phone, String email, String action){
+        transactionVO.phonenumber = phone.replace(",", "")
+        transactionVO.email = email.replace(",", "")
+        transactionVO.action = action.replace(",", "")
+        return transactionVO
+    }
+
 
     CartVO getExistingCart(String cartid){
 

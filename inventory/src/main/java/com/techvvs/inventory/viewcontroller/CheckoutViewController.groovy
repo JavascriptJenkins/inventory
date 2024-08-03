@@ -347,7 +347,7 @@ public class CheckoutViewController {
 
             transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO)
 
-            printerService.printInvoice(transactionVO)
+            printerService.printInvoice(transactionVO, true)
 
             name = transactionVO.cart.customer.name
 
@@ -365,6 +365,50 @@ public class CheckoutViewController {
 
         if(model.getAttribute("errorMessage") == null){
             model.addAttribute("successMessage", "Successfully printed invoice! Thanks "+name+"!")
+
+            return "transaction/transactionreview.html";
+
+        } else {
+            return "transaction/transactionreview.html";// return same page with errors
+        }
+
+    }
+
+    @PostMapping("/textemailinvoice")
+    String textemailinvoice(@ModelAttribute( "transaction" ) TransactionVO transactionVO,
+                        Model model,
+                        @RequestParam("customJwtParameter") String customJwtParameter,
+                        @RequestParam("page") Optional<Integer> page,
+                        @RequestParam("size") Optional<Integer> size){
+
+        System.out.println("customJwtParam on checkout controller: "+customJwtParameter);
+
+        // start bind transients
+        String transientemail = transactionVO.email
+        String transientphonunumber = transactionVO.phonenumber
+        String transientaction =  transactionVO.action
+        // end bind transients
+
+        transactionVO = transactionService.getExistingTransaction(transactionVO.transactionid)
+
+        transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO)
+
+        checkoutHelper.bindtransients(transactionVO, transientphonunumber, transientemail, transientaction)
+        printerService.printInvoice(transactionVO, false)
+
+
+        // start file paging
+        String dir = appConstants.PARENT_LEVEL_DIR+appConstants.TRANSACTION_INVOICE_DIR+String.valueOf(transactionVO.transactionid)+"/"
+        Page<FileVO> filePage = filePagingService.getFilePageFromDirectory(page.get(), size.get(), dir)
+        filePagingService.bindPageAttributesToModel(model, filePage, page, size);
+        // end file paging
+
+        model.addAttribute("customJwtParameter", customJwtParameter);
+        model.addAttribute("transaction", transactionVO);
+        checkoutHelper.getAllCustomers(model)
+
+        if(model.getAttribute("errorMessage") == null){
+            model.addAttribute("successMessage", "Successfully sent invoice! Thanks!")
 
             return "transaction/transactionreview.html";
 

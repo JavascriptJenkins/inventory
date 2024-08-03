@@ -56,6 +56,19 @@ public class TwilioTextUtil {
         return "success";
     }
 
+    public String sendDownloadLinkCustomPhoneNumber(String phone, String linkandtoken, boolean isDev1) {
+
+        String message = "Download your file: "+linkandtoken;
+
+        if(!isDev1){
+            send(phone, message);
+        } else {
+            System.out.println("NOT sending your file link because we are in dev1");
+        }
+
+        return "success";
+    }
+
     // todo: enforce country code
     public String sendValidationText(SystemUserDAO systemUserDAO, String token, boolean isDev1) {
 
@@ -146,6 +159,35 @@ public class TwilioTextUtil {
             // todo : check result of this
             if(!isDev1){
                 result = sendDownloadLink(systemUserDAO, "http://localhost:8080/file/smsdownload?customJwtParameter="+cellphonetoken+"&filename="+filename, isDev1);
+            } else {
+                result = "success"; // set it to success if we are in dev1 and skipped sending the validation text
+                System.out.println("Did NOT send validation text because we in dev1");
+            }
+            System.out.println("Send Download Text with result: "+result);
+        }
+
+        return "success";
+    }
+
+    public String sendOutDownloadLinkWithTokenSMS(String phonenumber, String filename,SystemUserDAO systemUserDAO, boolean isDev1){
+        // save a token value to a username and then send a text message
+
+        String cellphonetoken = "";
+        String result = "";
+        try {
+
+
+            List<Role> roles = new ArrayList<>(1);
+            roles.add(Role.ROLE_CLIENT);
+            cellphonetoken = jwtTokenProvider.createTokenForSmsDownloadLinks(systemUserDAO.getEmail(), roles);
+
+
+        } catch(Exception ex){
+            System.out.println("error inserting token into database");
+        } finally{
+            // only send the text message after everything else went smoothly
+            if(!isDev1){
+                result = sendDownloadLinkCustomPhoneNumber(phonenumber, "http://localhost:8080/file/smsdownload?customJwtParameter="+cellphonetoken+"&filename="+filename, isDev1);
             } else {
                 result = "success"; // set it to success if we are in dev1 and skipped sending the validation text
                 System.out.println("Did NOT send validation text because we in dev1");

@@ -1,8 +1,11 @@
 package com.techvvs.inventory.printers.service
 
+import com.techvvs.inventory.constants.AppConstants
+import com.techvvs.inventory.model.SystemUserDAO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.printers.invoice.InvoiceGenerator
 import com.techvvs.inventory.util.TechvvsFileHelper
+import com.techvvs.inventory.viewcontroller.helper.TransactionHelper
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.PDPage
 import org.apache.pdfbox.pdmodel.PDPageContentStream
@@ -12,6 +15,8 @@ import org.apache.pdfbox.printing.PDFPageable
 import org.apache.pdfbox.printing.PDFPrintable
 import org.apache.pdfbox.printing.Scaling
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.security.core.Authentication
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component
 
 import javax.print.Doc
@@ -46,6 +51,12 @@ class BrotherHLL2300DSeriesSevice {
 
     @Autowired
     TechvvsFileHelper techvvsFileHelper
+
+    @Autowired
+    TransactionHelper transactionHelper
+
+    @Autowired
+    AppConstants appConstants
 
     void printInvoice(TransactionVO transactionVO) {
 
@@ -165,7 +176,8 @@ class BrotherHLL2300DSeriesSevice {
 
 
 
-    void printInvoiceApachePDFBOX(TransactionVO transactionVO) {
+    // todo: make this method not print unless we have a printer....
+    void printInvoiceApachePDFBOX(TransactionVO transactionVO, boolean printinvoice) {
         String invoiceContent = invoiceGenerator.generateDefaultInvoice(transactionVO)
         ByteArrayOutputStream pdfOutputStream = new ByteArrayOutputStream()
 
@@ -181,7 +193,13 @@ class BrotherHLL2300DSeriesSevice {
         String printerName = "Brother HL-L2300D series"
 
         // chatgpt - write a method to save the PDDocument to the file system
-        techvvsFileHelper.saveInvoiceToFileSystem(document, transactionVO);
+        String filenameresult = techvvsFileHelper.saveInvoiceToFileSystem(document, transactionVO);
+
+        if (transactionVO.action.contains(appConstants.TEXT_INVOICE)) {
+            transactionHelper.sendTextMessageWithDownloadLink(transactionVO.phonenumber, filenameresult)
+        } else if (transactionVO.action.contains(appConstants.EMAIL_INVOICE)) {
+            transactionHelper.sendEmailWithDownloadLink(transactionVO.email, filenameresult)
+        }
 
         for (PrintService printService : printServices) {
             println("Found printer: ${printService.getName()}")
@@ -191,7 +209,7 @@ class BrotherHLL2300DSeriesSevice {
             }
         }
 
-        if (selectedPrintService != null) {
+        if (selectedPrintService != null && printinvoice) {
             println("Selected printer: " + selectedPrintService.getName())
             try {
                 PrinterJob job = PrinterJob.getPrinterJob()
@@ -214,7 +232,9 @@ class BrotherHLL2300DSeriesSevice {
                 document.close()
             }
         } else {
-            println("Printer not found: " + printerName)
+            println("Printer either not found: " + printerName)
+            println(" | Or we are texting or emailing the invoice")
+            document.close()
         }
     }
 

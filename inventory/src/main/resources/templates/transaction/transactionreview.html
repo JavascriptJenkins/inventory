@@ -58,6 +58,7 @@
     </script>
 
     <script>
+        // this function works but we are not using right now.
         function openDownloadWindow(button) {
             const filename = button.getAttribute('data-filename');
             const customJwtParameter = button.getAttribute('data-jwt');
@@ -68,6 +69,54 @@
         }
     </script>
 
+<!--    <script>-->
+<!--        function openDownloadWindow(button) {-->
+<!--            const filename = button.getAttribute('data-filename');-->
+<!--            const customJwtParameter = button.getAttribute('data-jwt');-->
+<!--            const directory = button.getAttribute('data-directory');-->
+<!--            const transactionid = button.getAttribute('data-transactionid');-->
+<!--            const url = `/file/invoice/download?filename=${encodeURIComponent(filename)}&customJwtParameter=${encodeURIComponent(customJwtParameter)}&directory=${encodeURIComponent(directory)}&transactionid=${encodeURIComponent(transactionid)}`;-->
+<!--            window.open(url, '_blank', 'width=600,height=400');-->
+<!--        }-->
+<!--    </script>-->
+
+    <script>
+    function openPopup(type) {
+    let userInput = prompt(`Please enter your ${type === 'text' ? 'phone number (10 digits)' : 'email address'}`);
+    if (userInput) {
+        if (type === 'text') {
+            if (/^\d{10}$/.test(userInput)) {
+                document.getElementById('phonenumber').value = userInput;
+                document.getElementById('action').value = "text";
+                document.getElementById('textoremailInvoiceForm').submit();
+            } else {
+                alert('Invalid phone number. Please enter a 10 digit number.');
+            }
+        } else if (type === 'email') {
+            if (/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(userInput) && userInput.length >= 4) {
+                document.getElementById('email').value = userInput;
+                document.getElementById('action').value = "email";
+                document.getElementById('textoremailInvoiceForm').submit();
+            } else {
+                alert('Invalid email address. Please enter a valid email.');
+            }
+        }
+    }
+}
+function setTextInvoice() {
+            event.preventDefault();
+
+    document.getElementById('action').value = "text";
+    openPopup('text');
+}
+function setEmailInvoice() {
+            event.preventDefault();
+
+    document.getElementById('action').value = "email";
+    openPopup('email');
+
+}
+    </script>
 </head>
 <body>
 
@@ -131,32 +180,47 @@
 
 
 
-    <!-- File table pagination is below -->
-    <table class="table" border="1">
-        <thead>
-        <tr>
-            <th scope="col">filename</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="file, iStat : ${filePage.content}"
-            th:style="${iStat.odd}? 'font-weight: bold;'"
-            th:alt-title="${iStat.even}? 'even' : 'odd'">
+    <form id="textoremailInvoiceForm" th:action="@{/checkout/textemailinvoice?customJwtParameter=__${customJwtParameter}__&size=5&page=1}" th:object="${transaction}" method="post">
 
-            <td><span th:text="${file.filename}"></span>
-                <button th:data-filename="${file.filename}" th:data-jwt="${customJwtParameter}" th:data-directory="${file.directory}" th:data-transactionid="${transaction.transactionid}" onclick="openDownloadWindow(this)">Download File</button></td>
+        <!-- File table pagination is below -->
+        <table class="table" border="1">
+            <thead>
+            <tr>
+                <th scope="col">filename</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="file, iStat : ${filePage.content}"
+                th:style="${iStat.odd}? 'font-weight: bold;'"
+                th:alt-title="${iStat.even}? 'even' : 'odd'">
 
-        </tr>
-        </tbody>
-    </table>
-    <div th:if="${filePage.totalPages > 0}" class="pagination"
-         th:each="pageNumber : ${pageNumbers}">
-        <a th:href="@{/viewfiles?transactionid=__${transaction.transactionid}__&customJwtParameter=__${customJwtParameter}__&size=5&page=__${pageNumber}__}"
-           th:text=${pageNumber}
-           th:class="${pageNumber==filePage.number + 1} ? active"></a>
-    </div>
-    <!-- END FILE PAGINATION -->
+    <!--            note:  the below button will display a "download file button" that actualy works.
+                            the button will open a new popup window that will download the file.
+                            However, this causes issues with the JWT token for some reason.
+    -->
+                <td><span th:text="${file.filename}"></span>
+    <!--                <button th:data-filename="${file.filename}" th:data-jwt="${customJwtParameter}" th:data-directory="${file.directory}" th:data-transactionid="${transaction.transactionid}" onclick="openDownloadWindow(this)">Download File</button></td>-->
+                <input type="hidden" id="action" name="action" value="">
+                <input type="hidden" id="email" name="email" value="">
+                <input type="hidden" id="phonenumber" name="phonenumber" value="">
 
+
+                <input type="hidden" th:field="*{transactionid}">
+                <button style="margin-top:5px;" onclick="setTextInvoice(event)" type="submit" class="btn btn-primary">Text Invoice</button>
+                <button style="margin-top:5px;" onclick="setEmailInvoice(event)" type="submit" class="btn btn-primary">Email Invoice</button>
+
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <div th:if="${filePage.totalPages > 0}" class="pagination"
+             th:each="pageNumber : ${pageNumbers}">
+            <a th:href="@{/viewfiles?transactionid=__${transaction.transactionid}__&customJwtParameter=__${customJwtParameter}__&size=5&page=__${pageNumber}__}"
+               th:text=${pageNumber}
+               th:class="${pageNumber==filePage.number + 1} ? active"></a>
+        </div>
+        <!-- END FILE PAGINATION -->
+    </form>
 
 </div>
 

@@ -135,7 +135,7 @@ public class TechvvsFileHelper {
     }
 
 
-    public void saveInvoiceToFileSystem(PDDocument document, TransactionVO transaction) throws IOException {
+    public String saveInvoiceToFileSystem(PDDocument document, TransactionVO transaction) throws IOException {
 
         // first cycle through the list of payments and see which one is the most recent
         PaymentVO payment = transaction.getMostRecentPayment();
@@ -150,6 +150,7 @@ public class TechvvsFileHelper {
         // save the actual file
         document.save(appConstants.getPARENT_LEVEL_DIR()+appConstants.getTRANSACTION_INVOICE_DIR()+transaction.getTransactionid()+"/"+filename+".pdf");
         //document.close();
+        return appConstants.getPARENT_LEVEL_DIR()+appConstants.getTRANSACTION_INVOICE_DIR()+transaction.getTransactionid()+"/"+filename+".pdf";
     }
 
 

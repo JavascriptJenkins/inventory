@@ -66,6 +66,15 @@ class TransactionVO implements Serializable {
     @JsonProperty
     LocalDateTime createTimeStamp
 
+    @Transient
+    String action = ""
+
+    @Transient
+    String phonenumber = ""
+
+    @Transient
+    String email = ""
+
 
     PaymentVO getMostRecentPayment() {
         if (payment_list == null || payment_list.isEmpty()) {
