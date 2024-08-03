@@ -38,6 +38,13 @@ class PaymentService {
 
             // add up the amount paid onto the transaction
             existingTransaction.paid = existingTransaction.paid == null ? 0 : existingTransaction.paid
+
+            if(existingTransaction.paid + paymentVO.amountpaid > existingTransaction.totalwithtax){
+                System.out.println("this should never happen, but the amount paid is greater than the total")
+                System.out.println("rejecting the transaction")
+                return existingTransaction
+            }
+
             existingTransaction.paid = existingTransaction.paid + paymentVO.amountpaid
 
             // check for null and create if needed

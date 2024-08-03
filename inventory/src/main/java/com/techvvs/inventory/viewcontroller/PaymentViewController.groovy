@@ -139,7 +139,7 @@ public class PaymentViewController {
         System.out.println("customJwtParam on checkout controller: "+customJwtParameter);
 
 
-        paymentVO = paymentHelper.validatePaymentVO(paymentVO, model)
+        paymentVO = paymentHelper.validatePaymentVO(paymentVO, model, Integer.valueOf(transactionid))
 
         // only proceed if there is no error
         if(model.getAttribute("errorMessage") == null){
@@ -152,6 +152,7 @@ public class PaymentViewController {
             model.addAttribute("transaction", transactionVO)
             model.addAttribute("transactionid", transactionVO.transactionid)
             model.addAttribute("customer", transactionVO.customervo)
+            transactionVO.getMostRecentPayment().amountpaid = 0
             model.addAttribute("payment", transactionVO.getMostRecentPayment())
 
             model.addAttribute("successMessage", "Payment submitted successfully!")
@@ -164,6 +165,7 @@ public class PaymentViewController {
 
             model.addAttribute("customer", customerVO)
             model.addAttribute("transaction", transactionVO)
+            paymentVO.setAmountpaid(0)
             model.addAttribute("payment", paymentVO)
         }
 

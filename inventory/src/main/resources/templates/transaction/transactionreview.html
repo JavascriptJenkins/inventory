@@ -132,6 +132,7 @@ function setEmailInvoice() {
     <br>
     <div style="margin-top: 20px" class="alert alert-primary" role="alert">Reviewing Transaction ID: <span th:text="${transaction.transactionid}"></span></div>
     <div style="margin-top: 20px" class="alert alert-primary" role="alert">Customer: <span th:text="${transaction.customervo.name}"></span></div>
+    <div style="margin-top: 20px" class="alert alert-primary" role="alert">Amount remaining to pay: <span th:text="${transaction.totalwithtax - (transaction.paid == null ? 0.0 : transaction.paid)}"></span></div>
 
 
     <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
@@ -139,7 +140,7 @@ function setEmailInvoice() {
 
 
     <!--    One form for passing back the barcode on every scan and updating the transaction in db -->
-    <form id="transactionReviewForm" th:action="@{/checkout/printreceipt?customJwtParameter=__${customJwtParameter}__size=5&page=1}" th:object="${transaction}" method="post">
+    <form id="transactionReviewForm" th:action="@{/checkout/printreceipt?customJwtParameter=__${customJwtParameter}__?size=5&page=1}" th:object="${transaction}" method="post">
 
         <!-- Table Section -->
         <div style="overflow-x: auto;">

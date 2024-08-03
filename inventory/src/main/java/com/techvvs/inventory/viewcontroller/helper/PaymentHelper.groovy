@@ -3,6 +3,7 @@ package com.techvvs.inventory.viewcontroller.helper
 import com.techvvs.inventory.jparepo.CustomerRepo
 import com.techvvs.inventory.jparepo.MenuRepo
 import com.techvvs.inventory.jparepo.PaymentRepo
+import com.techvvs.inventory.jparepo.TransactionRepo
 import com.techvvs.inventory.model.CartVO
 import com.techvvs.inventory.model.CustomerVO
 import com.techvvs.inventory.model.MenuVO
@@ -31,6 +32,9 @@ class PaymentHelper {
 
     @Autowired
     CustomerRepo customerRepo
+
+    @Autowired
+    TransactionRepo transactionRepo
 
     @Autowired
     TransactionService transactionService
@@ -185,9 +189,14 @@ class PaymentHelper {
         return cartVO
     }
 
-    PaymentVO validatePaymentVO(PaymentVO paymentVO, Model model){
+    PaymentVO validatePaymentVO(PaymentVO paymentVO, Model model, int transactionid){
         if(paymentVO?.amountpaid == null || paymentVO?.amountpaid == 0.00 || paymentVO?.amountpaid?.toString()?.isBlank()){
             model.addAttribute("errorMessage","Please enter an amount")
+            return paymentVO
+        }
+        TransactionVO existingTransaction = transactionRepo.findById(transactionid).get()
+        if(paymentVO?.amountpaid + existingTransaction.paid > existingTransaction.totalwithtax){
+            model.addAttribute("errorMessage","Enter an amount less that the total of the transaction")
         }
 
         return paymentVO

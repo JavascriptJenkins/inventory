@@ -1,10 +1,12 @@
 package com.techvvs.inventory.service.controllers
 
+import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.jparepo.CartRepo
 import com.techvvs.inventory.jparepo.TransactionRepo
 import com.techvvs.inventory.model.CartVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.TransactionVO
+import com.techvvs.inventory.util.FormattingUtil
 import com.techvvs.inventory.util.TechvvsAppUtil
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -27,6 +29,12 @@ class TransactionService {
 
     @Autowired TechvvsAppUtil techvvsAppUtil
 
+    @Autowired
+    FormattingUtil formattingUtil
+
+    @Autowired
+    AppConstants appConstants
+
 
     //todo: make sure the customer is fully hydrated on the way in here
     TransactionVO processCartGenerateNewTransaction(CartVO cartVO) {
@@ -41,8 +49,10 @@ class TransactionService {
                 createTimeStamp: LocalDateTime.now(),
                 customervo: cartVO.customer,
                 total: cartVO.total,
+//                totalwithtax: formattingUtil.calculateTotalWithTax(cartVO.total, appConstants.DEFAULT_TAX_PERCENTAGE),
+                totalwithtax: cartVO.total,
                 paid: 0.00,
-                taxpercentage: techvvsAppUtil.dev1 ? 10 : 0, // we are not going to set a tax percentage here in non dev environments
+                taxpercentage: techvvsAppUtil.dev1 ? 0 : 0, // we are not going to set a tax percentage here in non dev environments
                 isprocessed: 0
 
         )

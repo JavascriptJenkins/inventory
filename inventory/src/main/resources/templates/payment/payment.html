@@ -18,12 +18,50 @@
     </style>
 
 
+    <script>
+        function validateAmountPaid() {
+            const inputField = document.getElementById('amountpaid');
+            const inputValue = inputField.value;
+            const regex = /^-?\d+(\.\d{1,2})?$/; // Regular expression to match valid numerical input with optional single decimal point
+
+            if (inputValue.length > 10) {
+                alert('Input should not be greater than 10 characters.');
+                return false;
+            }
+
+            if (inputValue.length < 1) {
+                alert('Input should not be less than 1 character.');
+                return false;
+            }
+
+            if (!regex.test(inputValue)) {
+                alert('Input should be a numerical value and can contain at most one decimal point.');
+                return false;
+            }
+
+            const numericValue = parseFloat(inputValue);
+            if (isNaN(numericValue) || numericValue < 0) {
+                alert('Input should be a positive numerical value.');
+                return false;
+            }
+
+            return true;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const inputField = document.getElementById('amountpaid');
+            inputField.addEventListener('blur', validateAmountPaid); // Validate when the input loses focus
+        });
+    </script>
+
+
 </head>
 <body>
 <div class="container">
     <br>
     <div style="margin-top: 20px" class="alert alert-primary" role="alert">Submit a Payment for Transaction ID: <span th:text="${transactionid}"></span></div>
     <div style="margin-top: 20px" class="alert alert-primary" role="alert">Submit a Payment for Customer: <span th:text="${customer.name}"></span></div>
+    <div style="margin-top: 20px" class="alert alert-primary" role="alert">Amount remaining to pay: <span th:text="${transaction.totalwithtax - (transaction.paid == null ? 0.0 : transaction.paid)}"></span></div>
     <br>
     <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
     <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
@@ -32,7 +70,7 @@
     <form th:action="@{/payment/submitpayment?customJwtParameter=__${customJwtParameter}__&transactionid=__${transaction.transactionid}__&customerid=__${customer.customerid}__}" th:object="${payment}" method="post">
         <div class="mb-3">
             <label for="amountpaid" class="form-label required">Amount</label>
-            <input type="number" class="form-control" id="amountpaid" th:field="*{amountpaid}" required>
+            <input class="form-control" id="amountpaid" th:field="*{amountpaid}" required>
         </div>
 <!--        <div class="mb-3">-->
 <!--            <label for="paymentDate" class="form-label required">Payment Date</label>-->

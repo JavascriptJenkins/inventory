@@ -54,9 +54,12 @@ class ReceiptGenerator {
         receipt.append("--------------------------------\n");
         receipt.append('Subtotal                  $'+transactionVO.total+'\n');
 
-        receipt.append('Tax ('+transactionVO.taxpercentage+'%)                 $'+formattingUtil.calculateTaxAmount(transactionVO.total, transactionVO.taxpercentage)+'\n');
+        receipt.append('Tax (0%)' +'\n')
+//        receipt.append('Tax ('+transactionVO.taxpercentage+'%)                 $'+formattingUtil.calculateTaxAmount(transactionVO.total, transactionVO.taxpercentage)+'\n');
 
-        receipt.append('Total                     $'+formattingUtil.calculateTotalWithTax(transactionVO.total, transactionVO.taxpercentage)+'\n');
+//        receipt.append('Total                     $'+formattingUtil.calculateTotalWithTax(transactionVO.total, transactionVO.taxpercentage)+'\n');
+        receipt.append('Total                     $'+transactionVO.total+'\n')
+
         receipt.append('\n');
         receipt.append('Thank you for shopping!\n');
         receipt.append('     www.northstar.com\n');

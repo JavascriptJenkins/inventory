@@ -27,4 +27,6 @@ class AppConstants {
     String TEXT_INVOICE = "text"
 String EMAIL_INVOICE = "email"
 
+
+    int DEFAULT_TAX_PERCENTAGE = 0
 }

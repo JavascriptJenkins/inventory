@@ -77,10 +77,12 @@ class InvoiceGenerator {
 
 
         invoice.append('Subtotal                  $'+transaction.total+'\n');
-        invoice.append('Tax ('+transaction.taxpercentage+'%)                 $'+formattingUtil.calculateTaxAmount(transaction.total, transaction.taxpercentage)+'\n')
-        invoice.append('Total                     $'+formattingUtil.calculateTotalWithTax(transaction.total, transaction.taxpercentage)+'\n')
+//        invoice.append('Tax ('+transaction.taxpercentage+'%)                 $'+formattingUtil.calculateTaxAmount(transaction.total, transaction.taxpercentage)+'\n')
+        invoice.append('Tax (0%)' +'\n')
+//        invoice.append('Total                     $'+formattingUtil.calculateTotalWithTax(transaction.total, transaction.taxpercentage)+'\n')
+        invoice.append('Total                     $'+transaction.total+'\n')
         invoice.append("Paid: ${transaction.paid == null ? '0' : transaction.paid}\n")
-        invoice.append("Remaining Balance: "+formattingUtil.calculateRemainingBalance(formattingUtil.calculateTotalWithTax(transaction.total, transaction.taxpercentage), transaction.paid)+"\n")
+        invoice.append("Remaining Balance: "+formattingUtil.calculateRemainingBalance(transaction.total, transaction.paid)+"\n")
         invoice.append("Notes: ${transaction.notes == null ? '' : transaction.notes}\n")
         invoice.append("Cashier: ${transaction.cashier == null ? '' : transaction.cashier}\n")
 //        invoice.append("Processed: ${transaction.isprocessed == 1 ? 'Yes' : 'No'}\n")
