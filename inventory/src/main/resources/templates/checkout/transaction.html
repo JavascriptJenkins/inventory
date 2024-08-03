@@ -45,7 +45,7 @@
 
 
     <!--    One form for passing back the barcode on every scan and updating the transaction in db -->
-    <form th:action="@{/checkout/transaction?customJwtParameter=__${customJwtParameter}__}" th:object="${cart}" method="post">
+    <form th:action="@{/checkout/transaction?customJwtParameter=__${customJwtParameter}__&page=1&size=5}" th:object="${cart}" method="post">
 
         <!-- Table Section -->
         <div style="overflow-x: auto;">

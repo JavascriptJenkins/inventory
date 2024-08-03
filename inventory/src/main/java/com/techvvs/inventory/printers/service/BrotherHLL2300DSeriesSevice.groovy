@@ -177,23 +177,25 @@ class BrotherHLL2300DSeriesSevice {
 
 
     // todo: make this method not print unless we have a printer....
-    void printInvoiceApachePDFBOX(TransactionVO transactionVO, boolean printinvoice) {
-        String invoiceContent = invoiceGenerator.generateDefaultInvoice(transactionVO)
-        ByteArrayOutputStream pdfOutputStream = new ByteArrayOutputStream()
+    void printInvoiceApachePDFBOX(TransactionVO transactionVO, boolean printinvoice, boolean onlysavetofilesystem) {
 
-        generatePdf(invoiceContent, pdfOutputStream)
+        PDDocument document = null
+        String filenameresult = ""
+        if(onlysavetofilesystem){
+            document = generateInvoicePDDocument(transactionVO)
+            filenameresult = techvvsFileHelper.saveInvoiceToFileSystem(document,transactionVO);
+            document.close()
+            return
+        } else {
+            document = generateInvoicePDDocument(transactionVO)
+            filenameresult = techvvsFileHelper.saveInvoiceToFileSystem(document,transactionVO);
+        }
 
-        byte[] pdfBytes = pdfOutputStream.toByteArray()
-        ByteArrayInputStream pdfInputStream = new ByteArrayInputStream(pdfBytes)
 
-        def document = PDDocument.load(pdfInputStream)
 
         PrintService[] printServices = PrintServiceLookup.lookupPrintServices(null, null)
         PrintService selectedPrintService = null
         String printerName = "Brother HL-L2300D series"
-
-        // chatgpt - write a method to save the PDDocument to the file system
-        String filenameresult = techvvsFileHelper.saveInvoiceToFileSystem(document, transactionVO);
 
         if (transactionVO.action.contains(appConstants.TEXT_INVOICE)) {
             transactionHelper.sendTextMessageWithDownloadLink(transactionVO.phonenumber, filenameresult)
@@ -238,6 +240,19 @@ class BrotherHLL2300DSeriesSevice {
         }
     }
 
+    PDDocument generateInvoicePDDocument(TransactionVO transactionVO){
+        String invoiceContent = invoiceGenerator.generateDefaultInvoice(transactionVO)
+        ByteArrayOutputStream pdfOutputStream = new ByteArrayOutputStream()
+
+        generatePdf(invoiceContent, pdfOutputStream)
+
+        byte[] pdfBytes = pdfOutputStream.toByteArray()
+        ByteArrayInputStream pdfInputStream = new ByteArrayInputStream(pdfBytes)
+
+        def document = PDDocument.load(pdfInputStream)
+
+        return document
+    }
 
 
     static void generatePdf(String invoiceContent, OutputStream outputStream) {

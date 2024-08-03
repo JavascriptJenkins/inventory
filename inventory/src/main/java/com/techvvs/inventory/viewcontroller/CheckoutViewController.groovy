@@ -258,20 +258,29 @@ public class CheckoutViewController {
 
         }
 
-//
-//        model.addAttribute("pageNumbers", pageNumbers);
-//        model.addAttribute("page", currentPage);
-//        model.addAttribute("size", pageOfProduct.getTotalPages());
-        model.addAttribute("customJwtParameter", customJwtParameter);
-        model.addAttribute("transaction", transactionVO);
-        //model.addAttribute("successMessage", "Review the cart")
+
+
         // fetch all customers from database and bind them to model
         checkoutHelper.getAllCustomers(model)
+
+        model.addAttribute("customJwtParameter", customJwtParameter);
+
 
         if(model.getAttribute("errorMessage") == null){
             model.addAttribute("successMessage", "Successfully completed transaction! Thanks "+name+"!")
 
-            return "checkout/transactionsuccess.html";
+            // start file paging
+            String dir = appConstants.PARENT_LEVEL_DIR+appConstants.TRANSACTION_INVOICE_DIR+String.valueOf(transactionVO.transactionid)+"/"
+            Page<FileVO> filePage = filePagingService.getFilePageFromDirectory(page.get(), size.get(), dir)
+            filePagingService.bindPageAttributesToModel(model, filePage, page, size);
+            // end file paging
+
+            transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO)
+
+            printerService.printInvoice(transactionVO, false, true)
+
+            model.addAttribute("transaction", transactionVO);
+            return "transaction/transactionreview.html";
 
         } else {
             return "checkout/transaction.html";// return same page with errors
@@ -347,7 +356,7 @@ public class CheckoutViewController {
 
             transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO)
 
-            printerService.printInvoice(transactionVO, true)
+            printerService.printInvoice(transactionVO, true, false)
 
             name = transactionVO.cart.customer.name
 
@@ -394,7 +403,7 @@ public class CheckoutViewController {
         transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO)
 
         checkoutHelper.bindtransients(transactionVO, transientphonunumber, transientemail, transientaction)
-        printerService.printInvoice(transactionVO, false)
+        printerService.printInvoice(transactionVO, false, false)
 
 
         // start file paging

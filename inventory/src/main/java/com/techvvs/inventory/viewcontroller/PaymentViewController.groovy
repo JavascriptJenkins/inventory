@@ -145,6 +145,9 @@ public class PaymentViewController {
         if(model.getAttribute("errorMessage") == null){
 
             TransactionVO transactionVO = paymentService.submitPaymentForTransaction(Integer.valueOf(transactionid),Integer.valueOf(customerid),paymentVO)
+            transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO)
+            printerService.printInvoice(transactionVO, false, true)
+
 
             model.addAttribute("transaction", transactionVO)
             model.addAttribute("transactionid", transactionVO.transactionid)

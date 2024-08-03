@@ -76,7 +76,7 @@
 
 
     <!--    One form for passing back the barcode on every scan and updating the transaction in db -->
-    <form id="reviewCartForm" th:action="@{/checkout/transaction?customJwtParameter=__${customJwtParameter}__}" th:object="${cart}" method="post">
+    <form id="reviewCartForm" th:action="@{/checkout/transaction?customJwtParameter=__${customJwtParameter}__&page=1&size=5}" th:object="${cart}" method="post">
 
 
 

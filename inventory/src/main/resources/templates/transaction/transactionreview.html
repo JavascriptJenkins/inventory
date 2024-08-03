@@ -215,7 +215,7 @@ function setEmailInvoice() {
         </table>
         <div th:if="${filePage.totalPages > 0}" class="pagination"
              th:each="pageNumber : ${pageNumbers}">
-            <a th:href="@{/viewfiles?transactionid=__${transaction.transactionid}__&customJwtParameter=__${customJwtParameter}__&size=5&page=__${pageNumber}__}"
+            <a th:href="@{/transaction?transactionid=__${transaction.transactionid}__&customJwtParameter=__${customJwtParameter}__&size=5&page=__${pageNumber}__}"
                th:text=${pageNumber}
                th:class="${pageNumber==filePage.number + 1} ? active"></a>
         </div>
