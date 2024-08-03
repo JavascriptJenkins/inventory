@@ -130,9 +130,9 @@ function setEmailInvoice() {
 
     <div class="alert alert-primary" role="alert" >Review Transaction</div>
     <br>
-    <div style="margin-top: 20px" class="alert alert-primary" role="alert">Reviewing Transaction ID: <span th:text="${transaction.transactionid}"></span></div>
-    <div style="margin-top: 20px" class="alert alert-primary" role="alert">Customer: <span th:text="${transaction.customervo.name}"></span></div>
-    <div style="margin-top: 20px" class="alert alert-primary" role="alert">Amount remaining to pay: <span th:text="${transaction.totalwithtax - (transaction.paid == null ? 0.0 : transaction.paid)}"></span></div>
+    <div style="margin-top: 20px" class="alert alert-info" role="alert">Reviewing Transaction ID: <span th:text="${transaction.transactionid}"></span></div>
+    <div style="margin-top: 20px" class="alert alert-info" role="alert">Customer: <span th:text="${transaction.customervo.name}"></span></div>
+    <div style="margin-top: 20px" class="alert alert-info" role="alert">Amount remaining to pay: <span th:text="${transaction.totalwithtax - (transaction.paid == null ? 0.0 : transaction.paid)}"></span></div>
 
 
     <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
@@ -140,7 +140,7 @@ function setEmailInvoice() {
 
 
     <!--    One form for passing back the barcode on every scan and updating the transaction in db -->
-    <form id="transactionReviewForm" th:action="@{/checkout/printreceipt?customJwtParameter=__${customJwtParameter}__?size=5&page=1}" th:object="${transaction}" method="post">
+    <form id="transactionReviewForm" th:action="@{/checkout/printreceipt?customJwtParameter=__${customJwtParameter}__&size=5&page=1}" th:object="${transaction}" method="post" class="d-inline">
 
         <!-- Table Section -->
         <div style="overflow-x: auto;">
@@ -170,24 +170,26 @@ function setEmailInvoice() {
 
 
     <!--    One form for passing back the barcode on every scan and updating the transaction in db -->
-    <form id="printInvoiceForm" th:action="@{/checkout/printinvoice?customJwtParameter=__${customJwtParameter}__&size=5&page=1}" th:object="${transaction}" method="post">
+    <form id="printInvoiceForm" th:action="@{/checkout/printinvoice?customJwtParameter=__${customJwtParameter}__&size=5&page=1}" th:object="${transaction}" method="post" class="d-inline">
         <input type="hidden" th:field="*{transactionid}">
         <button style="margin-top:5px;" type="submit" class="btn btn-primary">Print Invoice</button>
     </form>
 
 
 
-    <a th:href="@{/payment?transactionid=__${transaction.transactionid}__&customJwtParameter=__${customJwtParameter}__}" class="btn btn-primary" style="margin-top:5px;">Submit A Payment</a>
+    <div class="d-inline">
+        <a th:href="@{/payment?transactionid=__${transaction.transactionid}__&customJwtParameter=__${customJwtParameter}__}" class="btn btn-primary" style="margin-top:5px;">Submit A Payment</a>
+    </div>
 
 
 
     <form id="textoremailInvoiceForm" th:action="@{/checkout/textemailinvoice?customJwtParameter=__${customJwtParameter}__&size=5&page=1}" th:object="${transaction}" method="post">
 
         <!-- File table pagination is below -->
-        <table class="table" border="1">
+        <table class="table" style="margin-top: 40px" border="1">
             <thead>
             <tr>
-                <th scope="col">filename</th>
+                <th scope="col">Invoices</th>
             </tr>
             </thead>
             <tbody>
@@ -200,26 +202,28 @@ function setEmailInvoice() {
                             However, this causes issues with the JWT token for some reason.
     -->
                 <td><span th:text="${file.filename}"></span>
-    <!--                <button th:data-filename="${file.filename}" th:data-jwt="${customJwtParameter}" th:data-directory="${file.directory}" th:data-transactionid="${transaction.transactionid}" onclick="openDownloadWindow(this)">Download File</button></td>-->
-                <input type="hidden" id="action" name="action" value="">
-                <input type="hidden" id="email" name="email" value="">
-                <input type="hidden" id="phonenumber" name="phonenumber" value="">
+                        <input type="hidden" id="action" name="action" value="">
+                        <input type="hidden" id="email" name="email" value="">
+                        <input type="hidden" id="phonenumber" name="phonenumber" value="">
 
 
-                <input type="hidden" th:field="*{transactionid}">
-                <button style="margin-top:5px;" onclick="setTextInvoice(event)" type="submit" class="btn btn-primary">Text Invoice</button>
-                <button style="margin-top:5px;" onclick="setEmailInvoice(event)" type="submit" class="btn btn-primary">Email Invoice</button>
+                        <input type="hidden" th:field="*{transactionid}">
+                        <div class="text-end">
+                            <button onclick="setTextInvoice(event)" type="submit" class="btn btn-primary">Text Invoice</button>
+                            <button onclick="setEmailInvoice(event)" type="submit" class="btn btn-primary">Email Invoice</button>
+                        </div>
 
                 </td>
             </tr>
             </tbody>
         </table>
-        <div th:if="${filePage.totalPages > 0}" class="pagination"
-             th:each="pageNumber : ${pageNumbers}">
-            <a th:href="@{/transaction?transactionid=__${transaction.transactionid}__&customJwtParameter=__${customJwtParameter}__&size=5&page=__${pageNumber}__}"
-               th:text=${pageNumber}
-               th:class="${pageNumber==filePage.number + 1} ? active"></a>
-        </div>
+        <nav th:if="${filePage.totalPages > 0}">
+            <ul class="pagination">
+                <li class="page-item" th:each="pageNumber : ${pageNumbers}">
+                    <a class="page-link" th:href="@{/transaction?transactionid=__${transaction.transactionid}__&customJwtParameter=__${customJwtParameter}__&size=5&page=__${pageNumber}__}" th:text="${pageNumber}" th:classappend="${pageNumber==filePage.number + 1} ? 'active'"></a>
+                </li>
+            </ul>
+        </nav>
         <!-- END FILE PAGINATION -->
     </form>
 
