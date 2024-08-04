@@ -183,6 +183,36 @@ public class CheckoutViewController {
         return "checkout/checkout.html";
     }
 
+    @PostMapping("/delete")
+    String delete(
+                Model model,
+                @RequestParam("customJwtParameter") String customJwtParameter,
+                @RequestParam("cartid") String cartid,
+                @RequestParam("barcode") String barcode,
+                @RequestParam("page") Optional<Integer> page,
+                @RequestParam("size") Optional<Integer> size){
+
+        System.out.println("customJwtParam on checkout controller: "+customJwtParameter);
+
+        CartVO cartVO = checkoutHelper.getExistingCart(cartid)
+
+        cartVO = checkoutHelper.deleteProductFromCart(cartVO, barcode)
+
+        cartVO = checkoutHelper.hydrateTransientQuantitiesForDisplay(cartVO)
+
+        cartVO.barcode = "" // reset barcode to empty
+//
+//        model.addAttribute("pageNumbers", pageNumbers);
+//        model.addAttribute("page", currentPage);
+//        model.addAttribute("size", pageOfProduct.getTotalPages());
+        model.addAttribute("customJwtParameter", customJwtParameter);
+        model.addAttribute("cart", cartVO);
+        // fetch all customers from database and bind them to model
+        checkoutHelper.getAllCustomers(model)
+
+        return "checkout/checkout.html";
+    }
+
 
     @PostMapping("/reviewcart")
     String reviewcart(@ModelAttribute( "cart" ) CartVO cartVO,

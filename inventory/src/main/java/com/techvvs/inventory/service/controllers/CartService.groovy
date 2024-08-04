@@ -44,6 +44,8 @@ class CartService {
             productVO.get().cart_list.add(cartVO)
 
             productVO.get().updateTimeStamp = LocalDateTime.now()
+            // when product is added to the cart, decrease the quantity remaining.
+            productVO.get().quantityremaining = productVO.get().quantityremaining == 0 ? 0 : productVO.get().quantityremaining - 1
             ProductVO savedProduct = productRepo.save(productVO.get())
 
             if(cartVO.total == null){

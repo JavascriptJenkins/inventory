@@ -62,7 +62,9 @@ function processTableItems() {
         const itemBarcode = $(this).data('barcode'); // Assuming you have data-barcode attribute in your <tr> elements
 
         if (seenBarcodes.has(itemBarcode)) {
-            $(this).hide(); // Hide the row if the barcode is already seen
+<!--            $(this).hide(); // Hide the row if the barcode is already seen-->
+                $(this).remove(); // Delete the row if the barcode is already seen
+
         } else {
             seenBarcodes.add(itemBarcode);
             $(this).show(); // Ensure the row is visible (in case it was hidden previously)
@@ -73,6 +75,36 @@ function processTableItems() {
 }
 
 
+    </script>
+
+
+    <script>
+        function deleteItemFromCart(element) {
+            // Prevent the default link action
+            event.preventDefault();
+
+        // Get the barcode from the data-barcode attribute
+        const barcode = element.closest('tr').getAttribute('data-barcode');
+console.log(element);
+console.log(barcode);
+       const form = document.getElementById('deleteItemFromCartForm');
+
+
+        // Create and append a hidden input for the barcode
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = 'barcode';
+        hiddenInput.value = barcode;
+        form.appendChild(hiddenInput);
+
+        // Submit the form
+        form.submit();
+
+
+
+
+
+        }
     </script>
 
 </head>
@@ -137,6 +169,9 @@ function processTableItems() {
                             <td th:text="${item.name}" data-barcode="${item.barcode}">Item Name</td>
                             <td th:text="${item.price}">Price</td>
                             <td th:text="${item.displayquantity}">Quantity</td>
+                            <td>
+                                <a id="deleteItemID" href="#" onclick="deleteItemFromCart(this)">X</a>
+                            </td>
                         </tr>
                         </tbody>
                     </table>
@@ -144,6 +179,10 @@ function processTableItems() {
                 </div>
             </div>
         </div>
+    </form>
+
+    <form id="deleteItemFromCartForm" th:action="@{/checkout/delete?customJwtParameter=__${customJwtParameter}__&cartid=__${cart.cartid}__}" th:object="${cart}" method="post">
+        <input type="hidden" name="_method" value="delete" />
     </form>
 
     <form id="submitTransactionForm" th:action="@{/checkout/reviewcart?customJwtParameter=__${customJwtParameter}__&cartid=__${cart.cartid != null ? cart.cartid : '0'}__}" th:object="${cart}" method="post">

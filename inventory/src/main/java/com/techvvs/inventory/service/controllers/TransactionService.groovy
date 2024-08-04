@@ -72,13 +72,14 @@ class TransactionService {
         cartVO = cartRepo.save(newtransaction.cart)
 
 
-        // now we have to go update the quantityremaining on the product
+        // quantityremaining is updated when the cart is saved... this method is useless for now but will
+        // be useful if we need to do anything to the product after the transaction is saved
 
         for(ProductVO productVO : newtransaction.product_list){
 
             ProductVO existingproduct = productService.findProductByID(productVO)
 
-            existingproduct.quantityremaining = productVO.quantityremaining - 1
+           // existingproduct.quantityremaining = productVO.quantityremaining - 1
             existingproduct.updateTimeStamp = LocalDateTime.now()
             productVO = productService.saveProduct(productVO)
 

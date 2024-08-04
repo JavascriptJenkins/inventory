@@ -59,7 +59,7 @@ class CheckoutHelper {
             } else {
                 int cartcount = getCountOfProductInCartByBarcode(cartVO)
                 // check here if the quantity we are trying to add will exceed the quantity in stock
-                if(cartcount >= productVO.get().quantityremaining){
+                if(cartcount == productVO.get().quantity){
                     model.addAttribute("errorMessage","Quantity exceeds quantity in stock")
                 }
             }
@@ -217,6 +217,35 @@ class CheckoutHelper {
         } else {
             return new CartVO(cartid: 0)
         }
+    }
+
+    CartVO deleteProductFromCart(CartVO cartVO, String barcode){
+
+        CartVO carttoremove = new CartVO(cartid: 0)
+        // we are only removing one product at a time
+        for(ProductVO productVO : cartVO.product_cart_list){
+            if(productVO.barcode == barcode){
+                cartVO.product_cart_list.remove(productVO)
+                productVO.quantityremaining = productVO.quantityremaining + 1
+                // remove the cart association from the product
+                for(CartVO existingCart : productVO.cart_list){
+                    if(existingCart.cartid == cartVO.cartid){
+                        carttoremove = existingCart
+                    }
+                }
+                productVO.cart_list.remove(carttoremove)
+                productVO.updateTimeStamp = LocalDateTime.now()
+                productRepo.save(productVO)
+                break
+            }
+        }
+
+        cartVO.updateTimeStamp = LocalDateTime.now()
+        cartVO = cartRepo.save(cartVO)
+
+
+        return cartVO
+
     }
 
 
