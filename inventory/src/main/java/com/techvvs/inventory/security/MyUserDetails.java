@@ -33,4 +33,18 @@ public class MyUserDetails implements UserDetailsService {
         .build();
   }
 
+
+  public UserDetails loadUserForPublicToken(String username) throws UsernameNotFoundException {
+
+    return org.springframework.security.core.userdetails.User//
+            .withUsername(username)//
+            .password("publicpassword")//
+            .authorities("publicusername")//
+            .accountExpired(false)//
+            .accountLocked(false)//
+            .credentialsExpired(false)//
+            .disabled(false)//
+            .build();
+  }
+
 }

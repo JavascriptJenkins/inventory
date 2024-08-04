@@ -13,6 +13,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -66,6 +67,14 @@ public class JwtTokenFilter extends OncePerRequestFilter implements CsrfTokenRep
           // post requests need a jwt token usually
           logger.info("DEBUG35553333");
 
+      } else if(httpServletRequest.getRequestURI().equals("/qr/publicinfo") && "GET".equals(httpServletRequest.getMethod())){
+          // post requests need a jwt token usually
+          logger.info("hit qr method");
+          List<Role> roles = new ArrayList<>(1);
+          roles.add(Role.PUBLIC_QR_ROLE);
+          String publicToken = jwtTokenProvider.createTokenForPublicQR("johndoe@gmail.com", roles);
+          Authentication auth = jwtTokenProvider.getAuthenticationForPublicQR(publicToken);
+          SecurityContextHolder.getContext().setAuthentication(auth);
       }
     } catch (CustomException ex) {
         logger.info("Exception on JWT controller: "+ex.getMessage());

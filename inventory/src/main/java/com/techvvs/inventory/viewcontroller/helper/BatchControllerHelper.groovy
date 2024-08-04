@@ -141,12 +141,6 @@ class BatchControllerHelper {
             results = batchRepo.findAllByBatchnumber(Integer.valueOf(batchnumber));
         }
 
-        //        Path filePath = Paths.get("path/to/your/file.txt");
-//
-//        if(Files.exists()){
-//
-//        }
-
         qrCodeService.createAllQrsForBatch(results.get(0))
 
         return true

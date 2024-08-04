@@ -46,9 +46,10 @@ class XlsxImporter {
 
         BatchVO batchVO = importBatch.importBatchFromExistingXlsxFile(filename)
 
-        boolean success = batchControllerHelper.generateAllBarcodesForBatch(String.valueOf(batchVO.batchnumber))
+        boolean barcodesuccess = batchControllerHelper.generateAllBarcodesForBatch(String.valueOf(batchVO.batchnumber))
+        boolean qrsuccess = batchControllerHelper.generateAllQrcodesForBatch(String.valueOf(batchVO.batchnumber))
 
-        if(success){
+        if(barcodesuccess && qrsuccess){
             menuGenerator.generateDefaultMenuFromBatch(batchVO)
         }
 

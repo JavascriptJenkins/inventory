@@ -51,8 +51,9 @@ public class JwtTokenProvider {
     @Value("${security.jwt.token.expire-length:86400000}")
     private long validityInMillisecondsEmailValidation = 86400000; // 24 hour
 
-  @Value("${security.jwt.token.expire-length:86400000}")
   private long validityInMillisecondsPhoneDownload = 3600000 ; // 1 hour
+
+  private long validityInMillisecondsPublicToken = 1000 ; // 1 second just for letting people see one page
 
   @Autowired
   private MyUserDetails myUserDetails;
@@ -99,13 +100,13 @@ public class JwtTokenProvider {
             .compact();
   }
 
-  public String createTokenForEmailDownloadLinks(String email, List<Role> roles) {
+  public String createTokenForPublicQR(String email, List<Role> roles) {
 
     Claims claims = Jwts.claims().setSubject(email);
     claims.put("auth", roles.stream().map(s -> new SimpleGrantedAuthority(s.getAuthority())).filter(Objects::nonNull).collect(Collectors.toList()));
 
     Date now = new Date();
-    Date validity = new Date(now.getTime() + validityInMillisecondsPhoneDownload);
+    Date validity = new Date(now.getTime() + validityInMillisecondsPublicToken);
 
     return Jwts.builder()//
             .setClaims(claims)//
@@ -153,6 +154,11 @@ public class JwtTokenProvider {
 
   public Authentication getAuthentication(String token) {
     UserDetails userDetails = myUserDetails.loadUserByUsername(getTokenSubject(token));
+    return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
+  }
+
+  public Authentication getAuthenticationForPublicQR(String token) {
+    UserDetails userDetails = myUserDetails.loadUserForPublicToken(getTokenSubject(token));
     return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
   }
 

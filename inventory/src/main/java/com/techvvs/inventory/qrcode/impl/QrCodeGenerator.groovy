@@ -16,6 +16,7 @@ import org.apache.pdfbox.pdmodel.font.PDType0Font
 import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
 import org.apache.pdfbox.pdmodel.font.PDType1Font
 
@@ -40,6 +41,9 @@ class QrCodeGenerator {
 
     @Autowired
     AppConstants appConstants
+
+    @Autowired
+    Environment env
 
     // need to make a qr code generator that generates a QR for every barcode
     void generateQrcodes(String filenameExtension, int batchnumber, int pagenumber, Set<ProductVO> productset) throws IOException {
@@ -174,13 +178,25 @@ class QrCodeGenerator {
                 float x = leftMargin + col * labelWidth;
                 float y = PDRectangle.LETTER.getHeight() - topMargin - (row + 1) * labelHeight;
 
-                //   String barcodeData = barcodeHelper.generateBarcodeData(row, col, filenameExtension, batchnumber, pagenumber);
-                String qrcodeData = "https://qr.techvvs.io"
 
                 BufferedImage qrImage = null;
                 if(skip){
                     qrImage = qrImageInScope
                 } else {
+                    String qrcodeData = ""
+                    boolean isdev1 = env.getProperty("spring.profiles.active").equals(appConstants.DEV_1)
+                    if(isdev1){
+                        qrcodeData =
+                                appConstants.QR_CODE_PUBLIC_INFO_LINK_DEV1
+                                +productVO.getProduct_id()
+                                //+"&customJwtParameter="
+                    } else {
+                        qrcodeData =
+                                appConstants.QR_CODE_PUBLIC_INFO_LINK_PROD
+                                +productVO.getProduct_id()
+                                //+"&customJwtParameter="
+                    }
+
                     qrImage = qrImageGenerator.generateQrImage(qrcodeData, limitStringTo20Chars(productVO.name));
                 }
 
