@@ -75,6 +75,15 @@ class InvoiceGenerator {
         }
         invoice.append("--------------------------------------------------\n\n")
 
+        if(transaction.return_list != null && transaction.return_list.size() > 0) {
+            invoice.append("Returns:\n")
+            invoice.append("---------\n")
+            transaction.return_list.each { returnvo ->
+                invoice.append(String.format("Product Name: %-10s Price: %-10.2f Date: %s\n",
+                        returnvo.product.name, returnvo.product.price, returnvo.createTimeStamp))
+            }
+            invoice.append("--------------------------------------------------\n\n")
+        }
 
         invoice.append('Subtotal                  $'+transaction.total+'\n');
 //        invoice.append('Tax ('+transaction.taxpercentage+'%)                 $'+formattingUtil.calculateTaxAmount(transaction.total, transaction.taxpercentage)+'\n')

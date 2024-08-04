@@ -31,6 +31,10 @@ class TransactionVO implements Serializable {
     List<PaymentVO> payment_list
 
     @JsonProperty
+    @ElementCollection(fetch = FetchType.LAZY)
+    List<ReturnVO> return_list
+
+    @JsonProperty
     @OneToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name="customerid")
     CustomerVO customervo;

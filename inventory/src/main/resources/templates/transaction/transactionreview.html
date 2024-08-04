@@ -181,6 +181,9 @@ function setEmailInvoice() {
         <a th:href="@{/payment?transactionid=__${transaction.transactionid}__&customJwtParameter=__${customJwtParameter}__}" class="btn btn-primary" style="margin-top:5px;">Submit A Payment</a>
     </div>
 
+    <div class="d-inline">
+        <a th:href="@{/transaction/return?transactionid=__${transaction.transactionid}__&customJwtParameter=__${customJwtParameter}__}" class="btn btn-warning" style="margin-top:5px;float: right;">Return Product</a>
+    </div>
 
 
     <form id="textoremailInvoiceForm" th:action="@{/checkout/textemailinvoice?customJwtParameter=__${customJwtParameter}__&size=5&page=1}" th:object="${transaction}" method="post">

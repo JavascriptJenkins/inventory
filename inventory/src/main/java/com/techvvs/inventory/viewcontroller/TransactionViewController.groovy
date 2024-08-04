@@ -8,6 +8,7 @@ import com.techvvs.inventory.jparepo.ProductRepo
 import com.techvvs.inventory.jparepo.ProductTypeRepo
 import com.techvvs.inventory.model.BatchVO
 import com.techvvs.inventory.model.CartVO
+import com.techvvs.inventory.model.PaymentVO
 import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.modelnonpersist.FileVO
@@ -19,6 +20,7 @@ import com.techvvs.inventory.util.TechvvsFileHelper
 import com.techvvs.inventory.validation.ValidateBatch
 import com.techvvs.inventory.viewcontroller.helper.BatchControllerHelper
 import com.techvvs.inventory.viewcontroller.helper.CheckoutHelper
+import com.techvvs.inventory.viewcontroller.helper.PaymentHelper
 import com.techvvs.inventory.viewcontroller.helper.TransactionHelper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
@@ -80,6 +82,9 @@ public class TransactionViewController {
     TransactionHelper transactionHelper
 
     @Autowired
+    PaymentHelper paymentHelper
+
+    @Autowired
     CartService cartService
 
     @Autowired
@@ -136,6 +141,66 @@ public class TransactionViewController {
 
 
     }
+
+    @GetMapping("/return")
+    String viewNewForm(
+            Model model,
+            @RequestParam("customJwtParameter") String customJwtParameter,
+            @RequestParam("transactionid") String transactionid
+    ){
+
+        transactionid = transactionid == null ? "0" : String.valueOf(transactionid)
+
+        // attach the paymentVO to the model
+        TransactionVO transactionVO = paymentHelper.loadTransaction(transactionid, model)
+        transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO)
+
+        model.addAttribute("customer", transactionVO.customervo)
+
+
+        // fetch all customers from database and bind them to model
+        checkoutHelper.getAllCustomers(model)
+        model.addAttribute("transaction", transactionVO);
+
+        model.addAttribute("customJwtParameter", customJwtParameter);
+        model.addAttribute("transactionid", transactionid);
+        return "transaction/return.html";
+    }
+
+
+    @PostMapping("/return")
+    String postReturn(
+            Model model,
+            @RequestParam("customJwtParameter") String customJwtParameter,
+            @RequestParam("transactionid") String transactionid,
+            @RequestParam("barcode") String barcode
+    ){
+
+        transactionid = transactionid == null ? "0" : String.valueOf(transactionid)
+
+        // attach the paymentVO to the model
+        TransactionVO transactionVO = paymentHelper.loadTransaction(transactionid, model)
+
+        transactionVO = transactionHelper.deleteProductFromTransaction(transactionVO, barcode)
+
+        transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO)
+
+        printerService.printInvoice(transactionVO, false, true) // print another invoice showing return...
+
+
+        model.addAttribute("customer", transactionVO.customervo)
+
+
+        // fetch all customers from database and bind them to model
+        checkoutHelper.getAllCustomers(model)
+        model.addAttribute("customJwtParameter", customJwtParameter);
+        model.addAttribute("transactionid", transactionid);
+        model.addAttribute("transaction", transactionVO);
+        model.addAttribute("successMessage", "Deleted the item from transaction successfully with barcode: "+barcode);
+
+        return "transaction/return.html";
+    }
+
 
 
 
