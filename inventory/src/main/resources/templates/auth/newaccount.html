@@ -49,15 +49,13 @@
 
         }
 
-        function validateEmail(){
+        function validateEmail() {
             console.log("validateEmail");
 
-
             var emailinput = $("#emailinput").val();
+            var emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|me|net|org|edu|gov|mil|co|info|biz|name|mobi|io|dev|tech|us|uk|ca)$/;
 
-            if(emailinput.includes('@')
-
-            ){
+            if (emailPattern.test(emailinput)) {
                 $("#hiddencontainerEmailMsg").hide();
             } else {
                 $("#hiddencontainerEmailMsg").show();
@@ -65,12 +63,12 @@
         }
 
         function filloutdefaults(){
-        $("#emailinput").val("unwoundcracker@gmail.com");
-        $("#phoneinput").val("6128002664");
-        $("#confirmpassinput").val("password");
-        $("#passinput").val("password");
-        comparePasswords();
-        validateEmail();
+            $("#emailinput").val("unwoundcracker@gmail.com");
+            $("#phoneinput").val("6128002664");
+            $("#confirmpassinput").val("password");
+            $("#passinput").val("password");
+            comparePasswords();
+            validateEmail();
 
         }
 

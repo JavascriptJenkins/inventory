@@ -630,7 +630,7 @@ public class AuthViewController {
 
                         sb.append("Change password for your techvvs account at http://localhost:8080/login/viewresetpass?customJwtParameter=" + emailtoken);
 
-                        emailManager.generateAndSendEmail(sb.toString(), list, "Change password request TechVVS ServePapers account");
+                        emailManager.generateAndSendEmail(sb.toString(), list, "Change password request TechVVS InventoryVVS account");
                     } catch (Exception ex) {
                         System.out.println("error sending email");
                         System.out.println(ex.getMessage());
@@ -681,7 +681,7 @@ public class AuthViewController {
 
                 sb.append("Verify your new account at http://localhost:8080/login/verify?customJwtParameter=" + emailtoken);
 
-                emailManager.generateAndSendEmail(sb.toString(), list, "Validate email for new TechVVS ServePapers account");
+                emailManager.generateAndSendEmail(sb.toString(), list, "Validate email for new TechVVS InventoryVVS account");
             } catch (Exception ex) {
                 System.out.println("error sending email");
                 System.out.println(ex.getMessage());
