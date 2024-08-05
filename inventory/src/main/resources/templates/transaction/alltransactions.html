@@ -75,7 +75,7 @@
             <td th:text="${transaction.transactionid}"></td>
             <td><a th:href="@{/transaction?transactionid=__${transaction.transactionid}__&customJwtParameter=__${customJwtParameter}__&size=5&page=1}" th:text="${transaction.transactionid}"></a></td>
             <td th:text="${transaction.customervo.name}"></td>
-            <td th:text="${transaction.total}"></td>
+            <td th:text="${transaction.totalwithtax - transaction.paid}"></td>
 
         </tr>
 

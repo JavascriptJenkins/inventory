@@ -167,7 +167,7 @@ public class UploadController {
         boolean success = excelService.importExcelPriceSheet(fileName); // passing in filename like "filename.xlsx"
 
         if(success){
-            model.addAttribute("successMessage","Batch created, barcodes created, and default menu created from file: " + fileName + '!');
+            model.addAttribute("successMessage","Batch created, qr codes created, barcodes created, and default menu created from file: " + fileName + '!');
 
         } else {
             // this should never happen

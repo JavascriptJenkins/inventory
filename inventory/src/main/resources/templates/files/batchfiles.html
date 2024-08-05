@@ -30,6 +30,52 @@
         }
     </script>
 
+
+    <script>
+        function openPopup(type) {
+            let userInput = prompt(`Please enter your ${type === 'text' ? 'phone number (10 digits)' : 'email address'}`);
+            if (userInput) {
+                if (type === 'text') {
+                    if (/^\d{10}$/.test(userInput)) {
+                        document.getElementById('phonenumber').value = userInput;
+                        document.getElementById('action').value = "text";
+                        document.getElementById('textoremailInvoiceForm').submit();
+                    } else {
+                        alert('Invalid phone number. Please enter a 10 digit number.');
+                    }
+                } else if (type === 'email') {
+                    if (/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(userInput) && userInput.length >= 4) {
+                        document.getElementById('email').value = userInput;
+                        document.getElementById('action').value = "email";
+                        document.getElementById('textoremailInvoiceForm').submit();
+                    } else {
+                        alert('Invalid email address. Please enter a valid email.');
+                    }
+                }
+            }
+        }
+        function setTextInvoice() {
+             event.preventDefault();
+
+            document.getElementById('filenametosend').value = document.getElementById('filenamespanid').getAttribute('data-filename');
+            document.getElementById('action').value = "text";
+            openPopup('text');
+        }
+        function setEmailInvoice() {
+            event.preventDefault();
+            document.getElementById('filenametosend').value = document.getElementById('filenamespanid').getAttribute('data-filename');
+            document.getElementById('action').value = "email";
+            openPopup('email');
+
+        }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        var dirSelection = document.getElementById("dirselectionid");
+        var hiddenInput = document.getElementById("selected");
+        hiddenInput.value = dirSelection.value;
+    });
+
+    </script>
 </head>
 <body>
 <div th:insert="auth/navbar.html :: navbarfragment"> </div>
@@ -54,7 +100,7 @@
         <!--  -->
         <form th:action="@{/viewfiles/viewdirfiles?batchid=__${batch.batchid}__&customJwtParameter=__${customJwtParameter}__&size=5&page=1}" th:object="${menuoption}" method="post">
             <label class="form-label required">View files in dir</label>
-            <select class="form-control" th:field="${menuoption.selected}"  >
+            <select id="dirselectionid" class="form-control" th:field="${menuoption.selected}"  >
                 <option th:each="menuoption : ${directoryoptions}" th:value="${menuoption}" th:text="${menuoption}"></option>
             </select>
             <button style="margin-top:5px;" type="submit" class="btn btn-primary">Select Directory</button>
@@ -63,23 +109,35 @@
 
 
 
+    <form id="textoremailInvoiceForm" th:action="@{/viewfiles/textemailinvoice?customJwtParameter=__${customJwtParameter}__&size=5&page=1&batchid=__${batch.batchid}__}" th:object="${menuoption}" method="post">
         <table class="table" border="1">
-            <thead>
-            <tr>
-                <th scope="col">filename</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="file, iStat : ${filePage.content}"
-                th:style="${iStat.odd}? 'font-weight: bold;'"
-                th:alt-title="${iStat.even}? 'even' : 'odd'">
+                <thead>
+                <tr>
+                    <th scope="col">filename</th>
+                </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="file, iStat : ${filePage.content}"
+                        th:style="${iStat.odd}? 'font-weight: bold;'"
+                        th:alt-title="${iStat.even}? 'even' : 'odd'">
 
-                <td><span th:text="${file.filename}"></span>
-                    <button th:data-filename="${file.filename}" th:data-jwt="${customJwtParameter}" th:data-directory="${file.directory}" th:data-batchid="${batch.batchid}" onclick="openDownloadWindow(this)">Download File</button></td>
+                        <td><span id="filenamespanid" th:text="${file.filename}" th:data-filename="${file.filename}"></span>
+            <!--                    <button th:data-filename="${file.filename}" th:data-jwt="${customJwtParameter}" th:data-directory="${file.directory}" th:data-batchid="${batch.batchid}" onclick="openDownloadWindow(this)">Download File</button>-->
 
-            </tr>
-            </tbody>
+                            <input type="hidden" id="action" name="action" value="">
+                            <input type="hidden" id="email" name="email" value="">
+                            <input type="hidden" id="phonenumber" name="phonenumber" value="">
+                            <input type="hidden" id="filenametosend" name="filenametosend" value="">
+                            <input type="hidden" id="selected" name="selected" value="">
+                            <div class="text-end">
+                                <button onclick="setTextInvoice(event)" type="submit" class="btn btn-primary">Text Invoice</button>
+                                <button onclick="setEmailInvoice(event)" type="submit" class="btn btn-primary">Email Invoice</button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
         </table>
+    </form>
         <div th:if="${filePage.totalPages > 0}" class="pagination"
              th:each="pageNumber : ${pageNumbers}">
             <a th:href="@{/viewfiles?batchid=__${batch.batchid}__&customJwtParameter=__${customJwtParameter}__&size=5&page=__${pageNumber}__}"

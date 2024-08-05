@@ -7,4 +7,9 @@ class MenuOptionVO {
     String selected;
 
     Integer pagesize
+
+    String email
+    String phonenumber
+    String action
+    String filenametosend
 }

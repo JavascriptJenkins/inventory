@@ -22,8 +22,10 @@ import com.techvvs.inventory.validation.ValidateBatch
 import com.techvvs.inventory.viewcontroller.constants.ControllerConstants
 import com.techvvs.inventory.viewcontroller.helper.BatchControllerHelper
 import com.techvvs.inventory.viewcontroller.helper.CheckoutHelper
+import com.techvvs.inventory.viewcontroller.helper.FileViewHelper
 import com.techvvs.inventory.viewcontroller.helper.MenuHelper
 import com.techvvs.inventory.viewcontroller.helper.PaymentHelper
+import com.techvvs.inventory.viewcontroller.helper.TransactionHelper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -82,6 +84,12 @@ public class FileViewController {
     BatchControllerHelper batchControllerHelper;
 
     @Autowired
+    FileViewHelper fileViewHelper
+
+    @Autowired
+    TransactionHelper transactionHelper
+
+    @Autowired
     CheckoutHelper checkoutHelper
 
     @Autowired
@@ -133,7 +141,7 @@ public class FileViewController {
 
 
 
-        model.addAttribute(controllerConstants.MENU_OPTIONS_DIRECTORIES, [appConstants.BARCODES_ALL_DIR, appConstants.BARCODES_MENU_DIR]);
+        model.addAttribute(controllerConstants.MENU_OPTIONS_DIRECTORIES, [appConstants.BARCODES_ALL_DIR, appConstants.BARCODES_MENU_DIR, appConstants.QR_ALL_DIR,]);
         model.addAttribute("customJwtParameter", customJwtParameter);
         model.addAttribute("menuoption", new MenuOptionVO(selected: ""));
         return "files/batchfiles.html";
@@ -162,13 +170,66 @@ public class FileViewController {
 
         Page<FileVO> filePage = filePagingService.getFilePage(batchVO, page, size, selected)
         filePagingService.bindPageAttributesToModel(model, filePage, page, size);
-        model.addAttribute(controllerConstants.MENU_OPTIONS_DIRECTORIES, [appConstants.BARCODES_ALL_DIR, appConstants.BARCODES_MENU_DIR]);
+        model.addAttribute(controllerConstants.MENU_OPTIONS_DIRECTORIES, [appConstants.BARCODES_ALL_DIR, appConstants.BARCODES_MENU_DIR, appConstants.QR_ALL_DIR]);
         model.addAttribute("customJwtParameter", customJwtParameter);
 
 
         return "files/batchfiles.html";
     }
 
+
+
+    @PostMapping("/textemailinvoice")
+    String textemailinvoice(
+                @RequestParam( "batchid" ) String batchid,
+                            @ModelAttribute( "menuoption" ) MenuOptionVO menuoption,
+                            Model model,
+                            @RequestParam("customJwtParameter") String customJwtParameter,
+                            @RequestParam("page") Optional<Integer> page,
+                            @RequestParam("size") Optional<Integer> size){
+
+        System.out.println("customJwtParam on checkout controller: "+customJwtParameter);
+
+        menuoption = fileViewHelper.sanitizeTransients(menuoption)
+
+        batchid = batchid == null ? "0" : String.valueOf(batchid)
+        BatchVO batchVO = batchControllerHelper.loadBatch(batchid, model)
+
+        String selected = menuoption.selected // this contains file path from the dropdown
+        String filename = menuoption.filenametosend // this contains file path from the dropdown
+
+
+
+        // now here we need to actually send out the file
+        String dir = appConstants.PARENT_LEVEL_DIR+String.valueOf(batchVO.batchnumber)+selected+"/"+filename
+
+        if (menuoption.action.contains(appConstants.TEXT_INVOICE)) {
+            transactionHelper.sendTextMessageWithDownloadLink(menuoption.phonenumber, dir)
+        } else if (menuoption.action.contains(appConstants.EMAIL_INVOICE)) {
+            transactionHelper.sendEmailWithDownloadLink(menuoption.email, dir)
+        }
+
+
+
+        // start file paging
+        Page<FileVO> filePage = filePagingService.getFilePage(batchVO, page, size, selected)
+        filePagingService.bindPageAttributesToModel(model, filePage, page, size);
+        model.addAttribute(controllerConstants.MENU_OPTIONS_DIRECTORIES, [appConstants.BARCODES_ALL_DIR, appConstants.BARCODES_MENU_DIR, appConstants.QR_ALL_DIR]);
+        // end file paging
+
+        model.addAttribute("customJwtParameter", customJwtParameter);
+
+        if(model.getAttribute("errorMessage") == null){
+            model.addAttribute("successMessage", "Successfully sent file: "+filename+
+                    "using method: "+menuoption.action)
+
+            return "files/batchfiles.html";
+
+        } else {
+            return "files/batchfiles.html";
+        }
+
+    }
 
 
 
