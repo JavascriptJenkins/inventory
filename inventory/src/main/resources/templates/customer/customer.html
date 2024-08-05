@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Customer</title>
+
+    <script
+            src="https://code.jquery.com/jquery-3.6.0.js"
+            integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="
+            crossorigin="anonymous"></script>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <!-- JavaScript Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-kQtW33rZJAHjgefvhyyzcGF3C5TFyBQBA13V1RKPf4uH+bwyzQxZ6CmMZHmNBEfJ" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" type="text/css" media="all" href="/css/table.css" th:href="@{/css/table.css}" />
+    <!-- Bootstrap Font Icon CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+
+    <style>
+        .required:after {
+          content:" *";
+          color: red;
+        }
+    </style>
+
+    <script>
+        function validateInput(data) {
+            const namePattern = /^[A-Za-z\s]+$/;
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            const phonePattern = /^\+?[0-9\s\-\(\)]+$/;
+            const addressPattern = /^[A-Za-z0-9\s,.'-]{3,}$/;
+            const notesPattern = /^[A-Za-z0-9\s,.!?'"@#$%^&*()_+\-=\[\]{};:\\|<>\/`~]{1,256}$/;
+
+            const errors = {};
+
+            if (!namePattern.test(data.name)) {
+                errors.name = 'Invalid name. Only letters and spaces are allowed.';
+            }
+
+            if (!emailPattern.test(data.email)) {
+                errors.email = 'Invalid email address.';
+            }
+
+            if (!phonePattern.test(data.phone)) {
+                errors.phone = 'Invalid phone number.';
+            }
+
+            if (!addressPattern.test(data.address)) {
+                errors.address = 'Invalid address.';
+            }
+
+            if (data.address2 && !addressPattern.test(data.address2)) {
+                errors.address2 = 'Invalid secondary address.';
+            }
+
+            if (data.notes.length > 256 || !notesPattern.test(data.notes) || /<script>|<\/script>|SELECT|INSERT|DELETE|UPDATE|DROP|ALTER|--/.test(data.notes)) {
+                errors.notes = 'Invalid notes. Ensure it does not contain script or SQL injection attempts, and is under 256 characters.';
+            }
+
+            return {
+                isValid: Object.keys(errors).length === 0,
+                errors: errors
+            };
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('customerForm');
+            const errorMessageDiv = document.querySelector('.alert-danger');
+            const successDiv = document.getElementById('successDiv');
+            const submitButton = document.getElementById('customerSubmitButton');
+            const createAnotherButton = document.getElementById('createAnotherButton');
+
+            if (successDiv && successDiv.textContent.trim() !== '') {
+                submitButton.disabled = true;
+                createAnotherButton.style.display = 'inline-block';
+            }
+
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+
+                const formData = {
+                    name: form.querySelector('input[name="name"]').value,
+                    email: form.querySelector('input[name="email"]').value,
+                    phone: form.querySelector('input[name="phone"]').value,
+                    address: form.querySelector('input[name="address"]').value,
+                    address2: form.querySelector('input[name="address2"]').value,
+                    notes: form.querySelector('input[name="notes"]').value
+                };
+
+                const validationResult = validateInput(formData);
+
+                if (!validationResult.isValid) {
+                    errorMessageDiv.style.display = 'block';
+                    errorMessageDiv.innerHTML = Object.values(validationResult.errors).join('<br>');
+                } else {
+                    errorMessageDiv.style.display = 'none';
+                    form.submit();
+                }
+            });
+
+            createAnotherButton.addEventListener('click', function () {
+                console.log('Create Another Customer button clicked');
+
+                const nameInput = form.querySelector('input[name="name"]');
+                const emailInput = form.querySelector('input[name="email"]');
+                const phoneInput = form.querySelector('input[name="phone"]');
+                const addressInput = form.querySelector('input[name="address"]');
+                const address2Input = form.querySelector('input[name="address2"]');
+                const notesInput = form.querySelector('input[name="notes"]');
+
+                if (nameInput) {
+                    nameInput.value = '';
+                    console.log('Name input cleared');
+                }
+                if (emailInput) {
+                    emailInput.value = '';
+                    console.log('Email input cleared');
+                }
+                if (phoneInput) {
+                    phoneInput.value = '';
+                    console.log('Phone input cleared');
+                }
+                if (addressInput) {
+                    addressInput.value = '';
+                    console.log('Address input cleared');
+                }
+                if (address2Input) {
+                    address2Input.value = '';
+                    console.log('Address2 input cleared');
+                }
+                if (notesInput) {
+                    notesInput.value = '';
+                    console.log('Notes input cleared');
+                }
+
+                submitButton.disabled = false;
+                createAnotherButton.style.display = 'none';
+                if (successDiv) successDiv.style.display = 'none';
+            });
+        });
+    </script>
+</head>
+<body>
+<div th:insert="auth/navbar.html :: navbarfragment"></div>
+<div class="container">
+    <div class="alert alert-primary" role="alert">Customer</div>
+    <br>
+    <form id="customerForm" th:action="@{/customer/create?customJwtParameter=__${customJwtParameter}__}" th:object="${customer}" method="post">
+        <div class="alert alert-danger" role="alert" style="display: none;"></div>
+        <div id="successDiv" class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
+        <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
+        <div class="row" style="margin-bottom: 5px;">
+            <div class="col-md-4" style="margin-bottom: 5px;">
+                <label class="form-label required">Name</label>
+                <input type="text" name="name" th:field="*{name}" class="form-control" placeholder="name" aria-label="name">
+            </div>
+            <div class="col-md-4" style="margin-bottom: 5px;">
+                <label class="form-label">Email</label>
+                <input type="text" name="email" th:field="*{email}" class="form-control" placeholder="email" aria-label="email">
+            </div>
+            <div class="col-md-4" style="margin-bottom: 5px;">
+                <label class="form-label">Phone</label>
+                <input type="text" name="phone" th:field="*{phone}" class="form-control" placeholder="phone" aria-label="phone">
+            </div>
+            <div class="col-md-4" style="margin-bottom: 5px;">
+                <label class="form-label">Address</label>
+                <input type="text" name="address" th:field="*{address}" class="form-control" placeholder="address" aria-label="address">
+            </div>
+            <div class="col-md-4" style="margin-bottom: 5px;">
+                <label class="form-label">Address2</label>
+                <input type="text" name="address2" th:field="*{address2}" class="form-control" placeholder="address2" aria-label="address2">
+            </div>
+            <div class="col-md-4" style="margin-bottom: 5px;">
+                <label class="form-label">Notes</label>
+                <input type="text" name="notes" th:field="*{notes}" class="form-control" placeholder="description" aria-label="description">
+            </div>
+        </div>
+        <br>
+        <br>
+        <button id="customerSubmitButton" style="margin-top:5px;" type="submit" class="btn btn-primary">Submit</button>
+        <button id="createAnotherButton" style="margin-top:5px; display: none;" type="button" class="btn btn-secondary">Create Another Customer</button>
+    </form>
+    <br>
+    <br>
+    <div class="alert alert-primary" role="alert">Customers</div>
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Notes</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="customer, iStat : ${customerPage.content}"
+            th:style="${iStat.odd}? 'font-weight: bold;'"
+            th:alt-title="${iStat.even}? 'even' : 'odd'">
+            <td th:text="${customer.name}"></td>
+            <td th:text="${customer.notes}"></td>
+        </tr>
+        </tbody>
+    </table>
+    <nav th:if="${customerPage.totalPages > 0}">
+        <ul class="pagination">
+            <li class="page-item" th:each="pageNumber : ${pageNumbers}">
+                <a class="page-link" th:href="@{/customer?customJwtParameter=__${customJwtParameter}__&size=__${#lists.size(customerPage.content)}__&page=__${pageNumber}__}" th:text="${pageNumber}" th:classappend="${pageNumber==customerPage.number + 1} ? 'active'"></a>
+            </li>
+        </ul>
+    </nav>
+</div>
+</body>
+</html>
