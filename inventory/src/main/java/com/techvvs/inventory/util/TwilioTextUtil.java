@@ -45,7 +45,7 @@ public class TwilioTextUtil {
 
     public String sendDownloadLink(SystemUserDAO systemUserDAO, String linkandtoken, boolean isDev1) {
 
-        String message = "Download your file: "+linkandtoken;
+        String message = linkandtoken;
 
         if(!isDev1){
             send(systemUserDAO.getPhone(), message);
@@ -58,7 +58,7 @@ public class TwilioTextUtil {
 
     public String sendDownloadLinkCustomPhoneNumber(String phone, String linkandtoken, boolean isDev1) {
 
-        String message = "Download your file: "+linkandtoken;
+        String message = linkandtoken;
 
         if(!isDev1){
             send(phone, message);
