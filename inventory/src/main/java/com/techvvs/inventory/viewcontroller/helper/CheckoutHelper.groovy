@@ -9,6 +9,7 @@ import com.techvvs.inventory.model.CustomerVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.service.controllers.CartService
+import com.techvvs.inventory.service.transactional.CartDeleteService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -36,6 +37,9 @@ class CheckoutHelper {
 
     @Autowired
     CartService cartService
+
+    @Autowired
+    CartDeleteService cartDeleteService
 
 
     // method to get all customers from db
@@ -70,6 +74,7 @@ class CheckoutHelper {
     }
 
     int getCountOfProductInCartByBarcode(CartVO cartVO){
+        cartVO = cartDeleteService.refreshProductCartList(cartVO)
         int count = 0
         for(ProductVO productincart : cartVO.product_cart_list){
             if(productincart.barcode.equals(cartVO.barcode)){
@@ -163,24 +168,44 @@ class CheckoutHelper {
 
     }
 
-
     CartVO hydrateTransientQuantitiesForDisplay(CartVO cartVO){
-
+        Map<Integer, ProductVO> productMap = new HashMap<>();
         // cycle thru here and if the productid is the same then update the quantity
         ProductVO previous = new ProductVO(barcode: 0)
-        for(ProductVO productVO : cartVO.product_cart_list){
-            if(productVO.displayquantity == null){
-                productVO.displayquantity = 1
-            }
-            if(productVO.barcode == previous.barcode){
-                    productVO.displayquantity = productVO.displayquantity + 1
-            }
-            previous = productVO
-        }
+        for(ProductVO productincart : cartVO.product_cart_list){
 
+            if(productincart.displayquantity == null){
+                productincart.displayquantity = 1
+            } else {
+                productincart.displayquantity = productincart.displayquantity + 1
+            }
+
+            productMap.put(productincart.getProduct_id(), productincart)
+        }
+        cartVO.product_cart_list = new ArrayList<>(productMap.values());
         return cartVO
 
     }
+
+
+//    CartVO hydrateTransientQuantitiesForDisplay(CartVO cartVO){
+//        Map<Integer, ProductVO> productMap = new HashMap<>();
+//        // cycle thru here and if the productid is the same then update the quantity
+//        ProductVO previous = new ProductVO(barcode: 0)
+//        for(ProductVO productVO : cartVO.product_cart_list){
+//            if(productVO.displayquantity == null){
+//                productVO.displayquantity = 1
+//            }
+//            if(productVO.barcode == previous.barcode){
+//                    productVO.displayquantity = productVO.displayquantity + 1
+//            }
+//            productMap.put(productVO.getProduct_id(), productVO)
+//            previous = productVO
+//        }
+//        cartVO.product_cart_list = new ArrayList<>(productMap.values());
+//        return cartVO
+//
+//    }
 
     TransactionVO hydrateTransientQuantitiesForTransactionDisplay(TransactionVO transactionVO){
 

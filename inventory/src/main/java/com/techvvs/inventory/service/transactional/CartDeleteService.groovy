@@ -92,6 +92,9 @@ class CartDeleteService {
             if(cartVO.product_cart_list == null){
                 cartVO.product_cart_list = new ArrayList<ProductVO>()
             }
+
+            cartVO = refreshProductCartList(cartVO)
+
             // now save the cart side of the many to many
             cartVO.product_cart_list.add(savedProduct)
             cartVO.updateTimeStamp = LocalDateTime.now()
@@ -108,6 +111,19 @@ class CartDeleteService {
         return cartVO
     }
 
+
+
+    // because of how we handle quantities on the frontend, this is needed to refresh the list before saving
+    CartVO refreshProductCartList(CartVO cartVO){
+
+        if(cartVO.cartid == 0){
+            return cartVO
+        }
+
+         cartVO.product_cart_list = cartRepo.findById(cartVO.cartid).get().product_cart_list
+        return cartVO
+
+    }
 
 
 
