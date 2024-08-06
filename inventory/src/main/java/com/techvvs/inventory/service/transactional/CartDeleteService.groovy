@@ -1,9 +1,12 @@
 package com.techvvs.inventory.service.transactional
 
 import com.techvvs.inventory.jparepo.CartRepo
+import com.techvvs.inventory.jparepo.CustomerRepo
 import com.techvvs.inventory.jparepo.ProductRepo
 import com.techvvs.inventory.model.CartVO
+import com.techvvs.inventory.model.CustomerVO
 import com.techvvs.inventory.model.ProductVO
+import com.techvvs.inventory.service.controllers.CartService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.ui.Model
@@ -19,6 +22,12 @@ class CartDeleteService {
 
     @Autowired
     ProductRepo productRepo
+
+    @Autowired
+    CustomerRepo customerRepo
+
+    @Autowired
+    CartService cartService
 
     @Transactional
     CartVO deleteProductFromCart(CartVO cartVO, String barcode){
@@ -114,6 +123,7 @@ class CartDeleteService {
 
 
     // because of how we handle quantities on the frontend, this is needed to refresh the list before saving
+    @Transactional
     CartVO refreshProductCartList(CartVO cartVO){
 
         if(cartVO.cartid == 0){
@@ -125,6 +135,83 @@ class CartDeleteService {
 
     }
 
+
+    @Transactional
+    CartVO validateCartVO(CartVO cartVO, Model model){
+        if(cartVO?.customer?.customerid == null){
+            model.addAttribute("errorMessage","Please select a customer")
+        }
+        if(cartVO?.barcode == null || cartVO?.barcode?.empty){
+            model.addAttribute("errorMessage","Please enter a barcode")
+        } else {
+            // only run this database check if barcode is not null
+            Optional<ProductVO> productVO = doesProductExist(cartVO.barcode)
+            if(productVO.empty){
+                model.addAttribute("errorMessage","Product does not exist")
+            } else {
+                int cartcount = getCountOfProductInCartByBarcode(cartVO)
+                // check here if the quantity we are trying to add will exceed the quantity in stock
+                if(cartcount == productVO.get().quantity){
+                    model.addAttribute("errorMessage","Quantity exceeds quantity in stock")
+                }
+            }
+
+        }
+
+        return cartVO
+    }
+
+
+    @Transactional
+    int getCountOfProductInCartByBarcode(CartVO cartVO){
+        cartVO = refreshProductCartList(cartVO)
+        int count = 0
+        for(ProductVO productincart : cartVO.product_cart_list){
+            if(productincart.barcode.equals(cartVO.barcode)){
+                count = count + 1
+            }
+        }
+        return count
+    }
+
+
+    @Transactional
+    Optional<ProductVO> doesProductExist(String barcode){
+
+        Optional<ProductVO> existingproduct = productRepo.findByBarcode(barcode)
+        return existingproduct
+    }
+
+
+    @Transactional
+    CartVO saveCartIfNew(CartVO cartVO){
+
+        // need to check to make sure there isn't an existing transaction with the same customer and no objects
+        String barcode = cartVO.barcode
+
+        if((cartVO.cartid == 0 || cartVO.cartid == null
+                && cartVO == null || cartVO?.product_cart_list?.size() == 0)
+//        &&
+//                !doesTransactionExist(transactionVO.customervo, barcode) // dont think we need to do this
+                &&
+                !cartService.doesCartExist(cartVO)
+        ){
+
+            CustomerVO customerVO = customerRepo.findById(cartVO.customer.customerid).get()
+
+            cartVO.updateTimeStamp = LocalDateTime.now()
+            cartVO.createTimeStamp = LocalDateTime.now()
+            cartVO.isprocessed = 0
+            cartVO.setCustomer(customerVO)
+
+            cartVO = cartRepo.save(cartVO)
+            cartVO.barcode = barcode // need to re-bind this so that on first save it will not be null
+        }
+
+        // todo: handle case where a cart does exist
+
+        return cartVO
+    }
 
 
 

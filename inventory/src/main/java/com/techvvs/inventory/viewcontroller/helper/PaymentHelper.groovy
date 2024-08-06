@@ -11,6 +11,7 @@ import com.techvvs.inventory.model.PaymentVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.service.controllers.TransactionService
+import com.techvvs.inventory.service.transactional.CartDeleteService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -26,6 +27,9 @@ class PaymentHelper {
 
     @Autowired
     CheckoutHelper checkoutHelper
+
+    @Autowired
+    CartDeleteService cartDeleteService
 
     @Autowired
     PaymentRepo paymentRepo
@@ -173,11 +177,11 @@ class PaymentHelper {
             model.addAttribute("primaryMessage","Add a product to your cart")
         } else {
             // only run this database check if barcode is not null
-            Optional<ProductVO> productVO = checkoutHelper.doesProductExist(cartVO.barcode)
+            Optional<ProductVO> productVO = cartDeleteService.doesProductExist(cartVO.barcode)
             if(productVO.empty){
                 model.addAttribute("errorMessage","Product does not exist")
             } else {
-                int cartcount = checkoutHelper.getCountOfProductInCartByBarcode(cartVO)
+                int cartcount = cartDeleteService.getCountOfProductInCartByBarcode(cartVO)
                 // check here if the quantity we are trying to add will exceed the quantity in stock
                 if(cartcount >= productVO.get().quantityremaining){
                     model.addAttribute("errorMessage","Quantity exceeds quantity in stock")

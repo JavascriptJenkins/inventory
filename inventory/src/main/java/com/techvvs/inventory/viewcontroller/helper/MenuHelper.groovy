@@ -4,6 +4,7 @@ import com.techvvs.inventory.jparepo.MenuRepo
 import com.techvvs.inventory.model.CartVO
 import com.techvvs.inventory.model.MenuVO
 import com.techvvs.inventory.model.ProductVO
+import com.techvvs.inventory.service.transactional.CartDeleteService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -19,6 +20,9 @@ class MenuHelper {
 
     @Autowired
     CheckoutHelper checkoutHelper
+
+    @Autowired
+    CartDeleteService cartDeleteService
 
 
     void findMenus(Model model, Optional<Integer> page, Optional<Integer> size){
@@ -124,11 +128,11 @@ class MenuHelper {
             model.addAttribute("primaryMessage","Add a product to your cart")
         } else {
             // only run this database check if barcode is not null
-            Optional<ProductVO> productVO = checkoutHelper.doesProductExist(cartVO.barcode)
+            Optional<ProductVO> productVO = cartDeleteService.doesProductExist(cartVO.barcode)
             if(productVO.empty){
                 model.addAttribute("errorMessage","Product does not exist")
             } else {
-                int cartcount = checkoutHelper.getCountOfProductInCartByBarcode(cartVO)
+                int cartcount = cartDeleteService.getCountOfProductInCartByBarcode(cartVO)
                 // check here if the quantity we are trying to add will exceed the quantity in stock
                 if(cartcount >= productVO.get().quantityremaining){
                     model.addAttribute("errorMessage","Quantity exceeds quantity in stock")
@@ -148,11 +152,11 @@ class MenuHelper {
             model.addAttribute("primaryMessage","Add a product to your cart")
         } else {
             // only run this database check if barcode is not null
-            Optional<ProductVO> productVO = checkoutHelper.doesProductExist(cartVO.barcode)
+            Optional<ProductVO> productVO = cartDeleteService.doesProductExist(cartVO.barcode)
             if(productVO.empty){
                 model.addAttribute("errorMessage","Product does not exist")
             } else {
-                int cartcount = checkoutHelper.getCountOfProductInCartByBarcode(cartVO)
+                int cartcount = cartDeleteService.getCountOfProductInCartByBarcode(cartVO)
                 // check here if the quantity we are trying to add will exceed the quantity in stock
                 if(cartcount >= productVO.get().quantityremaining){
                     model.addAttribute("errorMessage","Quantity exceeds quantity in stock")

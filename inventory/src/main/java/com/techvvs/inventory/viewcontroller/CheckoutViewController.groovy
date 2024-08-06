@@ -155,13 +155,13 @@ public class CheckoutViewController {
 
         System.out.println("customJwtParam on checkout controller: "+customJwtParameter);
 
-        cartVO = checkoutHelper.validateCartVO(cartVO, model)
+        cartVO = cartDeleteService.validateCartVO(cartVO, model)
 
         // only proceed if there is no error
         if(model.getAttribute("errorMessage") == null){
             // save a new transaction object in database if we don't have one
 
-            cartVO = checkoutHelper.saveCartIfNew(cartVO)
+            cartVO = cartDeleteService.saveCartIfNew(cartVO)
 
             //  if the transactionVO comes back here without a
             // after transaction is created, search for the product based on barcode

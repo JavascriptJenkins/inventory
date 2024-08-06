@@ -148,7 +148,7 @@ public class MenuViewController {
         if(model.getAttribute("errorMessage") == null){
             // save a new transaction object in database if we don't have one
 
-            cartVO = checkoutHelper.saveCartIfNew(cartVO)
+            cartVO = cartDeleteService.saveCartIfNew(cartVO)
 
             if(cartVO.barcode != null && cartVO.barcode != ""){
                     // cartVO = cartService.searchForProductByBarcode(cartVO, model, page, size)
