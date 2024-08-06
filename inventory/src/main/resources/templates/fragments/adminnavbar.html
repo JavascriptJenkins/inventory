@@ -1,5 +1,5 @@
 
-<div th:fragment="navbarfragment">
+<div th:fragment="adminnavbarfragment">
     <script>
         function postLogout(){
             console.log("postLogout");
@@ -12,10 +12,6 @@
         <div class="container-fluid">
             <a th:if="${customJwtParameter != null}" class="navbar-brand" th:href="@{/dashboard/index?customJwtParameter=__${customJwtParameter}__}">Inventory TechVVS</a>
             <a th:if="${customJwtParameter == null}" class="navbar-brand" th:href="@{/login">Inventory TechVVS</a>
-<!--            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">-->
-<!--                <span class="navbar-toggler-icon"></span>-->
-<!--            </button>-->
-<!--            <div class="collapse navbar-collapse" id="navbarSupportedContent">-->
             <div id="navbarSupportedContent">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li th:if="${customJwtParameter == null}" class="nav-item">
@@ -25,33 +21,26 @@
                         <a class="nav-link active" aria-current="page" th:href="@{/dashboard/index?customJwtParameter=__${customJwtParameter}__}">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" th:href="@{/newbatch/searchBatch?customJwtParameter=__${customJwtParameter}__}">Search Batches</a>
+                        <a class="nav-link" th:href="@{/batchtype?customJwtParameter=__${customJwtParameter}__}">New Batch Type</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" th:href="@{/newbatch/browseBatch?customJwtParameter=__${customJwtParameter}__}">Browse Batches</a>
+                        <a class="nav-link" th:href="@{/producttype?customJwtParameter=__${customJwtParameter}__}">New Product Type</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" th:href="@{/product/searchProduct?customJwtParameter=__${customJwtParameter}__}">Search Products</a>
+                        <a class="nav-link" th:href="@{/product?customJwtParameter=__${customJwtParameter}__}">New Product</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" th:href="@{/product/browseProduct?customJwtParameter=__${customJwtParameter}__}">Browse Products</a>
+                        <a class="nav-link" th:href="@{/customer?customJwtParameter=__${customJwtParameter}__}">Customers</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" th:href="@{/admin?customJwtParameter=__${customJwtParameter}__}">Admin</a>
+                        <a class="nav-link" th:href="@{/newbatch?customJwtParameter=__${customJwtParameter}__}">New Batch</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" th:href="@{/checkout?customJwtParameter=__${customJwtParameter}__&cartid=0}">Checkout</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/checkout/pendingcarts?customJwtParameter=__${customJwtParameter}__}">Pending Carts</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/transaction/listall?customJwtParameter=__${customJwtParameter}__}">Transactions</a>
+                        <a class="nav-link" th:href="@{/newbatch/uploadxlsx?customJwtParameter=__${customJwtParameter}__}">Upload xlsx</a>
                     </li>
                     <li th:if="${customJwtParameter != null}" class="nav-item">
                         <a class="nav-link active" aria-current="page" href="javascript:{}" onclick="postLogout()">Logout</a>
                     </li>
-
                 </ul>
 
             </div>
