@@ -28,13 +28,35 @@
                 }
             });
 
-            $('#barcodeInput').on('input', function () {
-                var barcode = $(this).val();
-                if (barcode.length >= 11) {
-                    $(this).val(barcode.substring(0, 11));
-                    $('#barcodeForm').submit();
+<!--            $('#barcodeInput').on('input', function () {-->
+<!--                var barcode = $(this).val();-->
+<!--                if (barcode.length >= 11) {-->
+<!--                    $(this).val(barcode.substring(0, 11));-->
+<!--                    $('#barcodeForm').submit();-->
+<!--                }-->
+<!--            });-->
+
+                const inputField = document.getElementById('barcodeInput');
+
+                inputField.addEventListener('keydown', function(event) {
+                    // Check if Enter key is pressed
+                    if (event.key === 'Enter') {
+                        const scannedValue = inputField.value.trim();
+                        // Process the scanned value
+                        processBarcode(scannedValue);
+                        // Clear the input field
+                       // inputField.value = '';
+                    }
+                });
+
+
+                function processBarcode(scannedValue) {
+                  if (scannedValue.length >= 11) {
+                        $('#barcodeInput').val(scannedValue.substring(0, 11));
+                        //console.log(scannedValue.substring(0, 11));
+                        $('#barcodeForm').submit();
+                    }
                 }
-            });
 
             function focusInputAfterDelay(selector, delay) {
                 setTimeout(function() {
