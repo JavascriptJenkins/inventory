@@ -70,6 +70,13 @@
             padding: 10px;
             margin-bottom: 15px;
         }
+        .progress {
+            flex: 1;
+            margin-left: 20px;
+        }
+        .progress-bar {
+            background-color: #6c757d; /* Dark theme progress bar */
+        }
     </style>
 </head>
 <body>
@@ -86,23 +93,38 @@
             <h1><span th:text="${batch.name}"></span></h1>
             <p> <span th:text="${batch.batch_type_id.name}"></span> | <span th:text="${batch.batchnumber}"></span></p>
         </div>
+        <div class="progress">
+            <div id="progress-bar" class="progress-bar" role="progressbar"></div>
+        </div>
     </div>
 
     <div class="row mb-3">
         <div class="col-md-3">
-            <label class="form-label"><b>Total Indoor Units</b></label>
-            <div th:text="${totalIndoorQuantity}"> </div>
+            <label class="form-label"><b>Units</b></label>
+            <div id="quantitydivid" th:text="${quantity}"> </div>
         </div>
         <div class="col-md-3">
-            <label class="form-label"><b>Total Indoor Units Remaining</b></label>
-            <div th:text="${totalIndoorQuantityRemaining}"> </div>
+            <label class="form-label"><b>Units In Carts</b></label>
+            <div id="quantityremainingincartsid" th:text="${quantityRemainingInCarts}"> </div>
         </div>
         <div class="col-md-3">
-            <label class="form-label"><b>Value of Total Original Batch</b></label>
+            <label class="form-label"><b>Units In Non-Paid Transactions</b></label>
+            <div id="quantityremainingintransactionsid" th:text="${quantityInTransactions}"> </div>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label"><b>Units In Paid Transactions</b></label>
+            <div id="quantityremaininginpaidtransactionsid" th:text="${quantityInPaidTransactions}"> </div>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label"><b>Units Remaining</b></label>
+            <div th:text="${quantityRemaining}"> </div>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label"><b>Batch Value</b></label>
             <div th:text="${batchValueTotal}"> </div>
         </div>
         <div class="col-md-3">
-            <label class="form-label"><b>Value of Remaining Batch</b></label>
+            <label class="form-label"><b>Remaining Batch Value</b></label>
             <div th:text="${batchValueRemainingTotal}"> </div>
         </div>
     </div>
@@ -240,6 +262,37 @@
     </div>
 
 </div>
+
+<script>
+    $(document).ready(function() {
+        var quantity = parseFloat($("#quantitydivid").text());
+        var quantityRemainingInCarts = parseFloat($("#quantityremainingincartsid").text());
+        var quantityInTransactions = parseFloat($("#quantityremainingintransactionsid").text());
+        var quantityInPaidTransactions = parseFloat($("#quantityremaininginpaidtransactionsid").text());
+
+        // Debug: log the retrieved values
+        console.log("Quantity: " + quantity);
+        console.log("Quantity Remaining In Carts: " + quantityRemainingInCarts);
+        console.log("Quantity In Transactions: " + quantityInTransactions);
+        console.log("Quantity In Paid Transactions: " + quantityInPaidTransactions);
+
+        // Check if any value is NaN and handle it
+        if (isNaN(quantity) || isNaN(quantityRemainingInCarts) || isNaN(quantityInTransactions) || isNaN(quantityInPaidTransactions)) {
+            console.error("One or more values are NaN. Please check the data.");
+            return;
+        }
+
+        // we are calculating the percentage of units that have been paid for.
+        var totalProcessed = quantityInPaidTransactions;
+        var percentage = (totalProcessed / quantity) * 100;
+
+        // Debug: log the calculated percentage
+        console.log("Percentage: " + percentage);
+
+        $("#progress-bar").css("width", percentage + "%").attr("aria-valuenow", percentage);
+        $("#progress-bar").text(percentage.toFixed(2) + "%");
+    });
+</script>
 
 </body>
 </html>

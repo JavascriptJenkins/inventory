@@ -10,10 +10,12 @@ import com.techvvs.inventory.jparepo.SystemUserRepo
 import com.techvvs.inventory.labels.service.LabelPrintingService
 import com.techvvs.inventory.model.BatchTypeVO
 import com.techvvs.inventory.model.BatchVO
+import com.techvvs.inventory.model.CartVO
 import com.techvvs.inventory.model.PaymentVO
 import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.SystemUserDAO
+import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.modelnonpersist.FileVO
 import com.techvvs.inventory.qrcode.QrCodeService
 import com.techvvs.inventory.util.TechvvsFileHelper
@@ -196,18 +198,16 @@ class BatchControllerHelper {
 
     void calculateStaticPageData(Model model, BatchVO batchVO){
 
-        // todo: map these id's better?
-        int INDOOR_PRODUCT_TYPE_ID = 35;
-        int totalIndoorQuantityRemaining = 0;
-        int totalIndoorQuantity = 0;
+        int quantityRemaining = 0;
+        int quantity = 0;
         Double batchValueTotal = 0;
         Double batchValueRemainingTotal = 0;
-        int totalCartQuantityRemaining = 0;
-        int totalEdibleQuantityRemaining = 0;
+        int quantityRemainingInCarts = 0;
+        int quantityInTransactions = 0;
+        int quantityInPaidTransactions = 0;
+
         for(ProductVO productVO : batchVO.product_set){
 
-            // todo: move this to database inserts instead
-            // this is assuming quantity is not boxes of product but individual products
             if(productVO.price == null){
                 productVO.price = 0.00
             }
@@ -220,24 +220,35 @@ class BatchControllerHelper {
                 productVO.quantityremaining = 0
             }
 
+            // cycle thru each cart the product is associated with and count the instances
+            for(CartVO cartVO : productVO.cart_list){
+                for(ProductVO cartProductVO : cartVO.product_cart_list){
+                    quantityRemainingInCarts = productVO.product_id == cartProductVO.product_id ? quantityRemainingInCarts + 1 : quantityRemainingInCarts
+                }
+            }
 
-            // calculate indoor quantity
-            if(INDOOR_PRODUCT_TYPE_ID == productVO.producttypeid.producttypeid){
-                totalIndoorQuantityRemaining = productVO.quantity + totalIndoorQuantityRemaining
-                totalIndoorQuantity = productVO.quantityremaining + totalIndoorQuantity
+            for(TransactionVO transactionVO : productVO.transaction_list){
+                for(ProductVO transactionProductVO : transactionVO.product_list){
+                    quantityInTransactions = (productVO.product_id == transactionProductVO.product_id && transactionVO.paid < transactionVO.totalwithtax) ? quantityInTransactions + 1 : quantityInTransactions
+                    quantityInPaidTransactions = (productVO.product_id == transactionProductVO.product_id && transactionVO.paid >= transactionVO.totalwithtax) ? quantityInPaidTransactions + 1 : quantityInPaidTransactions
+                }
             }
 
 
-            batchValueTotal = (Double.valueOf(productVO?.cost) * Integer.valueOf(productVO.quantity)) + batchValueTotal
-            batchValueRemainingTotal = (Double.valueOf(productVO.cost) * productVO.quantityremaining) + batchValueRemainingTotal
+            quantityRemaining = productVO.quantityremaining + quantityRemaining
+            quantity = productVO.quantity + quantity
+            batchValueTotal = (Double.valueOf(productVO?.price) * Integer.valueOf(productVO.quantity)) + batchValueTotal
+            batchValueRemainingTotal = (Double.valueOf(productVO.price) * productVO.quantityremaining) + batchValueRemainingTotal
         }
 
 
-        model.addAttribute("totalIndoorQuantity", totalIndoorQuantity)
-        model.addAttribute("totalIndoorQuantityRemaining", totalIndoorQuantityRemaining)
+        model.addAttribute("quantity", quantity)
+        model.addAttribute("quantityRemaining", quantityRemaining)
+        model.addAttribute("quantityRemainingInCarts", quantityRemainingInCarts)
+        model.addAttribute("quantityInTransactions", quantityInTransactions)
+        model.addAttribute("quantityInPaidTransactions", quantityInPaidTransactions)
         model.addAttribute("batchValueTotal", batchValueTotal)
         model.addAttribute("batchValueRemainingTotal", batchValueRemainingTotal)
-
     }
 
 
