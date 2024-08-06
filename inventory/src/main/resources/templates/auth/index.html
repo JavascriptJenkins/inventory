@@ -3,57 +3,46 @@
 <head>
     <title>Home</title>
 
-    <script
-            src="https://code.jquery.com/jquery-3.6.0.js"
-            integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="
-            crossorigin="anonymous"></script>
-
-
-<!--    **&lt;!&ndash; CSS only &ndash;&gt;**-->
-<!--    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-uWxY/CJNBR+1zjPWmfnSnVxwRheevXITnMqoEIeG1LJrdI0GlVs/9cVSyPYXdcSF" crossorigin="anonymous">-->
-
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-
-    <!-- JavaScript Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-kQtW33rZJAHjgefvhyyzcGF3C5TFyBQBA13V1RKPf4uH+bwyzQxZ6CmMZHmNBEfJ" crossorigin="anonymous"></script>
-
-
     <link rel="stylesheet" type="text/css" media="all" href="/css/table.css" th:href="@{/css/table.css}" />
-    <!-- Bootstrap Font Icon CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
 
-
-    <script>
-        function vote(vote,id){
-            console.log(vote);
-
-
-            $("#voteInput").val(vote);
-            $("#voteInputID").val(id);
-
-
-
+    <style>
+        .table-hover tbody tr:hover {
+            background-color: #e0f7fa;
         }
-    </script>
-
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: #f1f8fa;
+        }
+        .table-lightblue thead {
+            background-color: #b3e5fc; /* Light blue header */
+            color: #000; /* Black text */
+        }
+        .btn-custom {
+            color: #fff;
+            background-color: #29b6f6; /* Light blue */
+            border-color: #29b6f6;
+        }
+        .btn-custom:hover {
+            background-color: #0288d1; /* Darker blue for hover effect */
+            border-color: #0288d1;
+        }
+    </style>
 </head>
 <body>
 
-
 <div th:insert="auth/navbar.html :: navbarfragment"> </div>
-
-<!--<div th:insert="table.html :: tablefragment" th:with="newWorker=${newWorkerValue}"> </div>-->
 
 <div class="container">
 
     <br>
-    <div class="alert alert-info" role="alert" >Welcome to Inventory VVS. Select a Menu option to get started. </div>
+    <div class="alert alert-info" role="alert">Welcome to <b>Inventory VVS.</b> Select a Menu option to get started. </div>
 
-
-    <table class="table" border="1">
+    <table class="table table-hover table-striped table-lightblue">
         <thead>
         <tr>
-            <th scope="col">#</th>
             <th scope="col">Menu ID</th>
             <th scope="col">Menu Name</th>
         </tr>
@@ -62,27 +51,30 @@
         <tr th:each="menu, iStat : ${menuPage.content}"
             th:style="${iStat.odd}? 'font-weight: bold;'"
             th:alt-title="${iStat.even}? 'even' : 'odd'">
-
-            <td th:text="${menu.menuid}"></td>
-            <td><a th:href="@{/menu?menuid=__${menu.menuid}__&cartid=0&customJwtParameter=__${customJwtParameter}__}" th:text="${menu.menuid}"></a></td>
+            <td>
+                <a th:href="@{/menu?menuid=__${menu.menuid}__&cartid=0&customJwtParameter=__${customJwtParameter}__}"
+                   th:text="${menu.menuid}"
+                   class="btn btn-custom btn-sm">
+                </a>
+            </td>
             <td th:text="${menu.name}"></td>
-
         </tr>
-
-
         </tbody>
     </table>
-    <div th:if="${menuPage.totalPages > 0}" class="pagination"
-         th:each="pageNumber : ${pageNumbers}">
-        <a th:href="@{/menu?customJwtParameter=__${customJwtParameter}__&size=__${#lists.size(menuPage.content)}__&page=__${pageNumber}__}"
-           th:text=${pageNumber}
-           th:class="${pageNumber==menuPage.number + 1} ? active"></a>
-    </div>
 
+    <nav th:if="${menuPage.totalPages > 0}">
+        <ul class="pagination">
+            <li class="page-item" th:each="pageNumber : ${pageNumbers}">
+                <a class="page-link"
+                   th:href="@{/menu?customJwtParameter=__${customJwtParameter}__&size=__${#lists.size(menuPage.content)}__&page=__${pageNumber}__}"
+                   th:text="${pageNumber}"
+                   th:classappend="${pageNumber==menuPage.number + 1} ? 'active'">
+                </a>
+            </li>
+        </ul>
+    </nav>
 
 </div>
-
-
 
 </body>
 </html>
