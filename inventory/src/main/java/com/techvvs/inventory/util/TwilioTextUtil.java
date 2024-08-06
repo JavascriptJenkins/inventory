@@ -14,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -158,7 +160,7 @@ public class TwilioTextUtil {
             // only send the text message after everything else went smoothly
             // todo : check result of this
             if(!isDev1){
-                result = sendDownloadLink(systemUserDAO, "http://localhost:8080/file/smsdownload?customJwtParameter="+cellphonetoken+"&filename="+filename, isDev1);
+                result = sendDownloadLink(systemUserDAO, encodeStringForURL("http://localhost:8080/file/smsdownload?customJwtParameter="+cellphonetoken+"&filename="+filename), isDev1);
             } else {
                 result = "success"; // set it to success if we are in dev1 and skipped sending the validation text
                 System.out.println("Did NOT send validation text because we in dev1");
@@ -187,7 +189,7 @@ public class TwilioTextUtil {
         } finally{
             // only send the text message after everything else went smoothly
             if(!isDev1){
-                result = sendDownloadLinkCustomPhoneNumber(phonenumber, "http://localhost:8080/file/smsdownload?customJwtParameter="+cellphonetoken+"&filename="+filename, isDev1);
+                result = sendDownloadLinkCustomPhoneNumber(phonenumber, encodeStringForURL("http://localhost:8080/file/smsdownload?customJwtParameter="+cellphonetoken+"&filename="+filename), isDev1);
             } else {
                 result = "success"; // set it to success if we are in dev1 and skipped sending the validation text
                 System.out.println("Did NOT send validation text because we in dev1");
@@ -196,5 +198,18 @@ public class TwilioTextUtil {
         }
 
         return "success";
+    }
+
+
+    public static String encodeStringForURL(String input) {
+        try {
+            // Encode the input string using UTF-8 encoding
+            String encodedString = URLEncoder.encode(input, "UTF-8");
+            return encodedString;
+        } catch (UnsupportedEncodingException e) {
+            // Handle the exception if UTF-8 encoding is not supported
+            e.printStackTrace();
+            return null;
+        }
     }
 }
