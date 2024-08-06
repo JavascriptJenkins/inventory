@@ -48,31 +48,32 @@
             focusInputAfterDelay('#barcodeInput', 100);
 
 
-            processTableItems();
+            setTimeout(processTableItems, 200);
+
 
         });
 
 
 
 
-function processTableItems() {
-    const seenBarcodes = new Set();
+        function processTableItems() {
+            const seenBarcodes = new Set();
 
-    $('#barcodeForm tbody tr').each(function() {
-        const itemBarcode = $(this).data('barcode'); // Assuming you have data-barcode attribute in your <tr> elements
+            $('#barcodeForm tbody tr').each(function() {
+                const itemBarcode = $(this).data('barcode'); // Assuming you have data-barcode attribute in your <tr> elements
 
-        if (seenBarcodes.has(itemBarcode)) {
-<!--            $(this).hide(); // Hide the row if the barcode is already seen-->
-                $(this).remove(); // Delete the row if the barcode is already seen
+                if (seenBarcodes.has(itemBarcode)) {
+        <!--            $(this).hide(); // Hide the row if the barcode is already seen-->
+                        $(this).remove(); // Delete the row if the barcode is already seen
 
-        } else {
-            seenBarcodes.add(itemBarcode);
-            $(this).show(); // Ensure the row is visible (in case it was hidden previously)
+                } else {
+                    seenBarcodes.add(itemBarcode);
+                    $(this).show(); // Ensure the row is visible (in case it was hidden previously)
+                }
+            });
+
+            console.log(Array.from(seenBarcodes)); // This will log the unique barcodes
         }
-    });
-
-    console.log(Array.from(seenBarcodes)); // This will log the unique barcodes
-}
 
 
     </script>

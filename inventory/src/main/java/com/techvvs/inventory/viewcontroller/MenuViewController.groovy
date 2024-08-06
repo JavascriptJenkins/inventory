@@ -16,6 +16,7 @@ import com.techvvs.inventory.modelnonpersist.FileVO
 import com.techvvs.inventory.printers.PrinterService
 import com.techvvs.inventory.service.controllers.CartService
 import com.techvvs.inventory.service.controllers.TransactionService
+import com.techvvs.inventory.service.transactional.CartDeleteService
 import com.techvvs.inventory.util.TechvvsFileHelper
 import com.techvvs.inventory.validation.ValidateBatch
 import com.techvvs.inventory.viewcontroller.helper.BatchControllerHelper
@@ -78,6 +79,9 @@ public class MenuViewController {
     CheckoutHelper checkoutHelper
 
     @Autowired
+    CartDeleteService cartDeleteService
+
+    @Autowired
     MenuHelper menuHelper
 
     @Autowired
@@ -125,6 +129,7 @@ public class MenuViewController {
     }
 
 
+    // todo: make this so that the quantity is taking off the display amount instead of relying on the product cart list
     @PostMapping("/scan")
     String scan(@ModelAttribute( "cart" ) CartVO cartVO,
                 Model model,
@@ -139,9 +144,6 @@ public class MenuViewController {
 
         String menuid = cartVO.menuid
 
-
-        MenuVO menuVO = menuHelper.loadMenu(menuid, model)
-
         // only proceed if there is no error
         if(model.getAttribute("errorMessage") == null){
             // save a new transaction object in database if we don't have one
@@ -149,7 +151,8 @@ public class MenuViewController {
             cartVO = checkoutHelper.saveCartIfNew(cartVO)
 
             if(cartVO.barcode != null && cartVO.barcode != ""){
-                     cartVO = cartService.searchForProductByBarcode(cartVO, model, page, size)
+                    // cartVO = cartService.searchForProductByBarcode(cartVO, model, page, size)
+                cartVO = cartDeleteService.searchForProductByBarcode(cartVO, model, page, size)
             }
 
 

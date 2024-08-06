@@ -166,12 +166,15 @@ public class CheckoutViewController {
             //  if the transactionVO comes back here without a
             // after transaction is created, search for the product based on barcode
 
-            cartVO = cartService.searchForProductByBarcode(cartVO, model, page, size)
+           // cartVO = cartService.searchForProductByBarcode(cartVO, model, page, size)
+            cartVO = cartDeleteService.searchForProductByBarcode(cartVO, model, page, size)
 
 
         }
 
         cartVO = checkoutHelper.hydrateTransientQuantitiesForDisplay(cartVO)
+
+
 
         cartVO.barcode = "" // reset barcode to empty
 //
