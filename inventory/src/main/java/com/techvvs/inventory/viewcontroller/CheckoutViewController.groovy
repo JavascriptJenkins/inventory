@@ -17,6 +17,7 @@ import com.techvvs.inventory.printers.PrinterService
 import com.techvvs.inventory.service.controllers.CartService
 import com.techvvs.inventory.service.controllers.TransactionService
 import com.techvvs.inventory.service.paging.FilePagingService
+import com.techvvs.inventory.service.transactional.CartDeleteService
 import com.techvvs.inventory.util.TechvvsFileHelper
 import com.techvvs.inventory.validation.ValidateBatch
 import com.techvvs.inventory.viewcontroller.helper.BatchControllerHelper
@@ -41,6 +42,8 @@ import java.time.LocalDateTime
 @Controller
 public class CheckoutViewController {
 
+    @Autowired
+    CartDeleteService cartDeleteService
 
     @Autowired
     AppConstants appConstants
@@ -196,7 +199,7 @@ public class CheckoutViewController {
 
         CartVO cartVO = checkoutHelper.getExistingCart(cartid)
 
-        cartVO = checkoutHelper.deleteProductFromCart(cartVO, barcode)
+        cartVO = cartDeleteService.deleteProductFromCart(cartVO, barcode)
 
         cartVO = checkoutHelper.hydrateTransientQuantitiesForDisplay(cartVO)
 
