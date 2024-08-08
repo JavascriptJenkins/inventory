@@ -93,14 +93,14 @@ public class AuthViewController {
 
     //error page displayed when nobody is logged in
     @PostMapping("/logout")
-    String logout(Model model, @RequestParam("customJwtParameter") String token, @ModelAttribute("systemuser") SystemUserDAO systemUserDAO) {
+    String logout(Model model, @ModelAttribute("systemuser") SystemUserDAO systemUserDAO) {
 
 
         model.addAttribute("customJwtParameter", "");
         SecurityContextHolder.getContext().setAuthentication(null); // clear the internal auth
         SecurityContextHolder.clearContext();
         model.addAttribute("systemuser", new SystemUserDAO());
-        return "auth/auth.html";
+        return "public/logoutsuccess.html";
     }
 
     @GetMapping("/createaccount")
