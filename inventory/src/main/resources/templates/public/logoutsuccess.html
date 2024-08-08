@@ -94,40 +94,10 @@
 
 <div class="container my-5">
     <div class="header-dark">
-        <h1 class="display-4"><span th:text="${product.name}"></span></h1>
-        <a th:href="'https://www.leafly.com/search?q=' + ${product.name}" class="leafly-button">
-            <i class="bi bi-box-arrow-up-right"></i> Leafly
+        <h1 class="display-4"><span>Logged Out</span></h1>
+        <a th:href="@{/login}" class="leafly-button">
+            <i class="bi bi-box-arrow-up-right"></i> Login
         </a>
-    </div>
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <table class="table table-hover table-striped table-dark table-bordered">
-                <thead>
-                <tr>
-                    <th>QR Info</th>
-                    <th></th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr>
-                    <td>Product Name</td>
-                    <td th:text="${product.name}"></td>
-                </tr>
-                <tr>
-                    <td>Description</td>
-                    <td th:text="${product.description}"></td>
-                </tr>
-                <tr>
-                    <td>Notes</td>
-                    <td th:text="${product.notes}"></td>
-                </tr>
-                <tr>
-                    <td>Barcode</td>
-                    <td th:text="${product.barcode}"></td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
     </div>
 </div>
 

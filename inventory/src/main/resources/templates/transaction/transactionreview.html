@@ -158,6 +158,46 @@
             });
         }
     </script>
+
+
+    <script>
+        function openPopup(type) {
+        let userInput = prompt(`Please enter your ${type === 'text' ? 'phone number (10 digits)' : 'email address'}`);
+        if (userInput) {
+            if (type === 'text') {
+                if (/^\d{10}$/.test(userInput)) {
+                    document.getElementById('phonenumber').value = userInput;
+                    document.getElementById('action').value = "text";
+                    document.getElementById('textoremailInvoiceForm').submit();
+                } else {
+                    alert('Invalid phone number. Please enter a 10 digit number.');
+                }
+            } else if (type === 'email') {
+                if (/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(userInput) && userInput.length >= 4) {
+                    document.getElementById('email').value = userInput;
+                    document.getElementById('action').value = "email";
+                    document.getElementById('textoremailInvoiceForm').submit();
+                } else {
+                    alert('Invalid email address. Please enter a valid email.');
+                }
+            }
+        }
+    }
+    function setTextInvoice() {
+                event.preventDefault();
+
+        document.getElementById('action').value = "text";
+        openPopup('text');
+    }
+    function setEmailInvoice() {
+                event.preventDefault();
+
+        document.getElementById('action').value = "email";
+        openPopup('email');
+
+    }
+    </script>
+
 </head>
 <body>
 <div th:insert="auth/navbar.html :: navbarfragment"> </div>
