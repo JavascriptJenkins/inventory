@@ -26,12 +26,12 @@
             background-color: #343a40;
             color: #fff;
         }
-        .btn-secondary, .btn-primary {
+        .btn-secondary, .btn-primary, .btn-dark-theme {
             color: #fff;
             background-color: #343a40;
             border-color: #343a40;
         }
-        .btn-secondary:hover, .btn-primary:hover {
+        .btn-secondary:hover, .btn-primary:hover, .btn-dark-theme:hover {
             background-color: #23272b;
             border-color: #1d2124;
         }
@@ -150,6 +150,9 @@
         .price-class {
             color: #000;  /* Changed to black */
         }
+        .customer-name {
+            color: #000;  /* Black color for customer name */
+        }
     </style>
 
     <script>
@@ -193,6 +196,15 @@
                     $('#submitTransactionForm button').prop('disabled', false);
                 }
             });
+
+            // Disable the review cart button if there are no rows in the table
+            const reviewCartButton = $('#submitTransactionForm button');
+            const tableRows = $('#barcodeForm tbody tr');
+            if (tableRows.length === 0) {
+                reviewCartButton.prop('disabled', true);
+            } else {
+                reviewCartButton.prop('disabled', false);
+            }
         });
 
         function deleteItemFromCart(element) {
@@ -232,14 +244,13 @@
             <div class="col-md-8">
                 <div class="row" style="margin-bottom: 5px;">
                     <div class="col-md-6" style="margin-bottom: 5px;">
-
                         <input id="barcodeInput" type="text" th:field="*{barcode}" class="form-control" placeholder="barcode" aria-label="barcode">
                     </div>
                 </div>
                 <div class="row" style="margin-bottom: 5px;">
                     <div class="col-md-6" style="margin-bottom: 5px;">
                         <div th:if="${cart.cartid}">
-                            <p th:each="customer : ${customers}" th:if="${customer.customerid == cart.customer.customerid}" th:text="${customer.name}">Customer Name</p>
+                            <p th:each="customer : ${customers}" th:if="${customer.customerid == cart.customer.customerid}" th:text="${customer.name}" class="customer-name">Customer Name</p>
                             <input type="hidden" th:field="*{customer.customerid}">
                         </div>
                         <div th:if="${cart.cartid == 0}">
@@ -296,7 +307,7 @@
     <form id="submitTransactionForm" th:action="@{/checkout/reviewcart?customJwtParameter=__${customJwtParameter}__&cartid=__${cart.cartid != null ? cart.cartid : '0'}__}" th:object="${cart}" method="post">
         <input type="hidden" th:field="*{product_cart_list}">
         <input type="hidden" th:field="*{customer.customerid}">
-        <button style="margin-top: 5px;" type="submit" class="btn btn-primary">Review Cart</button>
+        <button style="margin-top: 5px;" type="submit" class="btn btn-dark-theme">Review Cart</button>
     </form>
 
 </div>
