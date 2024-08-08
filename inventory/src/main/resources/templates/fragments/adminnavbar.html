@@ -38,6 +38,15 @@
                     <li class="nav-item">
                         <a class="nav-link" th:href="@{/newbatch/uploadxlsx?customJwtParameter=__${customJwtParameter}__}">Upload xlsx</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/product/searchProduct?customJwtParameter=__${customJwtParameter}__}">Search Products</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/newbatch/searchBatch?customJwtParameter=__${customJwtParameter}__}">Search Batches</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/product/browseProduct?customJwtParameter=__${customJwtParameter}__}">Browse Products</a>
+                    </li>
                     <li th:if="${customJwtParameter != null}" class="nav-item">
                         <a class="nav-link active" aria-current="page" href="javascript:{}" onclick="postLogout()">Logout</a>
                     </li>

@@ -2,149 +2,186 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Transaction</title>
+    <title>Transaction Review</title>
 
-
-    <script
-            src="https://code.jquery.com/jquery-3.6.0.js"
-            integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="
-            crossorigin="anonymous"></script>
-
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    <!-- JavaScript Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-kQtW33rZJAHjgefvhyyzcGF3C5TFyBQBA13V1RKPf4uH+bwyzQxZ6CmMZHmNBEfJ" crossorigin="anonymous"></script>
-
-
     <link rel="stylesheet" type="text/css" media="all" href="/css/table.css" th:href="@{/css/table.css}" />
-    <!-- Bootstrap Font Icon CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 
     <style>
-      .required:after {
-        content:" *";
-        color: red;
-      }
+        body {
+            color: #fff;
+            font-family: 'Roboto', sans-serif;
+        }
+        .table-hover tbody tr:hover {
+            background-color: #e0f7fa;
+        }
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: #f1f8fa;
+        }
+        .table-dark thead {
+            background-color: #343a40;
+            color: #fff;
+        }
+        .btn-secondary, .btn-primary {
+            color: #fff;
+            background-color: #343a40;
+            border-color: #343a40;
+        }
+        .btn-secondary:hover, .btn-primary:hover {
+            background-color: #23272b;
+            border-color: #1d2124;
+        }
+        .form-control, .form-select {
+            background-color: #343a40;
+            color: #fff;
+            border: 1px solid #343a40;
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: #343a40;
+            color: #fff;
+            border-color: #1d2124;
+            box-shadow: none;
+        }
+        .header-dark {
+            background-color: #343a40;
+            color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-family: 'Roboto', sans-serif;
+            border: 1px solid transparent;
+            border-image: linear-gradient(to right, #c0c0c0, #ffffff);
+            border-image-slice: 1;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+        }
+        .header-small {
+            background-color: #343a40;
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-family: 'Roboto', sans-serif;
+            border: 1px solid transparent;
+            border-image: linear-gradient(to right, #c0c0c0, #ffffff);
+            border-image-slice: 1;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: fit-content;
+            max-width: 400px;
+            margin: 0 auto 15px auto;
+            text-align: center;
+        }
+        .back-button {
+            margin-right: 20px;
+            font-size: 2rem;
+        }
+        .back-button a {
+            color: #343a40;
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 50%;
+            border: 2px solid #343a40;
+        }
+        .back-button a:hover {
+            background-color: #23272b;
+            color: #fff;
+            border-color: #23272b;
+        }
+        .alert {
+            background-color: #343a40;
+            color: #fff;
+            border: 1px solid #343a40;
+        }
+        .alert-danger {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+        .alert-success {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+        .alert-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .pagination .page-link {
+            color: #fff;  /* Changed to white */
+            background-color: #343a40;
+            border: 1px solid #343a40;
+        }
+        .pagination .page-link:hover {
+            background-color: #23272b;
+            border-color: #1d2124;
+        }
+        .pagination .active .page-link {
+            color: #fff;
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .required:after {
+            content: " *";
+            color: red;
+        }
+        .form-label {
+            color: #000;  /* Changed to black */
+        }
     </style>
 
     <script>
-
-
-
-        $(document).ready(function () {
-
-
-            processTableItems();
-
+        $(document).ready(function() {
+            $('#barcodeInput').focus();
         });
 
+        $('#barcodeInput').on('input', function() {
+            var barcode = $(this).val();
+            if (barcode.length >= 11) {
+                $(this).val(barcode.substring(0, 11));
+                $('#barcodeForm').submit();
+            }
+        });
 
         function processTableItems() {
             const seenBarcodes = new Set();
-
             $('#transactionReviewForm tbody tr').each(function() {
-                const itemBarcode = $(this).data('barcode'); // Assuming you have data-barcode attribute in your <tr> elements
-
+                const itemBarcode = $(this).data('barcode');
                 if (seenBarcodes.has(itemBarcode)) {
-                    $(this).hide(); // Hide the row if the barcode is already seen
+                    $(this).hide();
                 } else {
                     seenBarcodes.add(itemBarcode);
-                    $(this).show(); // Ensure the row is visible (in case it was hidden previously)
+                    $(this).show();
                 }
             });
-
-            console.log(Array.from(seenBarcodes)); // This will log the unique barcodes
         }
-
-    </script>
-
-    <script>
-        // this function works but we are not using right now.
-        function openDownloadWindow(button) {
-            const filename = button.getAttribute('data-filename');
-            const customJwtParameter = button.getAttribute('data-jwt');
-            const directory = button.getAttribute('data-directory');
-            const transactionid = button.getAttribute('data-transactionid');
-            const url = `/file/invoice/download?filename=${encodeURIComponent(filename)}&customJwtParameter=${encodeURIComponent(customJwtParameter)}&directory=${encodeURIComponent(directory)}&transactionid=${encodeURIComponent(transactionid)}`;
-            window.open(url, '_blank', 'width=600,height=400');
-        }
-    </script>
-
-<!--    <script>-->
-<!--        function openDownloadWindow(button) {-->
-<!--            const filename = button.getAttribute('data-filename');-->
-<!--            const customJwtParameter = button.getAttribute('data-jwt');-->
-<!--            const directory = button.getAttribute('data-directory');-->
-<!--            const transactionid = button.getAttribute('data-transactionid');-->
-<!--            const url = `/file/invoice/download?filename=${encodeURIComponent(filename)}&customJwtParameter=${encodeURIComponent(customJwtParameter)}&directory=${encodeURIComponent(directory)}&transactionid=${encodeURIComponent(transactionid)}`;-->
-<!--            window.open(url, '_blank', 'width=600,height=400');-->
-<!--        }-->
-<!--    </script>-->
-
-    <script>
-    function openPopup(type) {
-    let userInput = prompt(`Please enter your ${type === 'text' ? 'phone number (10 digits)' : 'email address'}`);
-    if (userInput) {
-        if (type === 'text') {
-            if (/^\d{10}$/.test(userInput)) {
-                document.getElementById('phonenumber').value = userInput;
-                document.getElementById('action').value = "text";
-                document.getElementById('textoremailInvoiceForm').submit();
-            } else {
-                alert('Invalid phone number. Please enter a 10 digit number.');
-            }
-        } else if (type === 'email') {
-            if (/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(userInput) && userInput.length >= 4) {
-                document.getElementById('email').value = userInput;
-                document.getElementById('action').value = "email";
-                document.getElementById('textoremailInvoiceForm').submit();
-            } else {
-                alert('Invalid email address. Please enter a valid email.');
-            }
-        }
-    }
-}
-function setTextInvoice() {
-            event.preventDefault();
-
-    document.getElementById('action').value = "text";
-    openPopup('text');
-}
-function setEmailInvoice() {
-            event.preventDefault();
-
-    document.getElementById('action').value = "email";
-    openPopup('email');
-
-}
     </script>
 </head>
 <body>
-
-
-
 <div th:insert="auth/navbar.html :: navbarfragment"> </div>
 
-
 <div class="container">
-
-
-    <div class="alert alert-primary" role="alert" >Review Transaction</div>
+    <div class="header-dark">
+        <div class="back-button">
+            <a th:href="@{/transaction/listall?customJwtParameter=__${customJwtParameter}__}"><i class="bi bi-arrow-left-circle"></i></a>
+        </div>
+        <div>
+            <h1>Transaction Review</h1>
+            <p>Reviewing Transaction ID: <span th:text="${transaction.transactionid}"></span></p>
+            <p>Customer: <span th:text="${transaction.customervo.name}"></span></p>
+            <p>Amount remaining to pay: <span th:text="${transaction.totalwithtax - (transaction.paid == null ? 0.0 : transaction.paid)}"></span></p>
+        </div>
+    </div>
     <br>
-    <div style="margin-top: 20px" class="alert alert-info" role="alert">Reviewing Transaction ID: <span th:text="${transaction.transactionid}"></span></div>
-    <div style="margin-top: 20px" class="alert alert-info" role="alert">Customer: <span th:text="${transaction.customervo.name}"></span></div>
-    <div style="margin-top: 20px" class="alert alert-info" role="alert">Amount remaining to pay: <span th:text="${transaction.totalwithtax - (transaction.paid == null ? 0.0 : transaction.paid)}"></span></div>
-
 
     <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
     <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
 
-
-    <!--    One form for passing back the barcode on every scan and updating the transaction in db -->
     <form id="transactionReviewForm" th:action="@{/checkout/printreceipt?customJwtParameter=__${customJwtParameter}__&size=5&page=1}" th:object="${transaction}" method="post" class="d-inline">
-
-        <!-- Table Section -->
         <div style="overflow-x: auto;">
-            <table class="table table-striped table-bordered">
+            <table class="table table-hover table-striped table-dark table-bordered">
                 <thead>
                 <tr>
                     <th>Item</th>
@@ -161,21 +198,14 @@ function setEmailInvoice() {
                 </tbody>
             </table>
         </div>
-
         <input type="hidden" th:field="*{transactionid}">
         <button style="margin-top:5px;" type="submit" class="btn btn-primary">Print Receipt</button>
-
-
     </form>
 
-
-    <!--    One form for passing back the barcode on every scan and updating the transaction in db -->
     <form id="printInvoiceForm" th:action="@{/checkout/printinvoice?customJwtParameter=__${customJwtParameter}__&size=5&page=1}" th:object="${transaction}" method="post" class="d-inline">
         <input type="hidden" th:field="*{transactionid}">
         <button style="margin-top:5px;" type="submit" class="btn btn-primary">Print Invoice</button>
     </form>
-
-
 
     <div class="d-inline">
         <a th:href="@{/payment?transactionid=__${transaction.transactionid}__&customJwtParameter=__${customJwtParameter}__}" class="btn btn-primary" style="margin-top:5px;">Submit A Payment</a>
@@ -185,37 +215,25 @@ function setEmailInvoice() {
         <a th:href="@{/transaction/return?transactionid=__${transaction.transactionid}__&customJwtParameter=__${customJwtParameter}__}" class="btn btn-warning" style="margin-top:5px;float: right;">Return Product</a>
     </div>
 
-
     <form id="textoremailInvoiceForm" th:action="@{/checkout/textemailinvoice?customJwtParameter=__${customJwtParameter}__&size=5&page=1}" th:object="${transaction}" method="post">
-
-        <!-- File table pagination is below -->
-        <table class="table" style="margin-top: 40px" border="1">
+        <table class="table table-hover table-striped table-dark table-bordered" style="margin-top: 40px">
             <thead>
             <tr>
                 <th scope="col">Invoices</th>
             </tr>
             </thead>
             <tbody>
-            <tr th:each="file, iStat : ${filePage.content}"
-                th:style="${iStat.odd}? 'font-weight: bold;'"
-                th:alt-title="${iStat.even}? 'even' : 'odd'">
-
-    <!--            note:  the below button will display a "download file button" that actualy works.
-                            the button will open a new popup window that will download the file.
-                            However, this causes issues with the JWT token for some reason.
-    -->
-                <td><span th:text="${file.filename}"></span>
-                        <input type="hidden" id="action" name="action" value="">
-                        <input type="hidden" id="email" name="email" value="">
-                        <input type="hidden" id="phonenumber" name="phonenumber" value="">
-
-
-                        <input type="hidden" th:field="*{transactionid}">
-                        <div class="text-end">
-                            <button onclick="setTextInvoice(event)" type="submit" class="btn btn-primary">Text Invoice</button>
-                            <button onclick="setEmailInvoice(event)" type="submit" class="btn btn-primary">Email Invoice</button>
-                        </div>
-
+            <tr th:each="file, iStat : ${filePage.content}" th:style="${iStat.odd}? 'font-weight: bold;'" th:alt-title="${iStat.even}? 'even' : 'odd'">
+                <td>
+                    <span th:text="${file.filename}"></span>
+                    <input type="hidden" id="action" name="action" value="">
+                    <input type="hidden" id="email" name="email" value="">
+                    <input type="hidden" id="phonenumber" name="phonenumber" value="">
+                    <input type="hidden" th:field="*{transactionid}">
+                    <div class="text-end">
+                        <button onclick="setTextInvoice(event)" type="submit" class="btn btn-primary">Text Invoice</button>
+                        <button onclick="setEmailInvoice(event)" type="submit" class="btn btn-primary">Email Invoice</button>
+                    </div>
                 </td>
             </tr>
             </tbody>
@@ -227,18 +245,7 @@ function setEmailInvoice() {
                 </li>
             </ul>
         </nav>
-        <!-- END FILE PAGINATION -->
     </form>
-
 </div>
-
-
-
-
-
-
-
-
-
 </body>
 </html>

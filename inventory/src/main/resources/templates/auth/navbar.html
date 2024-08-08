@@ -25,19 +25,7 @@
                         <a class="nav-link active" aria-current="page" th:href="@{/dashboard/index?customJwtParameter=__${customJwtParameter}__}">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" th:href="@{/newbatch/searchBatch?customJwtParameter=__${customJwtParameter}__}">Search Batches</a>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-link" th:href="@{/batch/browseBatch?customJwtParameter=__${customJwtParameter}__}">Browse Batches</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/product/searchProduct?customJwtParameter=__${customJwtParameter}__}">Search Products</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/product/browseProduct?customJwtParameter=__${customJwtParameter}__}">Browse Products</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/admin?customJwtParameter=__${customJwtParameter}__}">Admin</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" th:href="@{/checkout?customJwtParameter=__${customJwtParameter}__&cartid=0}">Checkout</a>
@@ -47,6 +35,9 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" th:href="@{/transaction/listall?customJwtParameter=__${customJwtParameter}__}">Transactions</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin?customJwtParameter=__${customJwtParameter}__}">Admin</a>
                     </li>
                     <li th:if="${customJwtParameter != null}" class="nav-item">
                         <a class="nav-link active" aria-current="page" href="javascript:{}" onclick="postLogout()">Logout</a>

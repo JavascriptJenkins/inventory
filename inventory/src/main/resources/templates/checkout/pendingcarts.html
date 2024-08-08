@@ -2,28 +2,134 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Checkout</title>
+    <title>Pending Carts</title>
 
-
-    <script
-            src="https://code.jquery.com/jquery-3.6.0.js"
-            integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="
-            crossorigin="anonymous"></script>
-
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    <!-- JavaScript Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-kQtW33rZJAHjgefvhyyzcGF3C5TFyBQBA13V1RKPf4uH+bwyzQxZ6CmMZHmNBEfJ" crossorigin="anonymous"></script>
-
-
     <link rel="stylesheet" type="text/css" media="all" href="/css/table.css" th:href="@{/css/table.css}" />
-    <!-- Bootstrap Font Icon CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 
     <style>
-      .required:after {
-        content:" *";
-        color: red;
-      }
+        body {
+            color: #fff;
+            font-family: 'Roboto', sans-serif;
+        }
+        .table-hover tbody tr:hover {
+            background-color: #e0f7fa;
+        }
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: #f1f8fa;
+        }
+        .table-dark thead {
+            background-color: #343a40;
+            color: #fff;
+        }
+        .btn-secondary, .btn-primary {
+            color: #fff;
+            background-color: #343a40;
+            border-color: #343a40;
+        }
+        .btn-secondary:hover, .btn-primary:hover {
+            background-color: #23272b;
+            border-color: #1d2124;
+        }
+        .form-control, .form-select {
+            background-color: #343a40;
+            color: #fff;
+            border: 1px solid #343a40;
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: #343a40;
+            color: #fff;
+            border-color: #1d2124;
+            box-shadow: none;
+        }
+        .header-dark {
+            background-color: #343a40;
+            color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-family: 'Roboto', sans-serif;
+            border: 1px solid transparent;
+            border-image: linear-gradient(to right, #c0c0c0, #ffffff);
+            border-image-slice: 1;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+        }
+        .header-small {
+            background-color: #343a40;
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-family: 'Roboto', sans-serif;
+            border: 1px solid transparent;
+            border-image: linear-gradient(to right, #c0c0c0, #ffffff);
+            border-image-slice: 1;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: fit-content;
+            max-width: 400px;
+            margin: 0 auto 15px auto;
+            text-align: center;
+        }
+        .back-button {
+            margin-right: 20px;
+            font-size: 2rem;
+        }
+        .back-button a {
+            color: #343a40;
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 50%;
+            border: 2px solid #343a40;
+        }
+        .back-button a:hover {
+            background-color: #23272b;
+            color: #fff;
+            border-color: #23272b;
+        }
+        .alert {
+            background-color: #343a40;
+            color: #fff;
+            border: 1px solid #343a40;
+        }
+        .alert-danger {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+        .alert-success {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+        .alert-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .pagination .page-link {
+            color: #fff;  /* Changed to white */
+            background-color: #343a40;
+            border: 1px solid #343a40;
+        }
+        .pagination .page-link:hover {
+            background-color: #23272b;
+            border-color: #1d2124;
+        }
+        .pagination .active .page-link {
+            color: #fff;
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .required:after {
+            content: " *";
+            color: red;
+        }
+        .form-label {
+            color: #000;  /* Changed to black */
+        }
     </style>
 
     <script>
@@ -43,22 +149,25 @@
 </head>
 <body>
 
-
-
 <div th:insert="auth/navbar.html :: navbarfragment"> </div>
-
 
 <div class="container">
 
-
-    <div class="alert alert-primary" role="alert" >Pending Carts</div>
+    <div class="header-dark">
+        <div class="back-button">
+            <a th:href="@{/dashboard/index?customJwtParameter=__${customJwtParameter}__}"><i class="bi bi-arrow-left-circle"></i></a>
+        </div>
+        <div>
+            <h1>Pending Carts</h1>
+            <p>Review pending carts</p>
+        </div>
+    </div>
     <br>
 
     <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
     <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
 
-
-    <table class="table" border="1">
+    <table class="table table-hover table-striped table-dark">
         <thead>
         <tr>
             <th scope="col">#</th>
@@ -72,37 +181,27 @@
             th:if="${cart.isprocessed != 1}"
             th:style="${iStat.odd}? 'font-weight: bold;'"
             th:alt-title="${iStat.even}? 'even' : 'odd'">
-
             <td th:text="${cart.cartid}"></td>
             <td><a th:href="@{/checkout?cartid=__${cart.cartid}__&customJwtParameter=__${customJwtParameter}__}" th:text="${cart.cartid}"></a></td>
             <td th:text="${cart.customer.name}"></td>
             <td th:text="${cart.total}"></td>
-
         </tr>
-
-
         </tbody>
     </table>
-    <div th:if="${cartPage.totalPages > 0}" class="pagination"
-         th:each="pageNumber : ${pageNumbers}">
-        <a th:href="@{/checkout/pendingcarts?customJwtParameter=__${customJwtParameter}__&size=__${#lists.size(cartPage.content)}__&page=__${pageNumber}__}"
-           th:text=${pageNumber}
-           th:class="${pageNumber==cartPage.number + 1} ? active"></a>
-    </div>
 
-
-
-
+    <nav th:if="${cartPage.totalPages > 0}">
+        <ul class="pagination">
+            <li class="page-item" th:each="pageNumber : ${pageNumbers}">
+                <a class="page-link"
+                   th:href="@{/checkout/pendingcarts?customJwtParameter=__${customJwtParameter}__&size=__${#lists.size(cartPage.content)}__&page=__${pageNumber}__}"
+                   th:text="${pageNumber}"
+                   th:classappend="${pageNumber==cartPage.number + 1} ? 'active'">
+                </a>
+            </li>
+        </ul>
+    </nav>
 
 </div>
-
-
-
-
-
-
-
-
 
 </body>
 </html>

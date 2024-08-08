@@ -12,11 +12,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 
     <style>
-        .required:after {
-            content: " *";
-            color: red;
+        body {
+            color: #fff;
+            font-family: 'Roboto', sans-serif;
         }
-
         .table-hover tbody tr:hover {
             background-color: #e0f7fa;
         }
@@ -27,14 +26,25 @@
             background-color: #343a40;
             color: #fff;
         }
-        .btn-secondary {
+        .btn-secondary, .btn-primary {
             color: #fff;
             background-color: #343a40;
             border-color: #343a40;
         }
-        .btn-secondary:hover {
+        .btn-secondary:hover, .btn-primary:hover {
             background-color: #23272b;
             border-color: #1d2124;
+        }
+        .form-control, .form-select {
+            background-color: #343a40;
+            color: #fff;
+            border: 1px solid #343a40;
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: #343a40;
+            color: #fff;
+            border-color: #1d2124;
+            box-shadow: none;
         }
         .header-dark {
             background-color: #343a40;
@@ -49,6 +59,22 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             display: flex;
             align-items: center;
+        }
+        .header-small {
+            background-color: #343a40;
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-family: 'Roboto', sans-serif;
+            border: 1px solid transparent;
+            border-image: linear-gradient(to right, #c0c0c0, #ffffff);
+            border-image-slice: 1;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: fit-content;
+            max-width: 400px;
+            margin: 0 auto 15px auto;
+            text-align: center;
         }
         .back-button {
             margin-right: 20px;
@@ -66,6 +92,44 @@
             color: #fff;
             border-color: #23272b;
         }
+        .alert {
+            background-color: #343a40;
+            color: #fff;
+            border: 1px solid #343a40;
+        }
+        .alert-danger {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+        .alert-success {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+        .alert-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .pagination .page-link {
+            color: #fff;  /* Changed to white */
+            background-color: #343a40;
+            border: 1px solid #343a40;
+        }
+        .pagination .page-link:hover {
+            background-color: #23272b;
+            border-color: #1d2124;
+        }
+        .pagination .active .page-link {
+            color: #fff;
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .required:after {
+            content: " *";
+            color: red;
+        }
+        .form-label {
+            color: #000;  /* Changed to black */
+        }
         .notes-bubble {
             background-color: #f1f8fa;
             border: 1px solid #c0c0c0;
@@ -79,6 +143,12 @@
         }
         .progress-bar {
             background-color: #6c757d;
+        }
+        .form-label {
+            color: #000;  /* Changed to black */
+        }
+        .price-class {
+            color: #000;  /* Changed to black */
         }
     </style>
 
@@ -144,7 +214,15 @@
 <body>
 <div th:insert="auth/navbar.html :: navbarfragment"></div>
 <div class="container">
-    <div class="alert alert-primary" role="alert">Scan Products to Checkout</div>
+    <div class="header-dark">
+        <div class="back-button">
+            <a th:href="@{/dashboard/index?customJwtParameter=__${customJwtParameter}__}"><i class="bi bi-arrow-left-circle"></i></a>
+        </div>
+        <div>
+            <h1>Checkout</h1>
+            <p>Scan Products to Checkout</p>
+        </div>
+    </div>
     <br>
     <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
     <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
@@ -154,13 +232,12 @@
             <div class="col-md-8">
                 <div class="row" style="margin-bottom: 5px;">
                     <div class="col-md-6" style="margin-bottom: 5px;">
-                        <label class="form-label required">Scan Barcode: </label>
+
                         <input id="barcodeInput" type="text" th:field="*{barcode}" class="form-control" placeholder="barcode" aria-label="barcode">
                     </div>
                 </div>
                 <div class="row" style="margin-bottom: 5px;">
                     <div class="col-md-6" style="margin-bottom: 5px;">
-                        <label th:classappend="${cart.cartid != null ? '' : 'required'}" class="form-label"><b>Customer</b></label>
                         <div th:if="${cart.cartid}">
                             <p th:each="customer : ${customers}" th:if="${customer.customerid == cart.customer.customerid}" th:text="${customer.name}">Customer Name</p>
                             <input type="hidden" th:field="*{customer.customerid}">
@@ -175,9 +252,9 @@
                 </div>
                 <div class="row" style="margin-bottom: 5px;">
                     <div class="col-md-6" style="margin-bottom: 5px;">
-                        <label class="form-label required"><b>Total Price</b></label>
+                        <label class="form-label"><b>Total Price</b></label>
                         <input type="hidden" th:field="*{total}" class="form-control" placeholder="total" aria-label="total" readonly>
-                        <p th:text="${cart.total}"></p>
+                        <p class="form-control" th:text="${cart.total}"></p>
                     </div>
                     <input type="hidden" th:field="*{isprocessed}">
                     <input type="hidden" th:field="*{updateTimeStamp}">
