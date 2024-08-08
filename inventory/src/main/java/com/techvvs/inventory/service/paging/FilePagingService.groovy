@@ -18,11 +18,11 @@ class FilePagingService {
     @Autowired
     AppConstants appConstants
 
-    Page<FileVO> getFilePage(BatchVO batchVO, Optional<Integer> page, Optional<Integer> size, String selected) {
+    Page<FileVO> getFilePage(BatchVO batchVO, Integer page, Integer size, String selected) {
         Page<FileVO> filePage = techvvsFileHelper.getPagedFilesByDirectory(
                 appConstants.PARENT_LEVEL_DIR+batchVO.batchnumber+selected,
-                page.get(),
-                size.get()
+                page,
+                size
         );
         return filePage;
     }

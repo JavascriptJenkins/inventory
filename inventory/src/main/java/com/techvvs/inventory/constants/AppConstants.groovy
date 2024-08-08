@@ -16,7 +16,7 @@ class AppConstants {
 
     String TRANSACTION_INVOICE_DIR = "/transaction/invoice/"
     String QR_ALL_DIR = "/qrcodes/all/"
-    String BARCODES_ALL_DIR = "/batch/all/"
+    String BARCODES_ALL_DIR = "/barcodes/all/"
     String BATCH_PRICE_SHEETS_DIR = "/pricesheets/"
     String BARCODES_MENU_DIR = "/barcodes/menu/"
     String BARCODES_TRANSFER_DIR = "/adhoc/transfers/"

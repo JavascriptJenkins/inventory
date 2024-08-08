@@ -9,15 +9,136 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-kQtW33rZJAHjgefvhyyzcGF3C5TFyBQBA13V1RKPf4uH+bwyzQxZ6CmMZHmNBEfJ" crossorigin="anonymous"></script>
     <link rel="stylesheet" type="text/css" media="all" href="/css/table.css" th:href="@{/css/table.css}" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 
     <style>
-        .required:after {
-            content: " *";
-            color: red;
+        body {
+
+            color: #fff;
+            font-family: 'Roboto', sans-serif;
+        }
+        .table-hover tbody tr:hover {
+            background-color: #e0f7fa;
+        }
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: #f1f8fa;
+        }
+        .table-dark thead {
+            background-color: #343a40;
+            color: #fff;
+        }
+        .btn-secondary, .btn-primary {
+            color: #fff;
+            background-color: #343a40;
+            border-color: #343a40;
+        }
+        .btn-secondary:hover, .btn-primary:hover {
+            background-color: #23272b;
+            border-color: #1d2124;
+        }
+        .form-control, .form-select {
+            background-color: #343a40;
+            color: #fff;
+            border: 1px solid #343a40;
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: #343a40;
+            color: #fff;
+            border-color: #1d2124;
+            box-shadow: none;
+        }
+        .header-dark {
+            background-color: #343a40;
+            color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-family: 'Roboto', sans-serif;
+            border: 1px solid transparent;
+            border-image: linear-gradient(to right, #c0c0c0, #ffffff);
+            border-image-slice: 1;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+        }
+        .header-small {
+            background-color: #343a40;
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-family: 'Roboto', sans-serif;
+            border: 1px solid transparent;
+            border-image: linear-gradient(to right, #c0c0c0, #ffffff);
+            border-image-slice: 1;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: fit-content;
+            max-width: 400px;
+            margin: 0 auto 15px auto;
+            text-align: center;
+        }
+        .back-button {
+            margin-right: 20px;
+            font-size: 2rem;
+        }
+        .back-button a {
+            color: #343a40;
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 50%;
+            border: 2px solid #343a40;
+        }
+        .back-button a:hover {
+            background-color: #23272b;
+            color: #fff;
+            border-color: #23272b;
+        }
+        .notes-bubble {
+            background-color: #f1f8fa;
+            border: 1px solid #c0c0c0;
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+        .progress {
+            flex: 1;
+            margin-left: 20px;
+        }
+        .progress-bar {
+            background-color: #6c757d;
+        }
+        .alert {
+            background-color: #343a40;
+            color: #fff;
+            border: 1px solid #343a40;
+        }
+        .alert-danger {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+        .alert-success {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+        .alert-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .pagination .page-link {
+            color: #007bff;
+            background-color: #343a40;
+            border: 1px solid #343a40;
+        }
+        .pagination .page-link:hover {
+            background-color: #23272b;
+            border-color: #1d2124;
+        }
+        .pagination .active .page-link {
+            color: #fff;
+            background-color: #007bff;
+            border-color: #007bff;
         }
     </style>
-
-
 
     <script>
         function openDownloadWindow(button) {
@@ -28,10 +149,7 @@
             const url = `/file/simple/download?filename=${encodeURIComponent(filename)}&customJwtParameter=${encodeURIComponent(customJwtParameter)}&directory=${encodeURIComponent(directory)}&batchid=${encodeURIComponent(batchid)}`;
             window.open(url, '_blank', 'width=600,height=400');
         }
-    </script>
 
-
-    <script>
         function openPopup(type) {
             let userInput = prompt(`Please enter your ${type === 'text' ? 'phone number (10 digits)' : 'email address'}`);
             if (userInput) {
@@ -54,98 +172,102 @@
                 }
             }
         }
-        function setTextInvoice() {
-             event.preventDefault();
 
+        function setTextInvoice() {
+            event.preventDefault();
             document.getElementById('filenametosend').value = document.getElementById('filenamespanid').getAttribute('data-filename');
             document.getElementById('action').value = "text";
             openPopup('text');
         }
+
         function setEmailInvoice() {
             event.preventDefault();
             document.getElementById('filenametosend').value = document.getElementById('filenamespanid').getAttribute('data-filename');
             document.getElementById('action').value = "email";
             openPopup('email');
-
         }
 
-    document.addEventListener("DOMContentLoaded", function() {
-        var dirSelection = document.getElementById("dirselectionid");
-        var hiddenInput = document.getElementById("selected");
-        hiddenInput.value = dirSelection.value;
-    });
-
+        document.addEventListener("DOMContentLoaded", function() {
+            var dirSelection = document.getElementById("dirselectionid");
+            var hiddenInput = document.getElementById("selected");
+            hiddenInput.value = dirSelection.value;
+        });
     </script>
 </head>
 <body>
 <div th:insert="auth/navbar.html :: navbarfragment"> </div>
 
 <div class="container">
-    <div class="col-sm-2" style="margin-bottom: 5px;">
-        <a th:href="@{/batch?batchnumber=__${batch.batchnumber}__&customJwtParameter=__${customJwtParameter}__&editmode=no}" >Back To Batch</a>
+    <div class="header-dark">
+        <div class="back-button">
+            <a th:href="@{/batch?batchnumber=__${batch.batchnumber}__&customJwtParameter=__${customJwtParameter}__&editmode=no}"><i class="bi bi-arrow-left-circle"></i></a>
+        </div>
+        <div>
+            <h1>Batch Files</h1>
+            <p>View and manage your batch files.</p>
+        </div>
     </div>
 
-    <br>
-    <div style="margin-top: 20px" class="alert alert-primary" role="alert">View files related to your batch!</div>
-    <br>
+    <div class="header-small">
+        <p>Files Uploaded For Batch ID: <span th:text="${batch.batchid}"></span></p>
+        <p>Batch #: <span th:text="${batch.batchnumber}"></span></p>
+    </div>
+
     <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
     <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
-    <div class="alert alert-primary" role="alert" th:if="${primaryMessage}" th:text="${primaryMessage}">Success</div>
-
-    <div class="alert alert-primary" role="alert" >Files Uploaded For Batch ID: <span th:text="${batch.batchid}"></span></div>
-    <div class="alert alert-primary" role="alert" >Batch #: <span th:text="${batch.batchnumber}"></span></div>
-
+    <div class="alert alert-primary" role="alert" th:if="${primaryMessage}" th:text="${primaryMessage}">Primary</div>
 
     <div class="col-sm-2" style="margin-bottom: 5px;">
-        <!--  -->
         <form th:action="@{/viewfiles/viewdirfiles?batchid=__${batch.batchid}__&customJwtParameter=__${customJwtParameter}__&size=5&page=1}" th:object="${menuoption}" method="post">
             <label class="form-label required">View files in dir</label>
-            <select id="dirselectionid" class="form-control" th:field="${menuoption.selected}"  >
+            <select id="dirselectionid" class="form-select" th:field="${menuoption.selected}">
                 <option th:each="menuoption : ${directoryoptions}" th:value="${menuoption}" th:text="${menuoption}"></option>
             </select>
             <button style="margin-top:5px;" type="submit" class="btn btn-primary">Select Directory</button>
         </form>
     </div>
 
-
-
     <form id="textoremailInvoiceForm" th:action="@{/viewfiles/textemailinvoice?customJwtParameter=__${customJwtParameter}__&size=5&page=1&batchid=__${batch.batchid}__}" th:object="${menuoption}" method="post">
-        <table class="table" border="1">
-                <thead>
-                <tr>
-                    <th scope="col">filename</th>
-                </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="file, iStat : ${filePage.content}"
-                        th:style="${iStat.odd}? 'font-weight: bold;'"
-                        th:alt-title="${iStat.even}? 'even' : 'odd'">
-
-                        <td><span id="filenamespanid" th:text="${file.filename}" th:data-filename="${file.filename}"></span>
-            <!--                    <button th:data-filename="${file.filename}" th:data-jwt="${customJwtParameter}" th:data-directory="${file.directory}" th:data-batchid="${batch.batchid}" onclick="openDownloadWindow(this)">Download File</button>-->
-
-                            <input type="hidden" id="action" name="action" value="">
-                            <input type="hidden" id="email" name="email" value="">
-                            <input type="hidden" id="phonenumber" name="phonenumber" value="">
-                            <input type="hidden" id="filenametosend" name="filenametosend" value="">
-                            <input type="hidden" id="selected" name="selected" value="">
-                            <div class="text-end">
-                                <button onclick="setTextInvoice(event)" type="submit" class="btn btn-primary">Text Invoice</button>
-                                <button onclick="setEmailInvoice(event)" type="submit" class="btn btn-primary">Email Invoice</button>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
+        <table class="table table-hover table-striped table-dark">
+            <thead>
+            <tr>
+                <th scope="col">File Name</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="file, iStat : ${filePage.content}"
+                th:style="${iStat.odd}? 'font-weight: bold;'"
+                th:alt-title="${iStat.even}? 'even' : 'odd'">
+                <td><span id="filenamespanid" th:text="${file.filename}" th:data-filename="${file.filename}"></span>
+                    <input type="hidden" id="action" name="action" value="">
+                    <input type="hidden" id="email" name="email" value="">
+                    <input type="hidden" id="phonenumber" name="phonenumber" value="">
+                    <input type="hidden" id="filenametosend" name="filenametosend" value="">
+                    <input type="hidden" id="selected" name="selected" value="">
+                    <div class="text-end">
+                        <button onclick="setTextInvoice(event)" type="submit" class="btn btn-primary">Text</button>
+                        <button onclick="setEmailInvoice(event)" type="submit" class="btn btn-primary">Email</button>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
         </table>
     </form>
-        <div th:if="${filePage.totalPages > 0}" class="pagination"
-             th:each="pageNumber : ${pageNumbers}">
-            <a th:href="@{/viewfiles?batchid=__${batch.batchid}__&customJwtParameter=__${customJwtParameter}__&size=5&page=__${pageNumber}__}"
-               th:text=${pageNumber}
-               th:class="${pageNumber==filePage.number + 1} ? active"></a>
-        </div>
+        <nav th:if="${filePage.totalPages > 0}">
+            <ul class="pagination justify-content-center">
+                <li class="page-item" th:each="pageNumber : ${pageNumbers}">
+                    <a class="page-link btn btn-secondary btn-sm mx-1"
+                       th:href="@{/viewfiles?batchid=__${batch.batchid}__&customJwtParameter=__${customJwtParameter}__&size=5&page=__${page}__}"
+                       th:text="${pageNumber}"
+                       th:classappend="${pageNumber == filePage.number + 1} ? 'active'">
+                    </a>
+                </li>
+            </ul>
+        </nav>
 
-
+    <div th:if="${filePage.totalPages > 0}" class="pagination" th:each="pageNumber : ${pageNumbers}">
+        <a class="page-link" th:href="@{/viewfiles?batchid=__${batch.batchid}__&customJwtParameter=__${customJwtParameter}__&size=5&page=__${pageNumber}__}" th:text="${pageNumber}" th:class="${pageNumber == filePage.number + 1} ? 'active'"></a>
+    </div>
 
 </div>
 </body>

@@ -73,7 +73,8 @@ public class FileViewController {
             @RequestParam("customJwtParameter") String customJwtParameter,
             @RequestParam("batchid") String batchid,
             @RequestParam("page") Optional<Integer> page,
-            @RequestParam("size") Optional<Integer> size
+            @RequestParam("size") Optional<Integer> size,
+            @RequestParam("selected") String selected
     ){
 
         batchid = batchid == null ? "0" : String.valueOf(batchid)
@@ -84,7 +85,9 @@ public class FileViewController {
 
         // start file paging
         String dir = appConstants.PARENT_LEVEL_DIR+String.valueOf(batchVO.batchnumber)+appConstants.BARCODES_ALL_DIR
-        Page<FileVO> filePage = filePagingService.getFilePageFromDirectory(page.get(), size.get(), dir)
+
+//        Page<FileVO> filePage = filePagingService.getFilePageFromDirectory(page.get(), size.get(), dir)
+        Page<FileVO> filePage = filePagingService.getFilePage(batchVO, page.get(), size.get(), selected)
         filePagingService.bindPageAttributesToModel(model, filePage, page, size);
         // end file paging
 
@@ -92,7 +95,7 @@ public class FileViewController {
 
         model.addAttribute(controllerConstants.MENU_OPTIONS_DIRECTORIES, controllerConstants.DIRECTORIES_FOR_BATCH_UI);
         model.addAttribute("customJwtParameter", customJwtParameter);
-        model.addAttribute("menuoption", new MenuOptionVO(selected: ""));
+        model.addAttribute("menuoption", new MenuOptionVO(selected: selected));
         return "files/batchfiles.html";
     }
 
@@ -117,11 +120,11 @@ public class FileViewController {
 
         String selected = menuoption.selected // this contains file path from the dropdown
 
-        Page<FileVO> filePage = filePagingService.getFilePage(batchVO, page, size, selected)
+        Page<FileVO> filePage = filePagingService.getFilePage(batchVO, page.get(), size.get(), selected)
         filePagingService.bindPageAttributesToModel(model, filePage, page, size);
         model.addAttribute(controllerConstants.MENU_OPTIONS_DIRECTORIES, controllerConstants.DIRECTORIES_FOR_BATCH_UI);
         model.addAttribute("customJwtParameter", customJwtParameter);
-
+        model.addAttribute("menuoption", new MenuOptionVO(selected: selected));
 
         return "files/batchfiles.html";
     }
@@ -161,12 +164,13 @@ public class FileViewController {
 
 
         // start file paging
-        Page<FileVO> filePage = filePagingService.getFilePage(batchVO, page, size, selected)
+        Page<FileVO> filePage = filePagingService.getFilePage(batchVO, page.get(), size.get(), selected)
         filePagingService.bindPageAttributesToModel(model, filePage, page, size);
         model.addAttribute(controllerConstants.MENU_OPTIONS_DIRECTORIES, controllerConstants.DIRECTORIES_FOR_BATCH_UI);
         // end file paging
 
         model.addAttribute("customJwtParameter", customJwtParameter);
+        model.addAttribute("menuoption", new MenuOptionVO(selected: selected));
 
         if(model.getAttribute("errorMessage") == null){
             model.addAttribute("successMessage", "Successfully sent file: "+filename+
