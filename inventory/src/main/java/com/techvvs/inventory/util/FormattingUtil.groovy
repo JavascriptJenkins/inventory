@@ -1,9 +1,11 @@
 package com.techvvs.inventory.util
 
-import org.springframework.beans.factory.annotation.Autowired
+
 import org.springframework.stereotype.Component
 
 import java.text.DecimalFormat
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 @Component
 class FormattingUtil {
@@ -53,6 +55,18 @@ class FormattingUtil {
         // Calculate tax amount
         double taxAmount = total * (taxPercentage / 100.0);
         return Math.round(taxAmount * 100.0) / 100.0; // rounding to 2 decimal places
+    }
+
+
+
+
+    String getDateTimeForFileSystem() {
+
+        def now = LocalDateTime.now()
+        def formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy-HH-mm-ss")
+        def formattedDateTime = now.format(formatter)
+
+        return formattedDateTime
     }
 
 

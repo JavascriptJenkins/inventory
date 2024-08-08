@@ -3,13 +3,11 @@ package com.techvvs.inventory.viewcontroller
 import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.dao.BatchDao
 import com.techvvs.inventory.jparepo.BatchRepo
-import com.techvvs.inventory.jparepo.BatchTypeRepo
-import com.techvvs.inventory.jparepo.ProductRepo
-import com.techvvs.inventory.jparepo.ProductTypeRepo
 import com.techvvs.inventory.model.BatchTypeVO
 import com.techvvs.inventory.model.BatchVO
 import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.modelnonpersist.FileVO
+import com.techvvs.inventory.util.FormattingUtil
 import com.techvvs.inventory.util.TechvvsFileHelper
 import com.techvvs.inventory.validation.ValidateBatch
 import com.techvvs.inventory.viewcontroller.constants.ControllerConstants
@@ -24,9 +22,7 @@ import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.*
 
-import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
-import java.security.SecureRandom
 import java.time.LocalDateTime
 
 
@@ -53,6 +49,9 @@ public class CleanBatchViewController {
 
     @Autowired
     BatchControllerHelper batchControllerHelper;
+
+    @Autowired
+    FormattingUtil formattingUtil
 
     @Autowired
     ControllerConstants controllerConstants
@@ -101,7 +100,7 @@ public class CleanBatchViewController {
         model.addAttribute("customJwtParameter", customJwtParameter);
         model.addAttribute("batch", batchVOToBind);
         batchControllerHelper.bindBatchTypes(model)
-        return "service/xlsxbatch.html";
+        return "batch/xlsxbatch.html";
     }
 
 
@@ -140,7 +139,7 @@ public class CleanBatchViewController {
         model.addAttribute("batchPage", pageOfBatch);
         model.addAttribute("customJwtParameter", customJwtParameter);
         model.addAttribute("batch", new BatchVO());
-        return "service/browsebatch.html";
+        return "batch/browsebatch.html";
     }
 
     @GetMapping("/searchBatch")
@@ -151,7 +150,7 @@ public class CleanBatchViewController {
         model.addAttribute("customJwtParameter", customJwtParameter);
         model.addAttribute("batch", new BatchVO());
         model.addAttribute("batchs", new ArrayList<BatchVO>(1));
-        return "service/searchbatch.html";
+        return "batch/searchbatch.html";
     }
 
     @PostMapping("/searchBatch")
@@ -176,7 +175,7 @@ public class CleanBatchViewController {
         model.addAttribute("customJwtParameter", customJwtParameter);
         model.addAttribute("batch", batchVO);
         model.addAttribute("batchs", results);
-        return "service/searchbatch.html";
+        return "batch/searchbatch.html";
     }
 
 
@@ -194,7 +193,7 @@ public class CleanBatchViewController {
     ){
 
         model = batchControllerHelper.processModel(model, customJwtParameter, batchnumber, editmode, page, productTypeVO, true, false);
-        return "service/editbatch.html";
+        return "batch/batch.html";
     }
 
     //    This will text the user a link to a menu pdf they can send people
@@ -214,10 +213,13 @@ public class CleanBatchViewController {
 
 
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        batchControllerHelper.sendTextMessageWithDownloadLink(model, authentication.getPrincipal().username, batchnumber)
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication()
 
-        return "service/editbatch.html";
+        boolean success = batchControllerHelper.sendTextMessageWithDownloadLink(model, authentication.getPrincipal().username, batchnumber, productTypeVO.priceadjustment)
+
+        success ? model.addAttribute("successMessage", "Sent text message link successfully at: "+formattingUtil.getDateTimeForFileSystem()+" | With price adjustment:"+productTypeVO.priceadjustment) : model.addAttribute("errorMessage", "Error sending text message link at:" +formattingUtil.getDateTimeForFileSystem())
+
+        return "batch/batch.html";
     }
 
     @PostMapping("/likesearch")
@@ -233,7 +235,7 @@ public class CleanBatchViewController {
     ){
 
         model = batchControllerHelper.processModel(model, customJwtParameter, batchnumber, editmode, page, productTypeVO, true, true);
-        return "service/editbatch.html";
+        return "batch/batch.html";
     }
 
     @PostMapping("/generatebarcodes")
@@ -275,7 +277,7 @@ public class CleanBatchViewController {
         }
 
 
-        return "service/editbatch.html";
+        return "batch/batch.html";
     }
 
 
@@ -310,7 +312,7 @@ public class CleanBatchViewController {
 
         model.addAttribute("successMessage","Successfully created qr codes for this batch. ")
 
-        return "service/editbatch.html";
+        return "batch/batch.html";
     }
 
     @PostMapping("/generateweightlabels")
@@ -341,7 +343,7 @@ public class CleanBatchViewController {
 
         model.addAttribute("successMessage","Successfully created qr codes for this batch. ")
 
-        return "service/editbatch.html";
+        return "batch/editbatch.html";
     }
 
     // todo: add the pagination crap here too
@@ -392,7 +394,7 @@ public class CleanBatchViewController {
         model.addAttribute("searchproducttype", new ProductTypeVO()) // this is a blank object for submitting a search term
         model.addAttribute("customJwtParameter", customJwtParameter);
         batchControllerHelper.bindBatchTypes(model)
-        return "service/editbatch.html";
+        return "batch/editbatch.html";
     }
 
     @PostMapping ("/createNewBatch")
@@ -431,7 +433,7 @@ public class CleanBatchViewController {
 
         model.addAttribute("customJwtParameter", customJwtParameter);
         batchControllerHelper.bindBatchTypes(model)
-        return "service/batch.html";
+        return "batch/batch.html";
     }
 
 

@@ -258,7 +258,7 @@ public class BatchViewController {
 
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        batchControllerHelper.sendTextMessageWithDownloadLink(model, authentication.getPrincipal().username, batchnumber)
+        batchControllerHelper.sendTextMessageWithDownloadLink(model, authentication.getPrincipal().username, batchnumber, 0.00)
 
         return "service/editbatch.html";
     }

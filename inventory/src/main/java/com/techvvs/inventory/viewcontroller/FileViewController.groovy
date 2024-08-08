@@ -48,37 +48,10 @@ public class FileViewController {
     AppConstants appConstants
 
     @Autowired
-    HttpServletRequest httpServletRequest;
-
-    @Autowired
-    TechvvsFileHelper techvvsFileHelper;
-
-    @Autowired
     ControllerConstants controllerConstants
 
     @Autowired
     FilePagingService filePagingService
-
-    @Autowired
-    BatchRepo batchRepo;
-
-    @Autowired
-    BatchDao batchDao;
-
-
-    @Autowired
-    BatchTypeRepo batchTypeRepo;
-
-    @Autowired
-    ProductTypeRepo productTypeRepo;
-
-
-    @Autowired
-    ProductRepo productRepo;
-
-
-    @Autowired
-    ValidateBatch validateBatch;
 
     @Autowired
     BatchControllerHelper batchControllerHelper;
@@ -89,31 +62,7 @@ public class FileViewController {
     @Autowired
     TransactionHelper transactionHelper
 
-    @Autowired
-    CheckoutHelper checkoutHelper
 
-    @Autowired
-    MenuHelper menuHelper
-
-    @Autowired
-    CartService cartService
-
-    @Autowired
-    TransactionService transactionService
-
-    @Autowired
-    PrinterService printerService
-
-    @Autowired
-    PaymentHelper paymentHelper
-
-
-
-    @Autowired
-    PaymentService paymentService
-
-
-    SecureRandom secureRandom = new SecureRandom();
 
 
     //default home mapping
@@ -141,7 +90,7 @@ public class FileViewController {
 
 
 
-        model.addAttribute(controllerConstants.MENU_OPTIONS_DIRECTORIES, [appConstants.BARCODES_ALL_DIR, appConstants.BARCODES_MENU_DIR, appConstants.QR_ALL_DIR,]);
+        model.addAttribute(controllerConstants.MENU_OPTIONS_DIRECTORIES, controllerConstants.DIRECTORIES_FOR_BATCH_UI);
         model.addAttribute("customJwtParameter", customJwtParameter);
         model.addAttribute("menuoption", new MenuOptionVO(selected: ""));
         return "files/batchfiles.html";
@@ -170,7 +119,7 @@ public class FileViewController {
 
         Page<FileVO> filePage = filePagingService.getFilePage(batchVO, page, size, selected)
         filePagingService.bindPageAttributesToModel(model, filePage, page, size);
-        model.addAttribute(controllerConstants.MENU_OPTIONS_DIRECTORIES, [appConstants.BARCODES_ALL_DIR, appConstants.BARCODES_MENU_DIR, appConstants.QR_ALL_DIR]);
+        model.addAttribute(controllerConstants.MENU_OPTIONS_DIRECTORIES, controllerConstants.DIRECTORIES_FOR_BATCH_UI);
         model.addAttribute("customJwtParameter", customJwtParameter);
 
 
@@ -214,7 +163,7 @@ public class FileViewController {
         // start file paging
         Page<FileVO> filePage = filePagingService.getFilePage(batchVO, page, size, selected)
         filePagingService.bindPageAttributesToModel(model, filePage, page, size);
-        model.addAttribute(controllerConstants.MENU_OPTIONS_DIRECTORIES, [appConstants.BARCODES_ALL_DIR, appConstants.BARCODES_MENU_DIR, appConstants.QR_ALL_DIR]);
+        model.addAttribute(controllerConstants.MENU_OPTIONS_DIRECTORIES, controllerConstants.DIRECTORIES_FOR_BATCH_UI);
         // end file paging
 
         model.addAttribute("customJwtParameter", customJwtParameter);

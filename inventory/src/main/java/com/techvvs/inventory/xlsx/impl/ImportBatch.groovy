@@ -43,7 +43,6 @@ class ImportBatch {
     BatchVO batchvotoreturn = new BatchVO()
 
 
-    String UPLOAD_DIR = "./uploads/menus/";
     String IMPORT_DIR = "./uploads/import/";
     String IMPORT_DIR_XLSX = "./uploads/xlsx/";
 

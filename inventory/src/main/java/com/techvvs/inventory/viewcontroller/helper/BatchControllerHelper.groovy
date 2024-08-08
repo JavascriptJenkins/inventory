@@ -11,13 +11,13 @@ import com.techvvs.inventory.labels.service.LabelPrintingService
 import com.techvvs.inventory.model.BatchTypeVO
 import com.techvvs.inventory.model.BatchVO
 import com.techvvs.inventory.model.CartVO
-import com.techvvs.inventory.model.PaymentVO
 import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.SystemUserDAO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.modelnonpersist.FileVO
 import com.techvvs.inventory.qrcode.QrCodeService
+import com.techvvs.inventory.util.FormattingUtil
 import com.techvvs.inventory.util.TechvvsFileHelper
 import com.techvvs.inventory.util.TwilioTextUtil
 import com.techvvs.inventory.viewcontroller.constants.ControllerConstants
@@ -33,7 +33,7 @@ import java.nio.file.Files
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import org.apache.poi.ss.usermodel.*
 
-import java.nio.file.Path
+import java.nio.file.Paths
 import java.security.SecureRandom
 
 /* This class exists to keep the main batch controller code clean and avoid duplication. */
@@ -69,6 +69,9 @@ class BatchControllerHelper {
 
     @Autowired
     BarcodeService barcodeService
+
+    @Autowired
+    FormattingUtil formattingUtil
 
     @Autowired
     QrCodeService qrCodeService
@@ -280,7 +283,7 @@ class BatchControllerHelper {
 
 
         model.addAttribute("options", ["5", "10", "20", "100", "1000"]);
-        model.addAttribute(controllerConstants.MENU_OPTIONS_INDOOR, ["All","Indoor"]);
+        model.addAttribute(controllerConstants.MENU_OPTIONS_TEXT_XLSX, [0.00, 0.50, 100.00, 150.00, 200.00, 250.00, 300.00, -0.50, -100.00, -150.00, -200.00, -250.00, -300.00]);
         model.addAttribute(controllerConstants.MENU_OPTIONS_BARCODE, ["All", "Single Menu"]);
         model.addAttribute(controllerConstants.MENU_OPTIONS_QR_CODES, ["All", "Single Menu"]);
         model.addAttribute(controllerConstants.MENU_OPTIONS_WEIGHT_LABELS, [controllerConstants.SINGLE_PAGE]);
@@ -403,9 +406,9 @@ class BatchControllerHelper {
     }
 
 
-    String UPLOAD_DIR = "./uploads/menus/";
+    //String UPLOAD_DIR = "./uploads/menus/";
 
-    void sendTextMessageWithDownloadLink(Model model, String username, String batchnumber){
+    boolean sendTextMessageWithDownloadLink(Model model, String username, String batchnumber, Double priceadjustment){
 
         BatchVO batchVO = batchRepo.findAllByBatchnumber(Integer.valueOf(batchnumber))?.get(0)
 
@@ -413,14 +416,24 @@ class BatchControllerHelper {
 
 
         if(batchVO != null && systemUserDAO != null){
-            // create the file and put it in /uploads/menus
-            String filename = createExcelFile(UPLOAD_DIR+batchVO.name+".xlsx", batchVO)
+            // create the file and put it in /batch/pricesheets/
+
+            String datetime = formattingUtil.getDateTimeForFileSystem()
+
+            String filename = createExcelFile(appConstants.PARENT_LEVEL_DIR+batchVO.batchnumber+appConstants.BATCH_PRICE_SHEETS_DIR+batchVO.name+"_"+datetime+"_pa_"+String.valueOf(priceadjustment)+".xlsx", batchVO, priceadjustment)
 
             boolean isDev1 = "dev1".equals(env.getProperty("spring.profiles.active"));
 
             // SystemUserDAO systemUserDAO, String token, boolean isDev1
             // send a text message with a download link
-            textUtil.actuallySendOutDownloadLinkWithToken(filename, systemUserDAO, isDev1)
+            try{
+                textUtil.actuallySendOutDownloadLinkWithToken(filename, systemUserDAO, isDev1)
+            } catch(Exception ex){
+                System.out.println("Caught Exception: "+ex.getMessage())
+            } finally {
+                return true
+            }
+
         }
 
 
@@ -428,7 +441,7 @@ class BatchControllerHelper {
     }
 
 
-    String createExcelFile(String filename, BatchVO batchVO) {
+    String createExcelFile(String filename, BatchVO batchVO, Double priceadjustment){
 
         // Create a workbook and a sheet
         Workbook workbook = new XSSFWorkbook()
@@ -450,13 +463,15 @@ class BatchControllerHelper {
             ProductVO productVO = batchVO.product_set[i - 1] // need to subtract 1 here to account for header row at index 0
         //    setColumnWidthBasedOnString(sheet, 0 ,productVO.name) // set width of each name cell based on length
             row.createCell(0).setCellValue(productVO.name)
-            row.createCell(1).setCellValue(productVO.cost)
+            row.createCell(1).setCellValue(productVO.price + priceadjustment)
             row.createCell(2).setCellValue(productVO.quantityremaining)
 
 
         }
 
 
+        // create the directory if it doesn't exist
+        Files.createDirectories(Paths.get(appConstants.PARENT_LEVEL_DIR+batchVO.batchnumber+appConstants.BATCH_PRICE_SHEETS_DIR))
 
         // Write the output to a file
         FileOutputStream fileOut = new FileOutputStream(filename)

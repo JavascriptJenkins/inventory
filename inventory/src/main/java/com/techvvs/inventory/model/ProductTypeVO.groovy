@@ -25,11 +25,15 @@ class ProductTypeVO implements Serializable {
     @JsonProperty
     LocalDateTime createTimeStamp;
 
+    // todo: remove these and put them somewhere else
     @Transient
     Integer pagesize
 
     @Transient
     String menutype
+
+    @Transient
+    Double priceadjustment
 
 }
 

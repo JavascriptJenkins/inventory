@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component
 @Component
 class ExcelUtil {
 
-    String UPLOAD_DIR = "./uploads/menus/";
     String IMPORT_DIR = "./uploads/import/";
 
     String excelFilePath = IMPORT_DIR+"export-1"+".xlsx";

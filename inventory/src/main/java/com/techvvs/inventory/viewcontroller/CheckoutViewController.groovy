@@ -587,7 +587,7 @@ public class CheckoutViewController {
 
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        batchControllerHelper.sendTextMessageWithDownloadLink(model, authentication.getPrincipal().username, batchnumber)
+        batchControllerHelper.sendTextMessageWithDownloadLink(model, authentication.getPrincipal().username, batchnumber, 0.00)
 
         return "checkout/editbatch.html";
     }
