@@ -33,51 +33,8 @@ import java.security.SecureRandom
 @Controller
 public class PaymentViewController {
 
-
-    @Autowired
-    AppConstants appConstants
-
-    @Autowired
-    HttpServletRequest httpServletRequest;
-
-    @Autowired
-    TechvvsFileHelper techvvsFileHelper;
-
-    @Autowired
-    BatchRepo batchRepo;
-
-    @Autowired
-    BatchDao batchDao;
-
-
-    @Autowired
-    BatchTypeRepo batchTypeRepo;
-
-    @Autowired
-    ProductTypeRepo productTypeRepo;
-
-
-    @Autowired
-    ProductRepo productRepo;
-
-
-    @Autowired
-    ValidateBatch validateBatch;
-
-    @Autowired
-    BatchControllerHelper batchControllerHelper;
-
     @Autowired
     CheckoutHelper checkoutHelper
-
-    @Autowired
-    MenuHelper menuHelper
-
-    @Autowired
-    CartService cartService
-
-    @Autowired
-    TransactionService transactionService
 
     @Autowired
     PrinterService printerService

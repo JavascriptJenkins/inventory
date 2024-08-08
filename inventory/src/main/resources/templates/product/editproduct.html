@@ -1,29 +1,100 @@
 <!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/html">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Edit Product</title>
 
-
-    <script
-            src="https://code.jquery.com/jquery-3.6.0.js"
-            integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="
-            crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    <!-- JavaScript Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-kQtW33rZJAHjgefvhyyzcGF3C5TFyBQBA13V1RKPf4uH+bwyzQxZ6CmMZHmNBEfJ" crossorigin="anonymous"></script>
 
-
     <link rel="stylesheet" type="text/css" media="all" href="/css/table.css" th:href="@{/css/table.css}" />
-    <!-- Bootstrap Font Icon CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
 
     <style>
-      .required:after {
-        content:" *";
-        color: red;
-      }
+        body {
+            color: #fff;
+            font-family: 'Roboto', sans-serif;
+            background-color: #343a40; /* Applying dark background to body */
+        }
+        .header-dark {
+            background-color: #343a40;
+            color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-family: 'Roboto', sans-serif;
+            border: 1px solid transparent;
+            border-image: linear-gradient(to right, #c0c0c0, #ffffff);
+            border-image-slice: 1;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .btn-submit-dark {
+            font-size: 1.2rem;
+            background-color: #444;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: 2px solid #343a40;
+            display: inline-block;
+            text-align: center;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+            margin-top: 10px;
+            width: 100%;
+        }
+        .btn-submit-dark:hover {
+            background-color: #333;
+            border-color: #23272b;
+        }
+        .form-control, .form-select {
+            background-color: #23272b; /* Darker background for input fields */
+            color: #fff;
+            border: 1px solid #343a40;
+        }
+        .form-control::placeholder {
+            color: #c0c0c0; /* Placeholder text color */
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: #23272b;
+            color: #fff;
+            border-color: #1d2124;
+            box-shadow: none;
+        }
+        .alert-primary {
+            background-color: #23272b;
+            color: #fff;
+            border: 1px solid #343a40;
+        }
+        .alert-danger {
+            background-color: #dc3545;
+            color: #fff;
+            border: 1px solid #343a40;
+        }
+        .alert-success {
+            background-color: #28a745;
+            color: #fff;
+            border: 1px solid #343a40;
+        }
+        .alert-info {
+            background-color: #17a2b8;
+            color: #fff;
+            border: 1px solid #343a40;
+        }
+        .alert-warning {
+            background-color: #ffc107;
+            color: #343a40;
+            border: 1px solid #343a40;
+        }
+        .required:after {
+            content: " *";
+            color: red;
+        }
     </style>
 
     <script>
@@ -43,157 +114,143 @@
 </head>
 <body>
 
-
-
 <div th:insert="auth/navbar.html :: navbarfragment"> </div>
 
-
 <div class="container">
+    <div class="header-dark">
+        <h1>Edit Product</h1>
+    </div>
 
-
-    <div class="alert alert-primary" role="alert" >Create a new Product Data Form entry in the database</div>
+    <div class="alert alert-primary" role="alert">Create a new Product Data Form entry in the database</div>
     <br>
 
-
     <div th:if="${editmode == 'no'}">
-            <form th:action="@{/product/createNewProduct?customJwtParameter=__${customJwtParameter}__}" th:object="${product}" method="post">
-                <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
-                <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
+        <form th:action="@{/product/createNewProduct?customJwtParameter=__${customJwtParameter}__}" th:object="${product}" method="post">
+            <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
+            <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
 
-                <div class="row" style="margin-bottom: 5px;">
-                    <div class="col-sm-2" style="margin-bottom: 5px;">
-                        <label class="form-label"><b>Product Number</b></label>
-                        <input type="text" th:field="*{productnumber}" class="form-control" placeholder="productnumber" aria-label="productnumber" readonly>
-                    </div>
-
-                    <div class="col-sm-2" style="margin-bottom: 5px;">
-                        <label class="form-label"><b>Create Date</b></label>
-                        <span th:text="*{createTimeStamp}"></span>
-                    </div>
-
-                    <div class="col-sm-2" style="margin-bottom: 5px;">
-                        <label class="form-label"><b>Update Date</b></label>
-                        <span th:text="*{updateTimeStamp}"></span>
-                    </div>
-
+            <div class="row" style="margin-bottom: 5px;">
+                <div class="col-sm-2" style="margin-bottom: 5px;">
+                    <label class="form-label"><b>Product Number</b></label>
+                    <input type="text" th:field="*{productnumber}" class="form-control" placeholder="productnumber" aria-label="productnumber" readonly>
                 </div>
 
-                <div class="row" style="margin-bottom: 5px;">
-                    <div class="col-md-4" style="margin-bottom: 5px;">
-                        <label class="form-label"><b>Barcode</b></label>
-                        <input onkeyup="checkForInput()" id="barcodeinput1" type="text" th:field="*{barcode}" class="form-control" placeholder="barcode" aria-label="barcode" readonly>
-                    </div>
+                <div class="col-sm-2" style="margin-bottom: 5px;">
+                    <label class="form-label"><b>Create Date</b></label>
+                    <span th:text="*{createTimeStamp}"></span>
                 </div>
 
-                <div class="row" style="margin-bottom: 5px;">
-                    <div class="col-md-4" style="margin-bottom: 5px;">
-                        <label class="form-label required">Name</label>
-                        <input id="name" type="text" th:field="*{name}" class="form-control" placeholder="name" aria-label="name" readonly>
-                    </div>
-                    <div class="col-md-4" style="margin-bottom: 5px;">
-                        <label class="form-label">Description</label>
-                        <input type="text" th:field="*{description}" class="form-control" placeholder="description" aria-label="description" readonly>
-                    </div>
+                <div class="col-sm-2" style="margin-bottom: 5px;">
+                    <label class="form-label"><b>Update Date</b></label>
+                    <span th:text="*{updateTimeStamp}"></span>
                 </div>
+            </div>
 
-                <div class="row" style="margin-bottom: 5px;">
-                    <div class="col-md-4" style="margin-bottom: 5px;">
-                        <label class="form-label">Price</label>
-                        <input th:field="*{price}" class="form-control" placeholder="price" aria-label="price" readonly>
-                    </div>
-                    <div class="col-md-4" style="margin-bottom: 5px;">
-                        <label class="form-label">Cost</label>
-                        <input style="display: none;" th:field="*{cost}" class="form-control" placeholder="cost" aria-label="cost" readonly>
-                        <button type="button" id="toggleCost" class="btn btn-sm btn-primary mt-2">Show/Hide Cost</button>
-                    </div>
+            <div class="row" style="margin-bottom: 5px;">
+                <div class="col-md-4" style="margin-bottom: 5px;">
+                    <label class="form-label"><b>Barcode</b></label>
+                    <input onkeyup="checkForInput()" id="barcodeinput1" type="text" th:field="*{barcode}" class="form-control" placeholder="barcode" aria-label="barcode" readonly>
                 </div>
+            </div>
 
-                <div class="row" style="margin-bottom: 5px;">
-                    <div class="col-md-4" style="margin-bottom: 5px;">
-                        <label class="form-label required">Quantity</label>
-                        <input type="number" th:field="*{quantity}" class="form-control" placeholder="quantity" aria-label="quantity" readonly>
-                    </div>
-                    <div class="col-md-4" style="margin-bottom: 5px;">
-                        <label class="form-label required">Quantity Remaining</label>
-                        <input type="number" th:field="*{quantityremaining}" class="form-control" placeholder="remaining" aria-label="remaining" readonly>
-                    </div>
-
+            <div class="row" style="margin-bottom: 5px;">
+                <div class="col-md-4" style="margin-bottom: 5px;">
+                    <label class="form-label required">Name</label>
+                    <input id="name" type="text" th:field="*{name}" class="form-control" placeholder="name" aria-label="name" readonly>
                 </div>
+                <div class="col-md-4" style="margin-bottom: 5px;">
+                    <label class="form-label">Description</label>
+                    <input type="text" th:field="*{description}" class="form-control" placeholder="description" aria-label="description" readonly>
+                </div>
+            </div>
 
+            <div class="row" style="margin-bottom: 5px;">
+                <div class="col-md-4" style="margin-bottom: 5px;">
+                    <label class="form-label">Price</label>
+                    <input th:field="*{price}" class="form-control" placeholder="price" aria-label="price" readonly>
+                </div>
+                <div class="col-md-4" style="margin-bottom: 5px;">
+                    <label class="form-label">Cost</label>
+                    <input style="display: none;" th:field="*{cost}" class="form-control" placeholder="cost" aria-label="cost" readonly>
+                    <button type="button" id="toggleCost" class="btn btn-sm btn-primary mt-2">Show/Hide Cost</button>
+                </div>
+            </div>
 
-                <div class="row" style="margin-bottom: 5px;">
-                    <div class="col-md-4" style="margin-bottom: 5px;">
-                        <label class="form-label required">Product Type</label>
-                        <select class="form-control" th:field="${product.producttypeid}"  id="producttypeid" readonly="">
-                            <!--                        <option value="">select operator</option>-->
-                            <!--                        <option th:each="operator : ${}" th:value="${operator.id}" th:text="${operator.operatorName}"></option>-->
-                            <option th:each="producttype : ${producttypes}" th:value="${producttype.producttypeid}" th:text="${producttype.name}"></option>
+            <div class="row" style="margin-bottom: 5px;">
+                <div class="col-md-4" style="margin-bottom: 5px;">
+                    <label class="form-label required">Quantity</label>
+                    <input type="number" th:field="*{quantity}" class="form-control" placeholder="quantity" aria-label="quantity" readonly>
+                </div>
+                <div class="col-md-4" style="margin-bottom: 5px;">
+                    <label class="form-label required">Quantity Remaining</label>
+                    <input type="number" th:field="*{quantityremaining}" class="form-control" placeholder="remaining" aria-label="remaining" readonly>
+                </div>
+            </div>
 
-                        </select>
+            <div class="row" style="margin-bottom: 5px;">
+                <div class="col-md-4" style="margin-bottom: 5px;">
+                    <label class="form-label required">Product Type</label>
+                    <select class="form-control" th:field="${product.producttypeid}" id="producttypeid" readonly>
+                        <option th:each="producttype : ${producttypes}" th:value="${producttype.producttypeid}" th:text="${producttype.name}"></option>
+                    </select>
+                </div>
+            </div>
 
-                        <!-- TODO: put a dropdown hydrated with product names which will associate with productid and create a ProductProduct Entry  -->
-                    </div>
+            <div class="row" style="margin-bottom: 5px;">
+                <div class="alert alert-info" role="alert">Notes</div>
+                <div class="col" style="margin-bottom: 5px;">
+                    <label class="form-label">Notes</label>
+                    <textarea style="width:648px;height:163px;" th:field="*{notes}" class="form-control" placeholder="notes" aria-label="notes" readonly></textarea>
+                </div>
+            </div>
 
-                    <br>
-                    <br>
-                    <div class="row" style="margin-bottom: 5px;">
-                        <div class="alert alert-info" role="alert" >Notes</div>
-                        <div class="col" style="margin-bottom: 5px;">
-                            <label class="form-label">Notes</label>
-                            <textarea style="width:648px;height:163px;" th:field="*{notes}" class="form-control" placeholder="notes" aria-label="notes" readonly></textarea>
-                        </div>
-                    </div>
-                    <div class="alert alert-warning" role="alert" ><a th:href="@{/product/editform?productnumber=__${product.productnumber}__&customJwtParameter=__${customJwtParameter}__&editmode=yes}">Click here to edit this form</a>
-                    </div>
-                    <button style="margin-top:5px;" type="submit" class="btn btn-primary" disabled>Submit</button>
-                    <input type="hidden" th:field="*{batch}">
-            </form>
-
+            <div class="alert alert-warning" role="alert">
+                <a th:href="@{/product/editform?productnumber=__${product.productnumber}__&customJwtParameter=__${customJwtParameter}__&editmode=yes}">Click here to edit this form</a>
+            </div>
+            <button style="margin-top:5px;" type="submit" class="btn btn-primary" disabled>Submit</button>
+            <input type="hidden" th:field="*{batch}">
+        </form>
     </div> <!-- end readonly view -->
-
-
 
     <div th:if="${editmode == 'yes'}">
         <form th:action="@{/product/editProduct?customJwtParameter=__${customJwtParameter}__}" th:object="${product}" method="post">
+            <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
+            <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
 
-                <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
-                <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
-
-                <div class="row" style="margin-bottom: 5px;">
-                    <div class="col-sm-2" style="margin-bottom: 5px;">
-                        <label class="form-label"><b>Product Number</b></label>
-                        <input type="text" th:field="*{productnumber}" class="form-control" placeholder="productnumber" aria-label="productnumber" readonly>
-                    </div>
-
-                    <div class="col-sm-2" style="margin-bottom: 5px;">
-                        <label class="form-label"><b>Create Date</b></label>
-                        <span th:text="*{createTimeStamp}"></span>
-                    </div>
-
-                    <div class="col-sm-2" style="margin-bottom: 5px;">
-                        <label class="form-label"><b>Update Date</b></label>
-                        <span th:text="*{updateTimeStamp}"></span>
-                    </div>
+            <div class="row" style="margin-bottom: 5px;">
+                <div class="col-sm-2" style="margin-bottom: 5px;">
+                    <label class="form-label"><b>Product Number</b></label>
+                    <input type="text" th:field="*{productnumber}" class="form-control" placeholder="productnumber" aria-label="productnumber" readonly>
                 </div>
 
-                <div class="row" style="margin-bottom: 5px;">
-                    <div class="col-md-4" style="margin-bottom: 5px;">
-                        <label class="form-label"><b>Barcode</b></label>
-                        <input onkeyup="checkForInput()" id="barcodeinput2" type="text" th:field="*{barcode}" class="form-control" placeholder="barcode" aria-label="barcode">
-                    </div>
+                <div class="col-sm-2" style="margin-bottom: 5px;">
+                    <label class="form-label"><b>Create Date</b></label>
+                    <span th:text="*{createTimeStamp}"></span>
                 </div>
 
-                <div class="row" style="margin-bottom: 5px;">
-                    <div class="col-md-4" style="margin-bottom: 5px;">
-                        <label class="form-label required">Name</label>
-                        <input id="name" type="text" th:field="*{name}" class="form-control" placeholder="name" aria-label="name">
-                    </div>
-                    <div class="col-md-4" style="margin-bottom: 5px;">
-                        <label class="form-label">Description</label>
-                        <input type="text" th:field="*{description}" class="form-control" placeholder="description" aria-label="description">
-                    </div>
+                <div class="col-sm-2" style="margin-bottom: 5px;">
+                    <label class="form-label"><b>Update Date</b></label>
+                    <span th:text="*{updateTimeStamp}"></span>
                 </div>
+            </div>
 
+            <div class="row" style="margin-bottom: 5px;">
+                <div class="col-md-4" style="margin-bottom: 5px;">
+                    <label class="form-label"><b>Barcode</b></label>
+                    <input onkeyup="checkForInput()" id="barcodeinput2" type="text" th:field="*{barcode}" class="form-control" placeholder="barcode" aria-label="barcode">
+                </div>
+            </div>
+
+            <div class="row" style="margin-bottom: 5px;">
+                <div class="col-md-4" style="margin-bottom: 5px;">
+                    <label class="form-label required">Name</label>
+                    <input id="name" type="text" th:field="*{name}" class="form-control" placeholder="name" aria-label="name">
+                </div>
+                <div class="col-md-4" style="margin-bottom: 5px;">
+                    <label class="form-label">Description</label>
+                    <input type="text" th:field="*{description}" class="form-control" placeholder="description" aria-label="description">
+                </div>
+            </div>
 
             <div class="row" style="margin-bottom: 5px;">
                 <div class="col-md-4" style="margin-bottom: 5px;">
@@ -215,131 +272,91 @@
                     <label class="form-label required">Quantity Remaining</label>
                     <input type="number" th:field="*{quantityremaining}" class="form-control" placeholder="remaining" aria-label="remaining">
                 </div>
-
             </div>
 
-                <br>
-                <br>
-
-                <div class="row" style="margin-bottom: 5px;">
-                    <div class="col-md-4" style="margin-bottom: 5px;">
-                        <label class="form-label required">Product Type</label>
-                        <select class="form-control" th:field="${product.producttypeid}"  id="producttypeid">
-                            <!--                        <option value="">select operator</option>-->
-                            <!--                        <option th:each="operator : ${}" th:value="${operator.id}" th:text="${operator.operatorName}"></option>-->
-                            <option th:each="producttype : ${producttypes}" th:value="${producttype.producttypeid}" th:text="${producttype.name}"></option>
-
-                        </select>
-                    </div>
-
-                    <!--                    <select  th:field="*{producttypeid}" class="form-control" placeholder="producttype" aria-label="producttype">-->
+            <div class="row" style="margin-bottom: 5px;">
+                <div class="col-md-4" style="margin-bottom: 5px;">
+                    <label class="form-label required">Product Type</label>
+                    <select class="form-control" th:field="${product.producttypeid}" id="producttypeid">
+                        <option th:each="producttype : ${producttypes}" th:value="${producttype.producttypeid}" th:text="${producttype.name}"></option>
+                    </select>
                 </div>
+            </div>
 
-
-                <br>
-                <br>
-
-                <div class="row" style="margin-bottom: 5px;">
-                    <div class="alert alert-info" role="alert" >Notes</div>
-                    <div class="col" style="margin-bottom: 5px;">
-                        <label class="form-label">Notes</label>
-                        <textarea style="width:648px;height:163px;" th:field="*{notes}" class="form-control" placeholder="notes" aria-label="notes"></textarea>
-                    </div>
+            <div class="row" style="margin-bottom: 5px;">
+                <div class="alert alert-info" role="alert">Notes</div>
+                <div class="col" style="margin-bottom: 5px;">
+                    <label class="form-label">Notes</label>
+                    <textarea style="width:648px;height:163px;" th:field="*{notes}" class="form-control" placeholder="notes" aria-label="notes"></textarea>
                 </div>
-                    <input type="hidden" th:field="*{updateTimeStamp}">
-                    <input type="hidden" th:field="*{createTimeStamp}">
-                    <input type="hidden" th:field="*{product_id}">
+            </div>
 
+            <input type="hidden" th:field="*{updateTimeStamp}">
+            <input type="hidden" th:field="*{createTimeStamp}">
+            <input type="hidden" th:field="*{product_id}">
 
-                <button style="margin-top:5px;" type="submit" class="btn btn-primary">Submit Edit</button>
+            <button style="margin-top:5px;" type="submit" class="btn btn-primary">Submit Edit</button>
             <input type="hidden" th:field="*{batch}">
         </form>
-
     </div> <!-- end edit view -->
 
+    <br>
+    <br>
 
+    <!-- Show list of uploaded files -->
+    <div th:if="${filelist != null}">
+        <div class="alert alert-primary" role="alert">Files Previously Uploaded</div>
+        <table class="table">
+            <thead>
+            <tr>
+                <th scope="col">File Name</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="file : ${filelist}">
+                <td th:text="${file.filename}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
 
+    <div style="margin-bottom: 5px;" class="mx-auto">
+        <div class="alert alert-info" role="alert">Upload a file</div>
+        <!-- pass the product object to the upload file controller to get the correct ID to save it under -->
+        <form method="post" th:object="${product}" th:action="@{/file/upload?customJwtParameter=__${customJwtParameter}__}" enctype="multipart/form-data">
+            <div class="form-group">
+                <div th:if="${disableupload}">
+                    <input type="file" disabled="disabled" name="file" class="form-control-file">
+                </div>
 
+                <div th:if="${disableupload == null}">
+                    <input type="file" name="file" class="form-control-file">
+                </div>
+
+                <!-- pass all these hidden attributes so the data stays on page after uploading the file -->
+                <input type="hidden" th:field="*{productnumber}">
+                <input type="hidden" th:field="*{name}">
+                <input type="hidden" th:field="*{description}">
+                <input type="hidden" th:field="*{quantity}">
+                <input type="hidden" th:field="*{price}">
+                <input type="hidden" th:field="*{description}">
+                <input type="hidden" th:field="*{notes}">
+                <input type="hidden" th:field="*{updateTimeStamp}">
+                <input type="hidden" th:field="*{createTimeStamp}">
+                <input type="hidden" th:field="*{cost}">
+            </div>
             <br>
-            <br>
 
-
-            <!-- Show list of uploaded files -->
-            <div th:if="${filelist != null}">
-                <div class="alert alert-primary" role="alert" >Files Previously Uploaded</div>
-                <table class="table">
-                    <thead>
-                    <tr>
-                        <th scope="col">File Name</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="file : ${filelist}">
-                        <td th:text="${file.filename}"></td>
-                    </tr>
-                    </tbody>
-                </table>
+            <div th:if="${disableupload}">
+                <button type="submit" disabled="disabled" class="btn btn-primary">Upload File</button>
             </div>
 
-
-            <div style="margin-bottom: 5px;" class="mx-auto">
-
-                <div class="alert alert-info" role="alert" >Upload a file</div>
-                <!-- pass the product object to the upload file controller to get the correct ID to save it under -->
-                <form method="post" th:object="${product}" th:action="@{/file/upload?customJwtParameter=__${customJwtParameter}__}" enctype="multipart/form-data">
-                    <div class="form-group">
-
-                        <div th:if="${disableupload}">
-                            <input type="file" disabled="disabled" name="file" class="form-control-file">
-                        </div>
-
-                        <div th:if="${disableupload == null}">
-                            <input type="file" name="file" class="form-control-file">
-                        </div>
-
-
-
-                        <!-- pass all these hidden attributes with so the data stays on page after uploading the file -->
-                        <input type="hidden" th:field="*{productnumber}">
-                        <input type="hidden" th:field="*{name}">
-                        <input type="hidden" th:field="*{description}">
-                        <input type="hidden" th:field="*{quantity}">
-                        <input type="hidden" th:field="*{price}">
-                        <input type="hidden" th:field="*{description}">
-                        <input type="hidden" th:field="*{notes}">
-                        <input type="hidden" th:field="*{updateTimeStamp}">
-                        <input type="hidden" th:field="*{createTimeStamp}">
-                        <input type="hidden" th:field="*{cost}">
-                    </div>
-                    <br>
-
-
-                    <div th:if="${disableupload}">
-
-                        <button type="submit" disabled="disabled" class="btn btn-primary">Upload File</button>
-                    </div>
-
-                    <!-- if it is first download then it is ok.  second download will throw 403 is upload is performed right after  -->
-                    <div th:if="${disableupload == null}">
-                        <button type="submit" class="btn btn-primary">Upload File</button>
-                    </div>
-
-
-<!--                    <button type="submit" class="btn btn-primary">Upload File</button>-->
-                </form>
+            <!-- if it is first download then it is ok.  second download will throw 403 if upload is performed right after  -->
+            <div th:if="${disableupload == null}">
+                <button type="submit" class="btn btn-primary">Upload File</button>
             </div>
-
-
-        </div>
-
-
-
-
-
-
-
+        </form>
+    </div>
 </div>
-
-
 </body>
 </html>
