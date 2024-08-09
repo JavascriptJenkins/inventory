@@ -308,7 +308,7 @@ public class AuthViewController {
 
             // update system user object
             systemUserDAO.setUpdatedtimestamp(LocalDateTime.now());
-            systemUserDAO.setIsuseractive(1);
+            systemUserDAO.setIsuseractive(0);
 
             try {
                 systemUserRepo.save(systemUserDAO);
