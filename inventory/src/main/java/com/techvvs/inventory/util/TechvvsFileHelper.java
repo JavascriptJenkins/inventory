@@ -11,6 +11,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
@@ -150,6 +152,15 @@ public class TechvvsFileHelper {
         document.save(appConstants.getPARENT_LEVEL_DIR()+appConstants.getTRANSACTION_INVOICE_DIR()+transaction.getTransactionid()+"/"+filename+".pdf");
         //document.close();
         return appConstants.getPARENT_LEVEL_DIR()+appConstants.getTRANSACTION_INVOICE_DIR()+transaction.getTransactionid()+"/"+filename+".pdf";
+    }
+
+
+    public String sanitizeMultiPartFileName(MultipartFile file) {
+        String cleanName = file.getOriginalFilename().replaceAll("-","_");
+        cleanName = file.getOriginalFilename().replaceAll(" ","_");
+        cleanName = file.getOriginalFilename().replaceAll("\\.","_");
+        cleanName = StringUtils.cleanPath(file.getOriginalFilename());
+        return cleanName;
     }
 
 

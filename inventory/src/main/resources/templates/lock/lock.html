@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Lock</title>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-kQtW33rZJAHjgefvhyyzcGF3C5TFyBQBA13V1RKPf4uH+bwyzQxZ6CmMZHmNBEfJ" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            color: #fff;
+            font-family: 'Roboto', sans-serif;
+            background-color: #343a40;
+        }
+        .header-dark {
+            background-color: #343a40;
+            color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 30px;
+            font-family: 'Roboto', sans-serif;
+            border: 1px solid transparent;
+            border-image: linear-gradient(to right, #c0c0c0, #ffffff);
+            border-image-slice: 1;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .back-button {
+            margin-right: 20px;
+            font-size: 2rem;
+        }
+        .back-button a {
+            color: #343a40;
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 50%;
+            border: 2px solid #343a40;
+        }
+        .back-button a:hover {
+            background-color: #23272b;
+            color: #fff;
+            border-color: #23272b;
+        }
+        .lock-icon {
+            font-size: 4rem;
+            margin-right: 20px;
+        }
+        .form-control, .btn-primary {
+            background-color: #23272b;
+            color: #fff;
+            border: 1px solid #343a40;
+            margin-top: 20px;
+        }
+        .form-control:focus {
+            background-color: #23272b;
+            color: #fff;
+            border-color: #1d2124;
+            box-shadow: none;
+        }
+        .btn-primary:hover {
+            background-color: #1d2124;
+            border-color: #1d2124;
+        }
+        .input-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .input-container .form-control {
+            width: 50%;
+            font-size: 1.5rem;
+        }
+        .input-container .copy-button {
+            margin-left: 10px;
+            background-color: #23272b;
+            border: 1px solid #343a40;
+            color: #fff;
+            font-size: 1.5rem;
+            padding: 10px 15px;
+        }
+        .input-container .copy-button:hover {
+            background-color: #1d2124;
+            color: #fff;
+        }
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+        .button-container .btn {
+            width: 30%;
+            font-size: 1.5rem;
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+
+    <script>
+        function copyToClipboard() {
+            var copyText = document.getElementById("secretkeyInput");
+            copyText.select();
+            copyText.setSelectionRange(0, 99999);
+            document.execCommand("copy");
+        }
+
+        function verifySecretKey() {
+            alert("I understand if I lose my secret key all of my data is gone FOREVER");
+            document.getElementById("lockDataButton").style.display = "block";
+            document.getElementById("verifyButton").style.display = "none";
+        }
+    </script>
+</head>
+<body>
+
+<div class="container my-5">
+    <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
+    <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
+
+    <div class="header-dark">
+        <div class="back-button">
+            <a th:href="@{/dashboard/index?customJwtParameter=__${customJwtParameter}__}">
+                <i class="bi bi-arrow-left-circle"></i>
+            </a>
+        </div>
+        <i class="bi bi-lock-fill lock-icon"></i>
+    </div>
+
+    <div th:if="${locked.equals('unlocked')}">
+        <form th:action="@{/lock/lockdata?customJwtParameter=__${customJwtParameter}__}" th:object="${lock}" method="post">
+
+            <div class="input-container">
+                <input th:field="*{secretkey}" type="text" name="secretkey" id="secretkeyInput" class="form-control" placeholder="Enter Secret Key">
+                <button type="button" class="btn copy-button" onclick="copyToClipboard()">
+                    <i class="bi bi-clipboard"></i>
+                </button>
+            </div>
+
+            <div class="button-container">
+                <button type="button" id="verifyButton" class="btn btn-primary" onclick="verifySecretKey()">I verify my secret key has been copied somewhere safe</button>
+                <button type="submit" id="lockDataButton" class="btn btn-primary" style="display: none;">Lock Data</button>
+            </div>
+        </form>
+    </div>
+
+    <form th:if="${successMessage == null && locked.equals('unlocked')}" th:action="@{/lock/generatekey?customJwtParameter=__${customJwtParameter}__}" th:object="${lock}" method="post">
+        <div class="button-container">
+            <button type="submit" class="btn btn-primary">Generate Key</button>
+        </div>
+    </form>
+
+    <div th:if="${locked.equals('locked')}">
+        <form th:action="@{/lock/unlockdata?customJwtParameter=__${customJwtParameter}__}" th:object="${lock}" method="post">
+
+            <div class="input-container">
+                <input type="text" name="secretkey" id="secretkeyInput" class="form-control" placeholder="Enter Secret Key">
+            </div>
+
+            <div class="button-container">
+                <button type="submit" class="btn btn-primary">Unlock Data</button>
+            </div>
+        </form>
+    </div>
+
+</div>
+
+</body>
+</html>

@@ -140,8 +140,8 @@ public class UploadController {
         String fileName = "";
         if(file.getOriginalFilename() != null){
             System.out.println("file upload 4");
-            fileName = file.getOriginalFilename().replaceAll("-",""); // remove the dashes to avoid file path issues
-            fileName = StringUtils.cleanPath(file.getOriginalFilename());
+            // sanitize the file name
+            fileName = techvvsFileHelper.sanitizeMultiPartFileName(file);
         }
 
         // save the file on the local file system

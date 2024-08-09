@@ -27,7 +27,9 @@ class CustomerHelper {
     CustomerVO validateCustomer(CustomerVO customer, Model model){
 
         // only going to enforce name for now
-        if(customer.name == null || customer.name?.empty){
+        if(customer.name == null || customer.name?.empty
+        || customer.name.contains("==") || customer.name.contains("+")
+        ){
             model.addAttribute("errorMessage","Please enter a valid name")
             return customer
         }
