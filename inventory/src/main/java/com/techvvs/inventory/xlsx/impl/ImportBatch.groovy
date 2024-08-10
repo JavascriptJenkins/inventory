@@ -66,17 +66,16 @@ class ImportBatch {
             // Iterate through rows
             for (Row row : sheet) {
 
-                // skip the first 2 rows because they contain metadata
+                // skip the first 1 rows because they contain metadata
                 if(row.getRowNum() == 0
-                        || row.getRowNum() == 1
                 ){
                     continue;
                 }
 
                 // skip adding product if the name is missing from a row to prevent bad data
-                if(row.getCell(1).getStringCellValue().isEmpty()){
-                    continue;
-                }
+//                if(row.getCell(1).getStringCellValue().isEmpty()){
+//                    continue;
+//                }
 
                 // now take each row and create a product entry
                 ProductVO productVO = new ProductVO();
@@ -84,6 +83,7 @@ class ImportBatch {
                 productVO.setQuantityremaining((int) row.getCell(0).getNumericCellValue());
                 productVO.setName(row.getCell(1).getStringCellValue());
                 Double price = Double.valueOf(row.getCell(2).getNumericCellValue());
+                productVO.setBarcode(row.getCell(3).getStringCellValue());
                 productVO.setPrice(price);
                 productVO.setCost(price - 400.00) // todo: replace this with actual cost data
                 productVO.setProductnumber(secureRandom.nextInt(10000000)); // assuming this will be unique ...
