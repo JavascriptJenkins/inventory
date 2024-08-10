@@ -114,11 +114,11 @@ class BatchControllerHelper {
 //
 //        }
 
-        if(results.get(0).product_set.getAt(0).barcode != null && results.get(0).product_set.getAt(0).barcode != ""){
-            // if one of the products has a barcode in this batch we are going to assume that
-            // we already have barcodes for this batch
-            return false
-        }
+//        if(results.get(0).product_set.getAt(0).barcode != null && results.get(0).product_set.getAt(0).barcode != ""){
+//            // if one of the products has a barcode in this batch we are going to assume that
+//            // we already have barcodes for this batch
+//            return false
+//        }
 
         barcodeService.createAllBarcodesForBatch(results.get(0))
 
@@ -226,7 +226,7 @@ class BatchControllerHelper {
             // cycle thru each cart the product is associated with and count the instances
             for(CartVO cartVO : productVO.cart_list){
                 for(ProductVO cartProductVO : cartVO.product_cart_list){
-                    quantityRemainingInCarts = productVO.product_id == cartProductVO.product_id ? quantityRemainingInCarts + 1 : quantityRemainingInCarts
+                    quantityRemainingInCarts = (productVO.product_id == cartProductVO.product_id && cartVO.isprocessed == 0) ? quantityRemainingInCarts + 1 : quantityRemainingInCarts
                 }
             }
 
@@ -248,8 +248,8 @@ class BatchControllerHelper {
         model.addAttribute("quantity", quantity)
         model.addAttribute("quantityRemaining", quantityRemaining)
         model.addAttribute("quantityRemainingInCarts", quantityRemainingInCarts)
-        model.addAttribute("quantityInTransactions", quantityInTransactions)
-        model.addAttribute("quantityInPaidTransactions", quantityInPaidTransactions)
+        model.addAttribute("quantityInTransactions", quantityInTransactions)//
+        model.addAttribute("quantityInPaidTransactions", quantityInPaidTransactions)//
         model.addAttribute("batchValueTotal", batchValueTotal)
         model.addAttribute("batchValueRemainingTotal", batchValueRemainingTotal)
     }
@@ -452,19 +452,22 @@ class BatchControllerHelper {
 
         // set the column header names
         Row row = sheet.createRow(0)
-        row.createCell(0).setCellValue("Name")
-        sheet.setColumnWidth(0, 10000); // Set width of the first column for name
-        row.createCell(1).setCellValue("Price")
-        row.createCell(2).setCellValue("Stock")
+        row.createCell(0).setCellValue("Quantity")
+        sheet.setColumnWidth(1, 10000); // Set width of the first column for flavor
+        row.createCell(1).setCellValue("Flavor")
+        row.createCell(2).setCellValue("Ticket")
+        sheet.setColumnWidth(3, 10000); // Set width of the first column for barcode
+        row.createCell(3).setCellValue("Barcode")
 
         // set the values
         for(int i=1;i<batchVO.product_set.size()+1;i++){
             row = sheet.createRow(i)
             ProductVO productVO = batchVO.product_set[i - 1] // need to subtract 1 here to account for header row at index 0
         //    setColumnWidthBasedOnString(sheet, 0 ,productVO.name) // set width of each name cell based on length
-            row.createCell(0).setCellValue(productVO.name)
-            row.createCell(1).setCellValue(productVO.price + priceadjustment)
-            row.createCell(2).setCellValue(productVO.quantityremaining)
+            row.createCell(0).setCellValue(productVO.quantity)
+            row.createCell(1).setCellValue(productVO.name)
+            row.createCell(2).setCellValue(productVO.price + priceadjustment)
+            row.createCell(3).setCellValue(productVO.barcode)
 
 
         }
