@@ -230,10 +230,17 @@ class BatchControllerHelper {
                 }
             }
 
+            String previousbarcode = ""
+
             for(TransactionVO transactionVO : productVO.transaction_list){
                 for(ProductVO transactionProductVO : transactionVO.product_list){
-                    quantityInTransactions = (productVO.product_id == transactionProductVO.product_id && transactionVO.paid < transactionVO.totalwithtax) ? quantityInTransactions + 1 : quantityInTransactions
-                    quantityInPaidTransactions = (productVO.product_id == transactionProductVO.product_id && transactionVO.paid >= transactionVO.totalwithtax) ? quantityInPaidTransactions + 1 : quantityInPaidTransactions
+                    if(previousbarcode.equals(transactionProductVO.barcode)){
+                        // skip
+                    } else {
+                        quantityInTransactions = (productVO.product_id == transactionProductVO.product_id && transactionVO.paid < transactionVO.totalwithtax) ? quantityInTransactions + 1 : quantityInTransactions
+                        quantityInPaidTransactions = (productVO.product_id == transactionProductVO.product_id && transactionVO.paid >= transactionVO.totalwithtax) ? quantityInPaidTransactions + 1 : quantityInPaidTransactions
+                    }
+                    previousbarcode = transactionProductVO.barcode
                 }
             }
 
