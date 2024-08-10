@@ -28,6 +28,9 @@ public class TechvvsFileHelper {
     @Autowired
     AppConstants appConstants;
 
+    @Autowired
+    FormattingUtil formattingUtil;
+
     public List<FileVO> getFilesByFileNumber(Integer filenumber, String uploaddir){
         List<FileVO> filelist = new ArrayList<>(2);
 
@@ -143,7 +146,7 @@ public class TechvvsFileHelper {
         PaymentVO payment = transaction.getMostRecentPayment();
 
         // this will make it save a new version of the invoice every time a payment is applied
-        String filename = transaction.getCustomervo().getName().trim()+transaction.getCustomervo().getCustomerid()+"_invoice_"+"payment_"+payment.getPaymentid();
+        String filename = transaction.getCustomervo().getName().trim().replaceAll(" ","_")+transaction.getCustomervo().getCustomerid()+"_invoice_"+"payment_"+payment.getPaymentid();
 
         // create a directory with the batchnumber and /barcodes dir if it doesn't exist yet
         Files.createDirectories(Paths.get(appConstants.getPARENT_LEVEL_DIR()+appConstants.getTRANSACTION_INVOICE_DIR()+transaction.getTransactionid()));
