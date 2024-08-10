@@ -223,12 +223,24 @@ class BatchControllerHelper {
                 productVO.quantityremaining = 0
             }
 
+
+
+            // we only want to run the cart check once per instance cart id
+            Set<Integer> seenCarts = new HashSet<>();
+
             // cycle thru each cart the product is associated with and count the instances
-            for(CartVO cartVO : productVO.cart_list){
-                for(ProductVO cartProductVO : cartVO.product_cart_list){
-                    quantityRemainingInCarts = (productVO.product_id == cartProductVO.product_id && cartVO.isprocessed == 0) ? quantityRemainingInCarts + 1 : quantityRemainingInCarts
+            for (CartVO cartVO : productVO.cart_list) {
+                if(!seenCarts.contains(cartVO.cartid)) {
+                    if (cartVO.isprocessed == 0) {
+                        for (ProductVO cartProductVO : cartVO.product_cart_list) {
+                            quantityRemainingInCarts = (productVO.product_id == cartProductVO.product_id && cartVO.isprocessed == 0) ? quantityRemainingInCarts + 1 : quantityRemainingInCarts
+                        }
+                    }
                 }
-            }
+                seenCarts.add(cartVO.cartid);
+             }
+
+
 
             String previousbarcode = ""
 
