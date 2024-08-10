@@ -11,3 +11,6 @@ delete from cart where cartid > 0
 
 UPDATE Product
 SET quantityremaining = quantity;
+
+UPDATE Product
+SET quantityremaining = 2 where product_id = 12;
