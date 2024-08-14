@@ -480,14 +480,16 @@ class BatchControllerHelper {
 
         // set the values
         for(int i=1;i<batchVO.product_set.size()+1;i++){
-            row = sheet.createRow(i)
             ProductVO productVO = batchVO.product_set[i - 1] // need to subtract 1 here to account for header row at index 0
-        //    setColumnWidthBasedOnString(sheet, 0 ,productVO.name) // set width of each name cell based on length
-            row.createCell(0).setCellValue(productVO.quantityremaining)
-            row.createCell(1).setCellValue(productVO.name)
-            row.createCell(2).setCellValue(productVO.price + priceadjustment)
-            row.createCell(3).setCellValue(productVO.barcode)
-
+            // only export the xlsx if the quantityremaining is over 0
+            if(productVO.quantityremaining > 0){
+                row = sheet.createRow(i)
+                //    setColumnWidthBasedOnString(sheet, 0 ,productVO.name) // set width of each name cell based on length
+                row.createCell(0).setCellValue(productVO.quantityremaining)
+                row.createCell(1).setCellValue(productVO.name)
+                row.createCell(2).setCellValue(productVO.price + priceadjustment)
+                row.createCell(3).setCellValue(productVO.barcode)
+            }
 
         }
 
