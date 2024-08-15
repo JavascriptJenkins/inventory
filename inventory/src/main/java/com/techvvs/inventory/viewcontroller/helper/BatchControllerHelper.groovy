@@ -478,9 +478,17 @@ class BatchControllerHelper {
         sheet.setColumnWidth(3, 10000); // Set width of the first column for barcode
         row.createCell(3).setCellValue("Barcode")
 
+
+        ArrayList<ProductVO> listofproductsinstock = new ArrayList()
+        batchVO.product_set.each{ item ->
+            item.quantityremaining > 0 ? listofproductsinstock.add(item) : item.quantityremaining
+        }
+
+        ProductVO.sortProductsByPrice(listofproductsinstock)
+
         // set the values
-        for(int i=1;i<batchVO.product_set.size()+1;i++){
-            ProductVO productVO = batchVO.product_set[i - 1] // need to subtract 1 here to account for header row at index 0
+        for(int i=1;i<listofproductsinstock.size()+1;i++){
+            ProductVO productVO = listofproductsinstock[i - 1] // need to subtract 1 here to account for header row at index 0
             // only export the xlsx if the quantityremaining is over 0
             if(productVO.quantityremaining > 0){
                 row = sheet.createRow(i)
