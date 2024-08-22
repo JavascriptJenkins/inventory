@@ -251,12 +251,19 @@
 
             // Find the nearest span within the same row as the clicked button
             var spanText = $(event.target).closest('tr').find('span').text();
+            console.log(spanText);
+
+            spanText = removeCommas(spanText);
 
             // Set the value of the hidden input field 'filenameaction' to the span text
             document.getElementById('filename').value = spanText;
 
             document.getElementById('action').value = "view";
             document.getElementById('textoremailInvoiceForm').submit();
+        }
+
+        function removeCommas(text) {
+            return text.replace(/,/g, '');
         }
     </script>
 
