@@ -87,7 +87,7 @@ class TransactionHelper {
 
         model.addAttribute("pageNumbers", pageNumbers);
         model.addAttribute("page", currentPage);
-        model.addAttribute("size", pageOfTransaction.getTotalPages());
+        model.addAttribute("size", pageSize);
         model.addAttribute("transactionPage", pageOfTransaction);
         // END PAGINATION
 
