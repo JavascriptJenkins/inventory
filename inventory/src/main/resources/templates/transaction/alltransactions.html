@@ -107,10 +107,16 @@
             }
 
             var customJwtParameter = getParameterByName('customJwtParameter'); // Extract the parameter from the URL
+            var currentSize = getParameterByName('size') || '5'; // Default to 10 if not set
+            var currentPage = getParameterByName('page') || '0'; // Default to 1 if not set
+
+
+            // Set the dropdown to the current size
+            $('#recordSize').val(currentSize);
 
             $('#recordSize').change(function() {
                 var selectedSize = $(this).val();
-                var newUrl = '/transaction/listall?customJwtParameter=' + customJwtParameter + '&size=' + selectedSize + '&page=1';
+                var newUrl = '/transaction/listall?customJwtParameter=' + customJwtParameter + '&size=' + selectedSize + '&page=' + currentPage;
                 window.location.href = newUrl;
             });
         });
@@ -171,7 +177,7 @@
         <ul class="pagination">
             <li class="page-item" th:each="pageNumber : ${pageNumbers}">
                 <a class="page-link"
-                   th:href="@{/transaction/listall?customJwtParameter=__${customJwtParameter}__&size=__${#lists.size(transactionPage.content)}__&page=__${pageNumber}__}"
+                   th:href="@{/transaction/listall?customJwtParameter=__${customJwtParameter}__&size=__${size}__&page=__${pageNumber}__}"
                    th:text="${pageNumber}"
                    th:classappend="${pageNumber==transactionPage.number + 1} ? 'active'">
                 </a>
