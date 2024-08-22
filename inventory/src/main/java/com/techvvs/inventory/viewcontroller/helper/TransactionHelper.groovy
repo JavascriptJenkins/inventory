@@ -115,6 +115,10 @@ class TransactionHelper {
         emailService.sendDownloadLinkEmail(email, filename)
     }
 
+    void viewInvoice(String email, String filename){
+       // emailService.sendDownloadLinkEmail(email, filename)
+    }
+
 
     // we are only deleting it from the transaction - the original cart association is not removed.
     TransactionVO deleteProductFromTransaction(TransactionVO transactionVO, String barcode){

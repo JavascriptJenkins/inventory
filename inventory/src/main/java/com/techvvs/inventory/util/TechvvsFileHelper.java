@@ -5,6 +5,7 @@ import com.techvvs.inventory.model.PaymentVO;
 import com.techvvs.inventory.model.TransactionVO;
 import com.techvvs.inventory.modelnonpersist.FileVO;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -16,11 +17,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class TechvvsFileHelper {
@@ -165,6 +169,79 @@ public class TechvvsFileHelper {
         cleanName = StringUtils.cleanPath(file.getOriginalFilename());
         return cleanName;
     }
+
+
+//    public String readFileAsUtf8String(String filePath) {
+//        try {
+//            byte[] fileBytes = Files.readAllBytes(Paths.get(filePath));
+//            return new String(fileBytes, StandardCharsets.UTF_8);
+//        } catch (IOException e) {
+//            System.out.println("Exception in readFileAsUtf8String: " + e.getMessage());
+//            return null;
+//        }
+//    }
+
+    public String readFileAsUtf8String(String filePath) {
+        try {
+            return Files.lines(Paths.get(filePath), StandardCharsets.UTF_8)
+                    .collect(Collectors.joining(System.lineSeparator()));
+        } catch (IOException e) {
+            System.out.println("Exception in readFileAsUtf8String: " + e.getMessage());
+            return null;
+        }
+    }
+
+    public String readPdfAsBase64String(String filePath) {
+        try {
+            // Read the PDF file as a byte array
+            byte[] fileBytes = Files.readAllBytes(Paths.get(filePath));
+
+            // Encode the byte array to a Base64 string
+            return Base64.getEncoder().encodeToString(fileBytes);
+        } catch (IOException e) {
+            System.out.println("Exception in readPdfAsBase64String: " + e.getMessage());
+            return null;
+        }
+    }
+
+
+    public String readPdfAsString(String filePath) {
+        try (PDDocument document = PDDocument.load(new File(filePath))) {
+            CustomPDFTextStripper pdfStripper = new CustomPDFTextStripper();
+
+            // Ensure line by line reading
+            pdfStripper.setSortByPosition(true);  // Preserves the reading order as it appears
+            pdfStripper.setStartPage(0);  // Start from the first page
+            pdfStripper.setEndPage(document.getNumberOfPages());  // Go till the last page
+
+            return pdfStripper.getText(document);
+        } catch (IOException e) {
+            System.out.println("Exception in readPdfAsString: " + e.getMessage());
+            return null;
+        }
+    }
+
+
+    private static class CustomPDFTextStripper extends PDFTextStripper {
+        public CustomPDFTextStripper() throws IOException {
+            // Optionally adjust settings for finer control
+            setWordSeparator(" ");
+            setLineSeparator(System.lineSeparator());
+            setParagraphStart(System.lineSeparator() + System.lineSeparator());
+            setSortByPosition(true); // Ensure reading order
+        }
+    }
+
+
+    //    public String readPdfAsString(String filePath) {
+//        try (PDDocument document = PDDocument.load(new File(filePath))) {
+//            PDFTextStripper pdfStripper = new PDFTextStripper();
+//            return pdfStripper.getText(document);
+//        } catch (IOException e) {
+//            System.out.println("Exception in readPdfAsString: " + e.getMessage());
+//            return null;
+//        }
+//    }
 
 
 }

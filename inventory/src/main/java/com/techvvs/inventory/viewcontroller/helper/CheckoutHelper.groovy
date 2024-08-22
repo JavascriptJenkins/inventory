@@ -161,6 +161,7 @@ class CheckoutHelper {
         transactionVO.phonenumber = phone.replace(",", "")
         transactionVO.email = email.replace(",", "")
         transactionVO.action = action.replace(",", "")
+        transactionVO.filename = action.replace(",", "")
         return transactionVO
     }
 

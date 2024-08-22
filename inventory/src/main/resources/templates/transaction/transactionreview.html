@@ -130,6 +130,58 @@
         .form-label {
             color: #000;  /* Changed to black */
         }
+        .blurred {
+            filter: blur(5px);
+            pointer-events: none;
+        }
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        .popup-content {
+            background: #343a40;
+            padding: 20px;
+            border-radius: 10px;
+            color: #fff;
+            width: 90%;
+            height: 90%;
+            max-width: 1200px; /* Maximum width for large screens */
+            max-height: 90%;
+            overflow-y: auto;
+            position: relative;
+            z-index: 1001;
+        }
+        .popup-close {
+            position: absolute;
+            top: +5px; /* Adjusted positioning */
+            right: +250px; /* Adjusted positioning */
+            background: #dc3545;
+            border-radius: 50%;
+            color: #fff;
+            width: 50px; /* Slightly larger button */
+            height: 50px; /* Slightly larger button */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            cursor: pointer;
+            z-index: 1002;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); /* Add some shadow */
+        }
+        .popup-content embed {
+            width: 100%;
+            height: 100%;
+            border-radius: 5px;
+        }
     </style>
 
     <script>
@@ -158,52 +210,74 @@
                 }
             });
         }
-    </script>
 
-
-    <script>
         function openPopup(type) {
-        let userInput = prompt(`Please enter your ${type === 'text' ? 'phone number (10 digits)' : 'email address'}`);
-        if (userInput) {
-            if (type === 'text') {
-                if (/^\d{10}$/.test(userInput)) {
-                    document.getElementById('phonenumber').value = userInput;
-                    document.getElementById('action').value = "text";
-                    document.getElementById('textoremailInvoiceForm').submit();
-                } else {
-                    alert('Invalid phone number. Please enter a 10 digit number.');
-                }
-            } else if (type === 'email') {
-                if (/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(userInput) && userInput.length >= 4) {
-                    document.getElementById('email').value = userInput;
-                    document.getElementById('action').value = "email";
-                    document.getElementById('textoremailInvoiceForm').submit();
-                } else {
-                    alert('Invalid email address. Please enter a valid email.');
+            let userInput = prompt(`Please enter your ${type === 'text' ? 'phone number (10 digits)' : 'email address'}`);
+            if (userInput) {
+                if (type === 'text') {
+                    if (/^\d{10}$/.test(userInput)) {
+                        document.getElementById('phonenumber').value = userInput;
+                        document.getElementById('action').value = "text";
+                        document.getElementById('textoremailInvoiceForm').submit();
+                    } else {
+                        alert('Invalid phone number. Please enter a 10 digit number.');
+                    }
+                } else if (type === 'email') {
+                    if (/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(userInput) && userInput.length >= 4) {
+                        document.getElementById('email').value = userInput;
+                        document.getElementById('action').value = "email";
+                        document.getElementById('textoremailInvoiceForm').submit();
+                    } else {
+                        alert('Invalid email address. Please enter a valid email.');
+                    }
                 }
             }
         }
-    }
-    function setTextInvoice() {
-                event.preventDefault();
 
-        document.getElementById('action').value = "text";
-        openPopup('text');
-    }
-    function setEmailInvoice() {
-                event.preventDefault();
+        function setTextInvoice(event) {
+            event.preventDefault();
+            document.getElementById('action').value = "text";
+            openPopup('text');
+        }
 
-        document.getElementById('action').value = "email";
-        openPopup('email');
+        function setEmailInvoice(event) {
+            event.preventDefault();
+            document.getElementById('action').value = "email";
+            openPopup('email');
+        }
 
-    }
+        function viewInvoice(event) {
+            event.preventDefault();
+
+            // Find the nearest span within the same row as the clicked button
+            var spanText = $(event.target).closest('tr').find('span').text();
+
+            // Set the value of the hidden input field 'filenameaction' to the span text
+            document.getElementById('filename').value = spanText;
+
+            document.getElementById('action').value = "view";
+            document.getElementById('textoremailInvoiceForm').submit();
+        }
+    </script>
+
+    <script>
+        function closePopup() {
+            document.getElementById('popupOverlay').style.display = 'none';
+            document.getElementById('pageContent').classList.remove('blurred');
+        }
+
+        $(document).ready(function() {
+            if ($('#popupOverlay').length) {
+                document.getElementById('pageContent').classList.add('blurred');
+            }
+        });
     </script>
 
 </head>
 <body>
 <div th:insert="auth/navbar.html :: navbarfragment"> </div>
 
-<div class="container">
+<div id="pageContent" class="container">
     <div class="header-dark">
         <div class="back-button">
             <a th:href="@{/transaction/listall?customJwtParameter=__${customJwtParameter}__}"><i class="bi bi-arrow-left-circle"></i></a>
@@ -268,12 +342,16 @@
                 <td>
                     <span th:text="${file.filename}"></span>
                     <input type="hidden" id="action" name="action" value="">
+                    <input type="hidden" id="filename" name="filename" value="">
                     <input type="hidden" id="email" name="email" value="">
                     <input type="hidden" id="phonenumber" name="phonenumber" value="">
                     <input type="hidden" th:field="*{transactionid}">
                     <div class="text-end">
+<!--                        NOTE: this is not actually texting or emailing the invoice in the table row.  This is going to print or email the MOST RECENT invoice for that transaction-->
                         <button onclick="setTextInvoice(event)" type="submit" class="btn btn-primary">Text Invoice</button>
                         <button onclick="setEmailInvoice(event)" type="submit" class="btn btn-primary">Email Invoice</button>
+                        <!-- New View Invoice button -->
+                        <button onclick="viewInvoice(event)" type="submit" class="btn btn-primary">View Invoice</button>
                     </div>
                 </td>
             </tr>
@@ -289,4 +367,12 @@
     </form>
 </div>
 </body>
+<!-- Popup content if ${invoicecontent} exists -->
+<div th:if="${invoicecontent}" id="popupOverlay" class="popup-overlay">
+    <div class="popup-content">
+        <div class="popup-close" onclick="closePopup()">&times;</div>
+        <embed th:src="'data:application/pdf;base64,' + ${invoicecontent}" type="application/pdf" width="100%" height="100%" />
+<!--        <div th:text="${invoicecontent}"></div>-->
+    </div>
+</div>
 </html>

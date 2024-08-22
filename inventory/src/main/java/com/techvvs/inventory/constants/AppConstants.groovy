@@ -28,6 +28,7 @@ class AppConstants {
 
     String TEXT_INVOICE = "text"
 String EMAIL_INVOICE = "email"
+String VIEW_INVOICE = "view"
 
     String QR_CODE_PUBLIC_INFO_LINK_PROD = "https://inventory.techvvs.io/qr/publicinfo?productid="
     String QR_CODE_PUBLIC_INFO_LINK_DEV1 = "http://localhost:8080/qr/publicinfo?productid="

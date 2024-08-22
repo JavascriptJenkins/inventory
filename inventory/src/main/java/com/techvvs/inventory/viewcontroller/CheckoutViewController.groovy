@@ -14,6 +14,7 @@ import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.modelnonpersist.FileVO
 import com.techvvs.inventory.printers.PrinterService
+import com.techvvs.inventory.printers.invoice.InvoiceGenerator
 import com.techvvs.inventory.service.controllers.CartService
 import com.techvvs.inventory.service.controllers.TransactionService
 import com.techvvs.inventory.service.paging.FilePagingService
@@ -83,6 +84,9 @@ public class CheckoutViewController {
 
     @Autowired
     CheckoutHelper checkoutHelper
+
+    @Autowired
+    InvoiceGenerator invoiceGenerator
 
     @Autowired
     CartService cartService
@@ -425,6 +429,66 @@ public class CheckoutViewController {
                         @RequestParam("customJwtParameter") String customJwtParameter,
                         @RequestParam("page") Optional<Integer> page,
                         @RequestParam("size") Optional<Integer> size){
+
+        System.out.println("customJwtParam on checkout controller: "+customJwtParameter);
+
+        // start bind transients
+        String transientemail = transactionVO.email
+        String transientphonunumber = transactionVO.phonenumber
+        String transientaction =  transactionVO.action
+        String filename =  transactionVO.filename
+        // end bind transients
+        String contentsofinvoice = ""
+
+        transactionVO = transactionService.getExistingTransaction(transactionVO.transactionid)
+
+        transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO)
+
+        checkoutHelper.bindtransients(transactionVO, transientphonunumber, transientemail, transientaction)
+
+        if("view".equals(transientaction)){
+            String dirandfilename = appConstants.PARENT_LEVEL_DIR+appConstants.TRANSACTION_INVOICE_DIR+String.valueOf(transactionVO.transactionid)+"/"+filename
+            contentsofinvoice = techvvsFileHelper.readPdfAsBase64String(dirandfilename)
+
+        } else {
+            // todo: need to modify this to pass in the actual invoice from the table row clicked, instead of how it is now, which texts/emails the most recent invoice
+            printerService.printInvoice(transactionVO, false, false)
+        }
+
+
+
+        // start file paging
+        String dir = appConstants.PARENT_LEVEL_DIR+appConstants.TRANSACTION_INVOICE_DIR+String.valueOf(transactionVO.transactionid)+"/"
+        Page<FileVO> filePage = filePagingService.getFilePageFromDirectory(page.get(), size.get(), dir)
+        filePagingService.bindPageAttributesToModel(model, filePage, page, size);
+        // end file paging
+
+        model.addAttribute("customJwtParameter", customJwtParameter);
+        model.addAttribute("transaction", transactionVO);
+        model.addAttribute("invoicecontent", contentsofinvoice)
+        checkoutHelper.getAllCustomers(model)
+
+        if(model.getAttribute("errorMessage") == null && contentsofinvoice.length() == 0){
+            model.addAttribute("successMessage", "Successfully sent invoice! Thanks!")
+
+            return "transaction/transactionreview.html";
+
+        } else if(contentsofinvoice.length() > 0) {
+            model.addAttribute("successMessage", "Successfully retrieved invoice for display. ")
+            return "transaction/transactionreview.html";// return same page with errors
+        } else {
+            return "transaction/transactionreview.html";// return same page with errors
+        }
+
+    }
+
+    // NOTE: this is not being used right now, but this will indeed print the most recent invoice when clicked from the transaction review page in the table of invoices
+    @PostMapping("/printmostrecentinvoice")
+    String printmostrecentinvoice(@ModelAttribute( "transaction" ) TransactionVO transactionVO,
+                            Model model,
+                            @RequestParam("customJwtParameter") String customJwtParameter,
+                            @RequestParam("page") Optional<Integer> page,
+                            @RequestParam("size") Optional<Integer> size){
 
         System.out.println("customJwtParam on checkout controller: "+customJwtParameter);
 
