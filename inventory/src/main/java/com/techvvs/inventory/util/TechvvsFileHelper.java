@@ -191,10 +191,18 @@ public class TechvvsFileHelper {
         }
     }
 
+    // todo: the problem is this is returning length of 0 for some reason.  on the controller is gets nothing back
     public String readPdfAsBase64String(String filePath) {
         try {
+
+            System.out.println("---------------> FILEPATH: "+filePath);
+
             // Read the PDF file as a byte array
             byte[] fileBytes = Files.readAllBytes(Paths.get(filePath));
+
+
+            System.out.println("---------------> ENCODE TO STRING: "+Base64.getEncoder().encodeToString(fileBytes));
+
 
             // Encode the byte array to a Base64 string
             return Base64.getEncoder().encodeToString(fileBytes);
