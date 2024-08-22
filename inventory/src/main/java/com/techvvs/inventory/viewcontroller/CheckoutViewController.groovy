@@ -445,7 +445,7 @@ public class CheckoutViewController {
         checkoutHelper.bindtransients(transactionVO, transientphonunumber, transientemail, transientaction)
 
         if("view".equals(transactionVO.action)){
-            filename.replaceAll(",", "")
+            filename = filename.replaceAll(",", "")
             String dirandfilename = appConstants.PARENT_LEVEL_DIR+appConstants.TRANSACTION_INVOICE_DIR+String.valueOf(transactionVO.transactionid)+"/"+filename
             contentsofinvoice = techvvsFileHelper.readPdfAsBase64String(dirandfilename)
 
