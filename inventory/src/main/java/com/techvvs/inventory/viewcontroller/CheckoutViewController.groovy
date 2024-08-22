@@ -430,8 +430,6 @@ public class CheckoutViewController {
                         @RequestParam("page") Optional<Integer> page,
                         @RequestParam("size") Optional<Integer> size){
 
-        System.out.println("customJwtParam on checkout controller: "+customJwtParameter);
-
         // start bind transients
         String transientemail = transactionVO.email
         String transientphonunumber = transactionVO.phonenumber
@@ -446,7 +444,7 @@ public class CheckoutViewController {
 
         checkoutHelper.bindtransients(transactionVO, transientphonunumber, transientemail, transientaction)
 
-        if("view".equals(transientaction)){
+        if("view".equals(transactionVO.action)){
             String dirandfilename = appConstants.PARENT_LEVEL_DIR+appConstants.TRANSACTION_INVOICE_DIR+String.valueOf(transactionVO.transactionid)+"/"+filename
             contentsofinvoice = techvvsFileHelper.readPdfAsBase64String(dirandfilename)
 
