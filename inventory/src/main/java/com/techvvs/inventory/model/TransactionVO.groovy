@@ -82,6 +82,9 @@ class TransactionVO implements Serializable {
     @Transient
     String email = ""
 
+    @Transient
+    String filename = ""
+
 
     PaymentVO getMostRecentPayment() {
         if (payment_list == null || payment_list.isEmpty()) {
