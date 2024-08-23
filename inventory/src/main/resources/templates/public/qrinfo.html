@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NORTHSTAR QR INFO</title>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-kQtW33rZJAHjgefvhyyzcGF3C5TFyBQBA13V1RKPf4uH+bwyzQxZ6CmMZHmNBEfJ" crossorigin="anonymous"></script>
+    <link rel="stylesheet" type="text/css" media="all" href="/css/table.css" th:href="@{/css/table.css}" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            color: #fff;
+            font-family: 'Roboto', sans-serif;
+            background-color: #343a40; /* Applying dark background to body */
+        }
+        .header-dark {
+            background-color: #343a40;
+            color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-family: 'Roboto', sans-serif;
+            border: 1px solid transparent;
+            border-image: linear-gradient(to right, #c0c0c0, #ffffff);
+            border-image-slice: 1;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .leafly-button {
+            font-size: 1.5rem;
+            background-color: #23272b;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            border: 2px solid #343a40;
+            transition: background-color 0.3s ease;
+            margin-top: 10px; /* Add margin to separate from the title */
+        }
+        .leafly-button:hover {
+            background-color: #1d2124;
+            color: #fff;
+            text-decoration: none;
+        }
+        .leafly-button i {
+            margin-right: 8px;
+        }
+        .table-hover tbody tr:hover {
+            background-color: #e0f7fa;
+        }
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: #f1f8fa;
+        }
+        .table-dark thead {
+            background-color: #343a40;
+            color: #fff;
+        }
+        .btn-secondary, .btn-primary {
+            color: #fff;
+            background-color: #343a40;
+            border-color: #343a40;
+        }
+        .btn-secondary:hover, .btn-primary:hover {
+            background-color: #23272b;
+            border-color: #1d2124;
+        }
+        .form-control, .form-select {
+            background-color: #343a40;
+            color: #fff;
+            border: 1px solid #343a40;
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: #343a40;
+            color: #fff;
+            border-color: #1d2124;
+            box-shadow: none;
+        }
+        .required:after {
+            content: " *";
+            color: red;
+        }
+    </style>
+</head>
+<body>
+
+HELLO
+
+<!--<div class="container my-5">-->
+<!--    <div class="header-dark">-->
+<!--        <h1 class="display-4"><span th:text="${product.name}"></span></h1>-->
+<!--        <a th:href="'https://www.leafly.com/search?q=' + ${product.name}" class="leafly-button">-->
+<!--            <i class="bi bi-box-arrow-up-right"></i> Leafly-->
+<!--        </a>-->
+<!--    </div>-->
+<!--    <div class="row justify-content-center">-->
+<!--        <div class="col-md-8">-->
+<!--            <table class="table table-hover table-striped table-dark table-bordered">-->
+<!--                <thead>-->
+<!--                <tr>-->
+<!--                    <th>QR Info</th>-->
+<!--                    <th></th>-->
+<!--                </tr>-->
+<!--                </thead>-->
+<!--                <tbody>-->
+<!--                <tr>-->
+<!--                    <td>Product Name</td>-->
+<!--                    <td th:text="${product.name}"></td>-->
+<!--                </tr>-->
+<!--                <tr>-->
+<!--                    <td>Description</td>-->
+<!--                    <td th:text="${product.description}"></td>-->
+<!--                </tr>-->
+<!--                <tr>-->
+<!--                    <td>Notes</td>-->
+<!--                    <td th:text="${product.notes}"></td>-->
+<!--                </tr>-->
+<!--                <tr>-->
+<!--                    <td>Barcode</td>-->
+<!--                    <td th:text="${product.barcode}"></td>-->
+<!--                </tr>-->
+<!--                </tbody>-->
+<!--            </table>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</div>-->
+
+</body>
+</html>
