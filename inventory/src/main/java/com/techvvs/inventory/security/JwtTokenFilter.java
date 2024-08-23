@@ -75,6 +75,14 @@ public class JwtTokenFilter extends OncePerRequestFilter implements CsrfTokenRep
           String publicToken = jwtTokenProvider.createTokenForPublicQR("johndoe@gmail.com", roles);
           Authentication auth = jwtTokenProvider.getAuthenticationForPublicQR(publicToken);
           SecurityContextHolder.getContext().setAuthentication(auth);
+      } else if(httpServletRequest.getRequestURI().equals("/qr") && "GET".equals(httpServletRequest.getMethod())){
+          // post requests need a jwt token usually
+          logger.info("hit qr northstar method");
+          List<Role> roles = new ArrayList<>(1);
+          roles.add(Role.PUBLIC_QR_ROLE);
+          String publicToken = jwtTokenProvider.createTokenForPublicQR("johndoe@gmail.com", roles);
+          Authentication auth = jwtTokenProvider.getAuthenticationForPublicQR(publicToken);
+          SecurityContextHolder.getContext().setAuthentication(auth);
       }
     } catch (CustomException ex) {
         logger.info("Exception on JWT controller: "+ex.getMessage());
