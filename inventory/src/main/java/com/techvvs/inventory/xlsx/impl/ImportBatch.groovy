@@ -140,7 +140,7 @@ class ImportBatch {
         return result;
     }
 
-
+    // todo: do a lookup to make sure batchnumber is unique
     BatchVO createBatchRecord(String nameOfBatch){
 
         // uploads/xlsx/export-1.xlsx
