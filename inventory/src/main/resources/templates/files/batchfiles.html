@@ -292,8 +292,15 @@
 
     <script>
         function closePopup() {
-            document.getElementById('popupOverlay').style.display = 'none';
-            document.getElementById('pageContent').classList.remove('blurred');
+                const popupOverlay = document.getElementById('popupOverlay');
+                const pageContent = document.getElementById('pageContent');
+                if (popupOverlay) {
+                    popupOverlay.style.display = 'none';
+                }
+
+                if (pageContent) {
+                    pageContent.classList.remove('blurred');
+                }
         }
 
         $(document).ready(function() {
