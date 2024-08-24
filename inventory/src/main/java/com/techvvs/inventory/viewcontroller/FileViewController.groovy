@@ -1,43 +1,21 @@
 package com.techvvs.inventory.viewcontroller
 
 import com.techvvs.inventory.constants.AppConstants
-import com.techvvs.inventory.dao.BatchDao
-import com.techvvs.inventory.jparepo.BatchRepo
-import com.techvvs.inventory.jparepo.BatchTypeRepo
-import com.techvvs.inventory.jparepo.ProductRepo
-import com.techvvs.inventory.jparepo.ProductTypeRepo
 import com.techvvs.inventory.model.BatchVO
-import com.techvvs.inventory.model.CustomerVO
-import com.techvvs.inventory.model.PaymentVO
-import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.modelnonpersist.FileVO
 import com.techvvs.inventory.modelnonpersist.MenuOptionVO
-import com.techvvs.inventory.printers.PrinterService
-import com.techvvs.inventory.service.controllers.CartService
-import com.techvvs.inventory.service.controllers.PaymentService
-import com.techvvs.inventory.service.controllers.TransactionService
 import com.techvvs.inventory.service.paging.FilePagingService
 import com.techvvs.inventory.util.TechvvsFileHelper
-import com.techvvs.inventory.validation.ValidateBatch
 import com.techvvs.inventory.viewcontroller.constants.ControllerConstants
 import com.techvvs.inventory.viewcontroller.helper.BatchControllerHelper
-import com.techvvs.inventory.viewcontroller.helper.CheckoutHelper
 import com.techvvs.inventory.viewcontroller.helper.FileViewHelper
-import com.techvvs.inventory.viewcontroller.helper.MenuHelper
-import com.techvvs.inventory.viewcontroller.helper.PaymentHelper
 import com.techvvs.inventory.viewcontroller.helper.TransactionHelper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.*
 
-import javax.servlet.http.HttpServletRequest
-import java.nio.file.Files
-import java.nio.file.Paths
-import java.security.SecureRandom
 
 @RequestMapping("/viewfiles")
 @Controller
@@ -46,6 +24,9 @@ public class FileViewController {
 
     @Autowired
     AppConstants appConstants
+
+    @Autowired
+    TechvvsFileHelper techvvsFileHelper
 
     @Autowired
     ControllerConstants controllerConstants
@@ -151,7 +132,8 @@ public class FileViewController {
         String filename = menuoption.filenametosend // this contains file path from the dropdown
 
 
-
+        filename = filename.replaceAll(",", "")
+        String contentsofinvoice = ""
         // now here we need to actually send out the file
         String dir = appConstants.PARENT_LEVEL_DIR+String.valueOf(batchVO.batchnumber)+selected+"/"+filename
 
@@ -159,6 +141,8 @@ public class FileViewController {
             transactionHelper.sendTextMessageWithDownloadLink(menuoption.phonenumber, dir)
         } else if (menuoption.action.contains(appConstants.EMAIL_INVOICE)) {
             transactionHelper.sendEmailWithDownloadLink(menuoption.email, dir)
+        } else if (menuoption.action.contains(appConstants.VIEW_INVOICE)) {
+            contentsofinvoice = techvvsFileHelper.readPdfAsBase64String(dir)
         }
 
 
@@ -171,8 +155,10 @@ public class FileViewController {
 
         model.addAttribute("customJwtParameter", customJwtParameter);
         model.addAttribute("menuoption", new MenuOptionVO(selected: selected));
+        model.addAttribute("invoicecontent", contentsofinvoice)
 
-        if(model.getAttribute("errorMessage") == null){
+        // only send a successmessage if we sent out an email or text, viewing file will get no successmessage
+        if(model.getAttribute("errorMessage") == null && contentsofinvoice.length() == 0){
             model.addAttribute("successMessage", "Successfully sent file: "+filename+
                     "using method: "+menuoption.action)
 
