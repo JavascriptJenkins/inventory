@@ -72,7 +72,6 @@ class BarcodeService {
 
             System.out.println("result of rounding up: " + result);
 
-            // todo: make pass in the parent pdf file so all pages go into individual file
             // create document before we loop over the collections of products so all pdf pages land in a single document
             PDDocument document = new PDDocument()
             for(int i = 0; i < result.size(); i++) {
