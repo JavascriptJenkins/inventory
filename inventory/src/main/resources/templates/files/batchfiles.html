@@ -191,6 +191,27 @@
             var dirSelection = document.getElementById("dirselectionid");
             var hiddenInput = document.getElementById("selected");
             hiddenInput.value = dirSelection.value;
+
+
+            // Event delegation for pagination links
+         document.querySelectorAll('.pagination .page-link').forEach(function(paginationLink) {
+            paginationLink.addEventListener('click', function(event) {
+            event.preventDefault();
+
+            // Get the current selected directory value
+            var selectedValue = dirSelection.value;
+            // Update the hidden input value
+            hiddenInput.value = selectedValue;
+
+            // Modify the URL to include the selected value
+            var currentHref = this.getAttribute('href');
+            var modifiedHref = currentHref + "&selected=" + encodeURIComponent(selectedValue);
+
+            // Redirect to the modified URL
+            window.location.href = modifiedHref;
+        });
+    });
+
         });
     </script>
 </head>
@@ -265,9 +286,6 @@
             </ul>
         </nav>
 
-    <div th:if="${filePage.totalPages > 0}" class="pagination" th:each="pageNumber : ${pageNumbers}">
-        <a class="page-link" th:href="@{/viewfiles?batchid=__${batch.batchid}__&customJwtParameter=__${customJwtParameter}__&size=5&page=__${pageNumber}__}" th:text="${pageNumber}" th:class="${pageNumber == filePage.number + 1} ? 'active'"></a>
-    </div>
 
 </div>
 </body>
