@@ -83,7 +83,8 @@ class ImportBatch {
                 productVO.setQuantityremaining((int) row.getCell(0).getNumericCellValue());
                 productVO.setName(row.getCell(1).getStringCellValue());
                 Double price = Double.valueOf(row.getCell(2).getNumericCellValue());
-                productVO.setBarcode(row.getCell(3).getStringCellValue());
+                // only set barcode if the value is not empty
+                productVO.barcode = row.getCell(3)?.getStringCellValue()?.trim() ? "" : productVO.barcode
                 productVO.setPrice(price);
                 productVO.setCost(price - 400.00) // todo: replace this with actual cost data
                 productVO.setProductnumber(secureRandom.nextInt(10000000)); // assuming this will be unique ...
@@ -139,7 +140,7 @@ class ImportBatch {
         return result;
     }
 
-
+    // todo: do a lookup to make sure batchnumber is unique
     BatchVO createBatchRecord(String nameOfBatch){
 
         // uploads/xlsx/export-1.xlsx

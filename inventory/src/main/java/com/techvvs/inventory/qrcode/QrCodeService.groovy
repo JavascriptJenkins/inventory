@@ -1,9 +1,11 @@
 package com.techvvs.inventory.qrcode
 
 import com.techvvs.inventory.barcode.impl.BarcodeHelper
+import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.model.BatchVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.qrcode.impl.QrCodeGenerator
+import org.apache.pdfbox.pdmodel.PDDocument
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
@@ -15,6 +17,9 @@ class QrCodeService {
 
     @Autowired
     BarcodeHelper barcodeHelper
+
+    @Autowired
+    AppConstants appConstants
 
 
     /* This method will create a single barcode for each product.
@@ -62,9 +67,18 @@ class QrCodeService {
 
             System.out.println("result of rounding up: " + result);
 
+            // pass in pdf doc
+            PDDocument document = new PDDocument()
             for(int i = 0; i < result.size(); i++) {
-                qrCodeGenerator.generateQrcodesForAllItems(batchVO.name, batchVO.batchnumber, i, result.get(i), batchVO.name);
+                qrCodeGenerator.generateQrcodesForAllItems(batchVO.name, batchVO.batchnumber, i, result.get(i), batchVO.name, document);
             }
+
+            // close the pdf doc
+            String filename = batchVO.name+"-"+batchVO.batchnumber
+
+            // save the actual file
+            document.save(appConstants.PARENT_LEVEL_DIR+batchVO.batchnumber+appConstants.QR_ALL_DIR+appConstants.filenameprefix_qr+filename+".pdf");
+            document.close();
 
         } catch (IOException e) {
             throw new RuntimeException(e);

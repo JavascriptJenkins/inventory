@@ -117,13 +117,20 @@ class BarcodeGenerator {
     ProductVO productinscope = new ProductVO(product_id: 0)
     boolean skip = false
     //
-    void generateBarcodesForAllItems(String filenameExtension, int batchnumber, int pagenumber, List<ProductVO> productlist, String batchname) throws IOException {
+    void generateBarcodesForAllItems(
 
+            String filenameExtension,
+                                     int batchnumber,
+                                     int pagenumber,
+                                     List<ProductVO> productlist,
+                                     String batchname,
+                                    PDDocument document
+
+    ) throws IOException {
 
 
         System.out.println("Generating barcodes for " + filenameExtension + " | pagenumber: "+pagenumber);
 
-        PDDocument document = new PDDocument()
         PDPage page = new PDPage(PDRectangle.LETTER); // 8.5" x 11"
         document.addPage(page);
 
@@ -191,6 +198,8 @@ class BarcodeGenerator {
                     barcodeData = barcodeHelper.generateBarcodeData(row, col, batchnumber, pagenumber);
                 }
 
+                // barcodeData = productVO.barcode
+
                 // Example method to generate barcode data
                 BufferedImage barcodeImage = imageGenerator.generateUPCABarcodeImage(barcodeData, labelWidth, labelHeight, col);
 
@@ -227,14 +236,13 @@ class BarcodeGenerator {
         // Close the content stream
         contentStream.close();
 
-        String filename = pagenumber+"-"+batchname+"-"+batchnumber
 
         // create a directory with the batchnumber and /barcodes dir if it doesn't exist yet
         Files.createDirectories(Paths.get(appConstants.PARENT_LEVEL_DIR+batchnumber+appConstants.BARCODES_ALL_DIR));
 
-        // save the actual file
-        document.save(appConstants.PARENT_LEVEL_DIR+batchnumber+appConstants.BARCODES_ALL_DIR+appConstants.filenameprefix+filename+".pdf");
-        document.close();
+//        // save the actual file
+//        document.save(appConstants.PARENT_LEVEL_DIR+batchnumber+appConstants.BARCODES_ALL_DIR+appConstants.filenameprefix+filename+".pdf");
+//        document.close();
 
     }
 

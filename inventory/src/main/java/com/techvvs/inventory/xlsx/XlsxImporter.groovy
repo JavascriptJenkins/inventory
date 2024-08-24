@@ -11,18 +11,23 @@ import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.viewcontroller.helper.BatchControllerHelper
 import com.techvvs.inventory.xlsx.impl.ImportBatch
 import com.techvvs.inventory.xlsx.impl.MenuGenerator
+import org.apache.pdfbox.pdmodel.PDDocument
+import org.apache.pdfbox.pdmodel.PDPage
+import org.apache.pdfbox.pdmodel.common.PDRectangle
 import org.apache.poi.ss.usermodel.Row
 import org.apache.poi.ss.usermodel.Sheet
 import org.apache.poi.ss.usermodel.Workbook
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import org.springframework.stereotype.Service
 
+import javax.transaction.Transactional
 import java.security.SecureRandom
 import java.time.LocalDateTime
 
 // Implementation code for importing XLSX files
-@Component
+@Service
 class XlsxImporter {
 
     @Autowired
@@ -42,6 +47,7 @@ class XlsxImporter {
      * Create a default menu for the batch
      *
      * **/
+    @Transactional
     void importBatchFromExistingXlsxFile(String filename){
 
         BatchVO batchVO = importBatch.importBatchFromExistingXlsxFile(filename)
