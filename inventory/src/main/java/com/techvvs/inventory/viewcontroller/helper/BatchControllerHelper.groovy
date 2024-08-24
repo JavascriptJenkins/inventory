@@ -108,20 +108,7 @@ class BatchControllerHelper {
             results = batchRepo.findAllByBatchnumber(Integer.valueOf(batchnumber));
         }
 
-//        Path filePath = Paths.get("path/to/your/file.txt");
-//
-//        if(Files.exists()){
-//
-//        }
-
-//        if(results.get(0).product_set.getAt(0).barcode != null && results.get(0).product_set.getAt(0).barcode != ""){
-//            // if one of the products has a barcode in this batch we are going to assume that
-//            // we already have barcodes for this batch
-//            return false
-//        }
-
         barcodeService.createAllBarcodesForBatch(results.get(0))
-
         return true
     }
 
