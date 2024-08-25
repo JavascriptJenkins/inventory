@@ -29,6 +29,29 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.codehaus.groovy.modules.http-builder</groupId>
+			<artifactId>http-builder</artifactId>
+			<version>0.7.1</version>
+		</dependency>
+
+		<!-- JGit for Git operations -->
+		<dependency>
+			<groupId>org.eclipse.jgit</groupId>
+			<artifactId>org.eclipse.jgit</artifactId>
+			<version>6.5.0.202303070854-r</version>
+		</dependency>
+
+		<!-- JSch for SSH and SCP operations -->
+		<dependency>
+			<groupId>com.jcraft</groupId>
+			<artifactId>jsch</artifactId>
+			<version>0.1.55</version>
+		</dependency>
+
+
+
+
 
 		<!-- We are using this to connect to a Milvus Database -->
 		<!-- https://mvnrepository.com/artifact/org.springframework.ai/spring-ai-milvus-store-spring-boot-starter -->
@@ -281,25 +304,25 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
 			<!--			This will clean the database -->
-			<plugin>
-				<artifactId>maven-clean-plugin</artifactId>
-				<version>3.1.0</version>
-				<configuration>
-					<filesets>
-						<fileset>
-							<directory>data</directory>
-							<includes>
-								<include>**.mv.db</include>
-							</includes>
-<!--							<excludes>-->
-<!--								<exclude>**/important.log</exclude>-->
-<!--								<exclude>**/another-important.log</exclude>-->
-<!--							</excludes>-->
-							<followSymlinks>false</followSymlinks>
-						</fileset>
-					</filesets>
-				</configuration>
-			</plugin>
+<!--			<plugin>-->
+<!--				<artifactId>maven-clean-plugin</artifactId>-->
+<!--				<version>3.1.0</version>-->
+<!--				<configuration>-->
+<!--					<filesets>-->
+<!--						<fileset>-->
+<!--							<directory>data</directory>-->
+<!--							<includes>-->
+<!--								<include>**.mv.db</include>-->
+<!--							</includes>-->
+<!--&lt;!&ndash;							<excludes>&ndash;&gt;-->
+<!--&lt;!&ndash;								<exclude>**/important.log</exclude>&ndash;&gt;-->
+<!--&lt;!&ndash;								<exclude>**/another-important.log</exclude>&ndash;&gt;-->
+<!--&lt;!&ndash;							</excludes>&ndash;&gt;-->
+<!--							<followSymlinks>false</followSymlinks>-->
+<!--						</fileset>-->
+<!--					</filesets>-->
+<!--				</configuration>-->
+<!--			</plugin>-->
 
 			<!-- if you run this it will replace all the uri references to local  -->
 			<plugin>
