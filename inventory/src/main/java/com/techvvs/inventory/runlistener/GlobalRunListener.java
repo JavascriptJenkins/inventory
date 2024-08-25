@@ -1,28 +1,26 @@
 package com.techvvs.inventory.runlistener;
 
-import com.techvvs.inventory.barcode.impl.BarcodeGenerator;
-import com.techvvs.inventory.barcode.service.BarcodeService;
-
-import com.techvvs.inventory.printers.PrinterService;
+import com.techvvs.inventory.model.ProductVO;
 import com.techvvs.inventory.refdata.RefDataLoader;
 import com.techvvs.inventory.util.SimpleCache;
-import com.techvvs.inventory.viewcontroller.helper.BatchControllerHelper;
-import com.techvvs.inventory.xlsx.XlsxImporter;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
-import java.security.SecureRandom;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
 
 @Component
 public class GlobalRunListener implements ApplicationListener<ApplicationReadyEvent> {
-
-    @Autowired
-    BarcodeGenerator barcodeGenerator;
-
-    @Autowired
-    BatchControllerHelper batchControllerHelper;
 
     @Autowired
     SimpleCache simpleCache;
@@ -31,18 +29,7 @@ public class GlobalRunListener implements ApplicationListener<ApplicationReadyEv
     RefDataLoader refDataLoader;
 
     @Autowired
-    XlsxImporter xlsxImporter;
-
-    @Autowired
-    BarcodeService barcodeService;
-
-    @Autowired
-    PrinterService printerService;
-
-    String UPLOAD_DIR = "./uploads/menus/";
-    String IMPORT_DIR = "./uploads/import/";
-
-    SecureRandom secureRandom = new SecureRandom();
+    Environment environment;
 
 
     @Override
@@ -50,11 +37,34 @@ public class GlobalRunListener implements ApplicationListener<ApplicationReadyEv
         System.out.println("----- TechVVS Application has started ----");
         System.out.println("------- TechVVS Custom Cache Init ------");
 
-        refDataLoader.loadRefData();
+
+       // linuxDataUtil.analyzejson();
+
+        if(environment.getProperty("load.ref.data").equals("yes")){
+            refDataLoader.loadRefData();
+        }
 
 
+        //encryptUtil.generateAESKey();
 
-   //     printerService.printReceipt("Hello World");
+
+//        StringBuilder sb = new StringBuilder();
+//        // pull all the products and put the barcodes in a list
+//        List<ProductVO> products = productRepo.findAll();
+
+
+//        try {
+//            writeProductsToExcel(products,
+//                    appConstants.getPARENT_LEVEL_DIR()+appConstants.getBARCODES_TRANSFER_DIR(),
+//                    appConstants.getPARENT_LEVEL_DIR()+appConstants.getBARCODES_TRANSFER_DIR()+"/transferadhoc.xlsx"
+//
+//            );
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+
+
+        //     printerService.printReceipt("Hello World");
   //      xlsxImporter.testImportXLSXFile();
 
         // todo: move this somewhere else
@@ -93,6 +103,39 @@ public class GlobalRunListener implements ApplicationListener<ApplicationReadyEv
         simpleCache.refreshCache();
     }
 
+
+    void writeProductsToExcel(List<ProductVO> products, String dirpath,String filePath) throws IOException {
+        // Create a workbook and a sheet
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Sheet1");
+
+        // Create the header row
+        Row headerRow = sheet.createRow(0);
+        headerRow.createCell(0).setCellValue("name");
+        headerRow.createCell(1).setCellValue("barcode");
+
+
+        // Iterate through the list of products and add them to the sheet
+        int index = 1; // Start from the second row
+        for (ProductVO product : products) {
+            Row dataRow = sheet.createRow(index);
+            dataRow.createCell(0).setCellValue(product.getName());
+            dataRow.createCell(1).setCellValue(product.getBarcode());
+            index++;
+        }
+
+
+
+        // create a directory with the batchnumber and /barcodes dir if it doesn't exist yet
+        Files.createDirectories(Paths.get(dirpath));
+
+        // Write the workbook to a file
+        FileOutputStream fileOut = new FileOutputStream(filePath);
+        workbook.write(fileOut);
+        fileOut.close();
+        workbook.close();
+
+    }
 
 
 
