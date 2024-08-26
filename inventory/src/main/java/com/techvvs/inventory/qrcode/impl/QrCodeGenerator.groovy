@@ -81,7 +81,7 @@ class QrCodeGenerator {
                 float y = PDRectangle.LETTER.getHeight() - topMargin - (row + 1) * labelHeight;
 
              //   String barcodeData = barcodeHelper.generateBarcodeData(row, col, filenameExtension, batchnumber, pagenumber);
-                String qrcodeData = "https://qr.techvvs.io"
+                String qrcodeData = "https://qr.jenkins.codes"
 
                 // Example method to generate barcode data
                 BufferedImage qrImage = qrImageGenerator.generateQrImage(qrcodeData, limitStringTo20Chars(productVO.name));
