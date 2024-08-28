@@ -10,6 +10,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -26,20 +27,33 @@ public class JwtTokenFilter extends OncePerRequestFilter implements CsrfTokenRep
     this.jwtTokenProvider = jwtTokenProvider;
   }
 
+  String token = "";
+
   @Override
-  protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
+  protected void doFilterInternal(HttpServletRequest httpServletRequest,
+                                  HttpServletResponse httpServletResponse,
+                                  FilterChain filterChain) throws ServletException, IOException {
 
       logger.info("REQUEST HIT JwtTokenFilter: "+httpServletRequest.getRequestURI());
-      logger.info(" JwtTokenFilter: "+httpServletRequest.getMethod());
+      logger.info("JwtTokenFilter: "+httpServletRequest.getMethod());
 
-   // System.out.println("PARAM ON FILTER: "+ httpServletRequest.getParameter("customJwtParameter"));
-    String token = httpServletRequest.getParameter("customJwtParameter");
-
-    //System.out.println("############# RESOLVING TOKEN: "+token);
-
-    if("/login/logout".equals(httpServletRequest.getRequestURI())) {
-        System.out.println("#############---->  LOGGING OUT");
-    }
+    // todo: this needs to be moved into a cookie
+      // cookie start
+      Cookie[] cookies = httpServletRequest.getCookies();
+      if (cookies != null) {
+          Arrays.stream(cookies)
+                  .filter(cookie -> "techvvs_token".equals(cookie.getName()))
+                  .findFirst()
+                  .ifPresent(cookie -> {
+                      token = cookie.getValue();
+                      if (jwtTokenProvider.validateToken(token)) {
+                          //String username = jwtTokenProvider.getTokenSubject(token);
+                          Authentication auth = jwtTokenProvider.getAuthentication(token);
+                          SecurityContextHolder.getContext().setAuthentication(auth);
+                      }
+                  });
+      }
+// cookie end
 
 
     try {
@@ -49,9 +63,8 @@ public class JwtTokenFilter extends OncePerRequestFilter implements CsrfTokenRep
       logger.info("TOKEN VALIDATED WITH SUBJECT: "+tokenSubject);
 
 
-        Authentication auth = jwtTokenProvider.getAuthentication(token);
-        SecurityContextHolder.getContext().setAuthentication(auth);
-//      }
+//        Authentication auth = jwtTokenProvider.getAuthentication(token);
+//        SecurityContextHolder.getContext().setAuthentication(auth);
 
       } else if(httpServletRequest.getRequestURI().equals("/css/table.css")){
         logger.info("REQUEST FOR CSS");
@@ -87,9 +100,10 @@ public class JwtTokenFilter extends OncePerRequestFilter implements CsrfTokenRep
     } catch (CustomException ex) {
         logger.info("Exception on JWT controller: "+ex.getMessage());
       //this is very important, since it guarantees the user is not authenticated at all
-      SecurityContextHolder.clearContext();
-      httpServletResponse.sendError(ex.getHttpStatus().value(), ex.getMessage());
-      return;
+//      SecurityContextHolder.clearContext();
+//      httpServletResponse.sendError(ex.getHttpStatus().value(), ex.getMessage());
+        //httpServletResponse.sendRedirect("/login"); // Redirect to the login page
+      //return;
     }
 
     filterChain.doFilter(httpServletRequest, httpServletResponse);

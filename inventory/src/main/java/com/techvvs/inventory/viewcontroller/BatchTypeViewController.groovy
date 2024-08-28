@@ -3,6 +3,7 @@ package com.techvvs.inventory.viewcontroller
 import com.techvvs.inventory.jparepo.BatchTypeRepo
 import com.techvvs.inventory.model.BatchTypeVO
 import com.techvvs.inventory.model.BatchVO
+import com.techvvs.inventory.service.auth.TechvvsAuthService
 import com.techvvs.inventory.validation.ValidateBatchType
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
@@ -29,17 +30,18 @@ public class BatchTypeViewController {
 
     @Autowired BatchTypeRepo batchTypeRepo
     @Autowired ValidateBatchType validateBatchType
+    @Autowired TechvvsAuthService techvvsAuthService
 
     //default home mapping
     @GetMapping
     String viewNewForm(@ModelAttribute( "batchtype" ) BatchTypeVO batchTypeVO,
                        Model model,
-                       @RequestParam("customJwtParameter") String customJwtParameter,
+                       
                        @RequestParam("page") Optional<Integer> page,
                        @RequestParam("size") Optional<Integer> size
     ){
 
-        System.out.println("customJwtParam on batchtype controller: "+customJwtParameter);
+        
 
         BatchTypeVO batchTypeVOToBind;
         if(batchTypeVO != null && batchTypeVO.getBatch_type_id() != null){
@@ -49,8 +51,7 @@ public class BatchTypeViewController {
             batchTypeVOToBind.batch_type_id= 0
         }
 
-       // model.addAttribute("batchtypelist", getBatchTypeList()); // todo: add pagination to this
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
         model.addAttribute("batchtype", batchTypeVOToBind);
         addPaginatedData(model, page)
         return "admin/batchtypes.html";
@@ -61,7 +62,6 @@ public class BatchTypeViewController {
     String editBatchType(@ModelAttribute( "batchtype" ) BatchTypeVO batchTypeVO,
                      Model model,
                      HttpServletResponse response,
-                     @RequestParam("customJwtParameter") String customJwtParameter,
     @RequestParam("page") Optional<Integer> page,
     @RequestParam("size") Optional<Integer> size){
 
@@ -88,8 +88,7 @@ public class BatchTypeViewController {
             model.addAttribute("batch", result);
         }
 
-    //    model.addAttribute("batchtypelist", getBatchTypeList()); // todo: add pagination to this
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
         addPaginatedData(model, page)
         return "admin/batchtypes";
     }
@@ -98,7 +97,7 @@ public class BatchTypeViewController {
     String createNewBatchType(@ModelAttribute( "batchtype" ) BatchTypeVO batchTypeVO,
                           Model model,
                           HttpServletResponse response,
-                          @RequestParam("customJwtParameter") String customJwtParameter,
+                          
                               @RequestParam("page") Optional<Integer> page,
                               @RequestParam("size") Optional<Integer> size
     ){
@@ -130,8 +129,7 @@ public class BatchTypeViewController {
             model.addAttribute("batchtype", result);
         }
 
-        model.addAttribute("customJwtParameter", customJwtParameter);
-//        model.addAttribute("batchtypelist", getBatchTypeList()); // todo: add pagination to this
+        techvvsAuthService.checkuserauth(model)
         addPaginatedData(model, page)
         return "admin/batchtypes";
     }

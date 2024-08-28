@@ -137,7 +137,7 @@
     <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
     <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
 
-    <form id="reviewCartForm" th:action="@{/checkout/transaction?customJwtParameter=__${customJwtParameter}__&page=1&size=5}" th:object="${cart}" method="post">
+    <form id="reviewCartForm" th:action="@{/checkout/transaction?page=1&size=5}" th:object="${cart}" method="post">
 
         <div class="row" style="margin-bottom: 5px;">
             <div class="col-md-6" style="margin-bottom: 5px;">

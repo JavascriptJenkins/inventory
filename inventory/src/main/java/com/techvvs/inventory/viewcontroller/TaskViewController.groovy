@@ -5,6 +5,7 @@ import com.techvvs.inventory.jparepo.TaskTypeRepo
 import com.techvvs.inventory.model.TaskTypeVO
 import com.techvvs.inventory.model.TaskVO
 import com.techvvs.inventory.modelnonpersist.FileVO
+import com.techvvs.inventory.service.auth.TechvvsAuthService
 import com.techvvs.inventory.util.TechvvsFileHelper
 import com.techvvs.inventory.validation.ValidateTask
 import org.springframework.beans.factory.annotation.Autowired
@@ -17,7 +18,6 @@ import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.*
 
-import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import java.security.SecureRandom
 import java.time.LocalDateTime
@@ -27,9 +27,6 @@ import java.time.LocalDateTime
 public class TaskViewController {
 
     private final String UPLOAD_DIR = "./uploads/";
-
-    @Autowired
-    HttpServletRequest httpServletRequest;
 
     @Autowired
     TechvvsFileHelper techvvsFileHelper;
@@ -42,6 +39,9 @@ public class TaskViewController {
 
     @Autowired
     ValidateTask validateTask;
+    
+    @Autowired
+    TechvvsAuthService techvvsAuthService
 
 
     SecureRandom secureRandom = new SecureRandom();
@@ -49,9 +49,9 @@ public class TaskViewController {
 
     //default home mapping
     @GetMapping
-    String viewNewForm(@ModelAttribute( "task" ) TaskVO taskVO, Model model, @RequestParam("customJwtParameter") String customJwtParameter){
+    String viewNewForm(@ModelAttribute( "task" ) TaskVO taskVO, Model model){
 
-        System.out.println("customJwtParam on task controller: "+customJwtParameter);
+
 
         TaskVO taskVOToBind;
         if(taskVO != null && taskVO.getTask_id() != null){
@@ -65,7 +65,7 @@ public class TaskViewController {
 
 
         model.addAttribute("disableupload","true"); // disable uploading a file until we actually have a record submitted successfully
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
         model.addAttribute("task", taskVOToBind);
         bindTaskTypes(model)
         return "task/task.html";
@@ -80,7 +80,7 @@ public class TaskViewController {
     @GetMapping("/browseTask")
     String browseTask(@ModelAttribute( "task" ) TaskVO taskVO,
                              Model model,
-                             @RequestParam("customJwtParameter") String customJwtParameter,
+                             
                              @RequestParam("page") Optional<Integer> page,
                              @RequestParam("size") Optional<Integer> size ){
 
@@ -109,27 +109,27 @@ public class TaskViewController {
         model.addAttribute("pageNumbers", pageNumbers);
         model.addAttribute("page", currentPage);
         model.addAttribute("size", pageOfTask.getTotalPages());
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
         model.addAttribute("task", new TaskVO());
         model.addAttribute("taskPage", pageOfTask);
         return "task/browsetask.html";
     }
 
     @GetMapping("/searchTask")
-    String searchTask(@ModelAttribute( "task" ) TaskVO taskVO, Model model, @RequestParam("customJwtParameter") String customJwtParameter){
+    String searchTask(@ModelAttribute( "task" ) TaskVO taskVO, Model model){
 
-        System.out.println("customJwtParam on task controller: "+customJwtParameter);
 
-        model.addAttribute("customJwtParameter", customJwtParameter);
+
+        techvvsAuthService.checkuserauth(model)
         model.addAttribute("task", new TaskVO());
         model.addAttribute("tasks", new ArrayList<TaskVO>(1));
         return "task/searchtask.html";
     }
 
     @PostMapping("/searchTask")
-    String searchTaskPost(@ModelAttribute( "task" ) TaskVO taskVO, Model model, @RequestParam("customJwtParameter") String customJwtParameter){
+    String searchTaskPost(@ModelAttribute( "task" ) TaskVO taskVO, Model model){
 
-        System.out.println("customJwtParam on task controller: "+customJwtParameter);
+
 
         List<TaskVO> results = new ArrayList<TaskVO>();
         if(taskVO.getTasknumber() != null){
@@ -145,7 +145,7 @@ public class TaskViewController {
             results = taskRepo.findAllByDescription(taskVO.getDescription());
         }
 
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
         model.addAttribute("task", taskVO);
         model.addAttribute("tasks", results);
         return "task/searchtask.html";
@@ -154,11 +154,11 @@ public class TaskViewController {
     @GetMapping("/editform")
     String viewEditForm(
                     Model model,
-                    @RequestParam("customJwtParameter") String customJwtParameter,
+                    
                     @RequestParam("editmode") String editmode,
                     @RequestParam("tasknumber") String tasknumber){
 
-        System.out.println("customJwtParam on task controller: "+customJwtParameter);
+
 
         List<TaskVO> results = new ArrayList<TaskVO>();
         if(tasknumber != null){
@@ -181,7 +181,7 @@ public class TaskViewController {
             model.addAttribute("editmode","no")
         }
 
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
         model.addAttribute("task", results.get(0));
         bindTaskTypes(model)
         return "task/edittask.html";
@@ -190,8 +190,7 @@ public class TaskViewController {
     @PostMapping ("/editTask")
     String editTask(@ModelAttribute( "task" ) TaskVO taskVO,
                                 Model model,
-                                HttpServletResponse response,
-                                @RequestParam("customJwtParameter") String customJwtParameter
+                                HttpServletResponse response
     ){
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -230,7 +229,7 @@ public class TaskViewController {
             model.addAttribute("task", result);
         }
 
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
         bindTaskTypes(model)
         return "task/edittask.html";
     }
@@ -238,8 +237,7 @@ public class TaskViewController {
     @PostMapping ("/createNewTask")
     String createNewTask(@ModelAttribute( "task" ) TaskVO taskVO,
                                 Model model,
-                                HttpServletResponse response,
-                                @RequestParam("customJwtParameter") String customJwtParameter
+                                HttpServletResponse response
     ){
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -269,7 +267,7 @@ public class TaskViewController {
             model.addAttribute("task", result);
         }
 
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
         bindTaskTypes(model)
         return "task/task.html";
     }

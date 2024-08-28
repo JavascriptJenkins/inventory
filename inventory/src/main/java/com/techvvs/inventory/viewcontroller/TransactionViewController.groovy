@@ -6,13 +6,10 @@ import com.techvvs.inventory.jparepo.BatchRepo
 import com.techvvs.inventory.jparepo.BatchTypeRepo
 import com.techvvs.inventory.jparepo.ProductRepo
 import com.techvvs.inventory.jparepo.ProductTypeRepo
-import com.techvvs.inventory.model.BatchVO
-import com.techvvs.inventory.model.CartVO
-import com.techvvs.inventory.model.PaymentVO
-import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.modelnonpersist.FileVO
 import com.techvvs.inventory.printers.PrinterService
+import com.techvvs.inventory.service.auth.TechvvsAuthService
 import com.techvvs.inventory.service.controllers.CartService
 import com.techvvs.inventory.service.controllers.TransactionService
 import com.techvvs.inventory.service.paging.FilePagingService
@@ -24,18 +21,12 @@ import com.techvvs.inventory.viewcontroller.helper.PaymentHelper
 import com.techvvs.inventory.viewcontroller.helper.TransactionHelper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Pageable
-import org.springframework.security.core.Authentication
-import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.*
 
 import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
 import java.security.SecureRandom
-import java.time.LocalDateTime
 
 @RequestMapping("/transaction")
 @Controller
@@ -44,36 +35,6 @@ public class TransactionViewController {
 
     @Autowired
     AppConstants appConstants
-
-    @Autowired
-    HttpServletRequest httpServletRequest;
-
-    @Autowired
-    TechvvsFileHelper techvvsFileHelper;
-
-    @Autowired
-    BatchRepo batchRepo;
-
-    @Autowired
-    BatchDao batchDao;
-
-
-    @Autowired
-    BatchTypeRepo batchTypeRepo;
-
-    @Autowired
-    ProductTypeRepo productTypeRepo;
-
-
-    @Autowired
-    ProductRepo productRepo;
-
-
-    @Autowired
-    ValidateBatch validateBatch;
-
-    @Autowired
-    BatchControllerHelper batchControllerHelper;
 
     @Autowired
     CheckoutHelper checkoutHelper
@@ -85,9 +46,6 @@ public class TransactionViewController {
     PaymentHelper paymentHelper
 
     @Autowired
-    CartService cartService
-
-    @Autowired
     TransactionService transactionService
 
     @Autowired
@@ -95,22 +53,21 @@ public class TransactionViewController {
 
     @Autowired
     PrinterService printerService
-
-
-    SecureRandom secureRandom = new SecureRandom();
-
+    
+    @Autowired
+    TechvvsAuthService techvvsAuthService
 
     @GetMapping
     String reviewtransaction(
             @RequestParam(
                     "transactionid" ) String transactionid,
-            @RequestParam("customJwtParameter") String customJwtParameter,
+            
             Model model,
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size
                      ){
 
-        System.out.println("customJwtParam on checkout controller: "+customJwtParameter);
+        
 
 
         String name = ""
@@ -132,7 +89,7 @@ public class TransactionViewController {
 
 
 
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
         model.addAttribute("transaction", transactionVO);
         checkoutHelper.getAllCustomers(model)
 
@@ -145,7 +102,7 @@ public class TransactionViewController {
     @GetMapping("/return")
     String viewNewForm(
             Model model,
-            @RequestParam("customJwtParameter") String customJwtParameter,
+            
             @RequestParam("transactionid") String transactionid
     ){
 
@@ -162,7 +119,7 @@ public class TransactionViewController {
         checkoutHelper.getAllCustomers(model)
         model.addAttribute("transaction", transactionVO);
 
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
         model.addAttribute("transactionid", transactionid);
         return "transaction/return.html";
     }
@@ -171,7 +128,7 @@ public class TransactionViewController {
     @PostMapping("/return")
     String postReturn(
             Model model,
-            @RequestParam("customJwtParameter") String customJwtParameter,
+            
             @RequestParam("transactionid") String transactionid,
             @RequestParam("barcode") String barcode
     ){
@@ -193,7 +150,7 @@ public class TransactionViewController {
 
         // fetch all customers from database and bind them to model
         checkoutHelper.getAllCustomers(model)
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
         model.addAttribute("transactionid", transactionid);
         model.addAttribute("transaction", transactionVO);
         model.addAttribute("successMessage", "Deleted the item from transaction successfully with barcode: "+barcode);
@@ -209,17 +166,17 @@ public class TransactionViewController {
     String listall(
             @ModelAttribute( "transaction" ) TransactionVO transactionVO,
             Model model,
-            @RequestParam("customJwtParameter") String customJwtParameter,
+            
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size
     ){
 
-        System.out.println("customJwtParam on checkout controller: "+customJwtParameter);
+        
 
         // bind the page of transactions
         transactionHelper.findAllTransactions(model, page, size)
         // fetch all customers from database and bind them to model
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
         model.addAttribute("transaction", transactionVO);
         return "transaction/alltransactions.html";
     }

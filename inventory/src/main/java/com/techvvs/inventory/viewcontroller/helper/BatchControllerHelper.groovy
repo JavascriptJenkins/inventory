@@ -17,6 +17,7 @@ import com.techvvs.inventory.model.SystemUserDAO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.modelnonpersist.FileVO
 import com.techvvs.inventory.qrcode.QrCodeService
+import com.techvvs.inventory.service.auth.TechvvsAuthService
 import com.techvvs.inventory.util.FormattingUtil
 import com.techvvs.inventory.util.TechvvsFileHelper
 import com.techvvs.inventory.util.TwilioTextUtil
@@ -81,6 +82,9 @@ class BatchControllerHelper {
 
     @Autowired
     ControllerConstants controllerConstants
+
+    @Autowired
+    TechvvsAuthService techvvsAuthService
 
     SecureRandom secureRandom = new SecureRandom();
 
@@ -154,7 +158,6 @@ class BatchControllerHelper {
 
     // method for combining logic of editform and filtereditform
     Model processModel(Model model,
-                       String customJwtParameter,
                        String batchnumber,
                        String editmode,
                        Optional<Integer> page,
@@ -165,7 +168,7 @@ class BatchControllerHelper {
     ){
 
         // bind the common elements to the batch and return the parent batchVO object
-        BatchVO batchVO =bindCommonElements(model, customJwtParameter, batchnumber, editmode);
+        BatchVO batchVO =bindCommonElements(model, batchnumber, editmode);
 
         boolean hasProductTypeId = productTypeVO?.producttypeid != null
 
@@ -261,9 +264,7 @@ class BatchControllerHelper {
     }
 
 
-    BatchVO bindCommonElements(Model model, String customJwtParameter, String batchnumber, String editmode){
-
-        System.out.println("customJwtParam on batch controller: "+customJwtParameter);
+    BatchVO bindCommonElements(Model model, String batchnumber, String editmode){
 
         List<BatchVO> results = new ArrayList<BatchVO>();
         if(batchnumber != null){
@@ -293,7 +294,7 @@ class BatchControllerHelper {
         model.addAttribute(controllerConstants.MENU_OPTIONS_BARCODE, ["All", "Single Menu"]);
         model.addAttribute(controllerConstants.MENU_OPTIONS_QR_CODES, ["All", "Single Menu"]);
         model.addAttribute(controllerConstants.MENU_OPTIONS_WEIGHT_LABELS, [controllerConstants.SINGLE_PAGE]);
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model);
         model.addAttribute("batch", results.get(0));
         bindBatchTypes(model)
         bindProductTypes(model)

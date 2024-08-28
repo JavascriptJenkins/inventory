@@ -8,6 +8,7 @@ import com.techvvs.inventory.model.BatchVO
 import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.modelnonpersist.FileVO
+import com.techvvs.inventory.service.auth.TechvvsAuthService
 import com.techvvs.inventory.util.TechvvsFileHelper
 import com.techvvs.inventory.validation.ValidateProduct
 import org.springframework.beans.factory.annotation.Autowired
@@ -16,7 +17,6 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.security.core.parameters.P
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.*
@@ -31,9 +31,7 @@ import java.time.LocalDateTime
 public class ProductViewController {
 
     private final String UPLOAD_DIR = "./uploads/";
-
-    @Autowired
-    HttpServletRequest httpServletRequest;
+    
 
     @Autowired
     TechvvsFileHelper techvvsFileHelper;
@@ -52,6 +50,9 @@ public class ProductViewController {
 
     @Autowired
     ProductDao productDao
+    
+    @Autowired
+    TechvvsAuthService techvvsAuthService
 
 
     SecureRandom secureRandom = new SecureRandom();
@@ -59,9 +60,9 @@ public class ProductViewController {
 
     //default home mapping
     @GetMapping
-    String viewNewForm(@ModelAttribute( "product" ) ProductVO productVO, Model model, @RequestParam("customJwtParameter") String customJwtParameter){
+    String viewNewForm(@ModelAttribute( "product" ) ProductVO productVO, Model model){
 
-        System.out.println("customJwtParam on product controller: "+customJwtParameter);
+
 
         ProductVO productVOToBind;
         if(productVO != null && productVO.getProduct_id() != null){
@@ -75,7 +76,7 @@ public class ProductViewController {
 
 
         model.addAttribute("disableupload","true"); // disable uploading a file until we actually have a record submitted successfully
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
         model.addAttribute("product", productVOToBind);
         model.addAttribute("batch", new BatchVO()); // provide a default object for thymeleaf
         bindProductTypes(model)
@@ -107,7 +108,7 @@ public class ProductViewController {
     @GetMapping("/browseProduct")
     String browseProduct(@ModelAttribute( "product" ) ProductVO productVO,
                              Model model,
-                             @RequestParam("customJwtParameter") String customJwtParameter,
+                             
                              @RequestParam("page") Optional<Integer> page,
                              @RequestParam("size") Optional<Integer> size ){
 
@@ -136,27 +137,27 @@ public class ProductViewController {
         model.addAttribute("pageNumbers", pageNumbers);
         model.addAttribute("page", currentPage);
         model.addAttribute("size", pageOfProduct.getTotalPages());
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
         model.addAttribute("product", new ProductVO());
         model.addAttribute("productPage", pageOfProduct);
         return "product/browseproduct.html";
     }
 
     @GetMapping("/searchProduct")
-    String searchProduct(@ModelAttribute( "product" ) ProductVO productVO, Model model, @RequestParam("customJwtParameter") String customJwtParameter){
+    String searchProduct(@ModelAttribute( "product" ) ProductVO productVO, Model model){
 
-        System.out.println("customJwtParam on product controller: "+customJwtParameter);
 
-        model.addAttribute("customJwtParameter", customJwtParameter);
+
+        techvvsAuthService.checkuserauth(model)
         model.addAttribute("product", new ProductVO());
         model.addAttribute("products", new ArrayList<ProductVO>(1));
         return "product/searchproduct.html";
     }
 
     @PostMapping("/searchProduct")
-    String searchProductPost(@ModelAttribute( "product" ) ProductVO productVO, Model model, @RequestParam("customJwtParameter") String customJwtParameter){
+    String searchProductPost(@ModelAttribute( "product" ) ProductVO productVO, Model model){
 
-        System.out.println("customJwtParam on product controller: "+customJwtParameter);
+
 
         List<ProductVO> results = new ArrayList<ProductVO>();
         if(productVO.getProductnumber() != null){
@@ -172,7 +173,7 @@ public class ProductViewController {
             results = productRepo.findAllByDescription(productVO.getDescription());
         }
 
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
         model.addAttribute("product", productVO);
         model.addAttribute("products", results);
         return "product/searchproduct.html";
@@ -181,11 +182,11 @@ public class ProductViewController {
     @GetMapping("/editform")
     String viewEditForm(
                     Model model,
-                    @RequestParam("customJwtParameter") String customJwtParameter,
+                    
                     @RequestParam("editmode") String editmode,
                     @RequestParam("productnumber") String productnumber){
 
-        System.out.println("customJwtParam on product controller: "+customJwtParameter);
+
 
         List<ProductVO> results = new ArrayList<ProductVO>();
         if(productnumber != null){
@@ -202,12 +203,11 @@ public class ProductViewController {
             model.addAttribute("filelist", null);
         }
 
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
         model.addAttribute("product", results.get(0));
         model.addAttribute("editmode", editmode);
         bindProductTypes(model)
         bindBatches(model, results.get(0).batch)
-        //model.addAttribute("batch", new BatchVO()); // provide a default object for thymeleaf
         return "product/editproduct.html";
     }
 
@@ -215,8 +215,7 @@ public class ProductViewController {
     @PostMapping ("/editProduct")
     String editProduct(
             @ModelAttribute( "product" ) ProductVO productVO,
-                                Model model,
-                                @RequestParam("customJwtParameter") String customJwtParameter
+                                Model model
     ){
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -256,7 +255,7 @@ public class ProductViewController {
 
         model.addAttribute("product", productresult);
         model.addAttribute("editmode", "no");
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
         bindProductTypes(model)
         return "product/editproduct.html";
     }
@@ -264,8 +263,7 @@ public class ProductViewController {
     @PostMapping ("/createNewProduct")
     String createNewProduct(@ModelAttribute( "product" ) ProductVO productVO,@ModelAttribute( "batch" ) BatchVO batchVO,
                                 Model model,
-                                HttpServletResponse response,
-                                @RequestParam("customJwtParameter") String customJwtParameter
+                                HttpServletResponse response
     ){
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -295,7 +293,7 @@ public class ProductViewController {
         }
 
         model.addAttribute("batch",batchVO) // bind the object back to the ui
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
         bindProductTypes(model)
       //  bindBatches(model)
         return "product/product.html";

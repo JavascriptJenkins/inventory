@@ -1,33 +1,18 @@
 package com.techvvs.inventory.viewcontroller
 
-import com.techvvs.inventory.constants.AppConstants
-import com.techvvs.inventory.dao.BatchDao
-import com.techvvs.inventory.jparepo.BatchRepo
-import com.techvvs.inventory.jparepo.BatchTypeRepo
-import com.techvvs.inventory.jparepo.ProductRepo
-import com.techvvs.inventory.jparepo.ProductTypeRepo
-import com.techvvs.inventory.model.CartVO
 import com.techvvs.inventory.model.CustomerVO
-import com.techvvs.inventory.model.MenuVO
 import com.techvvs.inventory.model.PaymentVO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.printers.PrinterService
-import com.techvvs.inventory.service.controllers.CartService
+import com.techvvs.inventory.service.auth.TechvvsAuthService
 import com.techvvs.inventory.service.controllers.PaymentService
-import com.techvvs.inventory.service.controllers.TransactionService
-import com.techvvs.inventory.util.TechvvsFileHelper
-import com.techvvs.inventory.validation.ValidateBatch
-import com.techvvs.inventory.viewcontroller.helper.BatchControllerHelper
 import com.techvvs.inventory.viewcontroller.helper.CheckoutHelper
-import com.techvvs.inventory.viewcontroller.helper.MenuHelper
 import com.techvvs.inventory.viewcontroller.helper.PaymentHelper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.*
 
-import javax.servlet.http.HttpServletRequest
-import java.security.SecureRandom
 
 @RequestMapping("/payment")
 @Controller
@@ -45,8 +30,8 @@ public class PaymentViewController {
     @Autowired
     PaymentService paymentService
 
-
-    SecureRandom secureRandom = new SecureRandom();
+    @Autowired
+    TechvvsAuthService techvvsAuthService
 
 
     //default home mapping
@@ -54,7 +39,6 @@ public class PaymentViewController {
     String viewNewForm(
             @ModelAttribute( "payment" ) PaymentVO paymentVO,
             Model model,
-            @RequestParam("customJwtParameter") String customJwtParameter,
             @RequestParam("transactionid") String transactionid
     ){
 
@@ -71,15 +55,14 @@ public class PaymentViewController {
         // todo: add a button on the ui to pull the latest transaction for customer (so if someone clicks off page
         //  you can come back and finish the transaction)
 
-        System.out.println("customJwtParam on checkout controller: "+customJwtParameter);
+        
 
 
 
         // fetch all customers from database and bind them to model
         checkoutHelper.getAllCustomers(model)
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
         model.addAttribute("transactionid", transactionid);
-//        model.addAttribute("transaction", transactionVO);
         return "payment/payment.html";
     }
 
@@ -89,11 +72,10 @@ public class PaymentViewController {
             @ModelAttribute( "payment" ) PaymentVO paymentVO,
             @RequestParam( "transactionid" ) String transactionid,
             @RequestParam( "customerid" ) String customerid,
-            Model model,
-            @RequestParam("customJwtParameter") String customJwtParameter
+            Model model
     ){
 
-        System.out.println("customJwtParam on checkout controller: "+customJwtParameter);
+        
 
 
         paymentVO = paymentHelper.validatePaymentVO(paymentVO, model, Integer.valueOf(transactionid))
@@ -127,7 +109,7 @@ public class PaymentViewController {
         }
 
 
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
         // fetch all customers from database and bind them to model
 
         return "payment/payment.html";

@@ -1,25 +1,22 @@
 package com.techvvs.inventory.viewcontroller
 import com.techvvs.inventory.model.ProductVO
+import com.techvvs.inventory.service.auth.TechvvsAuthService
 import com.techvvs.inventory.viewcontroller.helper.ProductHelper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.*
 
-import java.security.SecureRandom
 
 @RequestMapping("/qr")
 @Controller
 public class QrCodeViewController {
 
-
-
-
     @Autowired
     ProductHelper productHelper
 
-
-    SecureRandom secureRandom = new SecureRandom();
+    @Autowired
+    TechvvsAuthService techvvsAuthService
 
 
     // todo: add rate limiting and also more validation on incoming data

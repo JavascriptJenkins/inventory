@@ -27,19 +27,7 @@ class CheckoutHelper {
     CustomerRepo customerRepo
 
     @Autowired
-    TransactionRepo transactionRepo
-
-    @Autowired
-    ProductRepo productRepo
-
-    @Autowired
     CartRepo cartRepo
-
-    @Autowired
-    CartService cartService
-
-    @Autowired
-    CartDeleteService cartDeleteService
 
 
     // method to get all customers from db

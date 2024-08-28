@@ -53,7 +53,7 @@
 
                 <div class="alert alert-info" role="alert" >Upload a file</div>
                 <!-- pass the batch object to the upload file controller to get the correct ID to save it under -->
-                <form method="post" th:action="@{/file/xlsx/upload?customJwtParameter=__${customJwtParameter}__}" enctype="multipart/form-data">
+                <form method="post" th:action="@{/file/xlsx/upload}" enctype="multipart/form-data">
                     <div class="form-group">
                             <input type="file" name="file" class="form-control-file">
                     </div>

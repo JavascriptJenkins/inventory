@@ -3,14 +3,11 @@ package com.techvvs.inventory.viewcontroller
 import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.dao.BatchDao;
 import com.techvvs.inventory.jparepo.BatchRepo
-import com.techvvs.inventory.jparepo.BatchTypeRepo
-import com.techvvs.inventory.jparepo.ProductRepo
-import com.techvvs.inventory.jparepo.ProductTypeRepo
 import com.techvvs.inventory.model.BatchTypeVO;
 import com.techvvs.inventory.model.BatchVO
 import com.techvvs.inventory.model.ProductTypeVO
-import com.techvvs.inventory.model.ProductVO;
-import com.techvvs.inventory.modelnonpersist.FileVO;
+import com.techvvs.inventory.modelnonpersist.FileVO
+import com.techvvs.inventory.service.auth.TechvvsAuthService;
 import com.techvvs.inventory.util.TechvvsFileHelper
 import com.techvvs.inventory.validation.ValidateBatch
 import com.techvvs.inventory.viewcontroller.constants.ControllerConstants
@@ -25,10 +22,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse
-import java.nio.file.Files;
-import java.security.SecureRandom;
 import java.time.LocalDateTime;
 
 
@@ -41,9 +35,6 @@ public class BatchViewController {
     AppConstants appConstants
 
     @Autowired
-    HttpServletRequest httpServletRequest;
-
-    @Autowired
     TechvvsFileHelper techvvsFileHelper;
 
     @Autowired
@@ -51,18 +42,6 @@ public class BatchViewController {
 
     @Autowired
     BatchDao batchDao;
-
-
-    @Autowired
-    BatchTypeRepo batchTypeRepo;
-
-    @Autowired
-    ProductTypeRepo productTypeRepo;
-
-
-    @Autowired
-    ProductRepo productRepo;
-
 
     @Autowired
     ValidateBatch validateBatch;
@@ -72,16 +51,16 @@ public class BatchViewController {
 
     @Autowired
     ControllerConstants controllerConstants
-
-
-    SecureRandom secureRandom = new SecureRandom();
-
+    
+    @Autowired
+    TechvvsAuthService techvvsAuthService
+    
 
     //default home mapping
     @GetMapping
-    String viewNewForm(@ModelAttribute( "batch" ) BatchVO batchVO, Model model, @RequestParam("customJwtParameter") String customJwtParameter){
+    String viewNewForm(@ModelAttribute( "batch" ) BatchVO batchVO, Model model){
 
-        System.out.println("customJwtParam on batch controller: "+customJwtParameter);
+
 
         BatchVO batchVOToBind;
         if(batchVO != null && batchVO.getBatchid() != null){
@@ -97,7 +76,7 @@ public class BatchViewController {
 
 
         model.addAttribute("disableupload","true"); // disable uploading a file until we actually have a record submitted successfully
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
         model.addAttribute("batch", batchVOToBind);
         batchControllerHelper.bindBatchTypes(model)
         return "service/batch.html";
@@ -107,12 +86,10 @@ public class BatchViewController {
     @GetMapping("/uploadxlsx")
     String viewUploadXslxNewBatch(
             @ModelAttribute( "batch" ) BatchVO batchVO,
-                                  Model model,
-            @RequestParam("customJwtParameter") String customJwtParameter
-
+                                  Model model
     ){
 
-        System.out.println("customJwtParam on batch controller: "+customJwtParameter);
+
 
         BatchVO batchVOToBind;
         if(batchVO != null && batchVO.getBatchid() != null){
@@ -127,7 +104,7 @@ public class BatchViewController {
 
 
         model.addAttribute("disableupload","true"); // disable uploading a file until we actually have a record submitted successfully
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
         model.addAttribute("batch", batchVOToBind);
         batchControllerHelper.bindBatchTypes(model)
         return "service/xlsxbatch.html";
@@ -137,7 +114,7 @@ public class BatchViewController {
     @GetMapping("/browseBatch")
     String browseBatch(@ModelAttribute( "batch" ) BatchVO batchVO,
                              Model model,
-                             @RequestParam("customJwtParameter") String customJwtParameter,
+                             
                              @RequestParam("page") Optional<Integer> page,
                              @RequestParam("size") Optional<Integer> size ){
 
@@ -167,26 +144,26 @@ public class BatchViewController {
         model.addAttribute("page", currentPage);
         model.addAttribute("size", pageOfBatch.getTotalPages());
         model.addAttribute("batchPage", pageOfBatch);
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
         model.addAttribute("batch", new BatchVO());
         return "service/browsebatch.html";
     }
 
     @GetMapping("/searchBatch")
-    String searchBatch(@ModelAttribute( "batch" ) BatchVO batchVO, Model model, @RequestParam("customJwtParameter") String customJwtParameter){
+    String searchBatch(@ModelAttribute( "batch" ) BatchVO batchVO, Model model){
 
-        System.out.println("customJwtParam on batch controller: "+customJwtParameter);
 
-        model.addAttribute("customJwtParameter", customJwtParameter);
+
+        techvvsAuthService.checkuserauth(model)
         model.addAttribute("batch", new BatchVO());
         model.addAttribute("batchs", new ArrayList<BatchVO>(1));
         return "service/searchbatch.html";
     }
 
     @PostMapping("/searchBatch")
-    String searchBatchPost(@ModelAttribute( "batch" ) BatchVO batchVO, Model model, @RequestParam("customJwtParameter") String customJwtParameter){
+    String searchBatchPost(@ModelAttribute( "batch" ) BatchVO batchVO, Model model){
 
-        System.out.println("customJwtParam on batch controller: "+customJwtParameter);
+
 
         List<BatchVO> results = new ArrayList<BatchVO>();
         if(batchVO.getBatchnumber() != null){
@@ -202,7 +179,7 @@ public class BatchViewController {
             results = batchRepo.findAllByDescription(batchVO.getDescription());
         }
 
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
         model.addAttribute("batch", batchVO);
         model.addAttribute("batchs", results);
         return "service/searchbatch.html";
@@ -212,7 +189,7 @@ public class BatchViewController {
     @GetMapping("/editform")
     String viewEditForm(
                     Model model,
-                    @RequestParam("customJwtParameter") String customJwtParameter,
+                    
                     @RequestParam("editmode") String editmode,
                     @RequestParam("batchnumber") String batchnumber,
                     @RequestParam("page") Optional<Integer> page,
@@ -220,7 +197,7 @@ public class BatchViewController {
 
     ){
 
-        model = batchControllerHelper.processModel(model, customJwtParameter, batchnumber, editmode, page, null, false , false);
+        model = batchControllerHelper.processModel(model,  batchnumber, editmode, page, null, false , false);
         return "service/editbatch.html";
     }
 
@@ -228,7 +205,7 @@ public class BatchViewController {
     String viewFilterEditForm(
             Model model,
             @ModelAttribute( "searchproducttype" ) ProductTypeVO productTypeVO,
-            @RequestParam("customJwtParameter") String customJwtParameter,
+            
             @RequestParam("editmode") String editmode,
             @RequestParam("batchnumber") String batchnumber,
             @RequestParam("page") Optional<Integer> page,
@@ -236,7 +213,7 @@ public class BatchViewController {
 
     ){
 
-        model = batchControllerHelper.processModel(model, customJwtParameter, batchnumber, editmode, page, productTypeVO, true, false);
+        model = batchControllerHelper.processModel(model,  batchnumber, editmode, page, productTypeVO, true, false);
         return "service/editbatch.html";
     }
 
@@ -245,14 +222,14 @@ public class BatchViewController {
     String printmenu(
             Model model,
             @ModelAttribute( "searchproducttype" ) ProductTypeVO productTypeVO,
-            @RequestParam("customJwtParameter") String customJwtParameter,
+            
             @RequestParam("editmode") String editmode,
             @RequestParam("batchnumber") String batchnumber,
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size
     ){
 
-        model = batchControllerHelper.processModel(model, customJwtParameter, batchnumber, editmode, page, productTypeVO, true, false);
+        model = batchControllerHelper.processModel(model,  batchnumber, editmode, page, productTypeVO, true, false);
         // I need to do here is build a pdf / excel document, store it in uploads folder, then send a download link back to the user
 
 
@@ -267,7 +244,7 @@ public class BatchViewController {
     String viewLikeSearch(
             Model model,
             @ModelAttribute( "searchproducttype" ) ProductTypeVO productTypeVO,
-            @RequestParam("customJwtParameter") String customJwtParameter,
+            
             @RequestParam("editmode") String editmode,
             @RequestParam("batchnumber") String batchnumber,
             @RequestParam("page") Optional<Integer> page,
@@ -275,7 +252,7 @@ public class BatchViewController {
 
     ){
 
-        model = batchControllerHelper.processModel(model, customJwtParameter, batchnumber, editmode, page, productTypeVO, true, true);
+        model = batchControllerHelper.processModel(model,  batchnumber, editmode, page, productTypeVO, true, true);
         return "service/editbatch.html";
     }
 
@@ -283,7 +260,7 @@ public class BatchViewController {
     String viewGenerateBarcodes(
             Model model,
             @ModelAttribute( "searchproducttype" ) ProductTypeVO productTypeVO,
-            @RequestParam("customJwtParameter") String customJwtParameter,
+            
             @RequestParam("editmode") String editmode,
             @RequestParam("batchnumber") String batchnumber,
             @RequestParam("page") Optional<Integer> page,
@@ -298,7 +275,7 @@ public class BatchViewController {
 
         boolean success = false
 
-        model = batchControllerHelper.processModel(model, customJwtParameter, batchnumber, editmode, page, productTypeVO, true, false);
+        model = batchControllerHelper.processModel(model,  batchnumber, editmode, page, productTypeVO, true, false);
 
         switch(productTypeVO.menutype){
             case controllerConstants.ALL:
@@ -326,7 +303,7 @@ public class BatchViewController {
     String viewGenerateQrcodes(
             Model model,
             @ModelAttribute( "searchproducttype" ) ProductTypeVO productTypeVO,
-            @RequestParam("customJwtParameter") String customJwtParameter,
+            
             @RequestParam("editmode") String editmode,
             @RequestParam("batchnumber") String batchnumber,
             @RequestParam("page") Optional<Integer> page,
@@ -339,7 +316,7 @@ public class BatchViewController {
         // todo: all we are doing is routing the button to this method and then generating the barcode sheets for this batch
 
 
-        model = batchControllerHelper.processModel(model, customJwtParameter, batchnumber, editmode, page, productTypeVO, true, false);
+        model = batchControllerHelper.processModel(model,  batchnumber, editmode, page, productTypeVO, true, false);
 
         switch(productTypeVO.menutype){
             case controllerConstants.ALL:
@@ -360,7 +337,7 @@ public class BatchViewController {
     String generateWeightLabels(
             Model model,
             @ModelAttribute( "searchproducttype" ) ProductTypeVO productTypeVO,
-            @RequestParam("customJwtParameter") String customJwtParameter,
+            
             @RequestParam("editmode") String editmode,
             @RequestParam("batchnumber") String batchnumber,
             @RequestParam("page") Optional<Integer> page,
@@ -373,7 +350,7 @@ public class BatchViewController {
         // todo: all we are doing is routing the button to this method and then generating the barcode sheets for this batch
 
 
-        model = batchControllerHelper.processModel(model, customJwtParameter, batchnumber, editmode, page, productTypeVO, true, false);
+        model = batchControllerHelper.processModel(model,  batchnumber, editmode, page, productTypeVO, true, false);
 
         switch(productTypeVO.menutype){
             case controllerConstants.SINGLE_PAGE:
@@ -393,7 +370,7 @@ public class BatchViewController {
                      @ModelAttribute( "searchproducttype" ) ProductTypeVO productTypeVO,
                      Model model,
                                 HttpServletResponse response,
-                                @RequestParam("customJwtParameter") String customJwtParameter,
+                                
                      @RequestParam("page") Optional<Integer> page,
                      @RequestParam("size") Optional<Integer> size
     ){
@@ -433,7 +410,7 @@ public class BatchViewController {
         batchControllerHelper.bindProductTypes(model)
         //  bindFilterProducts(model, page, productTypeVO)
         model.addAttribute("searchproducttype", new ProductTypeVO()) // this is a blank object for submitting a search term
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
         batchControllerHelper.bindBatchTypes(model)
         return "service/editbatch.html";
     }
@@ -441,8 +418,7 @@ public class BatchViewController {
     @PostMapping ("/createNewBatch")
     String createNewBatch(@ModelAttribute( "batch" ) BatchVO batchVO,
                                 Model model,
-                                HttpServletResponse response,
-                                @RequestParam("customJwtParameter") String customJwtParameter
+                                HttpServletResponse response
     ){
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -472,7 +448,7 @@ public class BatchViewController {
             model.addAttribute("batch", result);
         }
 
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
         batchControllerHelper.bindBatchTypes(model)
         return "service/batch.html";
     }

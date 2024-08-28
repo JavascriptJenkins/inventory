@@ -56,7 +56,7 @@
                     th:alt-title="${iStat.even}? 'even' : 'odd'">
 
                     <td th:text="${product.product_id}"></td>
-                    <td><a th:href="@{/product/editform?productnumber=__${product.productnumber}__&customJwtParameter=__${customJwtParameter}__&editmode=no}" th:text="${product.productnumber}"></a></td>
+                    <td><a th:href="@{/product/editform?productnumber=__${product.productnumber}__&editmode=no}" th:text="${product.productnumber}"></a></td>
                     <td th:text="${product.name}"></td>
                     <td th:text="${product.description}"></td>
 
@@ -67,12 +67,12 @@
             </table>
             <div th:if="${productPage.totalPages > 0}" class="pagination"
                  th:each="pageNumber : ${pageNumbers}">
-                <a th:href="@{/product/browseProduct?customJwtParameter=__${customJwtParameter}__&size=__${#lists.size(productPage.content)}__&page=__${pageNumber}__}"
+                <a th:href="@{/product/browseProduct?size=__${#lists.size(productPage.content)}__&page=__${pageNumber}__}"
                    th:text=${pageNumber}
                    th:class="${pageNumber==productPage.number + 1} ? active"></a>
             </div>
 
-    <!--                <a th:href="@{/product/browseProduct?customJwtParameter=__${customJwtParameter}__&size=1&page=__${pageNumber}__}"-->
+    <!--                <a th:href="@{/product/browseProduct?size=1&page=__${pageNumber}__}"-->
 
 
 

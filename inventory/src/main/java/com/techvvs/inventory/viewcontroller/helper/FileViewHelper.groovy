@@ -1,7 +1,4 @@
 package com.techvvs.inventory.viewcontroller.helper
-
-import com.techvvs.inventory.model.CartVO
-import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.modelnonpersist.MenuOptionVO
 import org.springframework.stereotype.Component
 

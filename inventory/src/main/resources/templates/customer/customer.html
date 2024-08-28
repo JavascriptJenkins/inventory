@@ -254,7 +254,7 @@
 <div class="container">
     <div class="header-dark">
         <div class="back-button">
-            <a th:href="@{/admin?customJwtParameter=__${customJwtParameter}__}"><i class="bi bi-arrow-left-circle"></i></a>
+            <a th:href="@{/admin}"><i class="bi bi-arrow-left-circle"></i></a>
         </div>
         <div>
             <h1>Customer</h1>
@@ -262,7 +262,7 @@
         </div>
     </div>
 
-    <form id="customerForm" th:action="@{/customer/create?customJwtParameter=__${customJwtParameter}__}" th:object="${customer}" method="post">
+    <form id="customerForm" th:action="@{/customer/create}" th:object="${customer}" method="post">
         <div class="alert alert-danger" role="alert" style="display: none;"></div>
         <div id="successDiv" class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
         <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
@@ -321,7 +321,7 @@
     <nav th:if="${customerPage.totalPages > 0}">
         <ul class="pagination">
             <li class="page-item" th:each="pageNumber : ${pageNumbers}">
-                <a class="page-link" th:href="@{/customer?customJwtParameter=__${customJwtParameter}__&size=__${#lists.size(customerPage.content)}__&page=__${pageNumber}__}" th:text="${pageNumber}" th:classappend="${pageNumber==customerPage.number + 1} ? 'active'"></a>
+                <a class="page-link" th:href="@{/customer?size=__${#lists.size(customerPage.content)}__&page=__${pageNumber}__}" th:text="${pageNumber}" th:classappend="${pageNumber==customerPage.number + 1} ? 'active'"></a>
             </li>
         </ul>
     </nav>

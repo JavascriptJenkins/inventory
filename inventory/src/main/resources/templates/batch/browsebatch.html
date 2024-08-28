@@ -78,7 +78,7 @@
             th:alt-title="${iStat.even}? 'even' : 'odd'">
             <td th:text="${batch.batchid}"></td>
             <td>
-                <a th:href="@{/batch?batchnumber=__${batch.batchnumber}__&customJwtParameter=__${customJwtParameter}__&editmode=no&page=1&size=100}"
+                <a th:href="@{/batch?batchnumber=__${batch.batchnumber}__&editmode=no&page=1&size=100}"
                    th:text="${batch.batchnumber}"
                    class="btn btn-secondary btn-sm">
                 </a>
@@ -93,7 +93,7 @@
         <ul class="pagination justify-content-center">
             <li class="page-item" th:each="pageNumber : ${pageNumbers}">
                 <a class="page-link btn btn-secondary btn-sm mx-1"
-                   th:href="@{/batch/browseBatch?customJwtParameter=__${customJwtParameter}__&size=__${#lists.size(batchPage.content)}__&page=__${pageNumber}__}"
+                   th:href="@{/batch/browseBatch?size=__${#lists.size(batchPage.content)}__&page=__${pageNumber}__}"
                    th:text="${pageNumber}"
                    th:classappend="${pageNumber==batchPage.number + 1} ? 'active'">
                 </a>

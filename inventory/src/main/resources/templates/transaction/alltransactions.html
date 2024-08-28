@@ -93,7 +93,6 @@
         }
     </style>
 
-    <!-- Script to handle record size change and extract customJwtParameter from URL -->
     <script>
         $(document).ready(function() {
             function getParameterByName(name) {
@@ -106,7 +105,7 @@
                 return decodeURIComponent(results[2].replace(/\+/g, ' '));
             }
 
-            var customJwtParameter = getParameterByName('customJwtParameter'); // Extract the parameter from the URL
+
             var currentSize = getParameterByName('size') || '5'; // Default to 10 if not set
             var currentPage = getParameterByName('page') || '0'; // Default to 1 if not set
 
@@ -116,7 +115,7 @@
 
             $('#recordSize').change(function() {
                 var selectedSize = $(this).val();
-                var newUrl = '/transaction/listall?customJwtParameter=' + customJwtParameter + '&size=' + selectedSize + '&page=' + currentPage;
+                var newUrl = '/transaction/listall?size=' + selectedSize + '&page=' + currentPage;
                 window.location.href = newUrl;
             });
         });
@@ -130,7 +129,7 @@
 
     <div class="header-dark">
         <div class="back-button">
-            <a th:href="@{/transaction/listall?customJwtParameter=__${customJwtParameter}__}"><i class="bi bi-arrow-left-circle"></i></a>
+            <a th:href="@{/transaction/listall}"><i class="bi bi-arrow-left-circle"></i></a>
         </div>
         <div>
             <h1>All Transactions</h1>
@@ -166,7 +165,7 @@
             th:style="${iStat.odd}? 'font-weight: bold;'"
             th:alt-title="${iStat.even}? 'even' : 'odd'">
             <td th:text="${transaction.transactionid}"></td>
-            <td><a th:href="@{/transaction?transactionid=__${transaction.transactionid}__&customJwtParameter=__${customJwtParameter}__&size=5&page=1}" th:text="${transaction.transactionid}"></a></td>
+            <td><a th:href="@{/transaction?transactionid=__${transaction.transactionid}__&size=5&page=1}" th:text="${transaction.transactionid}"></a></td>
             <td th:text="${transaction.customervo.name}"></td>
             <td th:text="${transaction.totalwithtax - transaction.paid}"></td>
         </tr>
@@ -177,7 +176,7 @@
         <ul class="pagination">
             <li class="page-item" th:each="pageNumber : ${pageNumbers}">
                 <a class="page-link"
-                   th:href="@{/transaction/listall?customJwtParameter=__${customJwtParameter}__&size=__${size}__&page=__${pageNumber}__}"
+                   th:href="@{/transaction/listall?size=__${size}__&page=__${pageNumber}__}"
                    th:text="${pageNumber}"
                    th:classappend="${pageNumber==transactionPage.number + 1} ? 'active'">
                 </a>

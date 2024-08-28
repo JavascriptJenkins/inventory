@@ -4,6 +4,7 @@ import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.model.BatchVO
 import com.techvvs.inventory.modelnonpersist.FileVO
 import com.techvvs.inventory.modelnonpersist.MenuOptionVO
+import com.techvvs.inventory.service.auth.TechvvsAuthService
 import com.techvvs.inventory.service.paging.FilePagingService
 import com.techvvs.inventory.util.TechvvsFileHelper
 import com.techvvs.inventory.viewcontroller.constants.ControllerConstants
@@ -42,6 +43,9 @@ public class FileViewController {
 
     @Autowired
     TransactionHelper transactionHelper
+    
+    @Autowired
+    TechvvsAuthService techvvsAuthService
 
 
 
@@ -49,62 +53,59 @@ public class FileViewController {
     //default home mapping
     @GetMapping
     String viewNewForm(
-            @ModelAttribute( "batch" ) BatchVO batchVO,
             Model model,
-            @RequestParam("customJwtParameter") String customJwtParameter,
             @RequestParam("batchid") String batchid,
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size,
-            @RequestParam("selected") String selected
+//            @RequestParam("selected") String selected,
+    @ModelAttribute( "menuoption" ) MenuOptionVO menuoption
     ){
 
         batchid = batchid == null ? "0" : String.valueOf(batchid)
 
         // attach the paymentVO to the model
-        batchVO = batchControllerHelper.loadBatch(batchid, model)
+         BatchVO batchVO = batchControllerHelper.loadBatch(batchid, model)
 
 
         // start file paging
         String dir = appConstants.PARENT_LEVEL_DIR+String.valueOf(batchVO.batchnumber)+appConstants.BARCODES_ALL_DIR
 
 //        Page<FileVO> filePage = filePagingService.getFilePageFromDirectory(page.get(), size.get(), dir)
-        Page<FileVO> filePage = filePagingService.getFilePage(batchVO, page.get(), size.get(), selected)
+        Page<FileVO> filePage = filePagingService.getFilePage(batchVO, page.get(), size.get(), '/'+menuoption.selected+'/')
         filePagingService.bindPageAttributesToModel(model, filePage, page, size);
         // end file paging
 
 
 
         model.addAttribute(controllerConstants.MENU_OPTIONS_DIRECTORIES, controllerConstants.DIRECTORIES_FOR_BATCH_UI);
-        model.addAttribute("customJwtParameter", customJwtParameter);
-        model.addAttribute("menuoption", new MenuOptionVO(selected: selected));
+        techvvsAuthService.checkuserauth(model)
+        model.addAttribute("menuoption", new MenuOptionVO(selected: '/'+menuoption.selected+'/'));
         return "files/batchfiles.html";
     }
 
 
     @PostMapping("/viewdirfiles")
-    String submitpayment(
-            @ModelAttribute( "batch" ) BatchVO batchVO,
+    String viewdirfiles(
             @RequestParam( "batchid" ) String batchid,
             @ModelAttribute( "menuoption" ) MenuOptionVO menuoption,
             Model model,
-            @RequestParam("customJwtParameter") String customJwtParameter,
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size
     ){
 
 
 
-        System.out.println("customJwtParam on checkout controller: "+customJwtParameter);
+        
 
         batchid = batchid == null ? "0" : String.valueOf(batchid)
-        batchVO = batchControllerHelper.loadBatch(batchid, model)
+        BatchVO batchVO = batchControllerHelper.loadBatch(batchid, model)
 
         String selected = menuoption.selected // this contains file path from the dropdown
 
         Page<FileVO> filePage = filePagingService.getFilePage(batchVO, page.get(), size.get(), selected)
         filePagingService.bindPageAttributesToModel(model, filePage, page, size);
         model.addAttribute(controllerConstants.MENU_OPTIONS_DIRECTORIES, controllerConstants.DIRECTORIES_FOR_BATCH_UI);
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
         model.addAttribute("menuoption", new MenuOptionVO(selected: selected));
 
         return "files/batchfiles.html";
@@ -117,11 +118,10 @@ public class FileViewController {
                 @RequestParam( "batchid" ) String batchid,
                             @ModelAttribute( "menuoption" ) MenuOptionVO menuoption,
                             Model model,
-                            @RequestParam("customJwtParameter") String customJwtParameter,
                             @RequestParam("page") Optional<Integer> page,
                             @RequestParam("size") Optional<Integer> size){
 
-        System.out.println("customJwtParam on checkout controller: "+customJwtParameter);
+        
 
         menuoption = fileViewHelper.sanitizeTransients(menuoption)
 
@@ -153,7 +153,7 @@ public class FileViewController {
         model.addAttribute(controllerConstants.MENU_OPTIONS_DIRECTORIES, controllerConstants.DIRECTORIES_FOR_BATCH_UI);
         // end file paging
 
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
         model.addAttribute("menuoption", new MenuOptionVO(selected: selected));
         model.addAttribute("invoicecontent", contentsofinvoice)
 

@@ -127,7 +127,7 @@
 
     <div class="header-dark">
         <div class="back-button">
-            <a th:href="@{/dashboard/index?customJwtParameter=__${customJwtParameter}__}">
+            <a th:href="@{/dashboard/index}">
                 <i class="bi bi-arrow-left-circle"></i>
             </a>
         </div>
@@ -135,7 +135,7 @@
     </div>
 
     <div th:if="${locked.equals('unlocked')}">
-        <form th:action="@{/lock/lockdata?customJwtParameter=__${customJwtParameter}__}" th:object="${lock}" method="post">
+        <form th:action="@{/lock/lockdata}" th:object="${lock}" method="post">
 
             <div class="input-container">
                 <input th:field="*{secretkey}" type="text" name="secretkey" id="secretkeyInput" class="form-control" placeholder="Enter Secret Key">
@@ -151,14 +151,14 @@
         </form>
     </div>
 
-    <form th:if="${successMessage == null && locked.equals('unlocked')}" th:action="@{/lock/generatekey?customJwtParameter=__${customJwtParameter}__}" th:object="${lock}" method="post">
+    <form th:if="${successMessage == null && locked.equals('unlocked')}" th:action="@{/lock/generatekey}" th:object="${lock}" method="post">
         <div class="button-container">
             <button type="submit" class="btn btn-primary">Generate Key</button>
         </div>
     </form>
 
     <div th:if="${locked.equals('locked')}">
-        <form th:action="@{/lock/unlockdata?customJwtParameter=__${customJwtParameter}__}" th:object="${lock}" method="post">
+        <form th:action="@{/lock/unlockdata}" th:object="${lock}" method="post">
 
             <div class="input-container">
                 <input type="text" name="secretkey" id="secretkeyInput" class="form-control" placeholder="Enter Secret Key">

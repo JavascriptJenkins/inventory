@@ -34,86 +34,25 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     // No session will be created or used by spring security
     http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
+    // Apply JWT
+    http.apply(new JwtTokenFilterConfigurer(jwtTokenProvider));
+
     // Entry points
     // ANYTHING AUTH NEEDS TO BE DECLARED HERE
-    http
-      // Apply JWT
-            .apply(new JwtTokenFilterConfigurer(jwtTokenProvider))
-                            .and()
+    // Entry points for routes that don't require authentication
+    http.authorizeRequests()
+            .antMatchers("/login").permitAll()
+            .antMatchers("/favicon.ico").permitAll()
+            .antMatchers("/css/table.css").permitAll()
+            .antMatchers("/login/systemuser").permitAll()//
+            .antMatchers("/login/verifyphonetoken").permitAll()//
+//            .antMatchers("/login/systemuser").permitAll()//
+            // Add other routes that should be publicly accessible
+            // Disallow everything else..
+            .anyRequest().authenticated();
 
-
-            .csrf()
-
-//            .csrfTokenRepository(jwtCsrfTokenRepository)
-            .and()
-
-            .authorizeRequests()//
-        .antMatchers("/login").permitAll()//
-        .antMatchers("/favicon.ico").permitAll()//
-        .antMatchers("/css/table.css").permitAll()//
-        .antMatchers("/dashboard/index/*").permitAll()//
-        .antMatchers("/login/logout").permitAll()//
-             .antMatchers("/customer/pipeline").permitAll()
-//        .antMatchers("/file/download/**").permitAll() // note: will be checking jwt for download on the controller
-//        .antMatchers("/file/download/*").permitAll() // note: will be checking jwt for download on the controller
-//        .antMatchers("/file/download").permitAll() // note: will be checking jwt for download on the controller
-//        .antMatchers("/file/upload/**").permitAll() //note: will be checking jwt for download on the controller
-//        .antMatchers("/file/upload/*").permitAll() //note: will be checking jwt for download on the controller
-//        .antMatchers("/file/upload").permitAll() //note: will be checking jwt for download on the controller
-        .antMatchers("/login/systemuser").permitAll()//
-        .antMatchers("/login/createSystemUser").permitAll()//
-        .antMatchers("/testdata/makedev").permitAll()//
-        .antMatchers("/login/resetpassword").permitAll()//
-         .antMatchers("/customer/pipeline").permitAll()//
-        .antMatchers("/login/viewresetpass").permitAll()//
-        .antMatchers("/login/resetpasswordbyemail").permitAll()//
-        .antMatchers("/login/actuallyresetpassword").permitAll()//
-        .antMatchers("/login/verifyphonetoken").permitAll()//
-        .antMatchers("/newbatch/editform/**").permitAll()//
-        .antMatchers("/login/verify/**").permitAll()//
-        .antMatchers("/newbatch/createNewBatch/*").permitAll()//
-        .antMatchers("/newbatch/searchBatch/*").permitAll()//
-        .antMatchers("/newbatch/browseBatch/***").permitAll()//
-        .antMatchers("/newbatch/editBatch/*").permitAll()//
-        .antMatchers("/batchtype/createNewBatchType/*").permitAll()//
-        .antMatchers("/batchtype/editBatchType/*").permitAll()//
-            .antMatchers("/task/createNewTask/*").permitAll()//
-            .antMatchers("/task/searchTask/*").permitAll()//
-            .antMatchers("/task/browseTask/***").permitAll()//
-            .antMatchers("/task/editTask/*").permitAll()//
-            .antMatchers("/task/createNewTaskType/*").permitAll()//
-            .antMatchers("/task/editTaskType/*").permitAll()//
-        .antMatchers("/producttype/createNewProductType/*").permitAll()//
-        .antMatchers("/producttype/editProductType/*").permitAll()//
-        .antMatchers("/product/searchProduct/*").permitAll()//
-        .antMatchers("/product/browseProduct/***").permitAll()//
-        .antMatchers("/product/editform/***").permitAll()//
-        .antMatchers("/product/editProduct/*").permitAll()//
-
-        .antMatchers("/login/createaccount").permitAll()//
-        .antMatchers("/users/sendResetToken").permitAll()//
-        .antMatchers("/users/validateUserEmail").permitAll()//
-        .antMatchers("/paypal/paypal").permitAll()//
-        .antMatchers("/paypal/*").permitAll()//
-        .antMatchers("/h2-console/**/**").permitAll()
-
-
-        // Disallow everything else..
-        .anyRequest().authenticated()
-
-
-
-    //.cors().configurationSource(corsConfigurationSource())
-    ;
-
-    // If a user try to access a resource without having enough permissions
+    // If a user tries to access a resource without having enough permissions
     http.exceptionHandling().accessDeniedPage("/login");
-
-    // Apply JWT
-//    http.apply(new JwtTokenFilterConfigurer(jwtTokenProvider));
-
-    // Optional, if you want to test the API from a browser
-    // http.httpBasic();
   }
 
   @Override

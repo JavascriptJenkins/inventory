@@ -228,7 +228,7 @@
 <div class="container">
     <div class="header-dark">
         <div class="back-button">
-            <a th:href="@{/dashboard/index?customJwtParameter=__${customJwtParameter}__}"><i class="bi bi-arrow-left-circle"></i></a>
+            <a th:href="@{/dashboard/index}"><i class="bi bi-arrow-left-circle"></i></a>
         </div>
         <div>
             <h1>Checkout</h1>
@@ -239,7 +239,7 @@
     <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
     <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
 
-    <form id="barcodeForm" th:action="@{/checkout/scan?customJwtParameter=__${customJwtParameter}__&cartid=__${cart.cartid != null ? cart.cartid : '0'}__}" th:object="${cart}" method="post">
+    <form id="barcodeForm" th:action="@{/checkout/scan?cartid=__${cart.cartid != null ? cart.cartid : '0'}__}" th:object="${cart}" method="post">
         <div class="row">
             <div class="col-md-8">
                 <div class="row" style="margin-bottom: 5px;">
@@ -300,11 +300,11 @@
         </div>
     </form>
 
-    <form id="deleteItemFromCartForm" th:action="@{/checkout/delete?customJwtParameter=__${customJwtParameter}__&cartid=__${cart.cartid}__}" th:object="${cart}" method="post">
+    <form id="deleteItemFromCartForm" th:action="@{/checkout/delete?cartid=__${cart.cartid}__}" th:object="${cart}" method="post">
         <input type="hidden" name="_method" value="delete" />
     </form>
 
-    <form id="submitTransactionForm" th:action="@{/checkout/reviewcart?customJwtParameter=__${customJwtParameter}__&cartid=__${cart.cartid != null ? cart.cartid : '0'}__}" th:object="${cart}" method="post">
+    <form id="submitTransactionForm" th:action="@{/checkout/reviewcart?cartid=__${cart.cartid != null ? cart.cartid : '0'}__}" th:object="${cart}" method="post">
         <input type="hidden" th:field="*{product_cart_list}">
         <input type="hidden" th:field="*{customer.customerid}">
         <button style="margin-top: 5px;" type="submit" class="btn btn-dark-theme">Review Cart</button>

@@ -9,6 +9,7 @@ import com.techvvs.inventory.security.JwtTokenProvider;
 import com.techvvs.inventory.security.Role;
 import com.techvvs.inventory.security.Token;
 import com.techvvs.inventory.security.UserService;
+import com.techvvs.inventory.service.auth.TechvvsAuthService;
 import com.techvvs.inventory.util.SendgridEmailUtil;
 import com.techvvs.inventory.util.TwilioTextUtil;
 import com.techvvs.inventory.validation.ValidateAuth;
@@ -20,8 +21,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -45,10 +49,6 @@ public class AuthViewController {
     PasswordEncoder passwordEncoder;
     @Autowired
     JwtTokenProvider jwtTokenProvider;
-
-
-    @Autowired
-    HttpServletRequest httpServletRequest;
 
     @Autowired
     TwilioTextUtil textMagicUtil;
@@ -74,6 +74,9 @@ public class AuthViewController {
     @Autowired
     MenuHelper menuHelper;
 
+    @Autowired
+    TechvvsAuthService techvvsAuthService;
+
     //default home mapping
     @GetMapping
     String viewAuthPage(Model model) {
@@ -93,13 +96,30 @@ public class AuthViewController {
 
     //error page displayed when nobody is logged in
     @PostMapping("/logout")
-    String logout(Model model, @ModelAttribute("systemuser") SystemUserDAO systemUserDAO) {
+    String logout(Model model, @ModelAttribute("systemuser") SystemUserDAO systemUserDAO, HttpServletRequest request, HttpServletResponse response) {
 
 
-        model.addAttribute("customJwtParameter", "");
+        // Invalidate the session if it exists
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+
+        // Clear authentication information from the SecurityContext
+        SecurityContextHolder.clearContext();
+
+        // Remove the JWT cookie
+        Cookie cookie = new Cookie("techvvs_token", null);
+        cookie.setPath("/");
+        cookie.setHttpOnly(true);
+        cookie.setMaxAge(0); // Deletes the cookie
+        response.addCookie(cookie);
+
+
         SecurityContextHolder.getContext().setAuthentication(null); // clear the internal auth
         SecurityContextHolder.clearContext();
         model.addAttribute("systemuser", new SystemUserDAO());
+//        return "redirect:/login";
         return "public/logoutsuccess.html";
     }
 
@@ -149,7 +169,11 @@ public class AuthViewController {
 
     // this gets hit after user enters phone token and password
     @PostMapping("/verifyphonetoken")
-    String postverifyphonetoken(Model model, @ModelAttribute("tknfromcontroller") TokenDAO tokenDAO) {
+    String postverifyphonetoken(Model model,
+                                @ModelAttribute("tknfromcontroller") TokenDAO tokenDAO,
+                                HttpServletResponse response
+
+    ) {
 
         if (tokenDAO != null && tokenDAO.getUsermetadata() != null && tokenDAO.getToken() != null) {
 
@@ -258,7 +282,15 @@ public class AuthViewController {
                                 System.out.println("SIGN-IN TOKEN GENERATED!!! ");
                                 token1 = new Token();
                                 token1.setToken(token);
-                                model.addAttribute("customJwtParameter", token1.getToken());
+
+                                // Create and add the JWT cookie
+                                Cookie cookie = new Cookie("techvvs_token", token);
+                                cookie.setHttpOnly(true);
+                                cookie.setSecure(true); // Set to true in production with HTTPS
+                                cookie.setPath("/");
+                                response.addCookie(cookie);
+                                //
+                                techvvsAuthService.checkuserauth(model);
 
                             } else {
                                 System.out.println("TOKEN IS NULL THIS IS BAD BRAH! ");
