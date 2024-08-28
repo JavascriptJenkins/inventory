@@ -287,7 +287,7 @@
 <div id="pageContent" class="container">
     <div class="header-dark">
         <div class="back-button">
-            <a th:href="@{/transaction/listall?customJwtParameter=__${customJwtParameter}__}"><i class="bi bi-arrow-left-circle"></i></a>
+            <a th:href="@{/transaction/listall}"><i class="bi bi-arrow-left-circle"></i></a>
         </div>
         <div>
             <h1>Transaction Review</h1>
@@ -301,7 +301,7 @@
     <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
     <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
 
-    <form id="transactionReviewForm" th:action="@{/checkout/printreceipt?customJwtParameter=__${customJwtParameter}__&size=5&page=1}" th:object="${transaction}" method="post" class="d-inline">
+    <form id="transactionReviewForm" th:action="@{/checkout/printreceipt?size=5&page=1}" th:object="${transaction}" method="post" class="d-inline">
         <div style="overflow-x: auto;">
             <table class="table table-hover table-striped table-dark table-bordered">
                 <thead>
@@ -324,20 +324,20 @@
         <button style="margin-top:5px;" type="submit" class="btn btn-primary">Print Receipt</button>
     </form>
 
-    <form id="printInvoiceForm" th:action="@{/checkout/printinvoice?customJwtParameter=__${customJwtParameter}__&size=5&page=1}" th:object="${transaction}" method="post" class="d-inline">
+    <form id="printInvoiceForm" th:action="@{/checkout/printinvoice?size=5&page=1}" th:object="${transaction}" method="post" class="d-inline">
         <input type="hidden" th:field="*{transactionid}">
         <button style="margin-top:5px;" type="submit" class="btn btn-primary">Print Invoice</button>
     </form>
 
     <div class="d-inline">
-        <a th:href="@{/payment?transactionid=__${transaction.transactionid}__&customJwtParameter=__${customJwtParameter}__}" class="btn btn-primary" style="margin-top:5px;">Submit A Payment</a>
+        <a th:href="@{/payment?transactionid=__${transaction.transactionid}__}" class="btn btn-primary" style="margin-top:5px;">Submit A Payment</a>
     </div>
 
     <div class="d-inline">
-        <a th:href="@{/transaction/return?transactionid=__${transaction.transactionid}__&customJwtParameter=__${customJwtParameter}__}" class="btn btn-warning" style="margin-top:5px;float: right;">Return Product</a>
+        <a th:href="@{/transaction/return?transactionid=__${transaction.transactionid}__}" class="btn btn-warning" style="margin-top:5px;float: right;">Return Product</a>
     </div>
 
-    <form id="textoremailInvoiceForm" th:action="@{/checkout/textemailinvoice?customJwtParameter=__${customJwtParameter}__&size=5&page=1}" th:object="${transaction}" method="post">
+    <form id="textoremailInvoiceForm" th:action="@{/checkout/textemailinvoice?size=5&page=1}" th:object="${transaction}" method="post">
         <table class="table table-hover table-striped table-dark table-bordered" style="margin-top: 40px">
             <thead>
             <tr>
@@ -367,7 +367,7 @@
         <nav th:if="${filePage.totalPages > 0}">
             <ul class="pagination">
                 <li class="page-item" th:each="pageNumber : ${pageNumbers}">
-                    <a class="page-link" th:href="@{/transaction?transactionid=__${transaction.transactionid}__&customJwtParameter=__${customJwtParameter}__&size=5&page=__${pageNumber}__}" th:text="${pageNumber}" th:classappend="${pageNumber==filePage.number + 1} ? 'active'"></a>
+                    <a class="page-link" th:href="@{/transaction?transactionid=__${transaction.transactionid}__&size=5&page=__${pageNumber}__}" th:text="${pageNumber}" th:classappend="${pageNumber==filePage.number + 1} ? 'active'"></a>
                 </li>
             </ul>
         </nav>

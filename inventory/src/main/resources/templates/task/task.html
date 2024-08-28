@@ -43,7 +43,7 @@
 
 <!--    <div th:if="${filelist != null || (successMessage == 'Record Successfully Saved.')}">-->
     <div th:if="${filelist != null || task.createTimeStamp != null}">
-            <form th:action="@{/task/createNewTask?customJwtParameter=__${customJwtParameter}__}" th:object="${task}" method="post">
+            <form th:action="@{/task/createNewTask" th:object="${task}" method="post">
                 <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
                 <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
 
@@ -86,7 +86,7 @@
                             <textarea style="width:648px;height:163px;" th:field="*{notes}" class="form-control" placeholder="notes" aria-label="notes" readonly></textarea>
                         </div>
                     </div>
-                    <div class="alert alert-warning" role="alert" ><a th:href="@{/task/editform?tasknumber=__${task.tasknumber}__&customJwtParameter=__${customJwtParameter}__&editmode=yes}">Click here to edit this form</a>
+                    <div class="alert alert-warning" role="alert" ><a th:href="@{/task/editform?tasknumber=__${task.tasknumber}__&editmode=yes}">Click here to edit this form</a>
                     </div>
                     <button style="margin-top:5px;" type="submit" class="btn btn-primary" disabled>Submit</button>
             </form>
@@ -98,7 +98,7 @@
 
     <!-- if th-->
     <div th:if="${task.createTimeStamp == null}">
-        <form th:action="@{/task/createNewTask?customJwtParameter=__${customJwtParameter}__}" th:object="${task}" method="post">
+        <form th:action="@{/task/createNewTask" th:object="${task}" method="post">
             <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
             <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
 
@@ -181,7 +181,7 @@
 
                 <div class="alert alert-info" role="alert" >Upload a file</div>
                 <!-- pass the task object to the upload file controller to get the correct ID to save it under -->
-                <form method="post" th:object="${task}" th:action="@{/file/upload?customJwtParameter=__${customJwtParameter}__}" enctype="multipart/form-data">
+                <form method="post" th:object="${task}" th:action="@{/file/upload" enctype="multipart/form-data">
                     <div class="form-group">
 
                         <div th:if="${disableupload}">

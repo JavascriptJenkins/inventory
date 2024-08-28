@@ -3,18 +3,13 @@ package com.techvvs.inventory.viewcontroller
 import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.dao.BatchDao
 import com.techvvs.inventory.jparepo.BatchRepo
-import com.techvvs.inventory.jparepo.BatchTypeRepo
-import com.techvvs.inventory.jparepo.ProductRepo
-import com.techvvs.inventory.jparepo.ProductTypeRepo
-import com.techvvs.inventory.model.BatchTypeVO
 import com.techvvs.inventory.model.BatchVO
 import com.techvvs.inventory.model.CartVO
 import com.techvvs.inventory.model.ProductTypeVO
-import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.modelnonpersist.FileVO
 import com.techvvs.inventory.printers.PrinterService
-import com.techvvs.inventory.printers.invoice.InvoiceGenerator
+import com.techvvs.inventory.service.auth.TechvvsAuthService
 import com.techvvs.inventory.service.controllers.CartService
 import com.techvvs.inventory.service.controllers.TransactionService
 import com.techvvs.inventory.service.paging.FilePagingService
@@ -29,14 +24,10 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.security.core.parameters.P
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.*
-
-import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
-import java.security.SecureRandom
 import java.time.LocalDateTime
 
 @RequestMapping("/checkout")
@@ -53,9 +44,6 @@ public class CheckoutViewController {
     FilePagingService filePagingService
 
     @Autowired
-    HttpServletRequest httpServletRequest;
-
-    @Autowired
     TechvvsFileHelper techvvsFileHelper;
 
     @Autowired
@@ -63,19 +51,7 @@ public class CheckoutViewController {
 
     @Autowired
     BatchDao batchDao;
-
-
-    @Autowired
-    BatchTypeRepo batchTypeRepo;
-
-    @Autowired
-    ProductTypeRepo productTypeRepo;
-
-
-    @Autowired
-    ProductRepo productRepo;
-
-
+    
     @Autowired
     ValidateBatch validateBatch;
 
@@ -86,9 +62,6 @@ public class CheckoutViewController {
     CheckoutHelper checkoutHelper
 
     @Autowired
-    InvoiceGenerator invoiceGenerator
-
-    @Autowired
     CartService cartService
 
     @Autowired
@@ -96,17 +69,16 @@ public class CheckoutViewController {
 
     @Autowired
     PrinterService printerService
-
-
-    SecureRandom secureRandom = new SecureRandom();
-
+    
+    @Autowired
+    TechvvsAuthService techvvsAuthService
 
     //default home mapping
     @GetMapping
     String viewNewForm(
             @ModelAttribute( "cart" ) CartVO cartVO,
             Model model,
-            @RequestParam("customJwtParameter") String customJwtParameter,
+            
             @RequestParam("cartid") String cartid
 
     ){
@@ -117,12 +89,12 @@ public class CheckoutViewController {
         // todo: add a button on the ui to pull the latest transaction for customer (so if someone clicks off page
         //  you can come back and finish the transaction)
 
-        System.out.println("customJwtParam on checkout controller: "+customJwtParameter);
+        
 
 
         // fetch all customers from database and bind them to model
         checkoutHelper.getAllCustomers(model)
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
         return "checkout/checkout.html";
     }
 
@@ -131,18 +103,18 @@ public class CheckoutViewController {
     String viewPendingTransactions(
             @ModelAttribute( "cart" ) CartVO cartVO,
             Model model,
-            @RequestParam("customJwtParameter") String customJwtParameter,
+            
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size
     ){
 
-        System.out.println("customJwtParam on checkout controller: "+customJwtParameter);
+        
 
         // bind the page of transactions
         checkoutHelper.findPendingCarts(model, page, size)
         // fetch all customers from database and bind them to model
         checkoutHelper.getAllCustomers(model)
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
         model.addAttribute("cart", cartVO);
         return "checkout/pendingcarts.html";
     }
@@ -153,11 +125,11 @@ public class CheckoutViewController {
     @PostMapping("/scan")
     String scan(@ModelAttribute( "cart" ) CartVO cartVO,
                 Model model,
-                @RequestParam("customJwtParameter") String customJwtParameter,
+                
                 @RequestParam("page") Optional<Integer> page,
                 @RequestParam("size") Optional<Integer> size){
 
-        System.out.println("customJwtParam on checkout controller: "+customJwtParameter);
+        
 
         cartVO = cartDeleteService.validateCartVO(cartVO, model)
 
@@ -177,15 +149,11 @@ public class CheckoutViewController {
         }
 
         cartVO = checkoutHelper.hydrateTransientQuantitiesForDisplay(cartVO)
-
-
+        
 
         cartVO.barcode = "" // reset barcode to empty
-//
-//        model.addAttribute("pageNumbers", pageNumbers);
-//        model.addAttribute("page", currentPage);
-//        model.addAttribute("size", pageOfProduct.getTotalPages());
-        model.addAttribute("customJwtParameter", customJwtParameter);
+
+        techvvsAuthService.checkuserauth(model)
         model.addAttribute("cart", cartVO);
         // fetch all customers from database and bind them to model
         checkoutHelper.getAllCustomers(model)
@@ -196,13 +164,13 @@ public class CheckoutViewController {
     @PostMapping("/delete")
     String delete(
                 Model model,
-                @RequestParam("customJwtParameter") String customJwtParameter,
+                
                 @RequestParam("cartid") String cartid,
                 @RequestParam("barcode") String barcode,
                 @RequestParam("page") Optional<Integer> page,
                 @RequestParam("size") Optional<Integer> size){
 
-        System.out.println("customJwtParam on checkout controller: "+customJwtParameter);
+        
 
         CartVO cartVO = checkoutHelper.getExistingCart(cartid)
 
@@ -211,11 +179,8 @@ public class CheckoutViewController {
         cartVO = checkoutHelper.hydrateTransientQuantitiesForDisplay(cartVO)
 
         cartVO.barcode = "" // reset barcode to empty
-//
-//        model.addAttribute("pageNumbers", pageNumbers);
-//        model.addAttribute("page", currentPage);
-//        model.addAttribute("size", pageOfProduct.getTotalPages());
-        model.addAttribute("customJwtParameter", customJwtParameter);
+
+        techvvsAuthService.checkuserauth(model)
         model.addAttribute("cart", cartVO);
         // fetch all customers from database and bind them to model
         checkoutHelper.getAllCustomers(model)
@@ -227,11 +192,11 @@ public class CheckoutViewController {
     @PostMapping("/reviewcart")
     String reviewcart(@ModelAttribute( "cart" ) CartVO cartVO,
                 Model model,
-                @RequestParam("customJwtParameter") String customJwtParameter,
+                
                 @RequestParam("page") Optional<Integer> page,
                 @RequestParam("size") Optional<Integer> size){
 
-        System.out.println("customJwtParam on checkout controller: "+customJwtParameter);
+        
 
         cartVO = checkoutHelper.validateCartReviewVO(cartVO, model)
 
@@ -239,25 +204,14 @@ public class CheckoutViewController {
         if(model.getAttribute("errorMessage") == null){
             // save a new transaction object in database if we don't have one
             cartVO = checkoutHelper.getExistingCart(String.valueOf(cartVO.cartid))
-
-
-            // bind objects for reviewing the cart
-            //cartVO = checkoutHelper.reviewCart(cartVO, model)
-
-            //  if the transactionVO comes back here without a
-            // after transaction is created, search for the product based on barcode
-
-//            cartVO = checkoutHelper.searchForProductByBarcode(cartVO, model, page, size)
+            
             cartVO = checkoutHelper.hydrateTransientQuantitiesForDisplay(cartVO)
 
         }
 
         cartVO.barcode = "" // reset barcode to empty
-//
-//        model.addAttribute("pageNumbers", pageNumbers);
-//        model.addAttribute("page", currentPage);
-//        model.addAttribute("size", pageOfProduct.getTotalPages());
-        model.addAttribute("customJwtParameter", customJwtParameter);
+
+        techvvsAuthService.checkuserauth(model)
         model.addAttribute("cart", cartVO);
         model.addAttribute("successMessage", "Review the cart")
         // fetch all customers from database and bind them to model
@@ -270,11 +224,11 @@ public class CheckoutViewController {
     @PostMapping("/transaction")
     String transaction(@ModelAttribute( "cart" ) CartVO cartVO,
                       Model model,
-                      @RequestParam("customJwtParameter") String customJwtParameter,
+                      
                       @RequestParam("page") Optional<Integer> page,
                       @RequestParam("size") Optional<Integer> size){
 
-        System.out.println("customJwtParam on checkout controller: "+customJwtParameter);
+        
 
         cartVO = checkoutHelper.validateCartReviewVO(cartVO, model)
         TransactionVO transactionVO = new TransactionVO()
@@ -293,9 +247,6 @@ public class CheckoutViewController {
             // save a new transaction object in database if we don't have one
             transactionVO = transactionService.processCartGenerateNewTransaction(cartVO)
 
-            //cartVO = checkoutHelper.hydrateTransientQuantitiesForDisplay(transactionVO.cart)
-
-
         }
 
 
@@ -303,7 +254,7 @@ public class CheckoutViewController {
         // fetch all customers from database and bind them to model
         checkoutHelper.getAllCustomers(model)
 
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
 
 
         if(model.getAttribute("errorMessage") == null){
@@ -332,11 +283,11 @@ public class CheckoutViewController {
     @PostMapping("/printreceipt")
     String printreceipt(@ModelAttribute( "transaction" ) TransactionVO transactionVO,
                        Model model,
-                       @RequestParam("customJwtParameter") String customJwtParameter,
+                       
                        @RequestParam("page") Optional<Integer> page,
                        @RequestParam("size") Optional<Integer> size){
 
-        System.out.println("customJwtParam on checkout controller: "+customJwtParameter);
+        
 
 
         String name = ""
@@ -361,7 +312,7 @@ public class CheckoutViewController {
         // end file paging
 
 
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
         model.addAttribute("transaction", transactionVO);
         checkoutHelper.getAllCustomers(model)
 
@@ -380,11 +331,11 @@ public class CheckoutViewController {
     @PostMapping("/printinvoice")
     String printinvoice(@ModelAttribute( "transaction" ) TransactionVO transactionVO,
                         Model model,
-                        @RequestParam("customJwtParameter") String customJwtParameter,
+                        
                         @RequestParam("page") Optional<Integer> page,
                         @RequestParam("size") Optional<Integer> size){
 
-        System.out.println("customJwtParam on checkout controller: "+customJwtParameter);
+        
 
 
         String name = ""
@@ -408,7 +359,7 @@ public class CheckoutViewController {
         filePagingService.bindPageAttributesToModel(model, filePage, page, size);
         // end file paging
 
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
         model.addAttribute("transaction", transactionVO);
         checkoutHelper.getAllCustomers(model)
 
@@ -426,7 +377,7 @@ public class CheckoutViewController {
     @PostMapping("/textemailinvoice")
     String textemailinvoice(@ModelAttribute( "transaction" ) TransactionVO transactionVO,
                         Model model,
-                        @RequestParam("customJwtParameter") String customJwtParameter,
+                        
                         @RequestParam("page") Optional<Integer> page,
                         @RequestParam("size") Optional<Integer> size){
 
@@ -462,7 +413,7 @@ public class CheckoutViewController {
         filePagingService.bindPageAttributesToModel(model, filePage, page, size);
         // end file paging
 
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
         model.addAttribute("transaction", transactionVO);
         model.addAttribute("invoicecontent", contentsofinvoice)
         checkoutHelper.getAllCustomers(model)
@@ -485,11 +436,11 @@ public class CheckoutViewController {
     @PostMapping("/printmostrecentinvoice")
     String printmostrecentinvoice(@ModelAttribute( "transaction" ) TransactionVO transactionVO,
                             Model model,
-                            @RequestParam("customJwtParameter") String customJwtParameter,
+                            
                             @RequestParam("page") Optional<Integer> page,
                             @RequestParam("size") Optional<Integer> size){
 
-        System.out.println("customJwtParam on checkout controller: "+customJwtParameter);
+        
 
         // start bind transients
         String transientemail = transactionVO.email
@@ -511,7 +462,7 @@ public class CheckoutViewController {
         filePagingService.bindPageAttributesToModel(model, filePage, page, size);
         // end file paging
 
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
         model.addAttribute("transaction", transactionVO);
         checkoutHelper.getAllCustomers(model)
 
@@ -529,7 +480,7 @@ public class CheckoutViewController {
     @GetMapping("/browseBatch")
     String browseBatch(@ModelAttribute( "batch" ) BatchVO batchVO,
                              Model model,
-                             @RequestParam("customJwtParameter") String customJwtParameter,
+                             
                              @RequestParam("page") Optional<Integer> page,
                              @RequestParam("size") Optional<Integer> size ){
 
@@ -558,27 +509,27 @@ public class CheckoutViewController {
         model.addAttribute("pageNumbers", pageNumbers);
         model.addAttribute("page", currentPage);
         model.addAttribute("size", pageOfBatch.getTotalPages());
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
         model.addAttribute("batch", new BatchVO());
         model.addAttribute("batchPage", pageOfBatch);
         return "checkout/browsebatch.html";
     }
 
     @GetMapping("/searchBatch")
-    String searchBatch(@ModelAttribute( "batch" ) BatchVO batchVO, Model model, @RequestParam("customJwtParameter") String customJwtParameter){
+    String searchBatch(@ModelAttribute( "batch" ) BatchVO batchVO, Model model){
 
-        System.out.println("customJwtParam on checkout controller: "+customJwtParameter);
+        
 
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
         model.addAttribute("batch", new BatchVO());
         model.addAttribute("batchs", new ArrayList<BatchVO>(1));
         return "checkout/searchbatch.html";
     }
 
     @PostMapping("/searchBatch")
-    String searchBatchPost(@ModelAttribute( "batch" ) BatchVO batchVO, Model model, @RequestParam("customJwtParameter") String customJwtParameter){
+    String searchBatchPost(@ModelAttribute( "batch" ) BatchVO batchVO, Model model){
 
-        System.out.println("customJwtParam on checkout controller: "+customJwtParameter);
+        
 
         List<BatchVO> results = new ArrayList<BatchVO>();
         if(batchVO.getBatchnumber() != null){
@@ -594,7 +545,7 @@ public class CheckoutViewController {
             results = batchRepo.findAllByDescription(batchVO.getDescription());
         }
 
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
         model.addAttribute("batch", batchVO);
         model.addAttribute("batchs", results);
         return "checkout/searchbatch.html";
@@ -604,7 +555,7 @@ public class CheckoutViewController {
     @GetMapping("/editform")
     String viewEditForm(
                     Model model,
-                    @RequestParam("customJwtParameter") String customJwtParameter,
+                    
                     @RequestParam("editmode") String editmode,
                     @RequestParam("batchnumber") String batchnumber,
                     @RequestParam("page") Optional<Integer> page,
@@ -612,7 +563,7 @@ public class CheckoutViewController {
 
     ){
 
-        model = batchControllerHelper.processModel(model, customJwtParameter, batchnumber, editmode, page, null, false , false);
+        model = batchControllerHelper.processModel(model,  batchnumber, editmode, page, null, false , false);
         return "checkout/editbatch.html";
     }
 
@@ -620,7 +571,7 @@ public class CheckoutViewController {
     String viewFilterEditForm(
             Model model,
             @ModelAttribute( "searchproducttype" ) ProductTypeVO productTypeVO,
-            @RequestParam("customJwtParameter") String customJwtParameter,
+            
             @RequestParam("editmode") String editmode,
             @RequestParam("batchnumber") String batchnumber,
             @RequestParam("page") Optional<Integer> page,
@@ -628,7 +579,7 @@ public class CheckoutViewController {
 
     ){
 
-        model = batchControllerHelper.processModel(model, customJwtParameter, batchnumber, editmode, page, productTypeVO, true, false);
+        model = batchControllerHelper.processModel(model,  batchnumber, editmode, page, productTypeVO, true, false);
         return "checkout/editbatch.html";
     }
 
@@ -637,14 +588,14 @@ public class CheckoutViewController {
     String printmenu(
             Model model,
             @ModelAttribute( "searchproducttype" ) ProductTypeVO productTypeVO,
-            @RequestParam("customJwtParameter") String customJwtParameter,
+            
             @RequestParam("editmode") String editmode,
             @RequestParam("batchnumber") String batchnumber,
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size
     ){
 
-        model = batchControllerHelper.processModel(model, customJwtParameter, batchnumber, editmode, page, productTypeVO, true, false);
+        model = batchControllerHelper.processModel(model,  batchnumber, editmode, page, productTypeVO, true, false);
         // I need to do here is build a pdf / excel document, store it in uploads folder, then send a download link back to the user
 
 
@@ -659,7 +610,7 @@ public class CheckoutViewController {
     String viewLikeSearch(
             Model model,
             @ModelAttribute( "searchproducttype" ) ProductTypeVO productTypeVO,
-            @RequestParam("customJwtParameter") String customJwtParameter,
+            
             @RequestParam("editmode") String editmode,
             @RequestParam("batchnumber") String batchnumber,
             @RequestParam("page") Optional<Integer> page,
@@ -667,7 +618,7 @@ public class CheckoutViewController {
 
     ){
 
-        model = batchControllerHelper.processModel(model, customJwtParameter, batchnumber, editmode, page, productTypeVO, true, true);
+        model = batchControllerHelper.processModel(model,  batchnumber, editmode, page, productTypeVO, true, true);
         return "checkout/editbatch.html";
     }
 
@@ -677,7 +628,7 @@ public class CheckoutViewController {
                      @ModelAttribute( "searchproducttype" ) ProductTypeVO productTypeVO,
                      Model model,
                                 HttpServletResponse response,
-                                @RequestParam("customJwtParameter") String customJwtParameter,
+                                
                      @RequestParam("page") Optional<Integer> page,
                      @RequestParam("size") Optional<Integer> size
     ){
@@ -717,7 +668,7 @@ public class CheckoutViewController {
         batchControllerHelper.bindProductTypes(model)
         //  bindFilterProducts(model, page, productTypeVO)
         model.addAttribute("searchproducttype", new ProductTypeVO()) // this is a blank object for submitting a search term
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
         batchControllerHelper.bindBatchTypes(model)
         return "checkout/editbatch.html";
     }
@@ -725,8 +676,7 @@ public class CheckoutViewController {
     @PostMapping ("/createNewBatch")
     String createNewBatch(@ModelAttribute( "batch" ) BatchVO batchVO,
                                 Model model,
-                                HttpServletResponse response,
-                                @RequestParam("customJwtParameter") String customJwtParameter
+                                HttpServletResponse response
     ){
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -756,7 +706,7 @@ public class CheckoutViewController {
             model.addAttribute("batch", result);
         }
 
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
         batchControllerHelper.bindBatchTypes(model)
         return "checkout/batch.html";
     }

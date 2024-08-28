@@ -46,7 +46,7 @@
 
     <!-- if th-->
 
-    <form th:action="@{/batchtype/createNewBatchType?customJwtParameter=__${customJwtParameter}__}" th:object="${batchtype}" method="post">
+    <form th:action="@{/batchtype/createNewBatchType}" th:object="${batchtype}" method="post">
         <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
         <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
 
@@ -98,7 +98,7 @@
 <!--        todo: add pagination here from the browseforms.html class in servepapers-->
         <div th:if="${batchtypePage.totalPages > 0}" class="pagination"
              th:each="pageNumber : ${pageNumbers}">
-            <a th:href="@{/batchtype/browseBatchType?customJwtParameter=__${customJwtParameter}__&size=__${#lists.size(batchtypePage.content)}__&page=__${pageNumber}__}"
+            <a th:href="@{/batchtype/browseBatchType?size=__${#lists.size(batchtypePage.content)}__&page=__${pageNumber}__}"
                th:text=${pageNumber}
                th:class="${pageNumber==batchtypePage.number + 1} ? active"></a>
         </div>

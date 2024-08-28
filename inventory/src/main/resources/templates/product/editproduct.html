@@ -125,7 +125,7 @@
     <br>
 
     <div th:if="${editmode == 'no'}">
-        <form th:action="@{/product/createNewProduct?customJwtParameter=__${customJwtParameter}__}" th:object="${product}" method="post">
+        <form th:action="@{/product/createNewProduct}" th:object="${product}" method="post">
             <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
             <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
 
@@ -205,7 +205,7 @@
             </div>
 
             <div class="alert alert-warning" role="alert">
-                <a th:href="@{/product/editform?productnumber=__${product.productnumber}__&customJwtParameter=__${customJwtParameter}__&editmode=yes}">Click here to edit this form</a>
+                <a th:href="@{/product/editform?productnumber=__${product.productnumber}__&editmode=yes}">Click here to edit this form</a>
             </div>
             <button style="margin-top:5px;" type="submit" class="btn btn-primary" disabled>Submit</button>
             <input type="hidden" th:field="*{batch}">
@@ -213,7 +213,7 @@
     </div> <!-- end readonly view -->
 
     <div th:if="${editmode == 'yes'}">
-        <form th:action="@{/product/editProduct?customJwtParameter=__${customJwtParameter}__}" th:object="${product}" method="post">
+        <form th:action="@{/product/editProduct}" th:object="${product}" method="post">
             <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
             <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
 
@@ -323,7 +323,7 @@
     <div style="margin-bottom: 5px;" class="mx-auto">
         <div class="alert alert-info" role="alert">Upload a file</div>
         <!-- pass the product object to the upload file controller to get the correct ID to save it under -->
-        <form method="post" th:object="${product}" th:action="@{/file/upload?customJwtParameter=__${customJwtParameter}__}" enctype="multipart/form-data">
+        <form method="post" th:object="${product}" th:action="@{/file/upload}" enctype="multipart/form-data">
             <div class="form-group">
                 <div th:if="${disableupload}">
                     <input type="file" disabled="disabled" name="file" class="form-control-file">

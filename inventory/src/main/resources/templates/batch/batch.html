@@ -87,7 +87,7 @@
 
     <div class="header-dark">
         <div class="back-button">
-            <a th:href="@{/batch/browseBatch?customJwtParameter=__${customJwtParameter}__}"><i class="bi bi-arrow-left-circle"></i></a>
+            <a th:href="@{/batch/browseBatch}"><i class="bi bi-arrow-left-circle"></i></a>
         </div>
         <div>
             <h1><span th:text="${batch.name}"></span></h1>
@@ -138,7 +138,7 @@
 
         <div class="row mb-3">
             <div class="col-sm-2 mb-3">
-                <form th:action="@{/batch/filtereditform?batchnumber=__${batch.batchnumber}__&customJwtParameter=__${customJwtParameter}__&editmode=no&size=__${#lists.size(productPage.content)}__&page=1}" th:object="${searchproducttype}" method="post">
+                <form th:action="@{/batch/filtereditform?batchnumber=__${batch.batchnumber}__&editmode=no&size=__${#lists.size(productPage.content)}__&page=1}" th:object="${searchproducttype}" method="post">
                     <select class="form-control" th:field="${searchproducttype.producttypeid}" id="producttypeid">
                         <option th:each="producttype : ${producttypelist}" th:value="${producttype.producttypeid}" th:text="${producttype.name}"></option>
                     </select>
@@ -146,13 +146,13 @@
                 </form>
             </div>
             <div class="col-sm-2 mb-3">
-                <form th:action="@{/batch/likesearch?batchnumber=__${batch.batchnumber}__&customJwtParameter=__${customJwtParameter}__&editmode=no&size=__${#lists.size(productPage.content)}__&page=1}" th:object="${searchproducttype}" method="post">
+                <form th:action="@{/batch/likesearch?batchnumber=__${batch.batchnumber}__&editmode=no&size=__${#lists.size(productPage.content)}__&page=1}" th:object="${searchproducttype}" method="post">
                     <input type="text" th:field="*{name}" class="form-control" placeholder="name" aria-label="name">
                     <button type="submit" class="btn btn-secondary btn-sm mt-2">Filter By Name</button>
                 </form>
             </div>
             <div class="col-sm-2 mb-3">
-                <form th:action="@{/batch/filtereditform?batchnumber=__${batch.batchnumber}__&customJwtParameter=__${customJwtParameter}__&editmode=no&size=__${#lists.size(productPage.content)}__&page=1}" th:object="${searchproducttype}" method="post">
+                <form th:action="@{/batch/filtereditform?batchnumber=__${batch.batchnumber}__&editmode=no&size=__${#lists.size(productPage.content)}__&page=1}" th:object="${searchproducttype}" method="post">
                     <select class="form-control" th:field="${searchproducttype.pagesize}">
                         <option th:each="option : ${options}" th:value="${option}" th:text="${option}"></option>
                     </select>
@@ -160,7 +160,7 @@
                 </form>
             </div>
 <!--            <div class="col-sm-2 mb-3">-->
-<!--                <form th:action="@{/batch/generatebarcodes?batchnumber=__${batch.batchnumber}__&customJwtParameter=__${customJwtParameter}__&editmode=no&size=__${#lists.size(productPage.content)}__&page=1}" th:object="${searchproducttype}" method="post">-->
+<!--                <form th:action="@{/batch/generatebarcodes?batchnumber=__${batch.batchnumber}__&editmode=no&size=__${#lists.size(productPage.content)}__&page=1}" th:object="${searchproducttype}" method="post">-->
 <!--                    <select class="form-control" th:field="${searchproducttype.menutype}">-->
 <!--                        <option th:each="menuoption : ${menuoptionsBarcode}" th:value="${menuoption}" th:text="${menuoption}"></option>-->
 <!--                    </select>-->
@@ -168,7 +168,7 @@
 <!--                </form>-->
 <!--            </div>-->
 <!--            <div class="col-sm-2 mb-3">-->
-<!--                <form th:action="@{/batch/generateqrcodes?batchnumber=__${batch.batchnumber}__&customJwtParameter=__${customJwtParameter}__&editmode=no&size=__${#lists.size(productPage.content)}__&page=1}" th:object="${searchproducttype}" method="post">-->
+<!--                <form th:action="@{/batch/generateqrcodes?batchnumber=__${batch.batchnumber}__&editmode=no&size=__${#lists.size(productPage.content)}__&page=1}" th:object="${searchproducttype}" method="post">-->
 <!--                    <select class="form-control" th:field="${searchproducttype.menutype}">-->
 <!--                        <option th:each="menuoption : ${menuoptionsQrcode}" th:value="${menuoption}" th:text="${menuoption}"></option>-->
 <!--                    </select>-->
@@ -176,7 +176,7 @@
 <!--                </form>-->
 <!--            </div>-->
             <div class="col-sm-2 mb-3">
-                <form th:action="@{/batch/printmenu?batchnumber=__${batch.batchnumber}__&customJwtParameter=__${customJwtParameter}__&editmode=no&size=__${#lists.size(productPage.content)}__&page=1}" th:object="${searchproducttype}" method="post">
+                <form th:action="@{/batch/printmenu?batchnumber=__${batch.batchnumber}__&editmode=no&size=__${#lists.size(productPage.content)}__&page=1}" th:object="${searchproducttype}" method="post">
                     <select class="form-control" th:field="${searchproducttype.priceadjustment}">
                         <option th:each="menuoption : ${menuoptions}" th:value="${menuoption}" th:text="${menuoption}"></option>
                     </select>
@@ -184,7 +184,7 @@
                 </form>
             </div>
             <div class="col-sm-2 mb-3">
-                <a th:href="@{/viewfiles?batchid=__${batch.batchid}__&customJwtParameter=__${customJwtParameter}__&page=1&size=5&selected=/pricesheets/}" class="btn btn-secondary btn-sm mt-2">View Files</a>
+                <a th:href="@{/viewfiles(batchid=${batch.batchid}, page=1, size=5, selected=pricesheets)}" class="btn btn-secondary btn-sm mt-2">View Files</a>
             </div>
         </div>
 
@@ -207,7 +207,7 @@
                     th:alt-title="${iStat.even}? 'even' : 'odd'">
                     <td th:text="${product.product_id}"></td>
                     <td>
-                        <a th:href="@{/product/editform?productnumber=__${product.productnumber}__&customJwtParameter=__${customJwtParameter}__&editmode=no}"
+                        <a th:href="@{/product/editform?productnumber=__${product.productnumber}__&editmode=no}"
                            th:text="${product.barcode}"
                            class="btn btn-secondary btn-sm">
                         </a>
@@ -223,7 +223,7 @@
                 <ul class="pagination justify-content-center">
                     <li class="page-item" th:each="pageNumber : ${pageNumbers}">
                         <a class="page-link btn btn-secondary btn-sm mx-1"
-                           th:href="@{/batch?customJwtParameter=__${customJwtParameter}__&size=__${#lists.size(productPage.content)}__&page=__${pageNumber}__&batchnumber=__${batch.batchnumber}__&editmode=no}"
+                           th:href="@{/batch?size=__${#lists.size(productPage.content)}__&page=__${pageNumber}__&batchnumber=__${batch.batchnumber}__&editmode=no}"
                            th:text="${pageNumber}"
                            th:classappend="${pageNumber==productPage.number + 1} ? 'active'">
                         </a>

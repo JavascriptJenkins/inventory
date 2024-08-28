@@ -1,5 +1,6 @@
 package com.techvvs.inventory.runlistener;
 
+import com.techvvs.inventory.deployment.service.DeploymentManager;
 import com.techvvs.inventory.model.ProductVO;
 import com.techvvs.inventory.refdata.RefDataLoader;
 import com.techvvs.inventory.util.SimpleCache;
@@ -31,6 +32,8 @@ public class GlobalRunListener implements ApplicationListener<ApplicationReadyEv
     @Autowired
     Environment environment;
 
+    @Autowired
+    DeploymentManager deploymentManager;
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent applicationReadyEvent) {
@@ -43,9 +46,43 @@ public class GlobalRunListener implements ApplicationListener<ApplicationReadyEv
         if(environment.getProperty("load.ref.data").equals("yes")){
             refDataLoader.loadRefData();
         }
+//        String APP_NAME,
+//        String TARGET_ENV,
+//        String REMOTE_HOST,
+//        String REMOTE_HOST_USER,
+//        String BRANCH,
+//        String GIT_REPO,
+//        String GIT_TOKEN,
+//        String SSH_KEY_PATH,
+//        String TENANT
 
 
+
+        //ssh -i C:\Users\genrecode\Documents\tools\tempssh\id_rsa_techvvs techvvs@198.199.72.34
         //encryptUtil.generateAESKey();
+
+
+        // ssh-keygen -p -m PEM -f C:\Users\genrecode\Documents\tools\tempssh\id_ed2_techvvs
+
+        // ssh-keygen -p -m PEM -f /path/to/your/id_rsa
+
+//        2024-08-26T00:09:20.541987+00:00 multi-tenant-1 sshd[48303]: userauth_pubkey: signature algorithm ssh-rsa not in PubkeyAcceptedAlgorithms [preauth]
+//        2024-08-26T00:09:20.        deploymentManager.deployApp(
+//                "inventory",
+//                "prod",
+//                "198.199.72.34",
+//                "techvvs",
+//                "prod",
+//                "https://github.com/JavascriptJenkins/inventory.git",
+//                "",
+//                "C:\\Users\\genrecode\\Documents\\tools\\tempssh\\id_ed2_techvvs",
+//                "professor",
+//                "password"
+//        );589403+00:00 multi-tenant-1 sshd[48303]: error: Received disconnect from 73.37.134.64 port 60148:3: com.jcraft.jsch.JSchException: Auth fail [preauth]
+//        2024-08-26T00:09:20.589505+00:00 multi-tenant-1 sshd[48303]: Disconnected from authenticating user techvvs 73.37.134.64 port 60148 [preauth]
+//        2024-08-26T00:09:23.063152+00:00 multi-tenant-1 sshd[48305]: Connection closed by 45.79.181.104 port 34202 [preauth]
+//        2024-08-26T00:09:24.162892+00:00 multi-tenant-1 sshd[48307]: Connection closed by 45.79.181.104 port 34216 [preauth]
+//        2024-08-26T00:09:25.239797+00:00 multi-tenant-1 sshd[48309]: Connection closed by 45.79.181.104 port 34218 [preauth]
 
 
 //        StringBuilder sb = new StringBuilder();

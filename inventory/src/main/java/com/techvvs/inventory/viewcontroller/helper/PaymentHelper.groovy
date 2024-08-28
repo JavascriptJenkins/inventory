@@ -26,9 +26,6 @@ class PaymentHelper {
     MenuRepo menuRepo
 
     @Autowired
-    CheckoutHelper checkoutHelper
-
-    @Autowired
     CartDeleteService cartDeleteService
 
     @Autowired

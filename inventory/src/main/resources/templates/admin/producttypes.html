@@ -46,7 +46,7 @@
 
     <!-- if th-->
 
-    <form th:action="@{/producttype/createNewProductType?customJwtParameter=__${customJwtParameter}__}" th:object="${producttype}" method="post">
+    <form th:action="@{/producttype/createNewProductType}" th:object="${producttype}" method="post">
         <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
         <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
 
@@ -98,7 +98,7 @@
 <!--        todo: add pagination here from the browseforms.html class in servepapers-->
         <div th:if="${producttypePage.totalPages > 0}" class="pagination"
              th:each="pageNumber : ${pageNumbers}">
-            <a th:href="@{/producttype/browseProductType?customJwtParameter=__${customJwtParameter}__&size=__${#lists.size(producttypePage.content)}__&page=__${pageNumber}__}"
+            <a th:href="@{/producttype/browseProductType?size=__${#lists.size(producttypePage.content)}__&page=__${pageNumber}__}"
                th:text=${pageNumber}
                th:class="${pageNumber==producttypePage.number + 1} ? active"></a>
         </div>

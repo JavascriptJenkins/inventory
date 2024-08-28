@@ -10,39 +10,39 @@
 
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
-            <a th:if="${customJwtParameter != null}" class="navbar-brand" th:href="@{/dashboard/index?customJwtParameter=__${customJwtParameter}__}">Inventory TechVVS</a>
-            <a th:if="${customJwtParameter == null}" class="navbar-brand" th:href="@{/login">Inventory TechVVS</a>
+            <a th:if="${isAuthenticated}" class="navbar-brand" th:href="@{/dashboard/index}">Inventory TechVVS</a>
+            <a th:if="${!isAuthenticated}" class="navbar-brand" th:href="@{/login">Inventory TechVVS</a>
 <!--            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">-->
 <!--                <span class="navbar-toggler-icon"></span>-->
 <!--            </button>-->
 <!--            <div class="collapse navbar-collapse" id="navbarSupportedContent">-->
             <div id="navbarSupportedContent">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li th:if="${customJwtParameter == null}" class="nav-item">
-                        <a class="nav-link active" aria-current="page" th:href="@{/login">Home</a>
+                    <li th:if="${!isAuthenticated}" class="nav-item">
+                        <a class="nav-link active" aria-current="page" th:href="@{/login}">Home</a>
                     </li>
-                    <li th:if="${customJwtParameter != null}" class="nav-item">
-                        <a class="nav-link active" aria-current="page" th:href="@{/dashboard/index?customJwtParameter=__${customJwtParameter}__}">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/batch/browseBatch?customJwtParameter=__${customJwtParameter}__}">Browse Batches</a>
+                    <li th:if="${isAuthenticated}" class="nav-item">
+                        <a class="nav-link active" aria-current="page" th:href="@{/dashboard/index}">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" th:href="@{/checkout?customJwtParameter=__${customJwtParameter}__&cartid=0}">Checkout</a>
+                        <a class="nav-link" th:href="@{/batch/browseBatch}">Browse Batches</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" th:href="@{/checkout/pendingcarts?customJwtParameter=__${customJwtParameter}__}">Pending Carts</a>
+                        <a class="nav-link" th:href="@{/checkout?cartid=0}">Checkout</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" th:href="@{/transaction/listall?customJwtParameter=__${customJwtParameter}__}">Transactions</a>
+                        <a class="nav-link" th:href="@{/checkout/pendingcarts}">Pending Carts</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" th:href="@{/admin?customJwtParameter=__${customJwtParameter}__}">Admin</a>
+                        <a class="nav-link" th:href="@{/transaction/listall}">Transactions</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" th:href="@{/lock?customJwtParameter=__${customJwtParameter}__}">Lock</a>
+                        <a class="nav-link" th:href="@{/admin}">Admin</a>
                     </li>
-                    <li th:if="${customJwtParameter != null}" class="nav-item">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/lock}">Lock</a>
+                    </li>
+                    <li th:if="${isAuthenticated}" class="nav-item">
                         <a class="nav-link active" aria-current="page" href="javascript:{}" onclick="postLogout()">Logout</a>
                     </li>
 

@@ -1,21 +1,13 @@
 package com.techvvs.inventory.viewcontroller
 
-
-import com.techvvs.inventory.model.CustomerVO
-import com.techvvs.inventory.model.PaymentVO
-import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.modelnonpersist.LockVO
-import com.techvvs.inventory.printers.PrinterService
-import com.techvvs.inventory.service.controllers.PaymentService
+import com.techvvs.inventory.service.auth.TechvvsAuthService
 import com.techvvs.inventory.service.lock.LockService
-import com.techvvs.inventory.viewcontroller.helper.CheckoutHelper
-import com.techvvs.inventory.viewcontroller.helper.PaymentHelper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.*
 
-import java.security.SecureRandom
 
 @RequestMapping("/lock")
 @Controller
@@ -25,12 +17,14 @@ public class LockViewController {
     @Autowired
     LockService lockService
 
+    @Autowired
+    TechvvsAuthService techvvsAuthService
+
 
     //default home mapping
     @GetMapping
     String viewNewForm(
-            Model model,
-            @RequestParam("customJwtParameter") String customJwtParameter
+            Model model
     ){
 
         boolean locked = lockService.checkifdataislocked()
@@ -38,7 +32,7 @@ public class LockViewController {
 
         model.addAttribute("lock", new LockVO())
 
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
         return "lock/lock.html";
     }
 
@@ -46,8 +40,7 @@ public class LockViewController {
     @PostMapping("/lockdata")
     String lockdata(
             @ModelAttribute( "lock" ) LockVO lockVO,
-            Model model,
-            @RequestParam("customJwtParameter") String customJwtParameter
+            Model model
     ){
 
         lockService.lockdata(lockVO)
@@ -57,7 +50,7 @@ public class LockViewController {
 
         model.addAttribute("successMessage", "Data locked successfully.  Don't loose your key or it will be gone forever. ")
         model.addAttribute("lock", new LockVO())
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
 
         return "lock/lock.html";
     }
@@ -65,8 +58,7 @@ public class LockViewController {
     @PostMapping("/unlockdata")
     String unlockdata(
             @ModelAttribute( "lock" ) LockVO lockVO,
-            Model model,
-            @RequestParam("customJwtParameter") String customJwtParameter
+            Model model
     ){
 
         lockService.unlockdata(lockVO)
@@ -76,7 +68,7 @@ public class LockViewController {
 
         model.addAttribute("successMessage", "Data unlocked successfully.  Don't loose your key or it will be gone forever. ")
         model.addAttribute("lock", new LockVO())
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
 
         return "lock/lock.html";
     }
@@ -85,8 +77,7 @@ public class LockViewController {
     @PostMapping("/generatekey")
     String generatekey(
             @ModelAttribute( "lock" ) LockVO lockVO,
-            Model model,
-            @RequestParam("customJwtParameter") String customJwtParameter
+            Model model
     ){
 
         // Slu/m9UwOfIjrAsOQQRftF41x4WdVppzHSU8PIJ6SPU=
@@ -98,7 +89,7 @@ public class LockViewController {
 
         model.addAttribute("successMessage", "Don't loose your key or your data will be gone FOREVER. ")
         model.addAttribute("lock", new LockVO(secretkey: key))
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
         model.addAttribute("keygenerated", "true");
 
         return "lock/lock.html";

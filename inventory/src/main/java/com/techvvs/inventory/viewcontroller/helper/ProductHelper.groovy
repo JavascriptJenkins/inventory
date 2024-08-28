@@ -4,7 +4,6 @@ import com.techvvs.inventory.jparepo.ProductRepo
 import com.techvvs.inventory.model.ProductVO
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
-import org.springframework.ui.Model
 
 @Component
 class ProductHelper {

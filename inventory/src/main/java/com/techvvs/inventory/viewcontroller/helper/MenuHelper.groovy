@@ -19,9 +19,6 @@ class MenuHelper {
     MenuRepo menuRepo
 
     @Autowired
-    CheckoutHelper checkoutHelper
-
-    @Autowired
     CartDeleteService cartDeleteService
 
 

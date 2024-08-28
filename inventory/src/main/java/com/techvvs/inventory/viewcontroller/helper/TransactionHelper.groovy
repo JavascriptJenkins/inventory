@@ -5,9 +5,6 @@ import com.techvvs.inventory.jparepo.ProductRepo
 import com.techvvs.inventory.jparepo.ReturnRepo
 import com.techvvs.inventory.jparepo.SystemUserRepo
 import com.techvvs.inventory.jparepo.TransactionRepo
-import com.techvvs.inventory.model.BatchVO
-import com.techvvs.inventory.model.CartVO
-import com.techvvs.inventory.model.CustomerVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.ReturnVO
 import com.techvvs.inventory.model.SystemUserDAO
@@ -15,8 +12,6 @@ import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.service.email.EmailService
 import com.techvvs.inventory.util.SendgridEmailUtil
 import com.techvvs.inventory.util.TwilioTextUtil
-import org.attoparser.util.TextUtil
-import org.hibernate.loader.custom.Return
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
 import org.springframework.data.domain.Page
@@ -49,9 +44,6 @@ class TransactionHelper {
 
     @Autowired
     TwilioTextUtil textUtil
-
-    @Autowired
-    SendgridEmailUtil sendgridEmailUtil
 
     @Autowired
     AppConstants appConstants

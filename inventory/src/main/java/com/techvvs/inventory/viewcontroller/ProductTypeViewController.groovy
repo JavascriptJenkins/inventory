@@ -2,6 +2,7 @@ package com.techvvs.inventory.viewcontroller
 
 import com.techvvs.inventory.jparepo.ProductTypeRepo
 import com.techvvs.inventory.model.ProductTypeVO
+import com.techvvs.inventory.service.auth.TechvvsAuthService
 import com.techvvs.inventory.validation.ValidateProductType
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
@@ -23,17 +24,18 @@ public class ProductTypeViewController {
 
     @Autowired ProductTypeRepo productTypeRepo
     @Autowired ValidateProductType validateProductType
+    @Autowired TechvvsAuthService techvvsAuthService
 
     //default home mapping
     @GetMapping
     String viewNewForm(@ModelAttribute( "producttype" ) ProductTypeVO productTypeVO,
                        Model model,
-                       @RequestParam("customJwtParameter") String customJwtParameter,
+
                        @RequestParam("page") Optional<Integer> page,
                        @RequestParam("size") Optional<Integer> size
     ){
 
-        System.out.println("customJwtParam on producttype controller: "+customJwtParameter);
+
 
         ProductTypeVO productTypeVOToBind;
         if(productTypeVO != null && productTypeVO.getProducttypeid() != null){
@@ -43,8 +45,7 @@ public class ProductTypeViewController {
             productTypeVOToBind.producttypeid= 0
         }
 
-       // model.addAttribute("producttypelist", getProductTypeList()); // todo: add pagination to this
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
         model.addAttribute("producttype", productTypeVOToBind);
         addPaginatedData(model, page)
         return "admin/producttypes.html";
@@ -55,7 +56,7 @@ public class ProductTypeViewController {
     String editProductType(@ModelAttribute( "producttype" ) ProductTypeVO productTypeVO,
                      Model model,
                      HttpServletResponse response,
-                     @RequestParam("customJwtParameter") String customJwtParameter,
+                     
     @RequestParam("page") Optional<Integer> page,
     @RequestParam("size") Optional<Integer> size){
 
@@ -82,8 +83,7 @@ public class ProductTypeViewController {
             model.addAttribute("product", result);
         }
 
-    //    model.addAttribute("producttypelist", getProductTypeList()); // todo: add pagination to this
-        model.addAttribute("customJwtParameter", customJwtParameter);
+        techvvsAuthService.checkuserauth(model)
         addPaginatedData(model, page)
         return "admin/producttypes";
     }
@@ -92,7 +92,7 @@ public class ProductTypeViewController {
     String createNewProductType(@ModelAttribute( "producttype" ) ProductTypeVO productTypeVO,
                           Model model,
                           HttpServletResponse response,
-                          @RequestParam("customJwtParameter") String customJwtParameter,
+                          
                               @RequestParam("page") Optional<Integer> page,
                               @RequestParam("size") Optional<Integer> size
     ){
@@ -124,9 +124,7 @@ public class ProductTypeViewController {
             model.addAttribute("producttype", result);
         }
 
-        model.addAttribute("customJwtParameter", customJwtParameter);
-//        model.addAttribute("producttypelist", getProductTypeList()); // todo: add pagination to this
-//        model.addAttribute("producttypelist", getProductTypeList()); // todo: add pagination to this
+        techvvsAuthService.checkuserauth(model)
         addPaginatedData(model, page)
         return "admin/producttypes";
     }

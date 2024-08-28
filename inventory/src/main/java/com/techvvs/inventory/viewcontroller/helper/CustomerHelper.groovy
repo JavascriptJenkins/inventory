@@ -2,7 +2,6 @@ package com.techvvs.inventory.viewcontroller.helper
 
 import com.techvvs.inventory.jparepo.CustomerRepo
 import com.techvvs.inventory.model.CustomerVO
-import com.techvvs.inventory.model.ProductTypeVO
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest

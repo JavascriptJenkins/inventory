@@ -7,10 +7,10 @@ import com.techvvs.inventory.model.BatchVO;
 import com.techvvs.inventory.model.TransactionVO;
 import com.techvvs.inventory.modelnonpersist.FileVO;
 import com.techvvs.inventory.service.ExcelService;
+import com.techvvs.inventory.service.auth.TechvvsAuthService;
 import com.techvvs.inventory.service.controllers.TransactionService;
 import com.techvvs.inventory.util.TechvvsFileHelper;
 import com.techvvs.inventory.viewcontroller.helper.BatchControllerHelper;
-import com.techvvs.inventory.viewcontroller.helper.TransactionHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -58,14 +58,13 @@ public class UploadController {
     TransactionService transactionService;
 
     @Autowired
-    AppConstants appConstants;
-
+    TechvvsAuthService techvvsAuthService;
+            
     @PostMapping("/upload")
     public String uploadFile(@ModelAttribute( "batch" ) BatchVO batchVO,
                              Model model,
                              @RequestParam("file") MultipartFile file,
-                             RedirectAttributes attributes,
-                             @RequestParam("customJwtParameter") String customJwtParameter) {
+                             RedirectAttributes attributes) {
 
         System.out.println("file upload 1");
         // check if file is empty
@@ -74,7 +73,7 @@ public class UploadController {
             System.out.println("file upload 2");
             model.addAttribute("batch", batchVO);
             bindBatchTypes(model);
-            model.addAttribute("customJwtParameter",customJwtParameter);
+            techvvsAuthService.checkuserauth(model);
             return "/service/batch.html";
         }
         System.out.println("file upload 3");
@@ -98,7 +97,7 @@ public class UploadController {
             e.printStackTrace();
             model.addAttribute("errorMessage","file upload failed");
             bindBatchTypes(model);
-            model.addAttribute("customJwtParameter",customJwtParameter);
+            techvvsAuthService.checkuserauth(model);
             return "service/batch.html";
         }
 
@@ -116,7 +115,7 @@ public class UploadController {
         model.addAttribute("batch", batchVO);
         bindBatchTypes(model);
         model.addAttribute("filelist", filelist);
-        model.addAttribute("customJwtParameter",customJwtParameter);
+        techvvsAuthService.checkuserauth(model);
         return "service/batch.html";
     }
 
@@ -125,15 +124,14 @@ public class UploadController {
     @PostMapping("/xlsx/upload")
     public String uploadXlsxFile(Model model,
                              @RequestParam("file") MultipartFile file,
-                             RedirectAttributes attributes,
-                             @RequestParam("customJwtParameter") String customJwtParameter) {
+                             RedirectAttributes attributes) {
 
         System.out.println("file upload 1");
         // check if file is empty
         if (file.isEmpty()) {
             model.addAttribute("errorMessage","Please select a file to upload.");
             System.out.println("file upload 2");
-            model.addAttribute("customJwtParameter",customJwtParameter);
+            techvvsAuthService.checkuserauth(model);
             return "/service/xlsxbatch.html";
         }
         System.out.println("file upload 3");
@@ -155,7 +153,7 @@ public class UploadController {
             System.out.println("file upload 8");
             e.printStackTrace();
             model.addAttribute("errorMessage","file upload failed");
-            model.addAttribute("customJwtParameter",customJwtParameter);
+            techvvsAuthService.checkuserauth(model);
             return "service/xlsxbatch.html";
         }
 
@@ -174,7 +172,7 @@ public class UploadController {
             model.addAttribute("errorMessage","Problem creating batch in database from file: " + fileName + '!');
         }
 
-        model.addAttribute("customJwtParameter",customJwtParameter);
+        techvvsAuthService.checkuserauth(model);
         return "/service/xlsxbatch.html";
     }
 
@@ -188,8 +186,7 @@ public class UploadController {
     public String uploadFile2(@ModelAttribute( "batch" ) BatchVO batchVO,
                              Model model,
                              @RequestParam("file") MultipartFile file,
-                             RedirectAttributes attributes,
-                             @RequestParam("customJwtParameter") String customJwtParameter) {
+                             RedirectAttributes attributes) {
 
         System.out.println("file upload 1");
         // check if file is empty
@@ -197,7 +194,7 @@ public class UploadController {
             model.addAttribute("errorMessage","Please select a file to upload.");
             model.addAttribute("batch", batchVO);
             bindBatchTypes(model);
-            model.addAttribute("customJwtParameter",customJwtParameter);
+            techvvsAuthService.checkuserauth(model);
             return "/editforms.html";
         }
         String fileName = "";
@@ -216,7 +213,7 @@ public class UploadController {
             model.addAttribute("errorMessage","file upload failed");
             model.addAttribute("batch", batchVO);
             bindBatchTypes(model);
-            model.addAttribute("customJwtParameter",customJwtParameter);
+            techvvsAuthService.checkuserauth(model);
             return "editforms.html";
         }
 
@@ -232,7 +229,7 @@ public class UploadController {
         model.addAttribute("batch", batchVO);
         bindBatchTypes(model);
         model.addAttribute("filelist", filelist);
-        model.addAttribute("customJwtParameter",customJwtParameter);
+        techvvsAuthService.checkuserauth(model);
         return "editforms.html";
     }
 
@@ -241,7 +238,7 @@ public class UploadController {
     @RequestMapping(value="/download", method=RequestMethod.GET)
     public void downloadFile(@RequestParam("filename") String filename,
                                        HttpServletResponse response,
-                                       @RequestParam("customJwtParameter") String customJwtParameter,
+                                       
                                        Model model,
                                         @ModelAttribute( "batch" ) BatchVO batchVO
                                ) {
@@ -263,10 +260,10 @@ public class UploadController {
             InputStream is = new ByteArrayInputStream(fileContent);
 
 
-            model.addAttribute("customJwtParameter",customJwtParameter);
+            techvvsAuthService.checkuserauth(model);
             System.out.println("has value: "+batchVO);
 
-            model.addAttribute("customJwtParameter",customJwtParameter);
+            techvvsAuthService.checkuserauth(model);
             model.addAttribute("batch",batchVO);
             model.addAttribute("disableupload","true");
             List<FileVO> filelist = techvvsFileHelper.getFilesByFileNumber(batchVO.getBatchnumber(), UPLOAD_DIR);
@@ -281,7 +278,7 @@ public class UploadController {
         } catch (IOException ex) {
             System.out.println("Error writing file to output stream. Filename was: " +filename);
             System.out.println("Error writing file to output stream. exception: " +ex.getMessage());
-            model.addAttribute("customJwtParameter",customJwtParameter);
+            techvvsAuthService.checkuserauth(model);
             throw new RuntimeException("IOError writing file to output stream");
         }
 
@@ -295,7 +292,7 @@ public class UploadController {
     @RequestMapping(value="/simple/download", method=RequestMethod.GET)
     public void downloadSimpleFile(@RequestParam("filename") String filename,
                              HttpServletResponse response,
-                             @RequestParam("customJwtParameter") String customJwtParameter,
+                             
                              @RequestParam("directory") String directory,
                              @RequestParam("batchid") String batchid,
                              Model model
@@ -323,9 +320,9 @@ public class UploadController {
             InputStream is = new ByteArrayInputStream(fileContent);
 
 
-            model.addAttribute("customJwtParameter",customJwtParameter);
+            techvvsAuthService.checkuserauth(model);
 
-            model.addAttribute("customJwtParameter",customJwtParameter);
+            techvvsAuthService.checkuserauth(model);
             model.addAttribute("disableupload","true");
 
 
@@ -337,7 +334,7 @@ public class UploadController {
         } catch (IOException ex) {
             System.out.println("Error writing file to output stream. Filename was: " +filename);
             System.out.println("Error writing file to output stream. exception: " +ex.getMessage());
-            model.addAttribute("customJwtParameter",customJwtParameter);
+            techvvsAuthService.checkuserauth(model);
             throw new RuntimeException("IOError writing file to output stream");
         }
 
@@ -351,7 +348,7 @@ public class UploadController {
     @RequestMapping(value="/invoice/download", method=RequestMethod.GET)
     public void downloadInvoiceFile(@RequestParam("filename") String filename,
                                    HttpServletResponse response,
-                                   @RequestParam("customJwtParameter") String customJwtParameter,
+                                   
                                    @RequestParam("directory") String directory,
                                    @RequestParam("transactionid") String transactionid,
                                    Model model
@@ -381,9 +378,9 @@ public class UploadController {
 
 
             // todo: maybe adding this paramter is the problem
-            model.addAttribute("customJwtParameter",customJwtParameter);
+            techvvsAuthService.checkuserauth(model);
 
-            model.addAttribute("customJwtParameter",customJwtParameter);
+            techvvsAuthService.checkuserauth(model);
             model.addAttribute("disableupload","true");
 
 
@@ -395,7 +392,7 @@ public class UploadController {
         } catch (IOException ex) {
             System.out.println("Error writing file to output stream. Filename was: " +filename);
             System.out.println("Error writing file to output stream. exception: " +ex.getMessage());
-            model.addAttribute("customJwtParameter",customJwtParameter);
+            techvvsAuthService.checkuserauth(model);
             throw new RuntimeException("IOError writing file to output stream");
         }
 
@@ -408,8 +405,7 @@ public class UploadController {
     // note: must return null otherwise file download sucks
     @RequestMapping(value="/smsdownload", method=RequestMethod.GET)
     public void smsdownload(@RequestParam("filename") String filename,
-                             HttpServletResponse response,
-                             @RequestParam("customJwtParameter") String customJwtParameter
+                             HttpServletResponse response
     ) {
         File file;
 

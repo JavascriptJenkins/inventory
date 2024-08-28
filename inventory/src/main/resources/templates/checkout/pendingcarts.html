@@ -155,7 +155,7 @@
 
     <div class="header-dark">
         <div class="back-button">
-            <a th:href="@{/dashboard/index?customJwtParameter=__${customJwtParameter}__}"><i class="bi bi-arrow-left-circle"></i></a>
+            <a th:href="@{/dashboard/index}"><i class="bi bi-arrow-left-circle"></i></a>
         </div>
         <div>
             <h1>Pending Carts</h1>
@@ -182,7 +182,7 @@
             th:style="${iStat.odd}? 'font-weight: bold;'"
             th:alt-title="${iStat.even}? 'even' : 'odd'">
             <td th:text="${cart.cartid}"></td>
-            <td><a th:href="@{/checkout?cartid=__${cart.cartid}__&customJwtParameter=__${customJwtParameter}__}" th:text="${cart.cartid}"></a></td>
+            <td><a th:href="@{/checkout?cartid=__${cart.cartid}__}" th:text="${cart.cartid}"></a></td>
             <td th:text="${cart.customer.name}"></td>
             <td th:text="${cart.total}"></td>
         </tr>
@@ -193,7 +193,7 @@
         <ul class="pagination">
             <li class="page-item" th:each="pageNumber : ${pageNumbers}">
                 <a class="page-link"
-                   th:href="@{/checkout/pendingcarts?customJwtParameter=__${customJwtParameter}__&size=__${#lists.size(cartPage.content)}__&page=__${pageNumber}__}"
+                   th:href="@{/checkout/pendingcarts?size=__${#lists.size(cartPage.content)}__&page=__${pageNumber}__}"
                    th:text="${pageNumber}"
                    th:classappend="${pageNumber==cartPage.number + 1} ? 'active'">
                 </a>

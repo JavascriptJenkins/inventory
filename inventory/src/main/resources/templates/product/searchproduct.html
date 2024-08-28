@@ -37,7 +37,7 @@
     <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
     <br>
     <!-- Make a form that sends a search term to the server -->
-    <form th:action="@{/product/searchProduct?customJwtParameter=__${customJwtParameter}__}" th:object="${product}" method="post">
+    <form th:action="@{/product/searchProduct}" th:object="${product}" method="post">
         Enter one or more search fields to find records
         <div class="row">
             <div class="col" style="margin-bottom: 5px;">
@@ -73,7 +73,7 @@
                 <tbody>
                 <tr th:each="product : ${products}">
                     <td th:text="${product.id}"></td>
-                    <td><a th:href="@{/product/editform?productnumber=__${product.productnumber}__&customJwtParameter=__${customJwtParameter}__}" th:text="${product.productnumber}"></a></td>
+                    <td><a th:href="@{/product/editform?productnumber=__${product.productnumber}__}" th:text="${product.productnumber}"></a></td>
                     <!--            <td onclick="makeInput($(this).closest('tr'), this)" th:text="${student.studentName}"></td>-->
                     <!--            <td onclick="makeInput($(this).closest('tr'), this)" th:text="${student.birthday}"></td>-->
                     <td th:text="${product.name}"></td>
@@ -177,7 +177,7 @@
 <!--&lt;!&ndash;                    <p th:text="${message}" th:if="${message ne null}" class="alert alert-primary"></p>&ndash;&gt;-->
 
 <!--                    &lt;!&ndash; pass the product object to the upload file controller to get the correct ID to save it under &ndash;&gt;-->
-<!--                    <form method="post" th:object="${product}" th:action="@{/file/upload?customJwtParameter=__${customJwtParameter}__}" enctype="multipart/form-data">-->
+<!--                    <form method="post" th:object="${product}" th:action="@{/file/upload" enctype="multipart/form-data">-->
 <!--                        <div class="form-group">-->
 <!--                            <input type="file" name="file" class="form-control-file">-->
 <!--                            <input type="hidden" th:field="*{productnumber}">-->

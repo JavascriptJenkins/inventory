@@ -147,7 +147,7 @@
     <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
     <div class="alert alert-primary" role="alert" th:if="${primaryMessage}" th:text="${primaryMessage}">Success</div>
 
-    <form th:action="@{/payment/submitpayment?customJwtParameter=__${customJwtParameter}__&transactionid=__${transaction.transactionid}__&customerid=__${customer.customerid}__}" th:object="${payment}" method="post">
+    <form th:action="@{/payment/submitpayment?transactionid=__${transaction.transactionid}__&customerid=__${customer.customerid}__}" th:object="${payment}" method="post">
         <div class="mb-3">
             <label for="amountpaid" class="form-label required">Amount</label>
             <input class="form-control" id="amountpaid" th:field="*{amountpaid}" required>
@@ -156,7 +156,7 @@
         <button type="submit" class="btn-submit-dark">Submit Payment</button>
     </form>
 
-    <a th:href="@{/transaction?transactionid=__${transaction.transactionid}__&customJwtParameter=__${customJwtParameter}__&size=5&page=1}" class="btn btn-dark" style="margin-top:5px;">Back To Transaction</a>
+    <a th:href="@{/transaction?transactionid=__${transaction.transactionid}__&size=5&page=1}" class="btn btn-dark" style="margin-top:5px;">Back To Transaction</a>
 </div>
 </body>
 </html>
