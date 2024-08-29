@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.stereotype.Component;
@@ -18,6 +19,8 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.util.Base64;
 import java.util.Date;
 import java.util.List;
@@ -219,13 +222,38 @@ public class JwtTokenProvider {
     }
   }
 
-  public boolean validateToken(String token) {
+  public boolean validateToken(String token, HttpServletRequest request, HttpServletResponse response) {
     try {
       Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
       return true;
     } catch (JwtException | IllegalArgumentException e) {
+      logout(request, response);
       throw new CustomException("Expired or invalid JWT token", HttpStatus.FORBIDDEN);
     }
+  }
+
+
+  void logout(HttpServletRequest request, HttpServletResponse response){
+
+    // Invalidate the session if it exists
+    HttpSession session = request.getSession(false);
+    if (session != null) {
+      session.invalidate();
+    }
+
+    // Clear authentication information from the SecurityContext
+    SecurityContextHolder.clearContext();
+
+    // Remove the JWT cookie
+    Cookie cookie = new Cookie("techvvs_token", null);
+    cookie.setPath("/");
+    cookie.setHttpOnly(true);
+    cookie.setMaxAge(0); // Deletes the cookie
+    response.addCookie(cookie);
+
+
+    SecurityContextHolder.getContext().setAuthentication(null); // clear the internal auth
+    SecurityContextHolder.clearContext();
   }
 
 }
