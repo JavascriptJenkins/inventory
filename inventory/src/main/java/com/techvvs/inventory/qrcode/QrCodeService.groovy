@@ -5,6 +5,7 @@ import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.model.BatchVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.qrcode.impl.QrCodeGenerator
+import com.techvvs.inventory.viewcontroller.helper.ProductHelper
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -20,6 +21,9 @@ class QrCodeService {
 
     @Autowired
     AppConstants appConstants
+
+    @Autowired
+    ProductHelper productHelper
 
 
     /* This method will create a single barcode for each product.
@@ -55,17 +59,7 @@ class QrCodeService {
         // NOTE: right now this is going to generate barcodes for every product in batch regardless of product type
         try {
 
-            LinkedHashSet linkedHashSet = barcodeHelper.convertToLinkedHashSet(batchVO.product_set)
-
-            List<ProductVO> expandedList =expandAndDuplicateProductQuantities(linkedHashSet)
-
-            List<ProductVO> sortedlist = sortProductsByIdDescending(expandedList)
-
-            List<List<ProductVO>> result1 = barcodeHelper.removeItemsInChunksOf50ReturnList(sortedlist);
-
-            List<List<ProductVO>> result = reverseOrder(result1)
-
-            System.out.println("result of rounding up: " + result);
+            List<List<ProductVO>> result = productHelper.sortAndExpandProductSet(batchVO.product_set)
 
             // pass in pdf doc
             PDDocument document = new PDDocument()

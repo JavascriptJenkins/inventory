@@ -5,9 +5,13 @@ import com.techvvs.inventory.barcode.impl.BarcodeHelper
 import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.model.BatchVO
 import com.techvvs.inventory.model.ProductVO
+import com.techvvs.inventory.viewcontroller.helper.ProductHelper
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+
+import java.nio.file.Files
+import java.nio.file.Paths
 
 
 //UPCA format
@@ -22,12 +26,14 @@ class BarcodeService {
     @Autowired
     BarcodeGenerator barcodeGenerator;
 
-
     @Autowired
     BarcodeHelper barcodeHelper
 
     @Autowired
     AppConstants appConstants
+
+    @Autowired
+    ProductHelper productHelper
 
     /* This method will create a single barcode for each product.
     *  If you want to make barcodes for every single product and multiples for the amount of products you have, use the other method
@@ -59,34 +65,47 @@ class BarcodeService {
         // NOTE: right now this is going to generate barcodes for every product in batch regardless of product type
         try {
 
-            LinkedHashSet linkedHashSet = barcodeHelper.convertToLinkedHashSet(batchVO.product_set)
-
-            List<ProductVO> expandedList =expandAndDuplicateProductQuantities(linkedHashSet)
-
-            List<ProductVO> sortedlist = sortProductsByIdDescending(expandedList)
-
-            List<List<ProductVO>> result1 = barcodeHelper.removeItemsInChunksOf50ReturnList(sortedlist);
-
-            List<List<ProductVO>> result3 = reverseOrder(result1)
-            List<List<ProductVO>> result = sortProductListsByName(result3)
-
-            System.out.println("result of rounding up: " + result);
+            List<List<ProductVO>> result = productHelper.sortAndExpandProductSet(batchVO.product_set)
 
             // create document before we loop over the collections of products so all pdf pages land in a single document
             PDDocument document = new PDDocument()
             for(int i = 0; i < result.size(); i++) {
-                barcodeGenerator.generateBarcodesForAllItems(batchVO.name, batchVO.batchnumber, i, result.get(i), batchVO.name, document);
+                barcodeGenerator.generateBarcodesForAllItems(
+                        batchVO.batchnumber,
+                        i,
+                        result.get(i),
+                        batchVO.name,
+                        document);
             }
-            String filename = batchVO.name+"-"+batchVO.batchnumber
 
-            // save the actual file after looping thru all products
-            document.save(appConstants.PARENT_LEVEL_DIR+batchVO.batchnumber+appConstants.BARCODES_ALL_DIR+appConstants.filenameprefix+filename+".pdf");
-            document.close();
+            saveBarcodeLabelPdfFileForBatch(document, appConstants.BARCODES_ALL_DIR, batchVO.name, batchVO.batchnumber)
 
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
+    }
+
+    // this one is saved normally with no batchnumber subdir
+    void saveBarcodeLabelPdfFileForEntity(PDDocument document, String entitysubdirectory, String entityname, int entitynumber) {
+        // create a directory with the batchnumber and /barcodes dir if it doesn't exist yet
+        Files.createDirectories(Paths.get(appConstants.PARENT_LEVEL_DIR+String.valueOf(entitynumber)+entitysubdirectory));
+
+        String filename = entityname+"-"+entitynumber
+        // save the actual file after looping thru all products
+        document.save(appConstants.PARENT_LEVEL_DIR+entitysubdirectory+appConstants.filenameprefix+filename+".pdf");
+        document.close();
+    }
+
+    // this one is saving under a batchnumber dir - assuming all calls to this method are saving batch barcodes
+    void saveBarcodeLabelPdfFileForBatch(PDDocument document, String entitysubdirectory, String entityname, int entitynumber) {
+        // create a directory with the batchnumber and /barcodes dir if it doesn't exist yet
+        Files.createDirectories(Paths.get(appConstants.PARENT_LEVEL_DIR+String.valueOf(entitynumber)+entitysubdirectory));
+
+        String filename = entityname+"-"+entitynumber
+        // save the actual file after looping thru all products
+        document.save(appConstants.PARENT_LEVEL_DIR+entitynumber+entitysubdirectory+appConstants.filenameprefix+filename+".pdf");
+        document.close();
     }
 
 
@@ -113,6 +132,20 @@ class BarcodeService {
 
         return expandedList;
     }
+
+    static List<ProductVO> expandAndDuplicateProductQuantitiesWithLimit(LinkedHashSet<ProductVO> originalSet, int maxDuplicates) {
+        List<ProductVO> expandedList = new ArrayList<>();
+
+        for (ProductVO product : originalSet) {
+            int quantityToAdd = Math.min(product.getQuantity(), maxDuplicates); // Limit the number of duplicates
+            for (int i = 0; i < quantityToAdd; i++) {
+                expandedList.add(product); // Add the product to the list up to the limit
+            }
+        }
+
+        return expandedList;
+    }
+
 
     public static List<ProductVO> sortProductsByIdAscending(List<ProductVO> products) {
         Collections.sort(products, new Comparator<ProductVO>() {

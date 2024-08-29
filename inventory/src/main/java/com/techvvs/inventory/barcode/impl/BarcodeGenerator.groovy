@@ -118,18 +118,16 @@ class BarcodeGenerator {
     boolean skip = false
     //
     void generateBarcodesForAllItems(
-
-            String filenameExtension,
-                                     int batchnumber,
+                                     int entitynumber,
                                      int pagenumber,
                                      List<ProductVO> productlist,
-                                     String batchname,
+                                     String entityname,
                                     PDDocument document
 
     ) throws IOException {
 
 
-        System.out.println("Generating barcodes for " + filenameExtension + " | pagenumber: "+pagenumber);
+        System.out.println("Generating barcodes for " + entityname + " | pagenumber: "+pagenumber);
 
         PDPage page = new PDPage(PDRectangle.LETTER); // 8.5" x 11"
         document.addPage(page);
@@ -147,7 +145,168 @@ class BarcodeGenerator {
         // Example of using a TrueType font
         PDType0Font ttfFont = PDType0Font.load(document, new File("./uploads/font/Oswald-VariableFont_wght.ttf"));
 
+        // Write text on the top of page - Batchnumber, date, page number, etc
+        writeMetadataOnTopOfPage(contentStream, ttfFont, leftMargin, topMargin, pagenumber, entitynumber, entityname)
 
+        generateAndDrawUpcaBarcodes(
+                productlist,
+                leftMargin,
+                labelWidth,
+                topMargin,
+                labelHeight,
+                entitynumber,
+                pagenumber,
+                document,
+                contentStream
+        )
+
+        // Close the content stream
+        contentStream.close();
+
+    }
+
+
+    void generateAndDrawUpcaBarcodes(List<ProductVO> productlist,
+                                     float leftMargin,
+                                     float labelWidth,
+                                     float topMargin,
+                                     float labelHeight,
+                                     int entitynumber,
+                                     int pagenumber,
+                                     PDDocument document,
+                                     PDPageContentStream contentStream) {
+        // Initialize variables to track processed products
+        ProductVO productInScope = null
+        boolean skip = false
+
+        // Generate and draw UPC-A barcodes
+        for (int row = 0; row < 10; row++) {
+            for (int col = 0; col < 5; col++) {
+
+                // Stop if there are no more products to process
+                if (productlist.isEmpty()) {
+                    break
+                }
+
+                // Get the last product in the list and remove it from the list
+                ProductVO productVO = productlist.remove(productlist.size() - 1)
+
+                // Check if the current product is the same as the one in scope
+                if (productInScope != null && productInScope.product_id == productVO.product_id) {
+                    skip = true
+                }
+
+                // Calculate the position for the barcode
+                float x = leftMargin + col * labelWidth
+                float y = PDRectangle.LETTER.getHeight() - topMargin - (row + 1) * labelHeight
+
+                String barcodeData
+                if (skip) {
+                    // Use the existing barcode for duplicate products
+                    barcodeData = productInScope.barcode
+                } else {
+                    // Generate new barcode data for the product
+                    barcodeData = barcodeHelper.generateBarcodeData(row, col, entitynumber, pagenumber)
+                }
+
+                // Generate the barcode image
+                BufferedImage barcodeImage = imageGenerator.generateUPCABarcodeImage(barcodeData, labelWidth, labelHeight, col)
+
+                // Convert BufferedImage to PDImageXObject
+                PDImageXObject pdImage = LosslessFactory.createFromImage(document, barcodeImage)
+
+                // Adjust the x position for the last column
+                if (col == 4) {
+                    x += 8
+                }
+
+                // Draw the barcode image on the PDF
+                contentStream.drawImage(pdImage, x, y, labelWidth, labelHeight)
+
+                // Add the barcode data to the product in the database
+                addBarcodeToProduct(productVO, barcodeData)
+
+                // Update the product in scope and reset the skip flag
+                productInScope = productVO
+                skip = false
+            }
+        }
+    }
+
+
+//    void generateAndDrawUpcaBarcodes(List<ProductVO> productlist,
+//                                     float leftMargin,
+//                                     float labelWidth,
+//                                     float topMargin,
+//                                     float labelHeight,
+//                                     int entitynumber,
+//                                     int pagenumber,
+//                                     PDDocument document,
+//                                     PDPageContentStream contentStream
+//
+//    ) {
+//        // Generate and draw UPC-A barcodes
+//        for (int row = 0; row < 10; row++) {
+//            for (int col = 0; col < 5; col++) {
+//
+//                // this will prevent duplicate barcodes
+//                if(productlist.size() == 0){
+//                    break
+//                }
+//
+//                int toremove = productlist.size() - 1
+//                ProductVO productVO = productlist.getAt(toremove)
+//                if(productinscope.product_id == productVO.product_id){
+//                    skip = true
+//                }
+//
+//                float x = leftMargin + col * labelWidth;
+//                float y = PDRectangle.LETTER.getHeight() - topMargin - (row + 1) * labelHeight;
+//
+//                String barcodeData = "";
+//                if(skip){
+//                    barcodeData = productinscope.barcode
+//                } else {
+//                    // this only needs to be done one time for each product
+//                    barcodeData = barcodeHelper.generateBarcodeData(row, col, entitynumber, pagenumber);
+//                }
+//
+//                // Example method to generate barcode data
+//                BufferedImage barcodeImage = imageGenerator.generateUPCABarcodeImage(barcodeData, labelWidth, labelHeight, col);
+//
+//                // Convert BufferedImage to PDImageXObject
+//                PDImageXObject pdImage = LosslessFactory.createFromImage(document, barcodeImage);
+//
+//                if(col == 4){
+//                    // Draw the barcode image on the PDF
+//                    contentStream.drawImage(pdImage, x + 8 as float, y, labelWidth, labelHeight);
+//                } else {
+//                    // Draw the barcode image on the PDF
+//                    contentStream.drawImage(pdImage, x, y, labelWidth, labelHeight);
+//                }
+//
+//                //write method here to add barcode data to product in database
+//                addBarcodeToProduct(productVO, barcodeData);
+//
+//                productlist.remove(productVO)
+//                productinscope = productVO // bind this so we only process barcodes for unique products
+//                skip = false
+//                toremove = toremove + 1
+//            }
+//        }
+//    }
+
+
+    void writeMetadataOnTopOfPage(
+            PDPageContentStream contentStream,
+                            PDType0Font ttfFont,
+                            float leftMargin,
+                            float topMargin,
+                            int pagenumber,
+                            int entitynumber,
+                            String entityname
+
+    ) {
         // Print page number on the upper left corner
         contentStream.beginText();
         contentStream.setFont(ttfFont, 12);
@@ -161,91 +320,11 @@ class BarcodeGenerator {
         contentStream.newLineAtOffset(leftMargin+100 as float, PDRectangle.LETTER.getHeight() - topMargin / 2 as float);
         contentStream.showText(
                 "Date: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-                        + " | Batch #: " + batchnumber
-                        + " | Batch Name: " + batchname
+                        + " | Batch #: " + entitynumber
+                        + " | Batch Name: " + entityname
         );
         contentStream.endText();
-
-
-        // Generate and draw UPC-A barcodes
-        for (int row = 0; row < 10; row++) {
-            for (int col = 0; col < 5; col++) {
-
-                // this will prevent duplicate barcodes
-                if(productlist.size() == 0){
-                    break
-                }
-
-                int toremove = productlist.size() - 1
-                ProductVO productVO = productlist.getAt(toremove)
-                if(productinscope.product_id == productVO.product_id){
-                    skip = true
-                }
-
-
-
-
-
-
-                float x = leftMargin + col * labelWidth;
-                float y = PDRectangle.LETTER.getHeight() - topMargin - (row + 1) * labelHeight;
-
-                String barcodeData = "";
-                if(skip){
-                    barcodeData = productinscope.barcode
-                } else {
-                    // this only needs to be done one time for each product
-                    barcodeData = barcodeHelper.generateBarcodeData(row, col, batchnumber, pagenumber);
-                }
-
-                // barcodeData = productVO.barcode
-
-                // Example method to generate barcode data
-                BufferedImage barcodeImage = imageGenerator.generateUPCABarcodeImage(barcodeData, labelWidth, labelHeight, col);
-
-                // Convert BufferedImage to PDImageXObject
-                PDImageXObject pdImage = LosslessFactory.createFromImage(document, barcodeImage);
-
-                if(col == 4){
-                    // Draw the barcode image on the PDF
-                    contentStream.drawImage(pdImage, x + 8 as float, y, labelWidth, labelHeight);
-                } else {
-                    // Draw the barcode image on the PDF
-                    contentStream.drawImage(pdImage, x, y, labelWidth, labelHeight);
-                }
-
-
-//                if(){
-//
-//                }
-
-                //write method here to add barcode data to product in database
-                addBarcodeToProduct(productVO, barcodeData);
-
-                productlist.remove(productVO)
-                productinscope = productVO // bind this so we only process barcodes for unique products
-                skip = false
-                toremove = toremove + 1
-            }
-        }
-
-
-
-
-
-        // Close the content stream
-        contentStream.close();
-
-
-        // create a directory with the batchnumber and /barcodes dir if it doesn't exist yet
-        Files.createDirectories(Paths.get(appConstants.PARENT_LEVEL_DIR+batchnumber+appConstants.BARCODES_ALL_DIR));
-
-//        // save the actual file
-//        document.save(appConstants.PARENT_LEVEL_DIR+batchnumber+appConstants.BARCODES_ALL_DIR+appConstants.filenameprefix+filename+".pdf");
-//        document.close();
-
     }
-
 
     // todo: add a check here to make sure barcodes are unique before adding....
     void addBarcodeToProduct(ProductVO productVO, String barcodedata){
