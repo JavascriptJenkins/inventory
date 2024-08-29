@@ -35,6 +35,10 @@ class TransactionVO implements Serializable {
     List<ReturnVO> return_list
 
     @JsonProperty
+    @ElementCollection(fetch = FetchType.EAGER)
+    Set<PackageVO> package_set
+
+    @JsonProperty
     @OneToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name="customerid")
     CustomerVO customervo;
@@ -60,6 +64,10 @@ class TransactionVO implements Serializable {
     // This will be 0 until the transaction is actually processed
     @JsonProperty
     Integer isprocessed
+
+    // if this is 1, we know to display the package_set and we know we are dealing with a package transaction
+    @JsonProperty
+    Integer ispackagetype
 
     @JsonProperty
     @OneToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
