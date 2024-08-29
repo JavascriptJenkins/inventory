@@ -29,6 +29,9 @@ class ProductVO implements Serializable {
     @ManyToMany(mappedBy = "product_list")
     List<TransactionVO> transaction_list
     @JsonProperty
+    @ManyToMany(mappedBy = "product_package_list")
+    List<PackageVO> package_list
+    @JsonProperty
     @ManyToMany(mappedBy = "menu_product_list")
     List<MenuVO> menu_list
     @JsonProperty

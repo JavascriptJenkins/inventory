@@ -27,6 +27,8 @@ public interface ProductRepo extends JpaRepository<ProductVO, Integer> {
 
     Optional<ProductVO> findByBarcode(String barcode);
 
+    boolean existsByProductnumber(int productnumber);
+
 
 
 //    @Query("SELECT * FROM Product p JOIN Batch b ON p.product_id = b.product_id WHERE o.customer.name = :name")

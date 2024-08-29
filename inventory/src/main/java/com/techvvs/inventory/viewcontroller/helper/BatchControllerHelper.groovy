@@ -514,6 +514,22 @@ class BatchControllerHelper {
     }
 
     String generateBatchNumber() {
+
+        int batchNumber = generateIntBatchNumber()
+
+        // Loop until a unique batch number is generated
+        batchNumber = generateIntBatchNumber()
+        while (batchRepo.existsByBatchnumber(batchNumber)) {
+            batchNumber = generateIntBatchNumber()
+        }
+
+
+
+
+        return batchNumber.toString(); // cast to a string so it can be inserted in excel cells
+    }
+
+    int generateIntBatchNumber(){
         int length = 7; // Set the length to 8 digits
         StringBuilder batchNumber = new StringBuilder(length);
 
@@ -524,8 +540,7 @@ class BatchControllerHelper {
         for (int i = 1; i < length; i++) {
             batchNumber.append(secureRandom.nextInt(10));
         }
-
-        return batchNumber.toString();
+        return batchNumber.toInteger();
     }
 
 
