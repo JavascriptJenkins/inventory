@@ -47,7 +47,7 @@ public class JwtTokenFilter extends OncePerRequestFilter implements CsrfTokenRep
                   .findFirst()
                   .ifPresent(cookie -> {
                       token = cookie.getValue();
-                      if (jwtTokenProvider.validateToken(token)) {
+                      if (jwtTokenProvider.validateToken(token, httpServletRequest, httpServletResponse)) {
                           //String username = jwtTokenProvider.getTokenSubject(token);
                           Authentication auth = jwtTokenProvider.getAuthentication(token);
                           SecurityContextHolder.getContext().setAuthentication(auth);
@@ -61,7 +61,7 @@ public class JwtTokenFilter extends OncePerRequestFilter implements CsrfTokenRep
 
 
     try {
-      if (token != null && jwtTokenProvider.validateToken(token)) {
+      if (token != null && jwtTokenProvider.validateToken(token, httpServletRequest, httpServletResponse)) {
 
       String tokenSubject = jwtTokenProvider.getTokenSubject(token);
       logger.info("TOKEN VALIDATED WITH SUBJECT: "+tokenSubject);
