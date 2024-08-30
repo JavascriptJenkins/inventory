@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Package Transaction</title>
+
+
+    <script
+            src="https://code.jquery.com/jquery-3.6.0.js"
+            integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="
+            crossorigin="anonymous"></script>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <!-- JavaScript Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-kQtW33rZJAHjgefvhyyzcGF3C5TFyBQBA13V1RKPf4uH+bwyzQxZ6CmMZHmNBEfJ" crossorigin="anonymous"></script>
+
+
+    <link rel="stylesheet" type="text/css" media="all" href="/css/table.css" th:href="@{/css/table.css}" />
+    <!-- Bootstrap Font Icon CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+
+    <style>
+      .required:after {
+        content:" *";
+        color: red;
+      }
+    </style>
+
+    <script>
+
+
+
+        $(document).ready(function () {
+
+
+            processTableItems();
+
+        });
+
+
+        function processTableItems() {
+            const seenBarcodes = new Set();
+
+            $('#transactionSuccessForm tbody tr').each(function() {
+                const itemBarcode = $(this).data('barcode'); // Assuming you have data-barcode attribute in your <tr> elements
+
+                if (seenBarcodes.has(itemBarcode)) {
+                    $(this).hide(); // Hide the row if the barcode is already seen
+                } else {
+                    seenBarcodes.add(itemBarcode);
+                    $(this).show(); // Ensure the row is visible (in case it was hidden previously)
+                }
+            });
+
+            console.log(Array.from(seenBarcodes)); // This will log the unique barcodes
+        }
+
+    </script>
+
+</head>
+<body>
+
+
+
+<div th:insert="auth/navbar.html :: navbarfragment"> </div>
+
+
+<div class="container">
+
+
+    <div class="alert alert-primary" role="alert" >Package Transaction Successful</div>
+    <br>
+
+    <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
+    <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
+
+
+    <!--    One form for passing back the barcode on every scan and updating the transaction in db -->
+    <form id="transactionSuccessForm" th:action="@{/package/printreceipt?page=1&size=5}" th:object="${transaction}" method="post">
+
+        <!-- Table Section -->
+        <div style="overflow-x: auto;">
+            <table class="table table-striped table-bordered">
+                <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="item : ${transaction.package_set}" th:data-barcode="${item.barcode}">
+                    <td th:text="${item.name}">Item Name</td>
+                    <td th:text="${item.price}">Price</td>
+                    <td th:text="${item.displayquantity}">Quantity</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <input type="hidden" th:field="*{transactionid}">
+        <button style="margin-top:5px;" type="submit" class="btn btn-primary">Print Receipt</button>
+
+
+    </form>
+
+
+    <!--    One form for passing back the barcode on every scan and updating the transaction in db -->
+    <form id="printInvoiceForm" th:action="@{/package/printinvoice?page=1&size=5}" th:object="${transaction}" method="post">
+        <input type="hidden" th:field="*{transactionid}">
+        <button style="margin-top:5px;" type="submit" class="btn btn-primary">Print Invoice</button>
+    </form>
+
+
+
+    <a th:href="@{/payment?transactionid=__${transaction.transactionid}__}" class="btn btn-primary" style="margin-top:5px;">Submit A Payment</a>
+
+</div>
+
+
+
+
+
+
+
+
+
+</body>
+</html>

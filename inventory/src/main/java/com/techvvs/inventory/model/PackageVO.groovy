@@ -2,6 +2,7 @@ package com.techvvs.inventory.model
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
+import org.springframework.beans.factory.annotation.Autowired
 
 import javax.persistence.CascadeType
 import javax.persistence.ElementCollection
@@ -46,9 +47,13 @@ class PackageVO implements Serializable{
     String description;
 
     @JsonProperty
-    @OneToOne(cascade= CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToOne(cascade= CascadeType.REFRESH, fetch = FetchType.EAGER)
     @JoinColumn(name="packagetypeid")
-    ProductTypeVO packagetype;
+    PackageTypeVO packagetype;
+
+    @OneToOne
+    @JoinColumn(name = "customerid")
+    CustomerVO customer
 
     @ManyToMany
     @JoinTable(
@@ -60,15 +65,23 @@ class PackageVO implements Serializable{
 
 
     @JsonProperty
-    @ManyToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
+    @ManyToOne(cascade=CascadeType.REFRESH, fetch = FetchType.EAGER)
     @JoinColumn(name="deliveryid")
     DeliveryVO delivery
 
     @JsonProperty
-    @ManyToOne(cascade=CascadeType.ALL, fetch = FetchType.LAZY)
+    @ManyToOne(cascade=CascadeType.REFRESH, fetch = FetchType.LAZY)
     @JoinColumn(name="transactionid")
     TransactionVO transaction
 
+    @JsonProperty
+    Double total;
+
+    @JsonProperty
+    String barcode;
+
+    @Autowired
+    int isprocessed
 
     // generic fields below
     @JsonProperty
