@@ -2,9 +2,11 @@ package com.techvvs.inventory.refdata
 
 import com.techvvs.inventory.jparepo.BatchTypeRepo
 import com.techvvs.inventory.jparepo.CustomerRepo
+import com.techvvs.inventory.jparepo.PackageTypeRepo
 import com.techvvs.inventory.jparepo.ProductTypeRepo
 import com.techvvs.inventory.model.BatchTypeVO
 import com.techvvs.inventory.model.CustomerVO
+import com.techvvs.inventory.model.PackageTypeVO
 import com.techvvs.inventory.model.ProductTypeVO
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -24,11 +26,15 @@ class RefDataLoader {
     @Autowired
     CustomerRepo customerRepo
 
+    @Autowired
+    PackageTypeRepo packageTypeRepo
+
 
     void loadRefData(){
         loadBatchTypes()
         loadProductTypes()
         loadCustomers()
+        loadPackageTypes()
     }
 
     void loadBatchTypes(){
@@ -42,6 +48,26 @@ class RefDataLoader {
 
         batchTypeRepo.save(batchTypeVO)
         System.out.println("BatchType ref data loaded")
+    }
+
+    void loadPackageTypes() {
+        // Creating the first PackageTypeVO instance for "pallet"
+        PackageTypeVO palletTypeVO = new PackageTypeVO();
+        palletTypeVO.setName("PALLET");
+        palletTypeVO.setDescription("A large platform for transporting goods");
+        palletTypeVO.setCreateTimeStamp(LocalDateTime.now());
+        palletTypeVO.setUpdateTimeStamp(LocalDateTime.now());
+        packageTypeRepo.save(palletTypeVO);
+
+        // Creating the second PackageTypeVO instance for "small box"
+        PackageTypeVO smallBoxTypeVO = new PackageTypeVO();
+        smallBoxTypeVO.setName("SMALL.BOX");
+        smallBoxTypeVO.setDescription("A small box used for shipping");
+        smallBoxTypeVO.setCreateTimeStamp(LocalDateTime.now());
+        smallBoxTypeVO.setUpdateTimeStamp(LocalDateTime.now());
+        packageTypeRepo.save(smallBoxTypeVO);
+
+        System.out.println("PackageType reference data loaded");
     }
 
     void loadProductTypes(){
