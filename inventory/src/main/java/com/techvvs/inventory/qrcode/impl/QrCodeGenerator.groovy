@@ -181,7 +181,7 @@ class QrCodeGenerator {
                 } else {
                     String qrcodeData = ""
                     boolean isdev1 = env.getProperty("spring.profiles.active").equals(appConstants.DEV_1)
-                    boolean baseqrdomain = env.getProperty("base.qr.domain")
+                    String baseqrdomain = env.getProperty("base.qr.domain")
                     if(isdev1){
                         qrcodeData = appConstants.QR_CODE_PUBLIC_INFO_LINK_DEV1+productVO.getProduct_id()
                     } else {
