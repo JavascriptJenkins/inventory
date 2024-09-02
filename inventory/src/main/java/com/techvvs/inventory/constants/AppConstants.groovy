@@ -30,8 +30,9 @@ class AppConstants {
 String EMAIL_INVOICE = "email"
 String VIEW_INVOICE = "view"
 
-    String QR_CODE_PUBLIC_INFO_LINK_PROD = "http://localhost:8080/qr/publicinfo?productid="
+    String QR_CODE_PUBLIC_INFO_LINK_PROD = "http://northstar1.techvvs.io/qr/publicinfo?productid="
     String QR_CODE_PUBLIC_INFO_LINK_DEV1 = "http://localhost:8080/qr/publicinfo?productid="
+    String QR_CODE_URI_EXTENSION = "/qr/publicinfo?productid="
 
 
     int DEFAULT_TAX_PERCENTAGE = 0
