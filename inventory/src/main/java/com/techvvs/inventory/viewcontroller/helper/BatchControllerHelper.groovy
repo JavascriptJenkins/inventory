@@ -98,7 +98,7 @@ class BatchControllerHelper {
             results = batchRepo.findAllByBatchnumber(Integer.valueOf(batchnumber));
         }
 
-        barcodeService.createSingleMenuBarcodesForBatch(results.get(0))
+      //  barcodeService.createSingleMenuBarcodesForBatch(results.get(0))
 
         return true
     }

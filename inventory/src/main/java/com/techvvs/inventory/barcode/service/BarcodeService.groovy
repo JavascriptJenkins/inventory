@@ -38,25 +38,25 @@ class BarcodeService {
     /* This method will create a single barcode for each product.
     *  If you want to make barcodes for every single product and multiples for the amount of products you have, use the other method
     *  */
-    void createSingleMenuBarcodesForBatch(BatchVO batchVO) {
-
-        // NOTE: right now this is going to generate barcodes for every product in batch regardless of product type
-       try {
-
-           LinkedHashSet linkedHashSet = barcodeHelper.convertToLinkedHashSet(batchVO.product_set)
-           List<Set<ProductVO>> result = barcodeHelper.removeItemsInChunksOf50(linkedHashSet);
-
-           System.out.println("result of rounding up: " + result);
-
-            for(int i = 0; i < result.size(); i++) {
-                barcodeGenerator.generateBarcodes(batchVO.name, batchVO.batchnumber, i, result.get(i));
-            }
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-    }
+//    void createSingleMenuBarcodesForBatch(BatchVO batchVO) {
+//
+//        // NOTE: right now this is going to generate barcodes for every product in batch regardless of product type
+//       try {
+//
+//           LinkedHashSet linkedHashSet = barcodeHelper.convertToLinkedHashSet(batchVO.product_set)
+//           List<Set<ProductVO>> result = barcodeHelper.removeItemsInChunksOf50(linkedHashSet);
+//
+//           System.out.println("result of rounding up: " + result);
+//
+//            for(int i = 0; i < result.size(); i++) {
+//                barcodeGenerator.generateBarcodes(batchVO.name, batchVO.batchnumber, i, result.get(i));
+//            }
+//
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//
+//    }
 
 
 
