@@ -51,6 +51,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .antMatchers("/login/verify").permitAll()//
             .antMatchers("/login/verify/*").permitAll()//
             .antMatchers("/login/verify/**").permitAll()//
+            .antMatchers("/qr/publicinfo").permitAll()//
+            .antMatchers("/qr/publicinfo/*").permitAll()//
+            .antMatchers("/qr/publicinfo/**").permitAll()//
 //            .antMatchers("/login/systemuser").permitAll()//
             // Add other routes that should be publicly accessible
             // Disallow everything else..

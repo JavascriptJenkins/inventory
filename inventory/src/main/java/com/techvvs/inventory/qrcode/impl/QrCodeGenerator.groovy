@@ -8,6 +8,7 @@ import com.google.zxing.qrcode.QRCodeWriter
 import com.techvvs.inventory.barcode.impl.BarcodeHelper
 import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.model.ProductVO
+import com.techvvs.inventory.pdf.TechvvsPdfWriterUtil
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.PDPage
 import org.apache.pdfbox.pdmodel.PDPageContentStream
@@ -18,7 +19,6 @@ import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
-import org.apache.pdfbox.pdmodel.font.PDType1Font
 
 
 import javax.imageio.ImageIO
@@ -27,8 +27,6 @@ import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 @Component
 class QrCodeGenerator {
@@ -43,7 +41,13 @@ class QrCodeGenerator {
     AppConstants appConstants
 
     @Autowired
+    BarcodeHelper barcodeHelper
+
+    @Autowired
     Environment env
+
+    @Autowired
+    TechvvsPdfWriterUtil techvvsPdfWriterUtil
 
     // need to make a qr code generator that generates a QR for every barcode
     void generateQrcodes(String filenameExtension, int batchnumber, int pagenumber, Set<ProductVO> productset) throws IOException {
@@ -148,24 +152,8 @@ class QrCodeGenerator {
         // Example of using a TrueType font
         PDType0Font ttfFont = PDType0Font.load(document, new File("./uploads/font/Oswald-VariableFont_wght.ttf"));
 
-
-        // Print page number on the upper left corner
-        contentStream.beginText();
-        contentStream.setFont(ttfFont, 12);
-        contentStream.newLineAtOffset(leftMargin, PDRectangle.LETTER.getHeight() - topMargin / 2 as float);
-        contentStream.showText("Page " + pagenumber);
-        contentStream.endText();
-
-        // metadata accross the top
-        contentStream.beginText();
-        contentStream.setFont(ttfFont, 12);
-        contentStream.newLineAtOffset(leftMargin+100 as float, PDRectangle.LETTER.getHeight() - topMargin / 2 as float);
-        contentStream.showText(
-                "Date: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-                + " | Batch #: " + batchnumber
-                + " | Batch Name: " + batchname
-                 );
-        contentStream.endText();
+        // write label and metadata info on top of each page
+        techvvsPdfWriterUtil.writeMetadataOnTopOfPage(contentStream, ttfFont, leftMargin, topMargin, pagenumber, batchnumber, batchname)
 
 
         // Generate and draw UPC-A barcodes
@@ -193,14 +181,13 @@ class QrCodeGenerator {
                 } else {
                     String qrcodeData = ""
                     boolean isdev1 = env.getProperty("spring.profiles.active").equals(appConstants.DEV_1)
+                    boolean baseqrdomain = env.getProperty("base.qr.domain")
                     if(isdev1){
                         qrcodeData =
-                                appConstants.QR_CODE_PUBLIC_INFO_LINK_PROD+productVO.getProduct_id()
-                                //+"&customJwtParameter="
+                                appConstants.QR_CODE_PUBLIC_INFO_LINK_DEV1+productVO.getProduct_id()
                     } else {
                         qrcodeData =
-                                appConstants.QR_CODE_PUBLIC_INFO_LINK_PROD+productVO.getProduct_id()
-                                //+"&customJwtParameter="
+                                baseqrdomain+appConstants.QR_CODE_URI_EXTENSION+productVO.getProduct_id()
                     }
 
                     qrImage = qrImageGenerator.generateQrImage(qrcodeData, limitStringTo20Chars(productVO.name));
@@ -208,6 +195,13 @@ class QrCodeGenerator {
 
                 // Convert BufferedImage to PDImageXObject
                 PDImageXObject pdImage = LosslessFactory.createFromImage(document, qrImage);
+
+                // Adjust the x position for the last column
+                if (col == 4) {
+                    x += 8
+                }
+
+                y = barcodeHelper.adjustRowXYMargin(row, y)
 
                 // Draw the image on the PDF
                 contentStream.drawImage(pdImage, x, y, labelWidth, labelHeight);
