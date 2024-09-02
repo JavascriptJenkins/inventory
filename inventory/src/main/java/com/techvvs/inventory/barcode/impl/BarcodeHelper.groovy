@@ -162,6 +162,45 @@ class BarcodeHelper {
         return chunks;
     }
 
+    // need this cuz the barcode code is a bit wavy if u knowwhatimsayin
+    static float adjustRowXYMargin(int row, float y){
+
+        // modify row positions
+        if(row == 0){
+            y-=14 // subtract from top
+        }
+
+        if(row == 1){
+            y-=9 // subtract from top
+        }
+
+        if(row == 2){
+            y-=6 // subtract from top
+        }
+
+        if(row == 3){
+            y-=3 // subtract from top
+        }
+
+
+        if(row == 6){
+            y+=7 // add to top
+        }
+
+        if(row == 7){
+            y+=11 // add to top
+        }
+
+        if(row == 8){
+            y+=14 // add to top
+        }
+
+        if(row == 9){
+            y+=17 // add to top
+        }
+        return y
+    }
+
 
 
 
