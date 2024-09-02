@@ -173,7 +173,7 @@ public class UploadController {
         }
 
         techvvsAuthService.checkuserauth(model);
-        return "/service/xlsxbatch.html";
+        return "/batch/browsebatch.html";
     }
 
     void bindBatchTypes(Model model){
