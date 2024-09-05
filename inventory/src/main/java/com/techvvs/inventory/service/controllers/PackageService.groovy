@@ -32,13 +32,7 @@ class PackageService {
     BarcodeHelper barcodeHelper
 
     @Autowired
-    PackageService packageService
-
-    @Autowired
-    PackageHelper packageHelper
-
-    @Autowired
-    CustomerRepo customerRepo
+    ProductService productService
 
     @Autowired
     PackageTypeRepo packageTypeRepo
@@ -134,48 +128,15 @@ class PackageService {
 
         String barcode = packageVO.barcode + String.valueOf(checksum)
 
-        Optional<ProductVO> productVO = productRepo.findByBarcode(barcode)
-
-        // todo: on second time thru we need to fully hydrate the customer and product_set before saving
-
-        if(!productVO.empty){
-
-            // update the product cart list association
-            if(productVO.get().package_list == null){
-                productVO.get().package_list = new ArrayList<>()
-            }
-            productVO.get().package_list.add(packageVO)
-
-            productVO.get().updateTimeStamp = LocalDateTime.now()
-            // when product is added to the cart, decrease the quantity remaining.
-            productVO.get().quantityremaining = productVO.get().quantityremaining == 0 ? 0 : productVO.get().quantityremaining - 1
-            ProductVO savedProduct = productRepo.save(productVO.get())
-
-            if(packageVO.total == null){
-                packageVO.total = 0.00
-            }
-
-            /* Cart code below */
-            packageVO.total += Double.valueOf(productVO.get().price) // add the product price to the total
-
-            // handle quantity here (have to iterate thru all product cert list and update the quantity)
-
-            // if it's the first time adding a product we need to create the set to hold them
-            if(packageVO.product_package_list == null){
-                packageVO.product_package_list = new ArrayList<ProductVO>()
-            }
-
-            packageVO = refreshProductPackageList(packageVO)
-
-            // now save the cart side of the many to many
-            packageVO.product_package_list.add(savedProduct)
-            packageVO.updateTimeStamp = LocalDateTime.now()
-            packageVO = packageRepo.save(packageVO)
-            model.addAttribute("successMessage","Package: "+productVO.get().name + " added successfully")
+        if(packageVO.quantityselected == 0){
+            productService.saveProductPackageAssociations(barcode, packageVO, model, 1)
         } else {
-            // need to bind the selected customer here otherwise the dropdown wont work
-            packageVO.packagetype = packageTypeRepo.findById(packageVO.packagetype.packagetypeid).get()
-            model.addAttribute("errorMessage","Product not found")
+            int j = 0;
+            // run the product save once for every quantity selected
+            for (int i = 0; i < packageVO.quantityselected; i++) {
+                j++
+                productService.saveProductPackageAssociations(barcode, packageVO, model, j)
+            }
         }
 
 
@@ -184,17 +145,6 @@ class PackageService {
     }
 
 
-    @Transactional
-    PackageVO refreshProductPackageList(PackageVO packageVO){
-
-        if(packageVO.packageid == 0){
-            return packageVO
-        }
-
-        packageVO.product_package_list = packageRepo.findById(packageVO.packageid).get().product_package_list
-        return packageVO
-
-    }
 
 
 

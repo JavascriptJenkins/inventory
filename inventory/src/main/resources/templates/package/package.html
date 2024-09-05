@@ -160,6 +160,25 @@
         .producttype-name {
             color: #000;
         }
+        /* Make the checkbox larger */
+        #quantityModeCheckbox {
+            width: 25px;
+            height: 25px;
+
+        }
+
+        /* Style the label: dark background with white text */
+        .form-check-label {
+            background-color: #343a40; /* Dark background */
+            color: white;              /* White text */
+            padding: 5px 10px;         /* Add some padding */
+            border-radius: 5px;        /* Optional: round the corners */
+        }
+
+        /* Optionally, adjust the label's appearance when the checkbox is focused */
+        #quantityModeCheckbox:focus + .form-check-label {
+            outline: 2px solid white;  /* Add an outline to the label when checkbox is focused */
+        }
     </style>
 
     <script>
@@ -181,10 +200,31 @@
                 }
             });
 
+            // Add event listener to the checkbox
+            $('#quantityModeCheckbox').on('click', function() {
+                // Refocus on the barcode input field when the checkbox is clicked
+                $('#barcodeInput').focus();
+            });
+
+
+            // Function to process barcode scanning
             function processBarcode(scannedValue) {
                 if (scannedValue.length >= 11) {
-                    $('#barcodeInput').val(scannedValue.substring(0, 11));
-                    $('#barcodeForm').submit();
+                    if ($('#quantityModeCheckbox').is(':checked')) {
+                        // If Quantity Mode is checked, ask for quantity input
+                        let quantity = prompt("Please enter the quantity for the scanned product:");
+
+                        if (quantity !== null && quantity !== "") {
+                            // Set quantity in the hidden input
+                            $('#quantitySelected').val(quantity);
+                            $('#barcodeInput').val(scannedValue.substring(0, 11));
+                            $('#barcodeForm').submit();
+                        }
+                    } else {
+                        // If not in Quantity Mode, just submit the form
+                        $('#barcodeInput').val(scannedValue.substring(0, 11));
+                        $('#barcodeForm').submit();
+                    }
                 }
             }
 
@@ -252,6 +292,13 @@
                     <div class="col-md-6" style="margin-bottom: 5px;">
                         <input id="barcodeInput" type="text" th:field="*{barcode}" class="form-control" placeholder="barcode" aria-label="barcode">
                     </div>
+                    <div class="col-md-6">
+                        <!-- Quantity Mode Checkbox -->
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="quantityModeCheckbox">
+                            <label class="form-check-label" for="quantityModeCheckbox">Quantity Mode</label>
+                        </div>
+                    </div>
                 </div>
                 <div class="row" style="margin-bottom: 5px;">
                     <div th:if="${package.packageid == 0}">
@@ -303,6 +350,7 @@
                         </tbody>
                     </table>
                     <input type="hidden" th:field="*{product_package_list}">
+                    <input type="hidden" id="quantitySelected" th:field="*{quantityselected}" name="quantityselected">
                 </div>
             </div>
         </div>

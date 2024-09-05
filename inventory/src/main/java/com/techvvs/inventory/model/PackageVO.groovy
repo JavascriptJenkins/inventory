@@ -17,6 +17,7 @@ import javax.persistence.ManyToMany
 import javax.persistence.ManyToOne
 import javax.persistence.OneToOne
 import javax.persistence.Table
+import javax.persistence.Transient
 import java.time.LocalDateTime
 
 @JsonIgnoreProperties
@@ -89,5 +90,8 @@ class PackageVO implements Serializable{
 
     @JsonProperty
     LocalDateTime createTimeStamp;
+
+    @Transient
+    int quantityselected = 0
 
 }
