@@ -80,21 +80,21 @@ class ImportBatch {
                 ProductVO productVO = new ProductVO()
 
                 // set quantity and quantity remaining on the product record in db
-                productVO.setQuantity((int) row.getCell(0).getNumericCellValue());
-                productVO.setQuantityremaining((int) row.getCell(0).getNumericCellValue());
+                productVO.setQuantity((int) row?.getCell(0)?.getNumericCellValue());
+                productVO.setQuantityremaining((int) row?.getCell(0)?.getNumericCellValue());
 
                 // set name on the product record in db
                 productVO.setName(row.getCell(1).getStringCellValue());
 
                 // set price on the product record in db
-                Double price = Double.valueOf(row.getCell(2).getNumericCellValue());
+                Double price = Double.valueOf(row?.getCell(2)?.getNumericCellValue());
                 productVO.setPrice(price)
 
                 // only set barcode if the value is not empty
-                productVO.barcode = row.getCell(3)?.getStringCellValue()?.trim() ? "" : productVO.barcode
+                productVO.barcode = row?.getCell(3)?.getStringCellValue()?.trim() ? "" : productVO.barcode
 
                 // set the cost from row 4
-                Double cost = row.getCell(4) != null && row.getCell(4).getCellType() == CellType.NUMERIC ? Double.valueOf(row.getCell(4).getNumericCellValue()) : null
+                Double cost = row.getCell(4) != null && row.getCell(4).getCellType() == CellType.NUMERIC ? Double.valueOf(row?.getCell(4)?.getNumericCellValue()) : null
                 productVO.cost = cost ?: 0 // if cost is null, set it to 0, otherwise take the value from above
 
                 productVO.setProductnumber(Integer.valueOf(productHelper.generateProductNumber())); // we are doing a check here to make sure productnumber is unique
