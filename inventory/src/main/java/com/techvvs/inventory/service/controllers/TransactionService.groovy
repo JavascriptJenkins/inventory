@@ -1,16 +1,15 @@
 package com.techvvs.inventory.service.controllers
 
-import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.jparepo.CartRepo
 import com.techvvs.inventory.jparepo.TransactionRepo
 import com.techvvs.inventory.model.CartVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.TransactionVO
-import com.techvvs.inventory.util.FormattingUtil
 import com.techvvs.inventory.util.TechvvsAppUtil
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
+import javax.transaction.Transactional
 import java.time.LocalDateTime
 
 
@@ -29,14 +28,8 @@ class TransactionService {
 
     @Autowired TechvvsAppUtil techvvsAppUtil
 
-    @Autowired
-    FormattingUtil formattingUtil
 
-    @Autowired
-    AppConstants appConstants
-
-
-    //todo: make sure the customer is fully hydrated on the way in here
+    @Transactional
     TransactionVO processCartGenerateNewTransaction(CartVO cartVO) {
 
         ArrayList<ProductVO> newlist = cartVO.product_cart_list

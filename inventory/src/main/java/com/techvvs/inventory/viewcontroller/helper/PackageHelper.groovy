@@ -49,6 +49,9 @@ class PackageHelper {
         if(packageVO?.packagetype?.packagetypeid == null){
             model.addAttribute("errorMessage","Please select a package type")
         }
+        if(packageVO?.name == null || packageVO?.name == "" || packageVO.name.trim().length() < 3){
+            model.addAttribute("errorMessage","Please enter a package name greater than 3 characters. ")
+        }
         return packageVO
     }
 

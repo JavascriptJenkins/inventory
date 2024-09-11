@@ -131,7 +131,7 @@
 
 <div class="container">
     <div class="header-dark">
-        <h1>Review Cart</h1>
+        <h1>Review Package</h1>
     </div>
 
     <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
@@ -141,18 +141,8 @@
 
         <div class="row" style="margin-bottom: 5px;">
             <div class="col-md-6" style="margin-bottom: 5px;">
-                <b> <label th:classappend="${package.packageid != null ? '' : 'required'}" class="form-label">Customer</label></b>
-                <div th:if="${package.packageid}">
-                    <p th:each="customer : ${customers}" th:if="${customer.customerid == package.customer.customerid}" th:text="${customer.name}">Customer Name</p>
-                    <input type="hidden" th:field="*{customer.customerid}">
-                </div>
-                <input type="hidden" th:field="*{packageid}">
-                <div th:if="${package.packageid == 0}">
-                    <select class="form-control" th:field="${package.customer.customerid}" id="customerselectid">
-                        <option value="" selected="selected">Select a customer</option>
-                        <option th:each="customer : ${customers}" th:value="${customer.customerid}" th:text="${customer.name}"></option>
-                    </select>
-                </div>
+                <b> <label th:classappend="${package.packageid != null ? '' : 'required'}" class="form-label">Name</label></b>
+                <p th:text="${package.name}"></p>
             </div>
         </div>
         <div class="row" style="margin-bottom: 5px;">
@@ -161,6 +151,7 @@
                 <input type="hidden" th:field="*{total}" class="form-control" placeholder="total" aria-label="total" readonly>
                 <p th:text="${package.total}"></p>
             </div>
+            <input type="hidden" th:field="*{packageid}">
             <input type="hidden" th:field="*{isprocessed}">
             <input type="hidden" th:field="*{updateTimeStamp}">
             <input type="hidden" th:field="*{createTimeStamp}">

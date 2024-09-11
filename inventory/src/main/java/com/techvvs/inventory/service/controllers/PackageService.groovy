@@ -10,6 +10,8 @@ import com.techvvs.inventory.model.CustomerVO
 import com.techvvs.inventory.model.PackageTypeVO
 import com.techvvs.inventory.model.PackageVO
 import com.techvvs.inventory.model.ProductVO
+import com.techvvs.inventory.model.TransactionVO
+import com.techvvs.inventory.util.TechvvsAppUtil
 import com.techvvs.inventory.viewcontroller.helper.PackageHelper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -32,16 +34,13 @@ class PackageService {
     BarcodeHelper barcodeHelper
 
     @Autowired
-    PackageService packageService
-
-    @Autowired
-    PackageHelper packageHelper
-
-    @Autowired
-    CustomerRepo customerRepo
+    ProductService productService
 
     @Autowired
     PackageTypeRepo packageTypeRepo
+
+    @Autowired
+    TechvvsAppUtil techvvsAppUtil
 
     @Transactional
     void createPackage(){
@@ -134,48 +133,15 @@ class PackageService {
 
         String barcode = packageVO.barcode + String.valueOf(checksum)
 
-        Optional<ProductVO> productVO = productRepo.findByBarcode(barcode)
-
-        // todo: on second time thru we need to fully hydrate the customer and product_set before saving
-
-        if(!productVO.empty){
-
-            // update the product cart list association
-            if(productVO.get().package_list == null){
-                productVO.get().package_list = new ArrayList<>()
-            }
-            productVO.get().package_list.add(packageVO)
-
-            productVO.get().updateTimeStamp = LocalDateTime.now()
-            // when product is added to the cart, decrease the quantity remaining.
-            productVO.get().quantityremaining = productVO.get().quantityremaining == 0 ? 0 : productVO.get().quantityremaining - 1
-            ProductVO savedProduct = productRepo.save(productVO.get())
-
-            if(packageVO.total == null){
-                packageVO.total = 0.00
-            }
-
-            /* Cart code below */
-            packageVO.total += Double.valueOf(productVO.get().price) // add the product price to the total
-
-            // handle quantity here (have to iterate thru all product cert list and update the quantity)
-
-            // if it's the first time adding a product we need to create the set to hold them
-            if(packageVO.product_package_list == null){
-                packageVO.product_package_list = new ArrayList<ProductVO>()
-            }
-
-            packageVO = refreshProductPackageList(packageVO)
-
-            // now save the cart side of the many to many
-            packageVO.product_package_list.add(savedProduct)
-            packageVO.updateTimeStamp = LocalDateTime.now()
-            packageVO = packageRepo.save(packageVO)
-            model.addAttribute("successMessage","Package: "+productVO.get().name + " added successfully")
+        if(packageVO.quantityselected == 0){
+            productService.saveProductPackageAssociations(barcode, packageVO, model, 1)
         } else {
-            // need to bind the selected customer here otherwise the dropdown wont work
-            packageVO.packagetype = packageTypeRepo.findById(packageVO.packagetype.packagetypeid).get()
-            model.addAttribute("errorMessage","Product not found")
+            int j = 0;
+            // run the product save once for every quantity selected
+            for (int i = 0; i < packageVO.quantityselected; i++) {
+                j++
+                productService.saveProductPackageAssociations(barcode, packageVO, model, j)
+            }
         }
 
 
@@ -183,18 +149,75 @@ class PackageService {
         return packageVO
     }
 
+    // todo: NOTE - these requirements are written in the context of a pallet being delivered.  Will give user ability to create a "PACKAGE DELIVERY" in different user flow
 
+    // todo: need to make the concept of a "Pallet" so we can have a "Pallet Building" page
+    // todo: instead of creating a "Transaction", we are going to ask the user if they want to add the package to a pallet, or if they want to keep making packages.
+    // todo: then, when they are done adding packages to the system and adding them to a pallet, user can navigate to the pallet building page.
+    // todo: on the pallet building page, user can see all the packages they have added to the pallet.
+    // todo: on the pallet building page, user can delete packages from the pallet.
+    // todo: on the pallet building page, user can print barcodes and qr tags for the packages in the pallet.
+    // todo: on the pallet building page, user will be required to add a CUSTOMER to the pallet.  (will add CUSTOMER to PALLET and also to PACKAGE)
+    // todo: on the pallet building page, user will be required to add a DESTINATION LOCATION to the pallet.   (will add DESTINATION LOCATION to PALLET and also to PACKAGE)
+    // todo: on the pallet building page, user can decide they are done building the pallet, and THEN they can submit the pallet, which will create a TRANSACTION and a DELIVERY
+
+    // todo: Then user can navigate to the "Pallet Review" page, where they will be able to monitor the DELIVERY status of the pallet
     @Transactional
-    PackageVO refreshProductPackageList(PackageVO packageVO){
+    TransactionVO processPackageGenerateNewTransaction(PackageVO packageVO) {
 
-        if(packageVO.packageid == 0){
-            return packageVO
+        ArrayList<ProductVO> newlist = packageVO.product_package_list
+
+        TransactionVO newtransaction = new TransactionVO(
+
+                product_list: newlist,
+                updateTimeStamp: LocalDateTime.now(),
+                createTimeStamp: LocalDateTime.now(),
+                customervo: packageVO?.customer,
+                total: packageVO.total,
+//                totalwithtax: formattingUtil.calculateTotalWithTax(cartVO.total, appConstants.DEFAULT_TAX_PERCENTAGE),
+                totalwithtax: packageVO.total,
+                paid: 0.00,
+                taxpercentage: techvvsAppUtil.dev1 ? 0 : 0, // we are not going to set a tax percentage here in non dev environments
+                isprocessed: 0,
+                ispackagetype: 1
+
+        )
+
+        newtransaction = transactionRepo.save(newtransaction)
+
+        // only save the cart after transaction is created
+
+
+        productService.saveProductAssociations(newtransaction)
+
+
+
+        // save the package with processed=1
+        packageVO.isprocessed = 1
+        packageVO.updateTimeStamp = LocalDateTime.now()
+        packageVO = packageRepo.save(newtransaction.package)
+
+
+        // quantityremaining is updated when the cart is saved... this method is useless for now but will
+        // be useful if we need to do anything to the product after the transaction is saved
+
+        for(ProductVO productVO : newtransaction.product_list){
+
+            ProductVO existingproduct = productService.findProductByID(productVO)
+
+            // existingproduct.quantityremaining = productVO.quantityremaining - 1
+            existingproduct.updateTimeStamp = LocalDateTime.now()
+            productVO = productService.saveProduct(productVO)
+
         }
 
-        packageVO.product_package_list = packageRepo.findById(packageVO.packageid).get().product_package_list
-        return packageVO
+
+
+        return newtransaction
 
     }
+
+
 
 
 

@@ -1,5 +1,6 @@
 package com.techvvs.inventory.service.transactional
 
+import com.techvvs.inventory.barcode.impl.BarcodeHelper
 import com.techvvs.inventory.jparepo.CartRepo
 import com.techvvs.inventory.jparepo.CustomerRepo
 import com.techvvs.inventory.jparepo.ProductRepo
@@ -28,6 +29,9 @@ class CartDeleteService {
 
     @Autowired
     CartService cartService
+
+    @Autowired
+    BarcodeHelper barcodeHelper
 
     @Transactional
     CartVO deleteProductFromCart(CartVO cartVO, String barcode){
@@ -70,8 +74,12 @@ class CartDeleteService {
 
     ){
 
+        // validate the barcode and add the last digit here
+        int checksum =barcodeHelper.calculateUPCAChecksum(cartVO.barcode)
 
-        Optional<ProductVO> productVO = productRepo.findByBarcode(cartVO.barcode)
+        String barcode = cartVO.barcode + String.valueOf(checksum)
+
+        Optional<ProductVO> productVO = productRepo.findByBarcode(barcode)
 
         // todo: on second time thru we need to fully hydrate the customer and product_set before saving
 
@@ -177,6 +185,9 @@ class CartDeleteService {
 
     @Transactional
     Optional<ProductVO> doesProductExist(String barcode){
+        int checksum =barcodeHelper.calculateUPCAChecksum(barcode)
+        barcode = barcode + String.valueOf(checksum)
+
 
         Optional<ProductVO> existingproduct = productRepo.findByBarcode(barcode)
         return existingproduct

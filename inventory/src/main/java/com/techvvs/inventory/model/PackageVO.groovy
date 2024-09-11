@@ -17,6 +17,7 @@ import javax.persistence.ManyToMany
 import javax.persistence.ManyToOne
 import javax.persistence.OneToOne
 import javax.persistence.Table
+import javax.persistence.Transient
 import java.time.LocalDateTime
 
 @JsonIgnoreProperties
@@ -78,10 +79,10 @@ class PackageVO implements Serializable{
     Double total;
 
     @JsonProperty
-    String barcode;
-
-    @Autowired
     int isprocessed
+
+    @JsonProperty
+    int weight
 
     // generic fields below
     @JsonProperty
@@ -89,5 +90,11 @@ class PackageVO implements Serializable{
 
     @JsonProperty
     LocalDateTime createTimeStamp;
+
+    @Transient
+    int quantityselected = 0
+
+    @Transient
+    String barcode;
 
 }

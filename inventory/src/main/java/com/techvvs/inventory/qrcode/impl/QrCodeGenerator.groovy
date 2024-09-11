@@ -185,7 +185,13 @@ class QrCodeGenerator {
                     if(isdev1){
                         qrcodeData = appConstants.QR_CODE_PUBLIC_INFO_LINK_DEV1+productVO.getProduct_id()
                     } else {
-                        qrcodeData = baseqrdomain+appConstants.QR_CODE_URI_EXTENSION+productVO.getProduct_id()
+                        // prod
+                        boolean isqrmode = env.getProperty("qr.mode.leafly").equals("true") // only do leafly search if this is true
+                        if(isqrmode){
+                            qrcodeData = appConstants.QR_CODE_URI_LEAFYLY+productVO.name
+                        } else {
+                            qrcodeData = baseqrdomain+appConstants.QR_CODE_URI_EXTENSION+productVO.getProduct_id()
+                        }
                     }
 
                     qrImage = qrImageGenerator.generateQrImage(qrcodeData, limitStringTo20Chars(productVO.name));
