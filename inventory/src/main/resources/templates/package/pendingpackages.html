@@ -158,8 +158,8 @@
             <a th:href="@{/dashboard/index}"><i class="bi bi-arrow-left-circle"></i></a>
         </div>
         <div>
-            <h1>Pending Carts</h1>
-            <p>Review pending carts</p>
+            <h1>Pending Packages</h1>
+            <p>Review pending packages</p>
         </div>
     </div>
     <br>
@@ -171,31 +171,31 @@
         <thead>
         <tr>
             <th scope="col">#</th>
-            <th scope="col">Cart ID</th>
-            <th scope="col">Customer Name</th>
+            <th scope="col">Package ID</th>
+            <th scope="col">Package Name</th>
             <th scope="col">Total Amount</th>
         </tr>
         </thead>
         <tbody>
-        <tr th:each="cart, iStat : ${cartPage.content}"
-            th:if="${cart.isprocessed != 1}"
+        <tr th:each="package, iStat : ${pageOfPackage.content}"
+            th:if="${package.isprocessed != 1}"
             th:style="${iStat.odd}? 'font-weight: bold;'"
             th:alt-title="${iStat.even}? 'even' : 'odd'">
-            <td th:text="${cart.cartid}"></td>
-            <td><a th:href="@{/checkout?cartid=__${cart.cartid}__}" th:text="${cart.cartid}"></a></td>
-            <td th:text="${cart.customer.name}"></td>
-            <td th:text="${cart.total}"></td>
+            <td th:text="${package.packageid}"></td>
+            <td><a th:href="@{/package?packageid=__${package.packageid}__}" th:text="${package.packageid}"></a></td>
+            <td th:text="${package.name}"></td>
+            <td th:text="${package.total}"></td>
         </tr>
         </tbody>
     </table>
 
-    <nav th:if="${cartPage.totalPages > 0}">
+    <nav th:if="${pageOfPackage.totalPages > 0}">
         <ul class="pagination">
             <li class="page-item" th:each="pageNumber : ${pageNumbers}">
                 <a class="page-link"
-                   th:href="@{/checkout/pendingcarts?size=__${#lists.size(cartPage.content)}__&page=__${pageNumber}__}"
+                   th:href="@{/package/pendingpackages?size=__${#lists.size(pageOfPackage.content)}__&page=__${pageNumber}__}"
                    th:text="${pageNumber}"
-                   th:classappend="${pageNumber==cartPage.number + 1} ? 'active'">
+                   th:classappend="${pageNumber==pageOfPackage.number + 1} ? 'active'">
                 </a>
             </li>
         </ul>

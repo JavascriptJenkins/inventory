@@ -79,10 +79,10 @@ class PackageVO implements Serializable{
     Double total;
 
     @JsonProperty
-    String barcode;
-
-    @Autowired
     int isprocessed
+
+    @JsonProperty
+    int weight
 
     // generic fields below
     @JsonProperty
@@ -93,5 +93,8 @@ class PackageVO implements Serializable{
 
     @Transient
     int quantityselected = 0
+
+    @Transient
+    String barcode;
 
 }

@@ -10,6 +10,8 @@ import com.techvvs.inventory.model.CustomerVO
 import com.techvvs.inventory.model.PackageTypeVO
 import com.techvvs.inventory.model.PackageVO
 import com.techvvs.inventory.model.ProductVO
+import com.techvvs.inventory.model.TransactionVO
+import com.techvvs.inventory.util.TechvvsAppUtil
 import com.techvvs.inventory.viewcontroller.helper.PackageHelper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -36,6 +38,9 @@ class PackageService {
 
     @Autowired
     PackageTypeRepo packageTypeRepo
+
+    @Autowired
+    TechvvsAppUtil techvvsAppUtil
 
     @Transactional
     void createPackage(){
@@ -142,6 +147,74 @@ class PackageService {
 
 
         return packageVO
+    }
+
+    // todo: NOTE - these requirements are written in the context of a pallet being delivered.  Will give user ability to create a "PACKAGE DELIVERY" in different user flow
+
+    // todo: need to make the concept of a "Pallet" so we can have a "Pallet Building" page
+    // todo: instead of creating a "Transaction", we are going to ask the user if they want to add the package to a pallet, or if they want to keep making packages.
+    // todo: then, when they are done adding packages to the system and adding them to a pallet, user can navigate to the pallet building page.
+    // todo: on the pallet building page, user can see all the packages they have added to the pallet.
+    // todo: on the pallet building page, user can delete packages from the pallet.
+    // todo: on the pallet building page, user can print barcodes and qr tags for the packages in the pallet.
+    // todo: on the pallet building page, user will be required to add a CUSTOMER to the pallet.  (will add CUSTOMER to PALLET and also to PACKAGE)
+    // todo: on the pallet building page, user will be required to add a DESTINATION LOCATION to the pallet.   (will add DESTINATION LOCATION to PALLET and also to PACKAGE)
+    // todo: on the pallet building page, user can decide they are done building the pallet, and THEN they can submit the pallet, which will create a TRANSACTION and a DELIVERY
+
+    // todo: Then user can navigate to the "Pallet Review" page, where they will be able to monitor the DELIVERY status of the pallet
+    @Transactional
+    TransactionVO processPackageGenerateNewTransaction(PackageVO packageVO) {
+
+        ArrayList<ProductVO> newlist = packageVO.product_package_list
+
+        TransactionVO newtransaction = new TransactionVO(
+
+                product_list: newlist,
+                updateTimeStamp: LocalDateTime.now(),
+                createTimeStamp: LocalDateTime.now(),
+                customervo: packageVO?.customer,
+                total: packageVO.total,
+//                totalwithtax: formattingUtil.calculateTotalWithTax(cartVO.total, appConstants.DEFAULT_TAX_PERCENTAGE),
+                totalwithtax: packageVO.total,
+                paid: 0.00,
+                taxpercentage: techvvsAppUtil.dev1 ? 0 : 0, // we are not going to set a tax percentage here in non dev environments
+                isprocessed: 0,
+                ispackagetype: 1
+
+        )
+
+        newtransaction = transactionRepo.save(newtransaction)
+
+        // only save the cart after transaction is created
+
+
+        productService.saveProductAssociations(newtransaction)
+
+
+
+        // save the package with processed=1
+        packageVO.isprocessed = 1
+        packageVO.updateTimeStamp = LocalDateTime.now()
+        packageVO = packageRepo.save(newtransaction.package)
+
+
+        // quantityremaining is updated when the cart is saved... this method is useless for now but will
+        // be useful if we need to do anything to the product after the transaction is saved
+
+        for(ProductVO productVO : newtransaction.product_list){
+
+            ProductVO existingproduct = productService.findProductByID(productVO)
+
+            // existingproduct.quantityremaining = productVO.quantityremaining - 1
+            existingproduct.updateTimeStamp = LocalDateTime.now()
+            productVO = productService.saveProduct(productVO)
+
+        }
+
+
+
+        return newtransaction
+
     }
 
 

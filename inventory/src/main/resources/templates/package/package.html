@@ -183,6 +183,19 @@
 
     <script>
         $(document).ready(function () {
+            // Check if the input with id="packagename" has no value
+            var packageNameInput = $('#packagename').val().trim();
+
+            // Only show the popup if the packagename input is empty
+            if (packageNameInput === '') {
+                let packageName = prompt("Please enter the name of package you want to create (samplebox, iowa pallet, john's shipment etc):");
+
+                // If the user provides input, set the value of the #packagename input
+                if (packageName !== null && packageName.trim().length > 0) {
+                    $('#packagename').val(packageName.trim());
+                }
+            }
+
             $('#barcodeInput').focus();
 
             $('#producttypeselectid').on('change', function() {
@@ -326,11 +339,15 @@
                     <input type="hidden" th:field="*{updateTimeStamp}">
                     <input type="hidden" th:field="*{createTimeStamp}">
                 </div>
+                <div class="col-md-6" style="margin-bottom: 5px;">
+                    <label class="form-label required">Package Name</label>
+                    <input id="packagename" type="text" th:field="*{name}" class="form-control" placeholder="name" aria-label="name">
+                </div>
                 <button style="margin-top: 5px; visibility: hidden;" type="submit" class="btn btn-primary">Submit</button>
             </div>
             <div class="col-md-4">
                 <div style="overflow-x: auto;">
-                    <table class="table table-hover table-striped table-dark">
+                    <table id="itemTable" class="table table-hover table-striped table-dark">
                         <thead>
                         <tr>
                             <th>Item</th>
@@ -363,6 +380,8 @@
     <form id="submitTransactionForm" th:action="@{/package/reviewpackage?packageid=__${package.packageid != null ? package.packageid : '0'}__}" th:object="${package}" method="post">
         <input type="hidden" th:field="*{product_package_list}">
 <!--        <input type="hidden" th:field="*{packagetype.packgetypeid}">-->
+        <input type="hidden" th:field="*{packagetype.packagetypeid}">
+        <input type="hidden" th:field="*{name}">
         <button style="margin-top: 5px;" type="submit" class="btn btn-dark-theme">Review Package</button>
     </form>
 

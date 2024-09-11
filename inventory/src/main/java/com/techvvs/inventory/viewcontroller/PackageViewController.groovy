@@ -87,6 +87,7 @@ public class PackageViewController {
         packageHelper.getAllPackageTypes(model)
         techvvsAuthService.checkuserauth(model)
         model.addAttribute("package", packageVO);
+        techvvsAuthService.checkuserauth(model)
         return "package/pendingpackages.html";
     }
 
@@ -210,10 +211,10 @@ public class PackageViewController {
 
             packageVO = packageHelper.getExistingPackage(String.valueOf(packageVO.packageid))
 
-            name = packageVO.customer.name
+            name = packageVO.name
 
             // save a new transaction object in database if we don't have one
-            transactionVO = transactionService.processCartGenerateNewTransaction(cartVO)
+            transactionVO = transactionService.processCartGenerateNewTransaction(packageVO)
         }
 
 
