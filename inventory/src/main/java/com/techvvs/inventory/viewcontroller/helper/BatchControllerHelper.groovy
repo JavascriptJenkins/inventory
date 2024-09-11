@@ -509,9 +509,9 @@ class BatchControllerHelper {
 
         // Loop until a unique batch number is generated
         batchNumber = generateIntBatchNumber()
-        while (batchRepo.existsByBatchnumber(batchNumber)) {
-            batchNumber = generateIntBatchNumber()
-        }
+//        while (batchRepo.existsByBatchnumber(batchNumber)) {
+//            batchNumber = generateIntBatchNumber()
+//        }
 
 
 
