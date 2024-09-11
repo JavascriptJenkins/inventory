@@ -41,20 +41,15 @@ class ProductHelper {
     List<List<ProductVO>> sortAndExpandProductSet(Set<ProductVO> product_set){
         LinkedHashSet linkedHashSet = barcodeHelper.convertToLinkedHashSet(product_set)
 
-//        List<ProductVO> expandedList = barcodeService.expandAndDuplicateProductQuantities(linkedHashSet)
-
         // setting this to 100 ensures that only 1 page maximum of barcodes will be generated for each SKU
         // This is fine - if people need more than 50 barcodes for their individual products, they can print more pdfs!
         List<ProductVO> expandedList = barcodeService.expandAndDuplicateProductQuantitiesWithLimit(linkedHashSet, 50)
 
+        List<ProductVO> sortedlistLowToHighPrice = barcodeService.sortByPrice(expandedList)
 
-        List<ProductVO> sortedlist = barcodeService.sortProductsByIdDescending(expandedList)
+        List<List<ProductVO>> result1 = barcodeHelper.splitIntoChunksOf50(sortedlistLowToHighPrice);
 
-        List<List<ProductVO>> result1 = barcodeHelper.removeItemsInChunksOf50ReturnList(sortedlist);
-
-        List<List<ProductVO>> result3 = barcodeService.reverseOrder(result1)
-        List<List<ProductVO>> result = barcodeService.sortProductListsByName(result3)
-        return result
+        return result1
     }
 
 

@@ -146,6 +146,10 @@ class BarcodeService {
         return expandedList;
     }
 
+    List<ProductVO> sortByPrice(List<ProductVO> productList) {
+        return productList.sort { a, b -> a.price <=> b.price }
+    }
+
 
     public static List<ProductVO> sortProductsByIdAscending(List<ProductVO> products) {
         Collections.sort(products, new Comparator<ProductVO>() {
@@ -155,6 +159,22 @@ class BarcodeService {
             }
         });
         return products;
+    }
+
+    public static List<List<ProductVO>> splitIntoChunksOf50(List<ProductVO> originalList) {
+        List<List<ProductVO>> result = new ArrayList<>();
+
+        int listSize = originalList.size();
+        int chunkSize = 50;
+
+        for (int i = 0; i < listSize; i += chunkSize) {
+            // Create sublist from the original list, making sure not to exceed the list size
+            List<ProductVO> chunk = originalList.subList(i, Math.min(i + chunkSize, listSize));
+            // Add the chunk to the result
+            result.add(new ArrayList<>(chunk));  // Create a new list to avoid referencing the original sublist
+        }
+
+        return result;
     }
 
     static List<ProductVO> sortProductsByIdDescending(List<ProductVO> products) {

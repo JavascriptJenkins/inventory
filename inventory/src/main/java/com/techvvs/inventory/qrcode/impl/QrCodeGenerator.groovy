@@ -161,41 +161,35 @@ class QrCodeGenerator {
             for (int col = 0; col < 5; col++) {
 
                 // this will prevent duplicate barcodes
-                if(productlist.size() == 0){
+                if(productlist.isEmpty()){
                     break
                 }
 
-                int toremove = productlist.size() - 1
-                ProductVO productVO = productlist.getAt(toremove)
-                if(productinscope.product_id == productVO.product_id){
-                    skip = true
-                }
+                ProductVO productVO = productlist.remove(0)
 
                 float x = leftMargin + col * labelWidth;
                 float y = PDRectangle.LETTER.getHeight() - topMargin - (row + 1) * labelHeight;
 
 
                 BufferedImage qrImage = null;
-                if(skip){
-                    qrImage = qrImageInScope
-                } else {
-                    String qrcodeData = ""
-                    boolean isdev1 = env.getProperty("spring.profiles.active").equals(appConstants.DEV_1)
-                    String baseqrdomain = env.getProperty("base.qr.domain")
-                    if(isdev1){
-                        qrcodeData = appConstants.QR_CODE_PUBLIC_INFO_LINK_DEV1+productVO.getProduct_id()
-                    } else {
-                        // prod
-                        boolean isqrmode = env.getProperty("qr.mode.leafly").equals("true") // only do leafly search if this is true
-                        if(isqrmode){
-                            qrcodeData = appConstants.QR_CODE_URI_LEAFYLY+productVO.name
-                        } else {
-                            qrcodeData = baseqrdomain+appConstants.QR_CODE_URI_EXTENSION+productVO.getProduct_id()
-                        }
-                    }
 
-                    qrImage = qrImageGenerator.generateQrImage(qrcodeData, limitStringTo20Chars(productVO.name));
+                String qrcodeData = ""
+                boolean isdev1 = env.getProperty("spring.profiles.active").equals(appConstants.DEV_1)
+                String baseqrdomain = env.getProperty("base.qr.domain")
+                if(isdev1){
+                    qrcodeData = appConstants.QR_CODE_PUBLIC_INFO_LINK_DEV1+productVO.getProduct_id()
+                } else {
+                    // prod
+                    boolean isqrmode = env.getProperty("qr.mode.leafly").equals("true") // only do leafly search if this is true
+                    if(isqrmode){
+                        qrcodeData = appConstants.QR_CODE_URI_LEAFYLY+productVO.name
+                    } else {
+                        qrcodeData = baseqrdomain+appConstants.QR_CODE_URI_EXTENSION+productVO.getProduct_id()
+                    }
                 }
+
+                qrImage = qrImageGenerator.generateQrImage(qrcodeData, limitStringTo20Chars(productVO.name));
+
 
                 // Convert BufferedImage to PDImageXObject
                 PDImageXObject pdImage = LosslessFactory.createFromImage(document, qrImage);
@@ -212,12 +206,8 @@ class QrCodeGenerator {
 
                 //write method here to add barcode data to product in database
                 // todo: add a qr link column to product in database
-                // addBarcodeToProduct(productVO, barcodeData);
-                productinscope = productVO // bind this so we only process barcodes for unique products
-                skip = false
-                qrImageInScope = qrImage
-                productlist.remove(productVO)
-                toremove = toremove + 1
+
+                //productlist.remove(productVO)
             }
         }
 

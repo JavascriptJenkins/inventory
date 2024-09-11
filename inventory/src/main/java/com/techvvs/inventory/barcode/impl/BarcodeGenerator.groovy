@@ -98,17 +98,22 @@ class BarcodeGenerator {
         ProductVO productInScope = null
         boolean skip = false
 
+        int k = 0
         // Generate and draw UPC-A barcodes
         for (int row = 0; row < 10; row++) {
             for (int col = 0; col < 5; col++) {
+
 
                 // Stop if there are no more products to process
                 if (productlist.isEmpty()) {
                     break
                 }
 
+                // todo: this is problem.  it is removing the first item from list instead of the last item
                 // Get the last product in the list and remove it from the list
-                ProductVO productVO = productlist.remove(productlist.size() - 1)
+                int size = productlist.size()
+//                ProductVO productVO = productlist.remove(size - 1)
+                ProductVO productVO = productlist.remove(0)
 
                 // Check if the current product is the same as the one in scope
                 if (productInScope != null && productInScope.product_id == productVO.product_id) {
@@ -150,6 +155,7 @@ class BarcodeGenerator {
                 // Update the product in scope and reset the skip flag
                 productInScope = productVO
                 skip = false
+                k++
             }
         }
     }

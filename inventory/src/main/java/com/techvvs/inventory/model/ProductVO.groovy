@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @JsonIgnoreProperties
 @Entity
 @Table(name="product")
-class ProductVO implements Serializable {
+class ProductVO implements Serializable, Comparable<ProductVO> {
 // todo: make a productsale object
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -70,6 +70,12 @@ class ProductVO implements Serializable {
     @JsonProperty
     LocalDateTime createTimeStamp;
 
+
+    @Override
+    public int compareTo(ProductVO other) {
+        // Example comparison based on price
+        return Double.compare(this.price, other.price);
+    }
 
 
     // Method to get unique products based on barcode
