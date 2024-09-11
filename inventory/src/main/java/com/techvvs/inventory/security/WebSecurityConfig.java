@@ -54,6 +54,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .antMatchers("/qr/publicinfo").permitAll()//
             .antMatchers("/qr/publicinfo/*").permitAll()//
             .antMatchers("/qr/publicinfo/**").permitAll()//
+            .antMatchers("/file/smsdownload/**").permitAll()//
 //            .antMatchers("/login/systemuser").permitAll()//
             // Add other routes that should be publicly accessible
             // Disallow everything else..
