@@ -1,11 +1,16 @@
 package com.techvvs.inventory.barcode.impl
 
+import com.techvvs.inventory.barcode.service.BarcodeService
+import com.techvvs.inventory.model.ProductVO
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
 
 @Component
 class BarcodeHelper {
 
+    @Autowired
+    BarcodeService barcodeService
 
     static <T> List<Set<T>> removeItemsInChunksOf50(LinkedHashSet<T> originalSet) {
         List<Set<T>> chunks = new ArrayList<>();
@@ -144,6 +149,10 @@ class BarcodeHelper {
 
 
     public static <T> List<List<T>> removeItemsInChunksOf50ReturnList(List<T> originalList) {
+        // Reverse sort the original list
+        // have to reverse it otherwise it will mess up order of objects
+        //originalList.sort(Collections.reverseOrder());
+
         List<List<T>> chunks = new ArrayList<>();
         Iterator<T> iterator = originalList.iterator();
 
@@ -160,6 +169,24 @@ class BarcodeHelper {
         }
 
         return chunks;
+    }
+
+    public List<List<ProductVO>> splitIntoChunksOf50(List<ProductVO> originalList) {
+        List<List<ProductVO>> result = new ArrayList<>();
+
+        int listSize = originalList.size();
+        int chunkSize = 50;
+
+        for (int i = 0; i < listSize; i += chunkSize) {
+            // Create sublist from the original list, making sure not to exceed the list size
+            List<ProductVO> chunk = originalList.subList(i, Math.min(i + chunkSize, listSize));
+            // Add the chunk to the result
+            List newlist = new ArrayList<>(chunk)
+            newlist = barcodeService.sortByPrice(newlist)
+            result.add(newlist);  // Create a new list to avoid referencing the original sublist
+        }
+
+        return result;
     }
 
     // need this cuz the barcode code is a bit wavy if u knowwhatimsayin
