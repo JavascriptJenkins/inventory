@@ -148,9 +148,9 @@ class CheckoutHelper {
 
 
     TransactionVO hydrateTransientQuantitiesForTransactionDisplay(TransactionVO transactionVO) {
+        int totalDisplayQuantity = 0
 
         // run a sort on the product list right here
-
         transactionVO.product_list.sort { a, b -> a.price <=> b.price }
 
         // Ensure product_list is not null or empty before processing
@@ -167,6 +167,9 @@ class CheckoutHelper {
             if (productVO.displayquantity == null) {
                 productVO.displayquantity = 1;
             }
+
+            // Add the displayquantity to totalDisplayQuantity
+            totalDisplayQuantity += productVO.displayquantity
 
             // Check if the product barcode already exists in the map
             if (barcodeMap.containsKey(productVO.barcode)) {
@@ -186,6 +189,8 @@ class CheckoutHelper {
                 productVO.displayquantity = barcodeMap.get(productVO.barcode).displayquantity;
             }
         }
+
+        transactionVO.displayquantitytotal = totalDisplayQuantity
 
         return transactionVO;
     }
