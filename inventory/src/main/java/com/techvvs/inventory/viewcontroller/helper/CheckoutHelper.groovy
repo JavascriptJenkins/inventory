@@ -149,6 +149,10 @@ class CheckoutHelper {
 
     TransactionVO hydrateTransientQuantitiesForTransactionDisplay(TransactionVO transactionVO) {
 
+        // run a sort on the product list right here
+
+        transactionVO.product_list.sort { a, b -> a.price <=> b.price }
+
         // Ensure product_list is not null or empty before processing
         if (transactionVO == null || transactionVO.product_list == null || transactionVO.product_list.isEmpty()) {
             return transactionVO; // Return early if no products to process
