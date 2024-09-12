@@ -127,22 +127,67 @@ class CheckoutHelper {
 //
 //    }
 
-    TransactionVO hydrateTransientQuantitiesForTransactionDisplay(TransactionVO transactionVO){
+    // todo: fix this - calculating wrong quantity for display.  Also, this wrong on the invoices being printed as well
+//    TransactionVO hydrateTransientQuantitiesForTransactionDisplay(TransactionVO transactionVO){
+//
+//        // cycle thru here and if the productid is the same then update the quantity
+//        ProductVO previous = new ProductVO(barcode: 0)
+//        for(ProductVO productVO : transactionVO.product_list){
+//            if(productVO.displayquantity == null){
+//                productVO.displayquantity = 1
+//            }
+//            if(productVO.barcode == previous.barcode){
+//                productVO.displayquantity = productVO.displayquantity + 1
+//            }
+//            previous = productVO
+//        }
+//
+//        return transactionVO
+//
+//    }
 
-        // cycle thru here and if the productid is the same then update the quantity
-        ProductVO previous = new ProductVO(barcode: 0)
-        for(ProductVO productVO : transactionVO.product_list){
-            if(productVO.displayquantity == null){
-                productVO.displayquantity = 1
-            }
-            if(productVO.barcode == previous.barcode){
-                productVO.displayquantity = productVO.displayquantity + 1
-            }
-            previous = productVO
+
+    TransactionVO hydrateTransientQuantitiesForTransactionDisplay(TransactionVO transactionVO) {
+
+        // run a sort on the product list right here
+
+        transactionVO.product_list.sort { a, b -> a.price <=> b.price }
+
+        // Ensure product_list is not null or empty before processing
+        if (transactionVO == null || transactionVO.product_list == null || transactionVO.product_list.isEmpty()) {
+            return transactionVO; // Return early if no products to process
         }
 
-        return transactionVO
+        // Map to track product quantities by barcode
+        Map<Integer, ProductVO> barcodeMap = new HashMap<>();
 
+        // Loop through the products
+        for (ProductVO productVO : transactionVO.product_list) {
+            // If displayquantity is null, initialize it to 1
+            if (productVO.displayquantity == null) {
+                productVO.displayquantity = 1;
+            }
+
+            // Check if the product barcode already exists in the map
+            if (barcodeMap.containsKey(productVO.barcode)) {
+                // If the barcode is already in the map, increment the displayquantity of the stored product
+                ProductVO existingProduct = barcodeMap.get(productVO.barcode);
+                existingProduct.displayquantity += productVO.displayquantity;
+            } else {
+                // If it's a new barcode, add it to the map
+                barcodeMap.put(Integer.valueOf(productVO.barcode), productVO);
+            }
+        }
+
+        // After processing, update the original product list quantities
+        for (ProductVO productVO : transactionVO.product_list) {
+            if (barcodeMap.containsKey(productVO.barcode)) {
+                // Update the product's displayquantity with the accumulated value from the map
+                productVO.displayquantity = barcodeMap.get(productVO.barcode).displayquantity;
+            }
+        }
+
+        return transactionVO;
     }
 
     TransactionVO bindtransients(TransactionVO transactionVO, String phone, String email, String action){
