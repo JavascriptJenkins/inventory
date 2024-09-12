@@ -82,6 +82,9 @@ class TransactionVO implements Serializable {
     LocalDateTime createTimeStamp
 
     @Transient
+    Integer displayquantitytotal // for displaying total units
+
+    @Transient
     String action = ""
 
     @Transient

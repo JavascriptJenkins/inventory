@@ -156,6 +156,9 @@ class CartDeleteService {
             Optional<ProductVO> productVO = doesProductExist(cartVO.barcode)
             if(productVO.empty){
                 model.addAttribute("errorMessage","Product does not exist")
+                // here we have to rebind the cart
+                cartVO = cartRepo.findById(cartVO.cartid).get()
+                model.addAttribute("cart", cartVO);
             } else {
                 int cartcount = getCountOfProductInCartByBarcode(cartVO)
                 // check here if the quantity we are trying to add will exceed the quantity in stock

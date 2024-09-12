@@ -89,9 +89,10 @@ class CheckoutHelper {
     }
 
     CartVO hydrateTransientQuantitiesForDisplay(CartVO cartVO){
+        cartVO.displayquantitytotal = 0
+        cartVO.product_cart_list.sort { a, b -> a.price <=> b.price }
         Map<Integer, ProductVO> productMap = new HashMap<>();
         // cycle thru here and if the productid is the same then update the quantity
-        ProductVO previous = new ProductVO(barcode: 0)
         for(ProductVO productincart : cartVO.product_cart_list){
 
             if(productincart.displayquantity == null){
@@ -103,54 +104,19 @@ class CheckoutHelper {
             productMap.put(productincart.getProduct_id(), productincart)
         }
         cartVO.product_cart_list = new ArrayList<>(productMap.values());
+        for(ProductVO productincart : cartVO.product_cart_list) {
+            cartVO.displayquantitytotal += productincart.displayquantity
+        }
         return cartVO
 
     }
 
 
-//    CartVO hydrateTransientQuantitiesForDisplay(CartVO cartVO){
-//        Map<Integer, ProductVO> productMap = new HashMap<>();
-//        // cycle thru here and if the productid is the same then update the quantity
-//        ProductVO previous = new ProductVO(barcode: 0)
-//        for(ProductVO productVO : cartVO.product_cart_list){
-//            if(productVO.displayquantity == null){
-//                productVO.displayquantity = 1
-//            }
-//            if(productVO.barcode == previous.barcode){
-//                    productVO.displayquantity = productVO.displayquantity + 1
-//            }
-//            productMap.put(productVO.getProduct_id(), productVO)
-//            previous = productVO
-//        }
-//        cartVO.product_cart_list = new ArrayList<>(productMap.values());
-//        return cartVO
-//
-//    }
-
-    // todo: fix this - calculating wrong quantity for display.  Also, this wrong on the invoices being printed as well
-//    TransactionVO hydrateTransientQuantitiesForTransactionDisplay(TransactionVO transactionVO){
-//
-//        // cycle thru here and if the productid is the same then update the quantity
-//        ProductVO previous = new ProductVO(barcode: 0)
-//        for(ProductVO productVO : transactionVO.product_list){
-//            if(productVO.displayquantity == null){
-//                productVO.displayquantity = 1
-//            }
-//            if(productVO.barcode == previous.barcode){
-//                productVO.displayquantity = productVO.displayquantity + 1
-//            }
-//            previous = productVO
-//        }
-//
-//        return transactionVO
-//
-//    }
-
 
     TransactionVO hydrateTransientQuantitiesForTransactionDisplay(TransactionVO transactionVO) {
+        int totalDisplayQuantity = 0
 
         // run a sort on the product list right here
-
         transactionVO.product_list.sort { a, b -> a.price <=> b.price }
 
         // Ensure product_list is not null or empty before processing
@@ -167,6 +133,9 @@ class CheckoutHelper {
             if (productVO.displayquantity == null) {
                 productVO.displayquantity = 1;
             }
+
+            // Add the displayquantity to totalDisplayQuantity
+            totalDisplayQuantity += productVO.displayquantity
 
             // Check if the product barcode already exists in the map
             if (barcodeMap.containsKey(productVO.barcode)) {
@@ -186,6 +155,8 @@ class CheckoutHelper {
                 productVO.displayquantity = barcodeMap.get(productVO.barcode).displayquantity;
             }
         }
+
+        transactionVO.displayquantitytotal = totalDisplayQuantity
 
         return transactionVO;
     }

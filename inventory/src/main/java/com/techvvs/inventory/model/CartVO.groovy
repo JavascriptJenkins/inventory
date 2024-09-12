@@ -50,6 +50,9 @@ class CartVO implements Serializable{
     @Transient
     String barcode
 
+    @Transient
+    Integer displayquantitytotal // for displaying total units
+
     @JsonProperty
     Double total;
 
