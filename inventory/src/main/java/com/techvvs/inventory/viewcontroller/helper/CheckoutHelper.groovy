@@ -134,26 +134,18 @@ class CheckoutHelper {
                 productVO.displayquantity = 1;
             }
 
-            // Add the displayquantity to totalDisplayQuantity
-            totalDisplayQuantity += productVO.displayquantity
-
             // Check if the product barcode already exists in the map
-            if (barcodeMap.containsKey(productVO.barcode)) {
+            if (!barcodeMap.containsKey(productVO.barcode)) {
                 // If the barcode is already in the map, increment the displayquantity of the stored product
-                ProductVO existingProduct = barcodeMap.get(productVO.barcode);
-                existingProduct.displayquantity += productVO.displayquantity;
-            } else {
-                // If it's a new barcode, add it to the map
                 barcodeMap.put(productVO.barcode, productVO);
+            } else {
+                productVO.displayquantity += 1
             }
         }
 
         // After processing, update the original product list quantities
-        for (ProductVO productVO : transactionVO.product_list) {
-            if (barcodeMap.containsKey(productVO.barcode)) {
-                // Update the product's displayquantity with the accumulated value from the map
-                productVO.displayquantity = barcodeMap.get(productVO.barcode).displayquantity;
-            }
+        for (Map.Entry<String, ProductVO> productVO : barcodeMap) {
+            totalDisplayQuantity += productVO.getValue().displayquantity
         }
 
         transactionVO.displayquantitytotal = totalDisplayQuantity
