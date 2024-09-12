@@ -159,7 +159,7 @@ class CheckoutHelper {
         }
 
         // Map to track product quantities by barcode
-        Map<Integer, ProductVO> barcodeMap = new HashMap<>();
+        Map<String, ProductVO> barcodeMap = new HashMap<>();
 
         // Loop through the products
         for (ProductVO productVO : transactionVO.product_list) {
@@ -175,7 +175,7 @@ class CheckoutHelper {
                 existingProduct.displayquantity += productVO.displayquantity;
             } else {
                 // If it's a new barcode, add it to the map
-                barcodeMap.put(Integer.valueOf(productVO.barcode), productVO);
+                barcodeMap.put(productVO.barcode, productVO);
             }
         }
 
