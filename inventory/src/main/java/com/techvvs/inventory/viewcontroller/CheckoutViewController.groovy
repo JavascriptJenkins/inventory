@@ -441,6 +441,42 @@ public class CheckoutViewController {
 
     }
 
+
+    @PostMapping("/viewpdf")
+    String viewpdf(@ModelAttribute( "transaction" ) TransactionVO transactionVO,
+                            Model model,
+                            @RequestParam("page") Optional<Integer> page,
+                            @RequestParam("size") Optional<Integer> size){
+
+        // start bind transients
+//        String transientemail = transactionVO.email
+//        String transientphonunumber = transactionVO.phonenumber
+        String transientaction =  transactionVO.action
+        String filename =  transactionVO.filename
+        // end bind transients
+        String contentsofinvoice = ""
+
+        transactionVO.action = transientaction.replace(",", "")
+        transactionVO.filename = filename.replace(",", "")
+
+        if("view".equals(transactionVO.action)){
+            fileViewHelper.getBase64FileForViewingFromUploads(appConstants.COA_DIR, filename)
+        }
+
+
+        techvvsAuthService.checkuserauth(model)
+        model.addAttribute("transaction", transactionVO);
+        model.addAttribute("invoicecontent", contentsofinvoice)
+
+         if(contentsofinvoice.length() > 0) {
+            model.addAttribute("successMessage", "Successfully retrieved pdf for display. ")
+            return "public/qrinfo.html";// return same page with errors
+        } else {
+            return "public/qrinfo.html";// return same page with errors
+        }
+
+    }
+
     // NOTE: this is not being used right now, but this will indeed print the most recent invoice when clicked from the transaction review page in the table of invoices
     @PostMapping("/printmostrecentinvoice")
     String printmostrecentinvoice(@ModelAttribute( "transaction" ) TransactionVO transactionVO,

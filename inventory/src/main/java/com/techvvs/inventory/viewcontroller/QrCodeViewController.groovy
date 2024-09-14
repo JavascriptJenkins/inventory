@@ -1,5 +1,6 @@
 package com.techvvs.inventory.viewcontroller
 import com.techvvs.inventory.model.ProductVO
+import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.service.auth.TechvvsAuthService
 import com.techvvs.inventory.viewcontroller.helper.ProductHelper
 import org.springframework.beans.factory.annotation.Autowired
@@ -39,8 +40,11 @@ public class QrCodeViewController {
 
     @GetMapping
     String viewQrInfo(
-            Model model
+            Model model,
+            TransactionVO transactionVO
     ){
+
+        model.addAttribute("transaction", new TransactionVO())
         return "public/qrinfo.html";
     }
 

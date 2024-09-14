@@ -42,6 +42,24 @@
             font-size: 1.2rem;
         }
     </style>
+
+    <script>
+        function viewInvoice(event) {
+            event.preventDefault();
+
+            // Find the nearest span within the same row as the clicked button
+            var spanText = $(event.target).closest('tr').find('span').text();
+            console.log(spanText);
+
+            spanText = removeCommas(spanText);
+
+            // Set the value of the hidden input field 'filenameaction' to the span text
+            document.getElementById('filename').value = spanText;
+
+            document.getElementById('action').value = "view";
+            document.getElementById('textoremailInvoiceForm').submit();
+        }
+    </script>
 </head>
 <body>
 
@@ -63,5 +81,23 @@
     </ul>
 </div>
 
+<div class="text-bubble">
+    <form id="textoremailInvoiceForm" th:action="@{/checkout/viewpdf}" th:object="${transaction}" method="post">
+        <span style="display: none;" th:text="batch_1_2024_coa.pdf"></span>
+        <button onclick="viewInvoice(event)" type="submit" class="btn btn-primary">View Test Results</button>
+        <input type="hidden" id="action" name="action" value="">
+    </form>
+</div>
+
+
 </body>
+<!-- Popup content if ${invoicecontent} exists -->
+<div th:if="${invoicecontent}" id="popupOverlay" class="popup-overlay">
+    <div class="popup-content">
+        <div class="popup-close" onclick="closePopup()">&times;</div>
+        <!--        <embed th:utext="'data:application/pdf;base64,'+${invoicecontent}" type="application/pdf" width="100%" height="100%" />-->
+        <embed th:src="'data:application/pdf;base64,'+${invoicecontent}" type="application/pdf" width="100%" height="100%" />
+        <!--        <div th:text="${invoicecontent}"></div>-->
+    </div>
+</div>
 </html>

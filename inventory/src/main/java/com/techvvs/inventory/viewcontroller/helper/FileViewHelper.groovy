@@ -32,4 +32,12 @@ class FileViewHelper {
         return base64contents;
     }
 
+    String getBase64FileForViewingFromUploads(String subdir, String filename){
+        filename = filename.replaceAll(",", "")
+        String dirandfilename = appConstants.UPLOAD_DIR+subdir+filename
+        String base64contents = techvvsFileHelper.readPdfAsBase64String(dirandfilename)
+        return base64contents;
+    }
+
+
 }
