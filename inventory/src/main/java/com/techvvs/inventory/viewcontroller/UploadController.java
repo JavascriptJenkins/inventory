@@ -6,11 +6,13 @@ import com.techvvs.inventory.model.BatchTypeVO;
 import com.techvvs.inventory.model.BatchVO;
 import com.techvvs.inventory.model.TransactionVO;
 import com.techvvs.inventory.modelnonpersist.FileVO;
+import com.techvvs.inventory.security.JwtTokenProvider;
 import com.techvvs.inventory.service.ExcelService;
 import com.techvvs.inventory.service.auth.TechvvsAuthService;
 import com.techvvs.inventory.service.controllers.TransactionService;
 import com.techvvs.inventory.util.TechvvsFileHelper;
 import com.techvvs.inventory.viewcontroller.helper.BatchControllerHelper;
+import com.techvvs.inventory.viewcontroller.helper.FileViewHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -59,6 +61,15 @@ public class UploadController {
 
     @Autowired
     TechvvsAuthService techvvsAuthService;
+
+    @Autowired
+    JwtTokenProvider jwtTokenProvider;
+
+    @Autowired
+    FileViewHelper fileViewHelper;
+
+    @Autowired
+    AppConstants appConstants;
             
     @PostMapping("/upload")
     public String uploadFile(@ModelAttribute( "batch" ) BatchVO batchVO,
@@ -247,6 +258,8 @@ public class UploadController {
         try {
             if(filename.contains(".pdf")){
                 response.setContentType("application/pdf");
+            } else if(filename.contains(".xlsx")){
+                response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
             }
 
             response.setHeader("Content-Disposition","attachment; filename="+filename);
@@ -306,6 +319,8 @@ public class UploadController {
         try {
             if(filename.contains(".pdf")){
                 response.setContentType("application/pdf");
+            } else if(filename.contains(".xlsx")){
+                response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
             }
 
             response.setHeader("Content-Disposition","attachment; filename="+filename);
@@ -363,8 +378,9 @@ public class UploadController {
         try {
             if(filename.contains(".pdf")){
                 response.setContentType("application/pdf");
+            } else if(filename.contains(".xlsx")){
+                response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
             }
-
             response.setHeader("Content-Disposition","attachment; filename="+filename);
 
             // todo: enforce that the incoming directory matches the allowed directories....
@@ -414,8 +430,9 @@ public class UploadController {
             // todo: set .xlsx filetype here
             if(filename.contains(".pdf")){
                 response.setContentType("application/pdf");
+            } else if(filename.contains(".xlsx")){
+                response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
             }
-
             response.setHeader("Content-Disposition","attachment; filename="+filename);
 
             file = new File(filename);
@@ -439,5 +456,92 @@ public class UploadController {
 //        return "redirect: /newform/viewNewForm";
     }
 
+    // this one checks the token to secure the download
+    @RequestMapping(value="/smsdownload2", method=RequestMethod.GET)
+    public void smsdownload2(
+            @RequestParam("filename") String filename,
+            @RequestParam("customJwtParameter") String customJwtParameter,
+                            HttpServletResponse response
+    ) {
+
+        // check the token here, will throw 403 if the token is expired
+        jwtTokenProvider.validateTokenForSmsPhoneDownload(customJwtParameter);
+
+        File file;
+
+        try {
+
+            // todo: set .xlsx filetype here
+            if(filename.contains(".pdf")){
+                response.setContentType("application/pdf");
+            } else if(filename.contains(".xlsx")){
+                response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            }
+            response.setHeader("Content-Disposition","attachment; filename="+filename);
+
+            file = new File(filename);
+
+            byte[] fileContent = Files.readAllBytes(file.toPath());
+
+            // get your file as InputStream
+            InputStream is = new ByteArrayInputStream(fileContent);
+
+            // copy it to response's OutputStream
+            org.apache.commons.io.IOUtils.copy(is, response.getOutputStream());
+            response.flushBuffer();
+
+        } catch (IOException ex) {
+            System.out.println("Error writing file to output stream. Filename was: " +filename);
+            System.out.println("Error writing file to output stream. exception: " +ex.getMessage());
+            throw new RuntimeException("IOError writing file to output stream");
+        }
+
+
+//        return "redirect: /newform/viewNewForm";
+    }
+
+
+    // this should be used for public facing whitelisted downloads like coa's for example
+    @RequestMapping(value="/publicdownload", method=RequestMethod.GET)
+    public void publicdownload(@RequestParam("filename") String filename,
+                            HttpServletResponse response
+    ) {
+        File file;
+
+        String basefilename = filename;
+
+        try {
+
+            filename = fileViewHelper.buildFileNameForPublicDownload(appConstants.COA_DIR, filename);
+
+            // todo: set filetype based on file extension here
+            if(filename.contains(".pdf")){
+                response.setContentType("application/pdf");
+            } else if(filename.contains(".xlsx")){
+                response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            }
+
+            response.setHeader("Content-Disposition","attachment; filename="+basefilename);
+
+            file = new File(filename);
+
+            byte[] fileContent = Files.readAllBytes(file.toPath());
+
+            // get your file as InputStream
+            InputStream is = new ByteArrayInputStream(fileContent);
+
+            // copy it to response's OutputStream
+            org.apache.commons.io.IOUtils.copy(is, response.getOutputStream());
+            response.flushBuffer();
+
+        } catch (IOException ex) {
+            System.out.println("Error writing file to output stream. Filename was: " +filename);
+            System.out.println("Error writing file to output stream. exception: " +ex.getMessage());
+            throw new RuntimeException("IOError writing file to output stream");
+        }
+
+
+//        return "redirect: /newform/viewNewForm";
+    }
 
 }

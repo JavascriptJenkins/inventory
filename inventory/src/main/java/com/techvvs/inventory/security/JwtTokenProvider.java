@@ -232,6 +232,15 @@ public class JwtTokenProvider {
     }
   }
 
+  public boolean validateTokenForSmsPhoneDownload(String token) {
+    try {
+      Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
+      return true;
+    } catch (JwtException | IllegalArgumentException e) {
+      throw new CustomException("Expired or invalid JWT token", HttpStatus.FORBIDDEN);
+    }
+  }
+
 
   void logout(HttpServletRequest request, HttpServletResponse response){
 
