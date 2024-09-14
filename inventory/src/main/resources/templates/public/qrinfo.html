@@ -132,6 +132,17 @@
             background-color: #23272b;
             color: white;
         }
+        .pdf-container {
+            margin-top: 20px;
+            text-align: center;
+            height: 100vh; /* Full viewport height */
+        }
+        .pdf-embed {
+            width: 100%;
+            height: 100%; /* Full height to display entire PDF */
+            border: 1px solid #343a40;
+            border-radius: 10px;
+        }
     </style>
 
     <script>
@@ -190,9 +201,15 @@
         <li>Batch #: 1</li>
         <li>Result: Pass</li>
     </ul>
+<!--    <form id="textoremailInvoiceForm" th:action="@{/checkout/viewpdf}" th:object="${transaction}" method="post">-->
+<!--        &lt;!&ndash;        <span style="display: none;" id="filename" th:text="batch_1_2024_coa.pdf"></span>&ndash;&gt;-->
+<!--        <button onclick="viewInvoice(event)" type="submit" class="btn btn-dark">View/Download Test Results</button>-->
+<!--        <input type="hidden" id="action" name="action" value="">-->
+<!--        <input type="hidden" id="filename" name="filename" value="batch_1_2024_coa.pdf">-->
+<!--    </form>-->
     <form id="textoremailInvoiceForm" th:action="@{/checkout/viewpdf}" th:object="${transaction}" method="post">
         <!--        <span style="display: none;" id="filename" th:text="batch_1_2024_coa.pdf"></span>-->
-        <button onclick="viewInvoice(event)" type="submit" class="btn btn-dark">View Test Results</button>
+        <button onclick="viewInvoice(event)" type="submit" class="btn btn-dark">View/Download Test Results</button>
         <input type="hidden" id="action" name="action" value="">
         <input type="hidden" id="filename" name="filename" value="batch_1_2024_coa.pdf">
     </form>
@@ -206,6 +223,14 @@
 <!--        <input type="hidden" id="filename" name="filename" value="batch_1_2024_coa.pdf">-->
 <!--    </form>-->
 <!--</div>-->
+<!--<div th:if="${invoicecontent}" class="text-bubble header-bubble">-->
+    <!-- Conditional div to display PDF if base64 string exists -->
+    <div class="pdf-container" th:if="${invoicecontent != null}">
+        <embed th:src="'data:application/pdf;base64,'+${invoicecontent}" type="application/pdf" width="100%" height="100%" />
+<!--        <embed th:src="'data:application/pdf;base64,' + ${pdfBase64}" class="pdf-embed" type="application/pdf" />-->
+    </div>
+<!--</div>-->
+
 
 <!-- Large dark-themed "BUY NOW" button -->
 <a href="https://northstardispensary.com" class="buy-now-button">
@@ -214,12 +239,12 @@
 
 </body>
 <!-- Popup content if ${invoicecontent} exists -->
-<div th:if="${invoicecontent}" id="popupOverlay" class="popup-overlay">
-    <div class="popup-content">
-        <div class="popup-close" onclick="closePopup()">&times;</div>
-        <!--        <embed th:utext="'data:application/pdf;base64,'+${invoicecontent}" type="application/pdf" width="100%" height="100%" />-->
-        <embed th:src="'data:application/pdf;base64,'+${invoicecontent}" type="application/pdf" width="100%" height="100%" />
-        <!--        <div th:text="${invoicecontent}"></div>-->
-    </div>
-</div>
+<!--<div th:if="${invoicecontent}" id="popupOverlay" class="popup-overlay">-->
+<!--    <div class="popup-content">-->
+<!--        <div class="popup-close" onclick="closePopup()">&times;</div>-->
+<!--        &lt;!&ndash;        <embed th:utext="'data:application/pdf;base64,'+${invoicecontent}" type="application/pdf" width="100%" height="100%" />&ndash;&gt;-->
+<!--        <embed th:src="'data:application/pdf;base64,'+${invoicecontent}" type="application/pdf" width="100%" height="100%" />-->
+<!--        &lt;!&ndash;        <div th:text="${invoicecontent}"></div>&ndash;&gt;-->
+<!--    </div>-->
+<!--</div>-->
 </html>
