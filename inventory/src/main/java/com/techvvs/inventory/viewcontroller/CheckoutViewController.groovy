@@ -18,6 +18,7 @@ import com.techvvs.inventory.util.TechvvsFileHelper
 import com.techvvs.inventory.validation.ValidateBatch
 import com.techvvs.inventory.viewcontroller.helper.BatchControllerHelper
 import com.techvvs.inventory.viewcontroller.helper.CheckoutHelper
+import com.techvvs.inventory.viewcontroller.helper.FileViewHelper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -63,6 +64,9 @@ public class CheckoutViewController {
 
     @Autowired
     CartService cartService
+
+    @Autowired
+    FileViewHelper fileViewHelper
 
     @Autowired
     TransactionService transactionService
@@ -396,9 +400,14 @@ public class CheckoutViewController {
         checkoutHelper.bindtransients(transactionVO, transientphonunumber, transientemail, transientaction)
 
         if("view".equals(transactionVO.action)){
-            filename = filename.replaceAll(",", "")
-            String dirandfilename = appConstants.PARENT_LEVEL_DIR+appConstants.TRANSACTION_INVOICE_DIR+String.valueOf(transactionVO.transactionid)+"/"+filename
-            contentsofinvoice = techvvsFileHelper.readPdfAsBase64String(dirandfilename)
+
+
+            fileViewHelper.getBase64FileForViewing(appConstants.TRANSACTION_INVOICE_DIR+String.valueOf(transactionVO.transactionid)+"/", filename)
+
+         // old way of doing it
+//            filename = filename.replaceAll(",", "")
+//            String dirandfilename = appConstants.PARENT_LEVEL_DIR+appConstants.TRANSACTION_INVOICE_DIR+String.valueOf(transactionVO.transactionid)+"/"+filename
+//            contentsofinvoice = techvvsFileHelper.readPdfAsBase64String(dirandfilename)
 
         } else {
             // todo: need to modify this to pass in the actual invoice from the table row clicked, instead of how it is now, which texts/emails the most recent invoice
