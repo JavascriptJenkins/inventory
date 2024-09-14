@@ -18,6 +18,7 @@ class AppConstants {
     String QR_ALL_DIR = "/qrcodes/all/"
     String BARCODES_ALL_DIR = "/barcodes/all/"
     String BATCH_PRICE_SHEETS_DIR = "/pricesheets/"
+    String COA_DIR = "/coa/"
     String BARCODES_MENU_DIR = "/barcodes/menu/"
     String BARCODES_TRANSFER_DIR = "/adhoc/transfers/"
     String filenameprefix = "upca_"

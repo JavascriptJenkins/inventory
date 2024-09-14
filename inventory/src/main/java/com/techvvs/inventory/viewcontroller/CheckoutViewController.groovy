@@ -460,7 +460,7 @@ public class CheckoutViewController {
         transactionVO.filename = filename.replace(",", "")
 
         if("view".equals(transactionVO.action)){
-            fileViewHelper.getBase64FileForViewingFromUploads(appConstants.COA_DIR, filename)
+            contentsofinvoice = fileViewHelper.getBase64FileForViewingFromUploads(appConstants.COA_DIR, filename)
         }
 
 
