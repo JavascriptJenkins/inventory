@@ -39,5 +39,10 @@ class FileViewHelper {
         return base64contents;
     }
 
+    String buildFileNameForPublicDownload(String subdir, String filename){
+        filename = filename.replaceAll(",", "")
+        String dirandfilename = appConstants.UPLOAD_DIR+subdir+filename
+        return dirandfilename;
+    }
 
 }
