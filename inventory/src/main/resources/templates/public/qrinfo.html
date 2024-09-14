@@ -33,6 +33,22 @@
             margin-bottom: 20px; /* Added margin to separate from the next section */
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
+        .header-bubble {
+            background-color: #343a40;
+            color: white;
+            padding: 20px;
+            font-size: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 50%; /* Set a fixed width */
+            margin-left: auto;
+            margin-right: auto; /* Center the element horizontally */
+        }
         .bullet-bubble {
             background-color: #343a40; /* Dark background */
             color: white; /* White text */
@@ -98,6 +114,24 @@
             height: 100%;
             border-radius: 5px;
         }
+        .buy-now-button {
+            display: block;
+            width: 100%;
+            background-color: #343a40;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 10px;
+            font-size: 1.5rem;
+            margin-top: 40px;
+            margin-bottom: 40px;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+        .buy-now-button:hover {
+            background-color: #23272b;
+            color: white;
+        }
     </style>
 
     <script>
@@ -136,11 +170,16 @@
 </head>
 <body>
 
-<div class="header">
+<div class="header header-bubble">
     <h1>Northstar</h1>
 </div>
 
-<div class="text-bubble">
+<!-- Large dark-themed "BUY NOW" button -->
+<a href="https://northstardispensary.com" class="buy-now-button">
+    CLICK HERE BUY NOW
+</a>
+
+<div class="text-bubble header-bubble">
     MN Compliance Info
 </div>
 
@@ -152,17 +191,27 @@
         <li>Test #: 58876664231211</li>
         <li>Result: Pass</li>
     </ul>
-</div>
-
-<div class="text-bubble" style="margin-top: 20px;">
     <form id="textoremailInvoiceForm" th:action="@{/checkout/viewpdf}" th:object="${transaction}" method="post">
-<!--        <span style="display: none;" id="filename" th:text="batch_1_2024_coa.pdf"></span>-->
+        <!--        <span style="display: none;" id="filename" th:text="batch_1_2024_coa.pdf"></span>-->
         <button onclick="viewInvoice(event)" type="submit" class="btn btn-dark">View Test Results</button>
         <input type="hidden" id="action" name="action" value="">
         <input type="hidden" id="filename" name="filename" value="batch_1_2024_coa.pdf">
     </form>
 </div>
 
+<!--<div class="text-bubble header-bubble" style="margin-top: 20px;">-->
+<!--    <form id="textoremailInvoiceForm" th:action="@{/checkout/viewpdf}" th:object="${transaction}" method="post">-->
+<!--&lt;!&ndash;        <span style="display: none;" id="filename" th:text="batch_1_2024_coa.pdf"></span>&ndash;&gt;-->
+<!--        <button onclick="viewInvoice(event)" type="submit" class="btn btn-dark">View Test Results</button>-->
+<!--        <input type="hidden" id="action" name="action" value="">-->
+<!--        <input type="hidden" id="filename" name="filename" value="batch_1_2024_coa.pdf">-->
+<!--    </form>-->
+<!--</div>-->
+
+<!-- Large dark-themed "BUY NOW" button -->
+<a href="https://northstardispensary.com" class="buy-now-button">
+    CLICK HERE BUY NOW
+</a>
 
 </body>
 <!-- Popup content if ${invoicecontent} exists -->
