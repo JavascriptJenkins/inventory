@@ -402,7 +402,7 @@ public class CheckoutViewController {
         if("view".equals(transactionVO.action)){
 
 
-            fileViewHelper.getBase64FileForViewing(appConstants.TRANSACTION_INVOICE_DIR+String.valueOf(transactionVO.transactionid)+"/", filename)
+            contentsofinvoice = fileViewHelper.getBase64FileForViewing(appConstants.TRANSACTION_INVOICE_DIR+String.valueOf(transactionVO.transactionid)+"/", filename)
 
          // old way of doing it
 //            filename = filename.replaceAll(",", "")
