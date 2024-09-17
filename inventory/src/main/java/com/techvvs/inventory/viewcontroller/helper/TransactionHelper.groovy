@@ -72,7 +72,7 @@ class TransactionHelper {
         Page<TransactionVO> pageOfTransaction
         // this means someone selected a value on the ui and we need to run a filtered query
         if(customerid.isPresent()){
-            pageOfTransaction = transactionRepo.findByCustomervo_customeridNot(customerid.get(),pageable);
+            pageOfTransaction = transactionRepo.findByCustomervo_customerid(customerid.get(),pageable);
         } else {
             pageOfTransaction = transactionRepo.findAll(pageable);
         }
