@@ -59,9 +59,9 @@ class ProductHelper {
 
         // Loop until a unique batch number is generated
         productNumber = generateIntProductNumber()
-//        while (productRepo.existsByProductnumber(productNumber)) {
-//            productNumber = generateIntProductNumber()
-//        }
+        while (productRepo.existsByProductnumber(productNumber)) {
+            productNumber = generateIntProductNumber()
+        }
 
 
 
