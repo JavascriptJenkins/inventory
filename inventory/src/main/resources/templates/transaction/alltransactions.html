@@ -118,6 +118,12 @@
                 var newUrl = '/transaction/listall?size=' + selectedSize + '&page=' + currentPage;
                 window.location.href = newUrl;
             });
+
+            $('#customerselectid').change(function() {
+                var selectedCustomerId = $(this).val();
+                var newUrl = '/transaction/listall?size=' + currentSize + '&page=' + currentPage + '&customerid=' + selectedCustomerId;
+                window.location.href = newUrl;
+            });
         });
     </script>
 </head>
@@ -145,6 +151,14 @@
             <option value="5">5 Records</option>
             <option value="10">10 Records</option>
             <option value="100">100 Records</option>
+        </select>
+    </div>
+
+    <div class="record-selector">
+        <label for="customerselectid">Filter:</label>
+        <select class="form-control" id="customerselectid">
+            <option value="" selected="selected">Filter by customer</option>
+            <option th:each="customer : ${customers}" th:value="${customer.customerid}" th:text="${customer.name}"></option>
         </select>
     </div>
 
