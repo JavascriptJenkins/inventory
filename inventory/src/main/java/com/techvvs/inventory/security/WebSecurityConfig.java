@@ -70,6 +70,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .antMatchers(QR_PUBLIC_INFO_DOUBLE_WILDCARD).permitAll()
             .antMatchers(FILE_SMS_DOWNLOAD).permitAll()
             .antMatchers(FILE_PUBLIC_DOWNLOAD).permitAll()
+            .antMatchers(FILE_SMS_DOWNLOAD_2).permitAll()
 //            .antMatchers("/login/systemuser").permitAll()//
             // Add other routes that should be publicly accessible
             // Disallow everything else..

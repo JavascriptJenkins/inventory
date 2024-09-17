@@ -117,6 +117,7 @@ public class JwtTokenFilter extends OncePerRequestFilter implements CsrfTokenRep
                 VERIFY.equals(path) ||
                 QR.equals(path) ||
                 FILE_SMS_DOWNLOAD.equals(path) ||
+                FILE_SMS_DOWNLOAD_2.equals(path) ||
                 FILE_PUBLIC_DOWNLOAD.equals(path))
          {
             filterChain.doFilter(httpServletRequest, httpServletResponse);
