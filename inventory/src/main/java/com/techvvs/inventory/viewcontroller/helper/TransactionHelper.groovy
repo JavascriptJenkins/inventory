@@ -51,7 +51,11 @@ class TransactionHelper {
     @Autowired
     EmailService emailService
 
-    void findAllTransactions(Model model, Optional<Integer> page, Optional<Integer> size){
+    void findAllTransactions(Model model,
+                             Optional<Integer> page,
+                             Optional<Integer> size,
+                             Optional<Integer> customerid
+                             ) {
 
         // START PAGINATION
         // https://www.baeldung.com/spring-data-jpa-pagination-sorting
@@ -65,7 +69,13 @@ class TransactionHelper {
             pageable = PageRequest.of(currentPage - 1, pageSize);
         }
 
-        Page<TransactionVO> pageOfTransaction = transactionRepo.findAll(pageable);
+        Page<TransactionVO> pageOfTransaction
+        // this means someone selected a value on the ui and we need to run a filtered query
+        if(customerid.isPresent()){
+            pageOfTransaction = transactionRepo.findByCustomervo_customeridNot(customerid.get(),pageable);
+        } else {
+            pageOfTransaction = transactionRepo.findAll(pageable);
+        }
 
         int totalPages = pageOfTransaction.getTotalPages();
 

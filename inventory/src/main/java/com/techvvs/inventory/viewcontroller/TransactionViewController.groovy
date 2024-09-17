@@ -157,15 +157,20 @@ public class TransactionViewController {
             Model model,
             
             @RequestParam("page") Optional<Integer> page,
-            @RequestParam("size") Optional<Integer> size
+            @RequestParam("size") Optional<Integer> size,
+            @RequestParam("customerid") Optional<Integer> customerid
     ){
 
         
 
         // bind the page of transactions
-        transactionHelper.findAllTransactions(model, page, size)
+        transactionHelper.findAllTransactions(model, page, size, customerid)
+
+        //transactionHelper.applyCustomerFilter(transactionVO, model)
+
         // fetch all customers from database and bind them to model
         techvvsAuthService.checkuserauth(model)
+        checkoutHelper.getAllCustomers(model)
         model.addAttribute("transaction", transactionVO);
         return "transaction/alltransactions.html";
     }
