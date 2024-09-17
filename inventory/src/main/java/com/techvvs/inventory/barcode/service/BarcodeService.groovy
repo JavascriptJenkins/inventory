@@ -59,6 +59,31 @@ class BarcodeService {
 //    }
 
 
+    // todo: finish coding this method so we can pass a productSet in and get custom labels printed
+    void createAllBarcodesForProductList(Set<ProductVO> productset) {
+
+        // NOTE: right now this is going to generate barcodes for every product in batch regardless of product type
+        try {
+
+            List<List<ProductVO>> result = productHelper.sortAndExpandProductSet(productset)
+
+            // create document before we loop over the collections of products so all pdf pages land in a single document
+            PDDocument document = new PDDocument()
+            for(int i = 0; i < result.size(); i++) {
+                barcodeGenerator.generateBarcodesForAllItems(
+                        33333333,
+                        i,
+                        result.get(i),
+                        "adhocbenny",
+                        document);
+            }
+
+            saveBarcodeLabelPdfFileForBatch(document, appConstants.BARCODES_ALL_DIR, "adhocbenny", 33333333)
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     void createAllBarcodesForBatch(BatchVO batchVO) {
 

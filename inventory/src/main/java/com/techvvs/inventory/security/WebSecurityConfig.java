@@ -15,6 +15,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.security.web.access.AccessDeniedHandler;
+import static com.techvvs.inventory.security.WhiteListUriConstants.*;
+
 
 @Configuration
 @EnableGlobalMethodSecurity(prePostEnabled = true)
@@ -25,6 +28,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     CsrfTokenRepository jwtCsrfTokenRepository;
+
+    @Autowired
+    AccessDeniedHandler accessDeniedHandler;
+
+    @Autowired
+    JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
   @Override
   protected void configure(HttpSecurity http) throws Exception {
@@ -41,31 +50,37 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     // Entry points
     // ANYTHING AUTH NEEDS TO BE DECLARED HERE
     // Entry points for routes that don't require authentication
+    // NOTE: To let things through without throwing and exception and routing to the login page, must also add URI to the JwtTokenFilter Exception Catcher
+    // Then the request will be either handled by a dispatcher -> ErrorController, or let through on a normal Auth Flow / Login Page
     http.authorizeRequests()
-            .antMatchers("/login").permitAll()
-            .antMatchers("/favicon.ico").permitAll()
-            .antMatchers("/css/table.css").permitAll()
-            .antMatchers("/login/systemuser").permitAll()//
-            .antMatchers("/login/verifyphonetoken").permitAll()//
-            .antMatchers("/login/createaccount").permitAll()//
-            .antMatchers("/login/createSystemUser").permitAll()//
-            .antMatchers("/login/verify").permitAll()//
-            .antMatchers("/login/verify/*").permitAll()//
-            .antMatchers("/login/verify/**").permitAll()//
-            .antMatchers("/qr").permitAll()//
-            .antMatchers("/checkout/viewpdf").permitAll()
-            .antMatchers("/qr/publicinfo").permitAll()//
-            .antMatchers("/qr/publicinfo/*").permitAll()//
-            .antMatchers("/qr/publicinfo/**").permitAll()//
-            .antMatchers("/file/smsdownload/**").permitAll()//
-            .antMatchers("/file/publicdownload/**").permitAll()//
+            .antMatchers(LOGIN).permitAll()
+            .antMatchers(FAVICON).permitAll()
+            .antMatchers(CSS_TABLE).permitAll()
+            .antMatchers(LOGIN_SYSTEMUSER).permitAll()
+            .antMatchers(VERIFY_PHONE_TOKEN).permitAll()
+            .antMatchers(CREATE_ACCOUNT).permitAll()
+            .antMatchers(CREATE_SYSTEM_USER).permitAll()
+            .antMatchers(VERIFY).permitAll()
+            .antMatchers(VERIFY_WILDCARD).permitAll()
+            .antMatchers(VERIFY_DOUBLE_WILDCARD).permitAll()
+            .antMatchers(QR).permitAll()
+            .antMatchers(CHECKOUT_VIEW_PDF).permitAll()
+            .antMatchers(QR_PUBLIC_INFO).permitAll()
+            .antMatchers(QR_PUBLIC_INFO_WILDCARD).permitAll()
+            .antMatchers(QR_PUBLIC_INFO_DOUBLE_WILDCARD).permitAll()
+            .antMatchers(FILE_SMS_DOWNLOAD).permitAll()
+            .antMatchers(FILE_PUBLIC_DOWNLOAD).permitAll()
 //            .antMatchers("/login/systemuser").permitAll()//
             // Add other routes that should be publicly accessible
             // Disallow everything else..
-            .anyRequest().authenticated();
+            .anyRequest().authenticated()
+            .and().exceptionHandling()
+            .authenticationEntryPoint(jwtAuthenticationEntryPoint)  // Handle 401 Unauthorized
+            .accessDeniedHandler(accessDeniedHandler);  // Use custom 403 handler
+
 
     // If a user tries to access a resource without having enough permissions
-    http.exceptionHandling().accessDeniedPage("/login");
+//    http.exceptionHandling().accessDeniedPage("/login");
   }
 
   @Override
