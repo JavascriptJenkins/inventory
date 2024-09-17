@@ -16,4 +16,7 @@ public interface TransactionRepo extends JpaRepository<TransactionVO, Integer> {
 
     List<TransactionVO> findAllByCustomervo(CustomerVO customerVO);
 
+    Page<TransactionVO> findByCustomervo_customeridNot(Integer customerid, Pageable pageable);
+
+
 }

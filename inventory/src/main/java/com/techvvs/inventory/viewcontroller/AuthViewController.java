@@ -501,7 +501,7 @@ public class AuthViewController {
 
 
                     // save a token value to a username and then send a text message
-                    String tokenval = String.valueOf(secureRandom.nextInt(1000000));
+                    String tokenval = String.valueOf(100000 + secureRandom.nextInt(900000));  // Generate a 6-digit random number
                     String result = "";
                     try {
                         TokenDAO tokenDAO = new TokenDAO();

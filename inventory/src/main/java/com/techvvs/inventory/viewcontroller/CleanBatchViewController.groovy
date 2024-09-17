@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Controller
@@ -119,9 +120,9 @@ public class CleanBatchViewController {
         int pageSize = 5;
         Pageable pageable;
         if(currentPage == 0){
-            pageable = PageRequest.of(0 , pageSize);
+            pageable = PageRequest.of(0 , pageSize, Sort.by(Sort.Direction.ASC, "batchid"));
         } else {
-            pageable = PageRequest.of(currentPage - 1, pageSize);
+            pageable = PageRequest.of(currentPage - 1, pageSize, Sort.by(Sort.Direction.ASC, "batchid"));
         }
 
         Page<BatchVO> pageOfBatch = batchRepo.findAll(pageable);
