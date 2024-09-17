@@ -1,7 +1,9 @@
 package com.techvvs.inventory.security;
 
 import com.techvvs.inventory.exception.CustomException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
@@ -18,6 +20,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import static com.techvvs.inventory.security.WhiteListUriConstants.*;
 
 // We should use OncePerRequestFilter since we are doing a database call, there is no point in doing this more than once
 public class JwtTokenFilter extends OncePerRequestFilter implements CsrfTokenRepository {
@@ -102,12 +105,31 @@ public class JwtTokenFilter extends OncePerRequestFilter implements CsrfTokenRep
 //          SecurityContextHolder.getContext().setAuthentication(auth);
       }
     } catch (CustomException ex) {
+
+        String path = httpServletRequest.getRequestURI();
+
+        // Skip JWT validation for login endpoints etc
+        if (LOGIN_SYSTEMUSER.equals(path) ||
+                VERIFY_PHONE_TOKEN.equals(path) ||
+                CREATE_ACCOUNT.equals(path) ||
+                LOGIN.equals(path) ||
+                CREATE_SYSTEM_USER.equals(path) ||
+                VERIFY.equals(path) ||
+                QR.equals(path) ||
+                FILE_SMS_DOWNLOAD.equals(path) ||
+                FILE_PUBLIC_DOWNLOAD.equals(path))
+         {
+            filterChain.doFilter(httpServletRequest, httpServletResponse);
+            return;
+        }
+
         logger.info("Exception on JWT controller: "+ex.getMessage());
       //this is very important, since it guarantees the user is not authenticated at all
 //      SecurityContextHolder.clearContext();
 //      httpServletResponse.sendError(ex.getHttpStatus().value(), ex.getMessage());
         //httpServletResponse.sendRedirect("/login"); // Redirect to the login page
       //return;
+        throw new BadCredentialsException(ex.getMessage(), ex);
     }
 
     filterChain.doFilter(httpServletRequest, httpServletResponse);
