@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
     <title>Package</title>
@@ -198,7 +198,13 @@
 
             $('#barcodeInput').focus();
 
-            $('#producttypeselectid').on('change', function() {
+            $('#packagetypeselectid').on('change', function() {
+                if ($('#barcodeInput').val().trim() === '') {
+                    $('#barcodeInput').focus();
+                }
+            });
+
+            $('#packagetypeselectid2').on('change', function() {
                 if ($('#barcodeInput').val().trim() === '') {
                     $('#barcodeInput').focus();
                 }
@@ -289,9 +295,14 @@
         <div class="back-button">
             <a th:href="@{/dashboard/index}"><i class="bi bi-arrow-left-circle"></i></a>
         </div>
-        <div>
+        <div class="col-md-6">
             <h1>Package</h1>
             <p>Scan Products to add to Package</p>
+        </div>
+        <div class="col-md-6">
+            <h3>Total Units:
+                <span th:text="${package.displayquantitytotal}"></span>
+            </h3>
         </div>
     </div>
     <br>
@@ -316,13 +327,13 @@
                 <div class="row col-md-6" style="margin-bottom: 5px;">
                     <div th:if="${package.packageid == 0}">
                         <label class="form-label required">Package Type</label>
-                        <select class="form-control" th:field="${package.packagetype}" readonly="">
+                        <select id="packagetypeselectid" class="form-control" th:field="${package.packagetype}" readonly="">
                             <option th:each="packagetype : ${packagetypes}" th:value="${packagetype.packagetypeid}" th:text="${packagetype.name}"></option>
                         </select>
                     </div>
                     <div th:if="${package.packageid != 0}">
                         <label class="form-label required">Package Type</label>
-                        <select class="form-control" th:field="${package.packagetype}">
+                        <select id="packagetypeselectid2" class="form-control" th:field="${package.packagetype}">
                             <option th:each="packagetype : ${packagetypes}" th:value="${packagetype.packagetypeid}"
                                     th:text="${packagetype.name}"
                                     th:selected="${packagetype.packagetypeid == package.packagetype.packagetypeid}"></option>

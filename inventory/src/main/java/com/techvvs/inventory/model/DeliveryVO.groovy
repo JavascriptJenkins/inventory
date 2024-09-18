@@ -25,9 +25,14 @@ class DeliveryVO implements Serializable{
     @JoinColumn(name="locationid")
     LocationVO destination
 
+    // NOTE: A delivery can either have a list of packages, or a list of pallets
     @JsonProperty
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     List<PackageVO> package_list
+
+    @JsonProperty
+    @ElementCollection(fetch = FetchType.LAZY)
+    List<PalletVO> pallet_list
 
     @JsonProperty
     int iscanceled;

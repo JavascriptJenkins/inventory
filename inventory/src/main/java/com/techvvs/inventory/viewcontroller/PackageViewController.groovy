@@ -123,6 +123,7 @@ public class PackageViewController {
 
 
         packageVO.barcode = "" // reset barcode to empty
+        packageVO.quantityselected = 0 // reset barcode to empty
 
         techvvsAuthService.checkuserauth(model)
         model.addAttribute("package", packageVO);

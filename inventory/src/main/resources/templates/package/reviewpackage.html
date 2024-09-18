@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
     <title>Review Package</title>
@@ -132,6 +132,11 @@
 <div class="container">
     <div class="header-dark">
         <h1>Review Package</h1>
+        <div>
+            <h3>Total Units:
+                <span th:text="${package.displayquantitytotal}"></span>
+            </h3>
+        </div>
     </div>
 
     <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>

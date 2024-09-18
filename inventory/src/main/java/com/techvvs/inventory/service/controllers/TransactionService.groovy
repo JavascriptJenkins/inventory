@@ -1,12 +1,15 @@
 package com.techvvs.inventory.service.controllers
 
+import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.jparepo.CartRepo
 import com.techvvs.inventory.jparepo.TransactionRepo
 import com.techvvs.inventory.model.CartVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.TransactionVO
+import com.techvvs.inventory.util.FormattingUtil
 import com.techvvs.inventory.util.TechvvsAppUtil
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
 
 import javax.transaction.Transactional
@@ -28,9 +31,20 @@ class TransactionService {
 
     @Autowired TechvvsAppUtil techvvsAppUtil
 
+    @Autowired
+    FormattingUtil formattingUtil
+
+    @Autowired
+    AppConstants appConstants
+
+    @Autowired
+    Environment environment
+
 
     @Transactional
     TransactionVO processCartGenerateNewTransaction(CartVO cartVO) {
+
+        int textpercentage = environment.getProperty("tax.percentage", Integer.class, 0)
 
         ArrayList<ProductVO> newlist = cartVO.product_cart_list
 
@@ -42,8 +56,8 @@ class TransactionService {
                 createTimeStamp: LocalDateTime.now(),
                 customervo: cartVO.customer,
                 total: cartVO.total,
-//                totalwithtax: formattingUtil.calculateTotalWithTax(cartVO.total, appConstants.DEFAULT_TAX_PERCENTAGE),
-                totalwithtax: cartVO.total,
+                totalwithtax: formattingUtil.calculateTotalWithTax(cartVO.total, textpercentage),
+//                totalwithtax: cartVO.total,
                 paid: 0.00,
                 taxpercentage: techvvsAppUtil.dev1 ? 0 : 0, // we are not going to set a tax percentage here in non dev environments
                 isprocessed: 0
