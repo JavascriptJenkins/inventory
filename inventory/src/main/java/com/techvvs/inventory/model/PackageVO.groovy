@@ -48,7 +48,7 @@ class PackageVO implements Serializable{
     @JsonProperty
     String description;
     @JsonProperty
-    String barcode;
+    String packagebarcode;
 
     @JsonProperty
     @OneToOne(cascade= CascadeType.REFRESH, fetch = FetchType.EAGER)
@@ -89,6 +89,9 @@ class PackageVO implements Serializable{
 
     @Transient
     Integer displayquantitytotal // for displaying total units
+
+    @Transient
+    String barcode;
 
     // generic fields below
     @JsonProperty

@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service
 import org.springframework.ui.Model
 
 import javax.transaction.Transactional
+import java.security.SecureRandom
 import java.time.LocalDateTime
 
 @Service
@@ -41,6 +42,8 @@ class PackageService {
 
     @Autowired
     TechvvsAppUtil techvvsAppUtil
+
+    SecureRandom secureRandom = new SecureRandom()
 
     @Transactional
     void createPackage(){
@@ -103,6 +106,8 @@ class PackageService {
             packageVO.setUpdateTimeStamp(LocalDateTime.now());
             packageVO.setCreateTimeStamp(LocalDateTime.now());
             packageVO.setIsprocessed(0);
+            packageVO.setWeight(0);
+            packageVO.packagebarcode = barcodeHelper.generateBarcodeData(generateOneDigitNumber(), generateOneDigitNumber(), generateSevenDigitNumber(), generateOneDigitNumber()); // generate barcode....
             packageVO.setPackagetype(packageTypeVO);
 
             packageVO.packageid = null
@@ -119,7 +124,13 @@ class PackageService {
     }
 
 
+    def generateSevenDigitNumber() {
+        return 1000000 + secureRandom.nextInt(9000000)  // Generates a number between 1,000,000 and 9,999,999
+    }
 
+    def generateOneDigitNumber() {
+        return secureRandom.nextInt(9) + 1  // Generates a number between 1 and 9
+    }
 
     // add product to cart and then update the cart and product associations
     @Transactional

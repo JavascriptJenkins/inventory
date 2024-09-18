@@ -303,7 +303,12 @@
             <h3>Total Units:
                 <span th:text="${package.displayquantitytotal}"></span>
             </h3>
+            <h6>Package UPCA:
+                <span th:text="${package.packagebarcode}"></span>
+            </h6>
         </div>
+
+
     </div>
     <br>
     <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>

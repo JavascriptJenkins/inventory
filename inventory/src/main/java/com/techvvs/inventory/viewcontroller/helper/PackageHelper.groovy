@@ -68,7 +68,7 @@ class PackageHelper {
         // https://www.baeldung.com/spring-data-jpa-pagination-sorting
         //pagination
         int currentPage = page.orElse(0);
-        int pageSize = 5;
+        int pageSize = size.orElse(5);
         Pageable pageable;
         if(currentPage == 0){
             pageable = PageRequest.of(0 , pageSize);
