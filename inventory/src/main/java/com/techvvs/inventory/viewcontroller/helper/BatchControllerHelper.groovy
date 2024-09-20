@@ -232,19 +232,17 @@ class BatchControllerHelper {
 
 
 
-            Set<String> seenBarcodes = new HashSet<>();
-
+            // we only want to run the quantity check once per instance transaction id
+            Set<Integer> seenTransactions = new HashSet<>();
 
             for(TransactionVO transactionVO : productVO.transaction_list){
-                for(ProductVO transactionProductVO : transactionVO.product_list){
-                    if(seenBarcodes.contains(transactionProductVO.barcode)){
-                        // skip
-                    } else {
+                if(!seenTransactions.contains(transactionVO.transactionid)) {
+                    for (ProductVO transactionProductVO : transactionVO.product_list) {
                         quantityInTransactions = (productVO.product_id == transactionProductVO.product_id && transactionVO.paid < transactionVO.totalwithtax) ? quantityInTransactions + 1 : quantityInTransactions
                         quantityInPaidTransactions = (productVO.product_id == transactionProductVO.product_id && transactionVO.paid >= transactionVO.totalwithtax) ? quantityInPaidTransactions + 1 : quantityInPaidTransactions
                     }
-                    seenBarcodes.add(transactionProductVO.barcode)
                 }
+                seenTransactions.add(transactionVO.transactionid)
             }
 
 
