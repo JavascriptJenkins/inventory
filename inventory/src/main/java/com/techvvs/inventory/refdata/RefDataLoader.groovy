@@ -51,10 +51,10 @@ class RefDataLoader {
     }
 
     void loadPackageTypes() {
-        // Creating the first PackageTypeVO instance for "pallet"
+        // Creating the first PackageTypeVO instance for "large box"
         PackageTypeVO palletTypeVO = new PackageTypeVO();
-        palletTypeVO.setName("PALLET");
-        palletTypeVO.setDescription("A large platform for transporting goods");
+        palletTypeVO.setName("LARGE.BOX");
+        palletTypeVO.setDescription("A large box used for shipping");
         palletTypeVO.setCreateTimeStamp(LocalDateTime.now());
         palletTypeVO.setUpdateTimeStamp(LocalDateTime.now());
         packageTypeRepo.save(palletTypeVO);

@@ -68,7 +68,7 @@ class PackageHelper {
         // https://www.baeldung.com/spring-data-jpa-pagination-sorting
         //pagination
         int currentPage = page.orElse(0);
-        int pageSize = 5;
+        int pageSize = size.orElse(5);
         Pageable pageable;
         if(currentPage == 0){
             pageable = PageRequest.of(0 , pageSize);
@@ -102,6 +102,8 @@ class PackageHelper {
     // i don't know if this is the right way to do this for packages but we'll see.....
     PackageVO hydrateTransientQuantitiesForDisplay(PackageVO packageVO){
         Map<Integer, ProductVO> productMap = new HashMap<>();
+        packageVO.displayquantitytotal = 0
+        packageVO.product_package_list.sort { a, b -> a.price <=> b.price }
 
         for(ProductVO productinpackage : packageVO.product_package_list){
 
@@ -114,6 +116,9 @@ class PackageHelper {
             productMap.put(productinpackage.getProduct_id(), productinpackage)
         }
         packageVO.product_package_list = new ArrayList<>(productMap.values());
+        for(ProductVO productinpackage : packageVO.product_package_list) {
+            packageVO.displayquantitytotal += productinpackage.displayquantity
+        }
         return packageVO
     }
 

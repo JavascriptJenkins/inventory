@@ -60,6 +60,24 @@
             display: flex;
             align-items: center;
         }
+        .record-selector {
+            margin-bottom: 15px;
+            background-color: #343a40;
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            display: inline-block;
+        }
+        .record-selector select {
+            background-color: #23272b;
+            color: #fff;
+            border: 1px solid #343a40;
+        }
+        .record-selector select:focus {
+            border-color: #1d2124;
+            box-shadow: none;
+        }
         .header-small {
             background-color: #343a40;
             color: #fff;
@@ -146,6 +164,40 @@
         });
     </script>
 
+    <script>
+        $(document).ready(function() {
+            function getParameterByName(name) {
+                name = name.replace(/[\[\]]/g, '\\$&');
+                var url = window.location.href;
+                var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)');
+                var results = regex.exec(url);
+                if (!results) return null;
+                if (!results[2]) return '';
+                return decodeURIComponent(results[2].replace(/\+/g, ' '));
+            }
+
+
+            var currentSize = getParameterByName('size') || '5'; // Default to 10 if not set
+            var currentPage = getParameterByName('page') || '0'; // Default to 1 if not set
+
+
+            // Set the dropdown to the current size
+            $('#recordSize').val(currentSize);
+
+            $('#recordSize').change(function() {
+                var selectedSize = $(this).val();
+                var newUrl = '/package/pendingpackages?size=' + selectedSize + '&page=' + currentPage;
+                window.location.href = newUrl;
+            });
+
+<!--            $('#customerselectid').change(function() {-->
+<!--                var selectedCustomerId = $(this).val();-->
+<!--                var newUrl = '/transaction/listall?size=' + currentSize + '&page=' + currentPage + '&customerid=' + selectedCustomerId;-->
+<!--                window.location.href = newUrl;-->
+<!--            });-->
+        });
+    </script>
+
 </head>
 <body>
 
@@ -163,6 +215,16 @@
         </div>
     </div>
     <br>
+
+    <!-- Dropdown for selecting record size -->
+    <div class="record-selector">
+        <label for="recordSize">Display Records:</label>
+        <select id="recordSize" class="form-select">
+            <option value="5">5 Records</option>
+            <option value="10">10 Records</option>
+            <option value="100">100 Records</option>
+        </select>
+    </div>
 
     <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
     <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>

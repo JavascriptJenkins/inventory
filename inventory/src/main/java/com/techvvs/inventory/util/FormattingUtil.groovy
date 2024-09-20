@@ -25,7 +25,7 @@ class FormattingUtil {
     static String formatInvoiceItem(String name, int quantity, Double price) {
         return String.format("%-30s %5d %10.2f\n", name, quantity, price);
     }
-    public static double calculateTotalWithTax(double total, int taxPercentage) {
+    public static double calculateTotalWithTax(double total, double taxPercentage) {
         // Validate input values
         if (total < 0 || taxPercentage < 0) {
             throw new IllegalArgumentException("Total and tax percentage must be non-negative.");
@@ -46,7 +46,7 @@ class FormattingUtil {
 //        return (int) Math.round(total * (taxPercentage / 100.0));
 //    }
 
-    public static double calculateTaxAmount(double total, int taxPercentage) {
+    public static double calculateTaxAmount(double total, double taxPercentage) {
         // Validate input values
         if (total < 0 || taxPercentage < 0) {
             throw new IllegalArgumentException("Total and tax percentage must be non-negative.");

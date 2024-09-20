@@ -232,17 +232,18 @@ class BatchControllerHelper {
 
 
 
-            String previousbarcode = ""
+            Set<String> seenBarcodes = new HashSet<>();
+
 
             for(TransactionVO transactionVO : productVO.transaction_list){
                 for(ProductVO transactionProductVO : transactionVO.product_list){
-                    if(previousbarcode.equals(transactionProductVO.barcode)){
+                    if(seenBarcodes.contains(transactionProductVO.barcode)){
                         // skip
                     } else {
                         quantityInTransactions = (productVO.product_id == transactionProductVO.product_id && transactionVO.paid < transactionVO.totalwithtax) ? quantityInTransactions + 1 : quantityInTransactions
                         quantityInPaidTransactions = (productVO.product_id == transactionProductVO.product_id && transactionVO.paid >= transactionVO.totalwithtax) ? quantityInPaidTransactions + 1 : quantityInPaidTransactions
                     }
-                    previousbarcode = transactionProductVO.barcode
+                    seenBarcodes.add(transactionProductVO.barcode)
                 }
             }
 

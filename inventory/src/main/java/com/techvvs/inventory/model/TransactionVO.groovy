@@ -27,7 +27,7 @@ class TransactionVO implements Serializable {
     List<ProductVO> product_list
 
     @JsonProperty
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     List<PaymentVO> payment_list
 
     @JsonProperty
@@ -36,7 +36,7 @@ class TransactionVO implements Serializable {
 
     @JsonProperty
     @ElementCollection(fetch = FetchType.EAGER)
-    Set<PackageVO> package_set
+    List<PackageVO> package_list
 
     @JsonProperty
     @OneToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
@@ -53,7 +53,7 @@ class TransactionVO implements Serializable {
     Double paid;
 
     @JsonProperty
-    Integer taxpercentage;
+    Double taxpercentage;
 
     @JsonProperty
     String notes

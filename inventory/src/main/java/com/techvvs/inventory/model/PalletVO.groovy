@@ -2,29 +2,14 @@ package com.techvvs.inventory.model
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
-import org.springframework.beans.factory.annotation.Autowired
 
-import javax.annotation.Nullable
-import javax.persistence.CascadeType
-import javax.persistence.ElementCollection
-import javax.persistence.Entity
-import javax.persistence.FetchType
-import javax.persistence.GeneratedValue
-import javax.persistence.GenerationType
-import javax.persistence.Id
-import javax.persistence.JoinColumn
-import javax.persistence.JoinTable
-import javax.persistence.ManyToMany
-import javax.persistence.ManyToOne
-import javax.persistence.OneToOne
-import javax.persistence.Table
-import javax.persistence.Transient
+import javax.persistence.*
 import java.time.LocalDateTime
 
 @JsonIgnoreProperties
 @Entity
-@Table(name="Package")
-class PackageVO implements Serializable{
+@Table(name="Pallet")
+class PalletVO implements Serializable{
 
     // Steps:
 // navigate to ui to create a package
@@ -42,31 +27,24 @@ class PackageVO implements Serializable{
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @JsonProperty
-    Integer packageid;
-    @JsonProperty
-    String name;
-    @JsonProperty
-    String description;
-    @JsonProperty
-    String packagebarcode;
+    Integer palletid;
 
     @JsonProperty
-    @OneToOne(cascade= CascadeType.REFRESH, fetch = FetchType.EAGER)
-    @JoinColumn(name="packagetypeid")
-    PackageTypeVO packagetype;
+    String name;
+
+    @JsonProperty
+    String description;
+
+    @JsonProperty
+    String barcode;
 
     @OneToOne
     @JoinColumn(name = "customerid")
     CustomerVO customer
 
-    @ManyToMany
-    @JoinTable(
-            name = "package_product",
-            joinColumns = @JoinColumn(name = "packageid"),
-            inverseJoinColumns = @JoinColumn(name = "productid")
-    )
-    List<ProductVO> product_package_list
-
+    @JsonProperty
+    @ElementCollection(fetch = FetchType.EAGER)
+    List<PackageVO> package_list
 
     @JsonProperty
     @ManyToOne(cascade=CascadeType.REFRESH, fetch = FetchType.EAGER)
@@ -86,12 +64,6 @@ class PackageVO implements Serializable{
 
     @JsonProperty
     Double weight
-
-    @Transient
-    Integer displayquantitytotal // for displaying total units
-
-    @Transient
-    String barcode;
 
     // generic fields below
     @JsonProperty
