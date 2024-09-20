@@ -41,26 +41,33 @@ public class JwtTokenFilter extends OncePerRequestFilter implements CsrfTokenRep
       logger.info("REQUEST HIT JwtTokenFilter: "+httpServletRequest.getRequestURI());
       logger.info("JwtTokenFilter: "+httpServletRequest.getMethod());
 
-    // todo: this needs to be moved into a cookie
       // cookie start
-      Cookie[] cookies = httpServletRequest.getCookies();
-      if (cookies != null) {
-          Arrays.stream(cookies)
-                  .filter(cookie -> "techvvs_token".equals(cookie.getName()))
-                  .findFirst()
-                  .ifPresent(cookie -> {
-                      token = cookie.getValue();
-                      if (jwtTokenProvider.validateToken(token, httpServletRequest, httpServletResponse)) {
-                          //String username = jwtTokenProvider.getTokenSubject(token);
-                          Authentication auth = jwtTokenProvider.getAuthentication(token);
-                          SecurityContextHolder.getContext().setAuthentication(auth);
-                      } else {
-                          logger.info("token expired, logging it out. ");
-                          logout(httpServletRequest,httpServletResponse);
-                      }
-                  });
+      try{
+          Cookie[] cookies = httpServletRequest.getCookies();
+          if (cookies != null) {
+              Arrays.stream(cookies)
+                      .filter(cookie -> "techvvs_token".equals(cookie.getName()))
+                      .findFirst()
+                      .ifPresent(cookie -> {
+                          token = cookie.getValue();
+                          if (jwtTokenProvider.validateToken(token, httpServletRequest, httpServletResponse)) {
+                              //String username = jwtTokenProvider.getTokenSubject(token);
+                              Authentication auth = jwtTokenProvider.getAuthentication(token);
+                              SecurityContextHolder.getContext().setAuthentication(auth);
+                          } else {
+                              logger.info("token expired, logging it out. ");
+                              logout(httpServletRequest,httpServletResponse);
+                          }
+                      });
+          }
+      } catch(Exception ex){
+          handleException(ex,
+                  filterChain,
+                  httpServletRequest,
+                  httpServletResponse);
       }
 // cookie end
+
 
 
     try {
@@ -106,36 +113,42 @@ public class JwtTokenFilter extends OncePerRequestFilter implements CsrfTokenRep
       }
     } catch (CustomException ex) {
 
-        String path = httpServletRequest.getRequestURI();
+        handleException(ex,
+                filterChain,
+                httpServletRequest,
+                httpServletResponse);
 
-        // Skip JWT validation for login endpoints etc
-        if (LOGIN_SYSTEMUSER.equals(path) ||
-                VERIFY_PHONE_TOKEN.equals(path) ||
-                CREATE_ACCOUNT.equals(path) ||
-                LOGIN.equals(path) ||
-                CREATE_SYSTEM_USER.equals(path) ||
-                VERIFY.equals(path) ||
-                QR.equals(path) ||
-                FILE_SMS_DOWNLOAD.equals(path) ||
-                FILE_SMS_DOWNLOAD_2.equals(path) ||
-                FILE_SMS_DOWNLOAD_22.equals(path) ||
-                FILE_PUBLIC_DOWNLOAD.equals(path) ||
-                FILE_PUBLIC_DOWNLOAD_2.equals(path))
-         {
-            filterChain.doFilter(httpServletRequest, httpServletResponse);
-            return;
-        }
-
-        logger.info("Exception on JWT controller: "+ex.getMessage());
-      //this is very important, since it guarantees the user is not authenticated at all
-//      SecurityContextHolder.clearContext();
-//      httpServletResponse.sendError(ex.getHttpStatus().value(), ex.getMessage());
-        //httpServletResponse.sendRedirect("/login"); // Redirect to the login page
-      //return;
-        throw new BadCredentialsException(ex.getMessage(), ex);
     }
 
     filterChain.doFilter(httpServletRequest, httpServletResponse);
+  }
+
+  void handleException(Exception ex,
+                       FilterChain filterChain,
+                       HttpServletRequest httpServletRequest,
+                       HttpServletResponse httpServletResponse) throws ServletException, IOException {
+      String path = httpServletRequest.getRequestURI();
+      // Skip JWT validation for login endpoints etc
+      if (LOGIN_SYSTEMUSER.equals(path) ||
+              VERIFY_PHONE_TOKEN.equals(path) ||
+              CREATE_ACCOUNT.equals(path) ||
+              LOGIN.equals(path) ||
+              CREATE_SYSTEM_USER.equals(path) ||
+              VERIFY.equals(path) ||
+              QR.equals(path) ||
+              FILE_SMS_DOWNLOAD.equals(path) ||
+              FILE_SMS_DOWNLOAD_2.equals(path) ||
+              FILE_SMS_DOWNLOAD_22.equals(path) ||
+              FILE_PUBLIC_DOWNLOAD.equals(path) ||
+              FILE_PUBLIC_DOWNLOAD_2.equals(path))
+      {
+          filterChain.doFilter(httpServletRequest, httpServletResponse);
+          return;
+      }
+
+      logger.info("Exception on JWT controller: "+ex.getMessage());
+      throw new BadCredentialsException(ex.getMessage(), ex);
+
   }
 
   @Override

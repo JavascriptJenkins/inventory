@@ -228,7 +228,8 @@ public class JwtTokenProvider {
       return true;
     } catch (JwtException | IllegalArgumentException e) {
       logout(request, response);
-      throw new CustomException("Expired or invalid JWT token", HttpStatus.FORBIDDEN);
+      //throw new CustomException("Expired or invalid JWT token", HttpStatus.FORBIDDEN);
+      return false;
     }
   }
 
