@@ -337,6 +337,8 @@
             hiddenInput.type = 'hidden';
             hiddenInput.name = 'barcode';
             hiddenInput.value = barcode;
+            console.log(hiddenInput);
+            console.log(form);
             form.appendChild(hiddenInput);
 
             form.submit();
@@ -356,6 +358,9 @@
 
 </head>
 <body>
+<form id="deleteItemFromCrateForm" th:action="@{/crate/deletepackage?crateid=__${crate.crateid}__}" th:object="${crate}" method="post">
+    <input type="hidden" name="_method" value="delete" />
+</form>
 <div th:insert="fragments/palletmodenavbar.html :: palletmodefragment"></div>
 <div class="container">
     <div class="header-dark">
@@ -456,12 +461,8 @@
             </div>
         </div>
     </div>
-
 </div>
 
-<form id="deleteItemFromCrateForm" th:action="@{/crate/deletepackage?crateid=__${crate.crateid}__}" th:object="${crate}" method="post">
-    <input type="hidden" name="_method" value="delete" />
-</form>
 </body>
 
 </html>

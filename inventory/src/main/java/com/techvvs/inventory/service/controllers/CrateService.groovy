@@ -59,35 +59,27 @@ class CrateService {
 
 
     @Transactional
-    PackageVO deleteProductFromPackage(PackageVO packageVO, String barcode){
+    CrateVO deletePackageFromCrate(CrateVO crateVO, String barcode){
 
-        PackageVO packagetoremove = new PackageVO(packageid: 0)
-        // we are only removing one product at a time
-        for(ProductVO productVO : packageVO.product_package_list){
-            if(productVO.barcode == barcode){
-                packageVO.product_package_list.remove(productVO)
-                packageVO.total = packageVO.total - productVO.price // subtract the price from the cart total
+        for(PackageVO packageVO : crateVO.package_list){
+            if(packageVO.packagebarcode == barcode){
+                crateVO.package_list.remove(packageVO)
+//                crateVO.total = crateVO.total - packageVO.price // subtract the price from the cart total
 
-                productVO.quantityremaining = productVO.quantityremaining + 1
-                // remove the cart association from the product
-                for(PackageVO existingPackage : productVO.package_list){
-                    if(existingPackage.packageid == packageVO.packageid){
-                        packagetoremove = existingPackage
-                    }
-                }
-                productVO.package_list.remove(packagetoremove)
+                // remove the crate association from the package
+                packageVO.crate = null
 
-                productVO.updateTimeStamp = LocalDateTime.now()
-                productRepo.save(productVO)
+                packageVO.updateTimeStamp = LocalDateTime.now()
+                packageRepo.save(packageVO)
                 break
             }
         }
 
-        packageVO.updateTimeStamp = LocalDateTime.now()
-        packageVO = packageRepo.save(packageVO)
+        crateVO.updateTimeStamp = LocalDateTime.now()
+        crateVO = crateRepo.save(crateVO)
 
 
-        return packageVO
+        return crateVO
 
     }
 

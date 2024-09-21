@@ -148,31 +148,29 @@ public class CrateViewController {
         return "crate/crate.html";
     }
 
-    @PostMapping("/delete")
-    String delete(
+    @PostMapping("/deletepackage")
+    String deletepackage(
                 Model model,
                 
-                @RequestParam("packageid") String packageid,
+                @RequestParam("crateid") String crateid,
                 @RequestParam("barcode") String barcode,
                 @RequestParam("page") Optional<Integer> page,
                 @RequestParam("size") Optional<Integer> size){
 
         
 
-        PackageVO packageVO = packageHelper.getExistingPackage(packageid)
+        CrateVO crateVO = crateHelper.getExistingCrate(crateid)
 
-        packageVO = packageService.deleteProductFromPackage(packageVO, barcode)
+        crateVO = crateService.deletePackageFromCrate(crateVO, barcode)
 
-        packageVO = packageHelper.hydrateTransientQuantitiesForDisplay(packageVO)
+        crateVO = crateHelper.hydrateTransientQuantitiesForDisplay(crateVO)
 
-        packageVO.barcode = "" // reset barcode to empty
+        crateVO.barcode = "" // reset barcode to empty
 
         techvvsAuthService.checkuserauth(model)
-        model.addAttribute("package", packageVO);
-        // fetch all customers from database and bind them to model
-        packageHelper.getAllPackageTypes(model)
+        model.addAttribute("crate", crateVO);
 
-        return "package/package.html";
+        return "crate/crate.html";
     }
 
 
