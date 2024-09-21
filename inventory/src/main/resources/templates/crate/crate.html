@@ -119,6 +119,24 @@
             background-color: #007bff;
             border-color: #007bff;
         }
+        .btn-submit-dark {
+            font-size: 1.2rem;
+            background-color: #444;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: 2px solid #343a40;
+            display: inline-block;
+            text-align: center;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+            margin-top: 10px;
+            width: 100%;
+        }
+        .btn-submit-dark:hover {
+            background-color: #333;
+            border-color: #23272b;
+        }
         .pagination .page-link {
             color: #fff;
             background-color: #343a40;
@@ -214,6 +232,29 @@
     </script>
 
     <script>
+        // Function to process barcode scanning
+        function processBarcode(scannedValue) {
+            if (scannedValue.length >= 11) {
+                if ($('#quantityModeCheckbox').is(':checked')) {
+                    // If Quantity Mode is checked, ask for quantity input
+                    let quantity = prompt("Please enter the quantity for the scanned product:");
+
+                    if (quantity !== null && quantity !== "") {
+                        // Set quantity in the hidden input
+                        $('#quantitySelected').val(quantity);
+                        $('#barcodeInput').val(scannedValue.substring(0, 11));
+                        $('#barcodeForm').submit();
+                    }
+                } else {
+                    // If not in Quantity Mode, just submit the form
+                    $('#barcodeInput').val(scannedValue.substring(0, 11));
+                    $('#barcodeForm').submit();
+                }
+            }
+        }
+    </script>
+
+    <script>
         $(document).ready(function () {
             // Check if the input with id="cratename" has no value
             var crateNameInput = $('#cratename').val().trim();
@@ -225,6 +266,8 @@
                 // If the user provides input, set the value of the #cratename input
                 if (crateName !== null && crateName.trim().length > 0) {
                     $('#cratename').val(crateName.trim());
+                    $('#crateNameWarning').hide();  // Hide the warning message if valid
+
                 }
             }
 
@@ -258,26 +301,7 @@
             });
 
 
-            // Function to process barcode scanning
-            function processBarcode(scannedValue) {
-                if (scannedValue.length >= 11) {
-                    if ($('#quantityModeCheckbox').is(':checked')) {
-                        // If Quantity Mode is checked, ask for quantity input
-                        let quantity = prompt("Please enter the quantity for the scanned product:");
 
-                        if (quantity !== null && quantity !== "") {
-                            // Set quantity in the hidden input
-                            $('#quantitySelected').val(quantity);
-                            $('#barcodeInput').val(scannedValue.substring(0, 11));
-                            $('#barcodeForm').submit();
-                        }
-                    } else {
-                        // If not in Quantity Mode, just submit the form
-                        $('#barcodeInput').val(scannedValue.substring(0, 11));
-                        $('#barcodeForm').submit();
-                    }
-                }
-            }
 
             function focusInputAfterDelay(selector, delay) {
                 setTimeout(function() {
@@ -317,6 +341,17 @@
 
             form.submit();
         }
+
+        function hydrateBarcodeInput() {
+            // Set the value of the barcode input field
+            document.getElementById('barcodeInput').value = document.getElementById('packageBarcodeId').textContent;
+
+            // Optional: Refocus on the barcode input field
+            document.getElementById('barcodeInput').focus();
+
+            // now call the method that will validate barcode and submit to backend
+            processBarcode(document.getElementById('barcodeInput').value);
+        }
     </script>
 
 </head>
@@ -332,12 +367,10 @@
             <p>Scan Packages to add to Crate</p>
         </div>
         <div class="col-md-6">
-            <h3>Total Units:
+            <h3>Total Packages:
                 <span th:text="${crate.displayquantitytotal}"></span>
             </h3>
-            <h6>Crate UPCA:
-                <span th:text="${crate.cratebarcode}"></span>
-            </h6>
+
         </div>
     </div>
 
@@ -353,7 +386,7 @@
             <form id="barcodeForm" th:action="@{/crate/scan?crateid=__${crate.crateid != null ? crate.crateid : '0'}__}" th:object="${crate}" method="post">
                         <div style="margin-bottom: 10px;">
 
-                            <input id="barcodeInput" type="text" th:field="*{cratebarcode}" class="form-control" placeholder="barcode" aria-label="barcode">
+                            <input id="barcodeInput" type="text" th:field="*{barcode}" class="form-control" placeholder="barcode" aria-label="barcode">
 
                         </div>
                         <div style="margin-bottom: 5px;">
@@ -370,6 +403,7 @@
                         </div>
                          <div id="crateNameWarning" class="warning-message">Please name the crate</div>
 
+                         <input type="hidden" th:field="*{package_list}">
 
                 <button style="margin-top: 5px; visibility: hidden;" type="submit" class="btn btn-primary">Submit</button>
             </form>
@@ -397,32 +431,35 @@
                     </tr>
                     </tbody>
                 </table>
-                <!--                <input type="hidden" th:field="*{package_list}">-->
         </div>
 
         <!-- Right side: Package in Scope Table -->
         <div class="col-md-4">
             <div style="overflow-x: auto;">
-                <h3 class="text-center table-title"><span th:text="${crate.packageinscope.name}"></span></h3>
+                <h3 class="text-center table-title"><span th:text="${crate.packageinscope.name}"></span> | UPCA:
+                    <span id="packageBarcodeId" th:text="${crate.packageinscope.packagebarcode}"></span></h3>
                 <table id="packageInScopeTable" class="table table-hover table-striped table-dark">
                     <thead>
                     <tr>
-                        <th>Package Name</th>
+                        <th>Product</th>
+                        <th>Quantity</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr th:each="item : ${crate.packageinscope.product_package_list}" th:data-barcode="${item.barcode}">
                         <td th:text="${item.name}" data-barcode="${item.barcode}">Item Name</td>
+                        <td th:text="${item.displayquantity}" >Item Name</td>
                     </tr>
                     </tbody>
                 </table>
+                <button type="button" class="btn-submit-dark" onclick="hydrateBarcodeInput()">Add To Crate</button>
             </div>
         </div>
     </div>
 
 </div>
 
-<form id="deleteItemFromCrateForm" th:action="@{/crate/delete?crateid=__${crate.crateid}__}" th:object="${crate}" method="post">
+<form id="deleteItemFromCrateForm" th:action="@{/crate/deletepackage?crateid=__${crate.crateid}__}" th:object="${crate}" method="post">
     <input type="hidden" name="_method" value="delete" />
 </form>
 </body>

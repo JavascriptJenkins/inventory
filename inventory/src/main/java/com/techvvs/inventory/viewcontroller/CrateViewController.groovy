@@ -8,6 +8,7 @@ import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.modelnonpersist.FileVO
 import com.techvvs.inventory.printers.PrinterService
 import com.techvvs.inventory.service.auth.TechvvsAuthService
+import com.techvvs.inventory.service.controllers.CrateService
 import com.techvvs.inventory.service.controllers.PackageService
 import com.techvvs.inventory.service.controllers.TransactionService
 import com.techvvs.inventory.service.paging.FilePagingService
@@ -44,6 +45,9 @@ public class CrateViewController {
 
     @Autowired
     CrateHelper crateHelper
+
+    @Autowired
+    CrateService crateService
 
     @Autowired
     PackageRepo packageRepo
@@ -88,65 +92,60 @@ public class CrateViewController {
     }
 
     //get the pending carts
-    @GetMapping("pendingpackages")
-    String viewPendingPackages(
-            @ModelAttribute( "package" ) PackageVO packageVO,
+    @GetMapping("pendingcrates")
+    String viewPendingCrates(
+            @ModelAttribute( "crate" ) CrateVO crateVO,
             Model model,
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size
     ){
 
         // bind the page of packages
-        packageHelper.findPendingPackages(model, page, size)
+        crateHelper.findPendingCrates(model, page, size)
 
-        // fetch all customers from database and bind them to model
-        packageHelper.getAllPackageTypes(model)
         techvvsAuthService.checkuserauth(model)
-        model.addAttribute("package", packageVO);
-        techvvsAuthService.checkuserauth(model)
-        return "package/pendingpackages.html";
+        model.addAttribute("crate", crateVO);
+        return "crate/pendingcrates.html";
     }
 
     // todo: write in a validation check to make sure you can't add more than is available in the batch
     // first user creates a cart by scanning items.
     // on next page "final package", the cart will be transformed into a transaction
     @PostMapping("/scan")
-    String scan(@ModelAttribute( "package" ) PackageVO packageVO,
+    String scan(@ModelAttribute( "crate" ) CrateVO crateVO,
                 Model model,
                 @RequestParam("page") Optional<Integer> page,
                 @RequestParam("size") Optional<Integer> size){
 
 
+        // check here to see if incoming crateid already exists - idk if we need to
 
-        packageVO = packageHelper.validatePackageReviewVO(packageVO, model)
+        crateVO = crateHelper.validateCrateReviewVO(crateVO, model)
 
         // only proceed if there is no error
         if(model.getAttribute("errorMessage") == null){
             // save a new transaction object in database if we don't have one
 
-            packageVO = packageService.savePackageIfNew(packageVO)
+            crateVO = crateService.saveCrateIfNew(crateVO)
 
             //  if the transactionVO comes back here without a
             // after transaction is created, search for the product based on barcode
 
-           // cartVO = cartService.searchForProductByBarcode(cartVO, model, page, size)
-            packageVO = packageService.searchForProductByBarcodeAndPackage(packageVO, model, page, size)
+            crateVO = crateService.searchForPackageByBarcodeAndCrate(crateVO, model, page, size)
 
 
         }
 
-        packageVO = packageHelper.hydrateTransientQuantitiesForDisplay(packageVO)
+        crateVO = crateHelper.hydrateTransientQuantitiesForDisplay(crateVO)
 
 
-        packageVO.barcode = "" // reset barcode to empty
-        packageVO.quantityselected = 0 // reset barcode to empty
+        crateVO.barcode = "" // reset barcode to empty
 
         techvvsAuthService.checkuserauth(model)
-        model.addAttribute("package", packageVO);
+        model.addAttribute("crate", crateVO);
         // fetch all customers from database and bind them to model
-        packageHelper.getAllPackageTypes(model)
 
-        return "package/package.html";
+        return "crate/crate.html";
     }
 
     @PostMapping("/delete")

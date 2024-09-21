@@ -77,8 +77,10 @@ class CrateHelper {
 
             if(packageincrate.displayquantitytotal == null){
                 packageincrate.displayquantitytotal = 1
+                crateVO.displayquantitytotal = 1
             } else {
-                packageincrate.displayquantitytotal = packageincrate.displayquantitytotal + 1
+                crateVO.displayquantitytotal = crateVO.displayquantitytotal + 1
+               // packageincrate.displayquantitytotal = packageincrate.displayquantitytotal + 1
             }
 
             packageMap.put(packageincrate.packageid, packageincrate)
@@ -87,6 +89,14 @@ class CrateHelper {
 //        for(PackageVO packageincrate : crateVO.package_list) {
 //            crateVO.displayquantitytotal += productincrate.displayquantity
 //        }
+        return crateVO
+    }
+
+    // todo: should do a check on here to see if crate name already exists?
+    CrateVO validateCrateReviewVO(CrateVO crateVO, Model model){
+        if(crateVO?.name == null || crateVO?.name == "" || crateVO.name.trim().length() < 3){
+            model.addAttribute("errorMessage","Please enter a crate name greater than 3 characters. ")
+        }
         return crateVO
     }
 

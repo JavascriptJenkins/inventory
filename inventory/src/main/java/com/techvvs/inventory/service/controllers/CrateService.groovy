@@ -3,21 +3,16 @@ package com.techvvs.inventory.service.controllers
 import com.techvvs.inventory.barcode.impl.BarcodeHelper
 import com.techvvs.inventory.barcode.service.BarcodeService
 import com.techvvs.inventory.jparepo.CrateRepo
-import com.techvvs.inventory.jparepo.CustomerRepo
 import com.techvvs.inventory.jparepo.PackageRepo
 import com.techvvs.inventory.jparepo.PackageTypeRepo
 import com.techvvs.inventory.jparepo.ProductRepo
-import com.techvvs.inventory.model.CartVO
 import com.techvvs.inventory.model.CrateVO
-import com.techvvs.inventory.model.CustomerVO
 import com.techvvs.inventory.model.PackageTypeVO
 import com.techvvs.inventory.model.PackageVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.util.TechvvsAppUtil
-import com.techvvs.inventory.viewcontroller.helper.PackageHelper
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 import org.springframework.ui.Model
 
@@ -26,16 +21,19 @@ import java.security.SecureRandom
 import java.time.LocalDateTime
 
 @Service
-class PackageService {
+class CrateService {
 
     @Autowired
     PackageRepo packageRepo
 
     @Autowired
-    ProductRepo productRepo
+    PackageService packageService
 
     @Autowired
     CrateRepo crateRepo
+
+    @Autowired
+    ProductRepo productRepo
 
     @Autowired
     BarcodeHelper barcodeHelper
@@ -96,43 +94,43 @@ class PackageService {
 
 
     @Transactional
-    PackageVO savePackageIfNew(PackageVO packageVO) {
+    CrateVO saveCrateIfNew(CrateVO crateVO) {
         // Ensure packageVO is not null before any operations
-        if (packageVO == null) {
-            throw new IllegalArgumentException("PackageVO cannot be null");
+        if (crateVO == null) {
+            throw new IllegalArgumentException("CrateVO cannot be null");
         }
 
-        String barcode = packageVO.getBarcode();
+        String barcode = crateVO.getBarcode();
 
         // Check if the package is new and if the product list is empty
-        if ((packageVO.getPackageid() == null || packageVO.getPackageid() == 0)
-                && (packageVO.getProduct_package_list() == null || packageVO.getProduct_package_list().isEmpty())) {
+        if ((crateVO.crateid == null || crateVO.crateid == 0)
+                && (crateVO.package_list == null || crateVO.package_list.isEmpty())) {
 
-            // Fetch the PackageTypeVO to ensure it exists
-            PackageTypeVO packageTypeVO = packageTypeRepo.findById(packageVO.getPackagetype().getPackagetypeid()).get()
+//            // Fetch the PackageTypeVO to ensure it exists
+//            PackageTypeVO packageTypeVO = packageTypeRepo.findById(packageVO.getPackagetype().getPackagetypeid()).get()
 
             // Set timestamps and initial processing state
-            packageVO.setUpdateTimeStamp(LocalDateTime.now());
-            packageVO.setCreateTimeStamp(LocalDateTime.now());
-            packageVO.setIsprocessed(0);
-            packageVO.setWeight(0) // todo: set weight from product table in database
-            packageVO.packagebarcode = barcodeHelper.generateBarcodeData(generateOneDigitNumber(), generateOneDigitNumber(), generateSevenDigitNumber(), generateOneDigitNumber()); // generate barcode....
-            packageVO.setPackagetype(packageTypeVO);
+            crateVO.setUpdateTimeStamp(LocalDateTime.now());
+            crateVO.setCreateTimeStamp(LocalDateTime.now());
+            crateVO.setIsprocessed(0);
+            crateVO.setWeight(0) // todo: set weight from product table in database
+            crateVO.cratebarcode = barcodeHelper.generateBarcodeData(generateOneDigitNumber(), generateOneDigitNumber(), generateSevenDigitNumber(), generateOneDigitNumber()); // generate barcode....
+//            packageVO.setPackagetype(packageTypeVO);
 
-            packageVO.packageid = null
+            crateVO.crateid = null
             // Save the package
-            packageVO = packageRepo.save(packageVO);
+            crateVO = crateRepo.save(crateVO);
 
             // Rebind the barcode after saving
-            packageVO.setBarcode(barcode);
+            crateVO.setBarcode(barcode);
         } else {
             // TODO: Handle case where a cart already exists
         }
 
         // this will generate and save a sheet of pdf barcodes for the package when it is created
-        barcodeService.createBarcodeSheetForSinglePackageUPCA(packageVO)
+        // barcodeService.createBarcodeSheetForSinglePackageUPCA(packageVO)
 
-        return packageVO;
+        return crateVO;
     }
 
 
@@ -146,30 +144,23 @@ class PackageService {
 
     // add product to cart and then update the cart and product associations
     @Transactional
-    PackageVO searchForProductByBarcodeAndPackage(PackageVO packageVO, Model model, Optional<Integer> page, Optional<Integer> size
+    CrateVO searchForPackageByBarcodeAndCrate(CrateVO crateVO, Model model, Optional<Integer> page, Optional<Integer> size
 
     ){
 
 
         // validate the barcode and add the last digit here
-        int checksum =barcodeHelper.calculateUPCAChecksum(packageVO.barcode)
+        int checksum =barcodeHelper.calculateUPCAChecksum(crateVO.barcode)
 
-        String barcode = packageVO.barcode + String.valueOf(checksum)
+        String barcode = crateVO.barcode + String.valueOf(checksum)
 
-        if(packageVO.quantityselected == 0){
-            productService.saveProductPackageAssociations(barcode, packageVO, model, 1)
-        } else {
-            int j = 0;
-            // run the product save once for every quantity selected
-            for (int i = 0; i < packageVO.quantityselected; i++) {
-                j++
-                productService.saveProductPackageAssociations(barcode, packageVO, model, j)
-            }
-        }
+        // NOTE: reference the packageservice for a method that handles quantity mode when scanning
+        packageService.savePackageCrateAssociations(barcode, crateVO, model, 1)
 
 
 
-        return packageVO
+
+        return crateVO
     }
 
     // todo: NOTE - these requirements are written in the context of a pallet being delivered.  Will give user ability to create a "PACKAGE DELIVERY" in different user flow
@@ -240,61 +231,6 @@ class PackageService {
 
     }
 
-    @Transactional
-    void savePackageCrateAssociations(String barcode, CrateVO crateVO, Model model, int counter) {
-        Optional<PackageVO> packageVO = packageRepo.findByPackagebarcode(barcode)
-
-
-        if(!packageVO.empty){
-
-            packageVO.get().crate = crateVO // add the crate association to the package
-
-            packageVO.get().updateTimeStamp = LocalDateTime.now()
-            // when product is added to the cart, decrease the quantity remaining.
-            packageVO.get().isprocessed = 1 // set this to processed which means it is now in a crate
-            PackageVO savedPackage = packageRepo.save(packageVO.get())
-
-            if(crateVO.total == null){
-                crateVO.total = 0.00
-            }
-
-            /* Fill this out later if needed */
-//            crateVO.total += Double.valueOf(packageVO.get().price) // add the product price to the total
-
-            // handle quantity here (have to iterate thru all product cert list and update the quantity)
-
-            // if it's the first time adding a product we need to create the set to hold them
-            if(crateVO.package_list == null){
-                crateVO.package_list = new ArrayList<PackageVO>()
-            }
-
-            crateVO = refreshPackageCrateList(crateVO)
-
-            // now save the cart side of the many to many
-            crateVO.package_list.add(savedPackage)
-            crateVO.updateTimeStamp = LocalDateTime.now()
-            crateVO = crateRepo.save(crateVO)
-            model.addAttribute("successMessage","Package: "+packageVO.get().name + " added successfully. Quantity: "+counter)
-        } else {
-            // need to bind the selected customer here otherwise the dropdown wont work
-//            crateVO.packagetype = packageTypeRepo.findById(crateVO.packagetype.packagetypeid).get()
-            model.addAttribute("errorMessage","Package not found")
-        }
-
-
-    }
-
-    @Transactional
-    CrateVO refreshPackageCrateList(CrateVO crateVO){
-
-        if(crateVO.crateid == 0){
-            return crateVO
-        }
-
-        crateVO.package_list = crateRepo.findById(crateVO.crateid).get().package_list
-        return crateVO
-
-    }
 
 
 

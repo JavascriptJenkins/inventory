@@ -4,6 +4,7 @@ import com.techvvs.inventory.barcode.impl.BarcodeGenerator
 import com.techvvs.inventory.barcode.impl.BarcodeHelper
 import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.model.BatchVO
+import com.techvvs.inventory.model.PackageVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.viewcontroller.helper.ProductHelper
 import org.apache.pdfbox.pdmodel.PDDocument
@@ -57,6 +58,30 @@ class BarcodeService {
 //        }
 //
 //    }
+
+    void createBarcodeSheetForSinglePackageUPCA(PackageVO packageVO) {
+
+        // NOTE: right now this is going to generate barcodes for every product in batch regardless of product type
+        try {
+
+            // run this 50 times to make a barcode sheet
+            PDDocument document = new PDDocument()
+
+            barcodeGenerator.generateBarcodeSheetForPackageUPCA(
+                    packageVO.packageid,
+                    0,
+                    packageVO,
+                    packageVO.name,
+                    document
+            )
+
+
+            saveBarcodeLabelPdfFileForPackage(document, appConstants.BARCODES_ALL_DIR, packageVO.name, packageVO.packageid)
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 
     // todo: finish coding this method so we can pass a productSet in and get custom labels printed
@@ -130,6 +155,17 @@ class BarcodeService {
         String filename = entityname+"-"+entitynumber
         // save the actual file after looping thru all products
         document.save(appConstants.PARENT_LEVEL_DIR+entitynumber+entitysubdirectory+appConstants.filenameprefix+filename+".pdf");
+        document.close();
+    }
+
+    // this one is saving under a batchnumber dir - assuming all calls to this method are saving batch barcodes
+    void saveBarcodeLabelPdfFileForPackage(PDDocument document, String entitysubdirectory, String entityname, int entitynumber) {
+        // create a directory with the batchnumber and /barcodes dir if it doesn't exist yet
+        Files.createDirectories(Paths.get(appConstants.PARENT_LEVEL_DIR+appConstants.PACKAGE_DIR+String.valueOf(entitynumber)+entitysubdirectory));
+
+        String filename = entityname+"-"+entitynumber
+        // save the actual file after looping thru all products
+        document.save(appConstants.PARENT_LEVEL_DIR+appConstants.PACKAGE_DIR+entitynumber+entitysubdirectory+appConstants.filenameprefix+filename+".pdf");
         document.close();
     }
 

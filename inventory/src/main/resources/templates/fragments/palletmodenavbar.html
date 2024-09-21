@@ -24,13 +24,13 @@
                         <a class="nav-link" th:href="@{/package?packageid=0}">Package</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" th:href="@{package/pendingpackages}">Pending Packages</a>
+                        <a class="nav-link" th:href="@{/package/pendingpackages}">Pending Packages</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" th:href="@{crate?crateid=0}">Crate</a>
+                        <a class="nav-link" th:href="@{/crate?crateid=0}">Crate</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" th:href="@{crate/pendingcrates}">Pending Crates</a>
+                        <a class="nav-link" th:href="@{/crate/pendingcrates}">Pending Crates</a>
                     </li>
                     <li th:if="${isAuthenticated}" class="nav-item">
                         <a class="nav-link active" aria-current="page" href="javascript:{}" onclick="postLogout()">Logout</a>

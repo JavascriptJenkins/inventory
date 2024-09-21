@@ -46,6 +46,9 @@ class CrateVO implements Serializable{
     @Transient
     PackageVO packageinscope
 
+    @Transient
+    String barcode
+
     // generic fields below
     @JsonProperty
     LocalDateTime updateTimeStamp;
