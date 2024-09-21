@@ -127,7 +127,7 @@
 </head>
 <body>
 
-<div th:insert="auth/navbar.html :: navbarfragment"> </div>
+<div th:insert="fragments/palletmodenavbar.html :: palletmodefragment"></div>
 
 <div class="container">
     <div class="header-dark">
@@ -136,6 +136,9 @@
             <h3>Total Units:
                 <span th:text="${package.displayquantitytotal}"></span>
             </h3>
+            <h4>UPCA:
+                <span th:text="${package.packagebarcode}"></span>
+            </h4>
         </div>
     </div>
 
@@ -157,6 +160,8 @@
                 <p th:text="${package.total}"></p>
             </div>
             <input type="hidden" th:field="*{packageid}">
+            <input type="hidden" th:field="*{weight}">
+            <input type="hidden" th:field="*{packagebarcode}">
             <input type="hidden" th:field="*{isprocessed}">
             <input type="hidden" th:field="*{updateTimeStamp}">
             <input type="hidden" th:field="*{createTimeStamp}">

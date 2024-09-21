@@ -1,17 +1,10 @@
 package com.techvvs.inventory.viewcontroller.helper
 
-import com.techvvs.inventory.jparepo.CartRepo
-import com.techvvs.inventory.jparepo.CrateRepo
+
+
 import com.techvvs.inventory.jparepo.CustomerRepo
-import com.techvvs.inventory.jparepo.PackageRepo
-import com.techvvs.inventory.jparepo.PackageTypeRepo
-import com.techvvs.inventory.model.CartVO
-import com.techvvs.inventory.model.CrateVO
-import com.techvvs.inventory.model.CustomerVO
-import com.techvvs.inventory.model.PackageTypeVO
-import com.techvvs.inventory.model.PackageVO
-import com.techvvs.inventory.model.ProductVO
-import com.techvvs.inventory.model.TransactionVO
+import com.techvvs.inventory.jparepo.CrateRepo
+import com.techvvs.inventory.model.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -21,20 +14,13 @@ import org.springframework.ui.Model
 
 // helper class to make sure actual checkout controller code stays clean n tidy
 @Component
-class PackageHelper {
+class CrateHelper {
 
     @Autowired
     CustomerRepo customerRepo
 
     @Autowired
-    PackageRepo packageRepo
-
-    @Autowired
     CrateRepo crateRepo
-
-    @Autowired
-    PackageTypeRepo packageTypeRepo
-
 
     // method to get all customers from db
     void getAllCustomers(Model model){
@@ -43,31 +29,9 @@ class PackageHelper {
         model.addAttribute("customers", customers)
     }
 
-    void getAllPackageTypes(Model model){
-
-        List<PackageTypeVO> packageTypeVOS = packageTypeRepo.findAll()
-        model.addAttribute("packagetypes", packageTypeVOS)
-    }
 
 
-    PackageVO validatePackageReviewVO(PackageVO packageVO, Model model){
-        if(packageVO?.packagetype?.packagetypeid == null){
-            model.addAttribute("errorMessage","Please select a package type")
-        }
-        if(packageVO?.name == null || packageVO?.name == "" || packageVO.name.trim().length() < 3){
-            model.addAttribute("errorMessage","Please enter a package name greater than 3 characters. ")
-        }
-        return packageVO
-    }
-
-    CartVO validateTransaction(CartVO cartVO, Model model){
-        if(cartVO?.customer?.customerid == null){
-            model.addAttribute("errorMessage","Please select a customer")
-        }
-        return cartVO
-    }
-
-    void findPendingPackages(Model model, Optional<Integer> page, Optional<Integer> size){
+    void findPendingCrates(Model model, Optional<Integer> page, Optional<Integer> size){
 
         // START PAGINATION
         // https://www.baeldung.com/spring-data-jpa-pagination-sorting
@@ -81,9 +45,9 @@ class PackageHelper {
             pageable = PageRequest.of(currentPage - 1, pageSize);
         }
 
-        Page<PackageVO> pageOfPackage = packageRepo.findAll(pageable);
+        Page<CrateVO> pageOfCrate = crateRepo.findAll(pageable);
 
-        int totalPages = pageOfPackage.getTotalPages();
+        int totalPages = pageOfCrate.getTotalPages();
 
         List<Integer> pageNumbers = new ArrayList<>();
 
@@ -95,36 +59,35 @@ class PackageHelper {
 
         model.addAttribute("pageNumbers", pageNumbers);
         model.addAttribute("page", currentPage);
-        model.addAttribute("size", pageOfPackage.getTotalPages());
-        model.addAttribute("pageOfPackage", pageOfPackage);
+        model.addAttribute("size", pageOfCrate.getTotalPages());
+        model.addAttribute("pageOfCrate", pageOfCrate);
         // END PAGINATION
 
 
 
     }
 
-    // this condenses down the list of products into a map of products with a displayquantity
-    // i don't know if this is the right way to do this for packages but we'll see.....
-    PackageVO hydrateTransientQuantitiesForDisplay(PackageVO packageVO){
-        Map<Integer, ProductVO> productMap = new HashMap<>();
-        packageVO.displayquantitytotal = 0
-        packageVO.product_package_list.sort { a, b -> a.price <=> b.price }
+    // This will calculate display value for the total number of packages in a crate
+    CrateVO hydrateTransientQuantitiesForDisplay(CrateVO crateVO){
+        Map<Integer, PackageVO> packageMap = new HashMap<>();
+        crateVO.displayquantitytotal = 0
+        crateVO.package_list.sort { a, b -> a.total <=> b.total }
 
-        for(ProductVO productinpackage : packageVO.product_package_list){
+        for(PackageVO packageincrate : crateVO.package_list){
 
-            if(productinpackage.displayquantity == null){
-                productinpackage.displayquantity = 1
+            if(packageincrate.displayquantitytotal == null){
+                packageincrate.displayquantitytotal = 1
             } else {
-                productinpackage.displayquantity = productinpackage.displayquantity + 1
+                packageincrate.displayquantitytotal = packageincrate.displayquantitytotal + 1
             }
 
-            productMap.put(productinpackage.getProduct_id(), productinpackage)
+            packageMap.put(packageincrate.packageid, packageincrate)
         }
-        packageVO.product_package_list = new ArrayList<>(productMap.values());
-        for(ProductVO productinpackage : packageVO.product_package_list) {
-            packageVO.displayquantitytotal += productinpackage.displayquantity
-        }
-        return packageVO
+        crateVO.package_list = new ArrayList<>(packageMap.values());
+//        for(PackageVO packageincrate : crateVO.package_list) {
+//            crateVO.displayquantitytotal += productincrate.displayquantity
+//        }
+        return crateVO
     }
 
 
@@ -174,25 +137,14 @@ class PackageHelper {
     }
 
 
-    PackageVO getExistingPackage(String packageid){
+    CrateVO getExistingCrate(String crateid){
 
-        Optional<PackageVO> packageVO = packageRepo.findById(Integer.valueOf(packageid))
+        Optional<CrateVO> crateVO = crateRepo.findById(Integer.valueOf(crateid))
 
-        if(!packageVO.empty){
-            return packageVO.get()
+        if(!crateVO.empty){
+            return crateVO.get()
         } else {
-            return new PackageVO(packageid: 0)
-        }
-    }
-
-    PackageVO getExistingCrateByPackageId(String packageid){
-
-        Optional<PackageVO> packageVO = crateRepo.findById(Integer.valueOf(packageid))
-
-        if(!packageVO.empty){
-            return packageVO.get()
-        } else {
-            return new PackageVO(packageid: 0)
+            return new CrateVO(crateid: 0)
         }
     }
 
@@ -224,24 +176,25 @@ class PackageHelper {
 
     }
 
-    Model loadPackage(String packageid, Model model){
+    Model loadCrate(String crateid, Model model){
 
-        // if packageid == 0 then load normally, otherwise load the existing transaction
-        if(packageid == "0"){
-            PackageVO packageVO = new PackageVO(packageid: 0)
+        // if crateid == 0 then load normally, otherwise load the existing transaction
+        if(crateid == "0"){
+            CrateVO crateVO = new CrateVO(crateid: 0)
             // do nothing
             // if it is the first time loading the page
-            if(packageVO.product_package_list == null){
-                packageVO.setTotal(0.00) // set total to 0 initially
-                packageVO.product_package_list = new ArrayList<>()
+            if(crateVO.package_list == null){
+                crateVO.setTotal(0.00) // set total to 0 initially
+                crateVO.setWeight(0.00) // set total to 0 initially
+                crateVO.package_list = new ArrayList<>()
             }
-            model.addAttribute("package", packageVO);
+            model.addAttribute("crate", crateVO);
 
         } else {
-            PackageVO packageVO = new PackageVO()
-            packageVO = getExistingPackage(packageid)
-            packageVO = hydrateTransientQuantitiesForDisplay(packageVO)
-            model.addAttribute("package", packageVO)
+            CrateVO crateVO = new CrateVO()
+            crateVO = getExistingCrate(crateid)
+            crateVO = hydrateTransientQuantitiesForDisplay(crateVO)
+            model.addAttribute("crate", crateVO)
         }
 
     }

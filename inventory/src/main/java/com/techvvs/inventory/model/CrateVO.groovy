@@ -8,15 +8,15 @@ import java.time.LocalDateTime
 
 @JsonIgnoreProperties
 @Entity
-@Table(name="pallet")
-class PalletVO implements Serializable{
+@Table(name="crate")
+class CrateVO implements Serializable{
 
-    // Pallets and Packages both can be tied to a seperate delivery/transaction/customer
-
+// NOTE: crate is meant to be a thin abstraction.  We are handling the Transaction/Delivery/Customer relationships
+    // on the Packages/Pallets
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @JsonProperty
-    Integer palletid;
+    Integer crateid;
 
     @JsonProperty
     String name;
@@ -25,25 +25,11 @@ class PalletVO implements Serializable{
     String description;
 
     @JsonProperty
-    String palletbarcode;
-
-    @OneToOne
-    @JoinColumn(name = "customerid")
-    CustomerVO customer
+    String cratebarcode;
 
     @JsonProperty
     @ElementCollection(fetch = FetchType.EAGER)
-    List<CrateVO> crate_list
-
-    @JsonProperty
-    @ManyToOne(cascade=CascadeType.REFRESH, fetch = FetchType.EAGER)
-    @JoinColumn(name="deliveryid")
-    DeliveryVO delivery
-
-    @JsonProperty
-    @ManyToOne(cascade=CascadeType.REFRESH, fetch = FetchType.LAZY)
-    @JoinColumn(name="transactionid")
-    TransactionVO transaction
+    List<PackageVO> package_list
 
     @JsonProperty
     Double total;
@@ -54,6 +40,12 @@ class PalletVO implements Serializable{
     @JsonProperty
     Double weight
 
+    @Transient
+    int displayquantitytotal
+
+    @Transient
+    PackageVO packageinscope
+
     // generic fields below
     @JsonProperty
     LocalDateTime updateTimeStamp;
@@ -61,8 +53,6 @@ class PalletVO implements Serializable{
     @JsonProperty
     LocalDateTime createTimeStamp;
 
-    @Transient
-    int quantityselected = 0
 
 
 }

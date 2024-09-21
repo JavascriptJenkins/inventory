@@ -106,7 +106,7 @@ class PackageService {
             packageVO.setUpdateTimeStamp(LocalDateTime.now());
             packageVO.setCreateTimeStamp(LocalDateTime.now());
             packageVO.setIsprocessed(0);
-            packageVO.setWeight(0);
+            packageVO.setWeight(0) // todo: set weight from product table in database
             packageVO.packagebarcode = barcodeHelper.generateBarcodeData(generateOneDigitNumber(), generateOneDigitNumber(), generateSevenDigitNumber(), generateOneDigitNumber()); // generate barcode....
             packageVO.setPackagetype(packageTypeVO);
 
