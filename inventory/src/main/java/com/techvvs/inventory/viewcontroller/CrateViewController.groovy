@@ -69,9 +69,10 @@ public class CrateViewController {
     String viewNewForm(
             Model model,
             @RequestParam("crateid") String crateid,
-            @RequestParam("packageid") Optional<String> packageid
+            @RequestParam("packageid") Optional<String> packageid,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size
     ){
-
         if(packageid.isPresent()){
             model = packageHelper.loadPackage(packageid.get(), model)
             // check to see if this package is already in a crate
@@ -82,11 +83,13 @@ public class CrateViewController {
             } else {
                 model = crateHelper.loadCrate(crateid, model)
                 CrateVO crateVO = (CrateVO) model.getAttribute("crate")
+
                 crateVO.packageinscope = packageVO // if it's first time navigating from package create page, add the package to the packageinscope
             }
         } else {
             model = crateHelper.loadCrate(crateid, model)
         }
+        crateHelper.bindPackages(model, page, size) // bind all the unprocessed packages to the table for selection
         techvvsAuthService.checkuserauth(model)
         return "crate/crate.html";
     }

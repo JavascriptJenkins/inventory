@@ -70,6 +70,7 @@ class CrateService {
                 packageVO.crate = null
 
                 packageVO.updateTimeStamp = LocalDateTime.now()
+                packageVO.isprocessed = 0 // reset it to not processed
                 packageRepo.save(packageVO)
                 break
             }

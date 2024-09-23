@@ -421,13 +421,15 @@
                 <table id="itemTable" class="table table-hover table-striped table-dark">
                     <thead>
                     <tr>
+                        <th>UPCA</th>
                         <th>Package Name</th>
                         <th></th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr th:each="item : ${crate.package_list}" th:data-barcode="${item.packagebarcode}">
-                        <td th:text="${item.name}" data-barcode="${item.packagebarcode}">Item Name</td>
+                        <td th:text="${item.packagebarcode}" data-barcode="${item.packagebarcode}"></td>
+                        <td th:text="${item.name}" data-barcode="${item.packagebarcode}"></td>
                         <td>
                             <a id="deleteItemID" href="#" onclick="deleteItemFromCrate(this)">
                                 <i class="fs-4 bi bi-x text-danger float-end"></i>
@@ -437,6 +439,7 @@
                     </tbody>
                 </table>
         </div>
+
 
         <!-- Right side: Package in Scope Table -->
         <div class="col-md-4">
@@ -459,6 +462,43 @@
                 </table>
                 <button type="button" class="btn-submit-dark" onclick="hydrateBarcodeInput()">Add To Crate</button>
             </div>
+        </div>
+    </div>
+    <!-- Table that shows the packages available to add -->
+    <div class="row mt-4"> <!-- Added margin top for spacing -->
+        <div class="col-md-8"> <!-- Spanning across the first two columns (4+4 = 8 units out of 12) -->
+            <h3 class="text-center table-title">Packages Not Processed</h3>
+            <table class="table table-hover table-striped table-dark">
+                <thead>
+                <tr>
+                    <th scope="col">UPCA</th>
+                    <th scope="col">Package Name</th>
+                </thead>
+                <tbody>
+                <tr th:each="package, iStat : ${packagePage.content}"
+                    th:style="${iStat.odd}? 'font-weight: bold;'"
+                    th:alt-title="${iStat.even}? 'even' : 'odd'">
+                    <td>
+                        <a th:href="@{/crate?crateid=__${crate.crateid}__&packageid=__${package.packageid}__}"
+                           th:text="${package.packagebarcode}"
+                           class="btn btn-secondary btn-sm">
+                        </a>
+                    </td>
+                    <td th:text="${package.name}"></td>
+                </tr>
+                </tbody>
+            </table>
+            <nav th:if="${packagePage.totalPages > 0}">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" th:each="pageNumber : ${pageNumbers}">
+                        <a class="page-link btn btn-secondary btn-sm mx-1"
+                           th:href="@{/crate?size=__${#lists.size(packagePage.content)}__&page=__${pageNumber}__&crateid=__${crate.crateid}__}"
+                           th:text="${pageNumber}"
+                           th:classappend="${pageNumber==packagePage.number + 1} ? 'active'">
+                        </a>
+                    </li>
+                </ul>
+            </nav>
         </div>
     </div>
 </div>

@@ -4,6 +4,7 @@ package com.techvvs.inventory.viewcontroller.helper
 
 import com.techvvs.inventory.jparepo.CustomerRepo
 import com.techvvs.inventory.jparepo.CrateRepo
+import com.techvvs.inventory.jparepo.PackageRepo
 import com.techvvs.inventory.model.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
@@ -21,6 +22,9 @@ class CrateHelper {
 
     @Autowired
     CrateRepo crateRepo
+
+    @Autowired
+    PackageRepo packageRepo
 
     // method to get all customers from db
     void getAllCustomers(Model model){
@@ -209,6 +213,44 @@ class CrateHelper {
 
     }
 
+
+    void bindPackages(Model model,
+                      Optional<Integer> page,
+                      Optional<Integer> size
+
+    ){
+
+
+        //pagination
+        int currentPage = page.orElse(0);
+        int pageSize = size.orElse(5);
+
+        Pageable pageable;
+        if(currentPage == 0){
+            pageable = PageRequest.of(0 , pageSize);
+        } else {
+            pageable = PageRequest.of(currentPage - 1, pageSize);
+        }
+
+
+        // this needs to only find these based on their batchid
+//        Page<PackageVO> pageOfPackage = packageRepo.findAllByCrate(crateVO,pageable);
+        Page<PackageVO> pageOfPackage = packageRepo.findAllByIsprocessed(0,pageable);
+
+        int totalPages = pageOfPackage.getTotalPages();
+
+        List<Integer> pageNumbers = new ArrayList<>();
+
+        while(totalPages > 0){
+            pageNumbers.add(totalPages);
+            totalPages = totalPages - 1;
+        }
+
+        model.addAttribute("pageNumbers", pageNumbers);
+        model.addAttribute("page", currentPage);
+        model.addAttribute("size", pageOfPackage.getTotalPages());
+        model.addAttribute("packagePage", pageOfPackage);
+    }
 
 
 
