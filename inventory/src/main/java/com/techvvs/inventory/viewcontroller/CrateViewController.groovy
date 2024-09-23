@@ -144,9 +144,9 @@ public class CrateViewController {
 
         crateVO.barcode = "" // reset barcode to empty
 
+        crateHelper.bindPackages(model, page, size) // bind all the unprocessed packages to the table for selection
         techvvsAuthService.checkuserauth(model)
         model.addAttribute("crate", crateVO);
-        // fetch all customers from database and bind them to model
 
         return "crate/crate.html";
     }
@@ -170,6 +170,7 @@ public class CrateViewController {
 
         crateVO.barcode = "" // reset barcode to empty
 
+        crateHelper.bindPackages(model, page, size) // bind all the unprocessed packages to the table for selection
         techvvsAuthService.checkuserauth(model)
         model.addAttribute("crate", crateVO);
 

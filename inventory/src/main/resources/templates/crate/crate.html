@@ -442,7 +442,7 @@
 
 
         <!-- Right side: Package in Scope Table -->
-        <div class="col-md-4">
+        <div th:if="${crate.packageinscope != null}" class="col-md-4">
             <div style="overflow-x: auto;">
                 <h3 class="text-center table-title"><span th:text="${crate.packageinscope.name}"></span> | UPCA:
                     <span id="packageBarcodeId" th:text="${crate.packageinscope.packagebarcode}"></span></h3>
