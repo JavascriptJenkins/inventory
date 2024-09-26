@@ -152,8 +152,16 @@ class TransactionHelper {
             }
         }
 
-        transactionVO.total = transactionVO.total - amountToSubtract
-        transactionVO.totalwithtax = transactionVO.totalwithtax - amountToSubtract
+        // check to see if the transaction is fully paid, if so then we don't subtract from the total or totalwithtax
+        if(
+                transactionVO.totalwithtax - transactionVO.paid == 0 ||
+                transactionVO.isprocessed == 1 // if we are returning something from an already paid transaction
+        ){
+
+        } else {
+            transactionVO.total = transactionVO.total - amountToSubtract
+            transactionVO.totalwithtax = transactionVO.totalwithtax - amountToSubtract
+        }
 
         transactionVO.updateTimeStamp = LocalDateTime.now()
         transactionVO = transactionRepo.save(transactionVO)
