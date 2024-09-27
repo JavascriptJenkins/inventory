@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Component
 import org.springframework.ui.Model
 
@@ -72,9 +73,9 @@ class PackageHelper {
         // pagination
         int currentPage = page.orElse(0);    // Default to first page
         int pageSize = size.orElse(5);       // Default page size to 5
-        Pageable pageable = PageRequest.of(currentPage, pageSize);
+        Pageable pageable = PageRequest.of(currentPage, pageSize, Sort.by(Sort.Direction.ASC, "createTimeStamp"));
 
-        Page<PackageVO> pageOfPackage = packageRepo.findAllByIsprocessed(0,pageable);  // Fetch paginated results
+        Page<PackageVO> pageOfPackage = packageRepo.findAllByIsprocessed(0,pageable,);  // Fetch paginated results
 
         int totalPages = pageOfPackage.getTotalPages();
 

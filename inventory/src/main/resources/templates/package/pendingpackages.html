@@ -236,6 +236,7 @@
             <th scope="col">Package ID</th>
             <th scope="col">Package Name</th>
             <th scope="col">Total Amount</th>
+            <th scope="col">Create Date</th>
         </tr>
         </thead>
         <tbody>
@@ -247,6 +248,7 @@
                 <td><a th:href="@{/package?packageid=__${package.packageid}__}" th:text="${package.packageid}"></a></td>
                 <td th:text="${package.name}"></td>
                 <td th:text="${package.total}"></td>
+                <td th:text="${package.createTimeStamp.toLocalDate()}"></td>
             </tr>
         </tbody>
     </table>

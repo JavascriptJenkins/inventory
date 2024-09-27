@@ -236,6 +236,7 @@
             <th scope="col">Crate ID</th>
             <th scope="col">Crate Name</th>
             <th scope="col">Total Amount</th>
+            <th scope="col">Create Date</th>
         </tr>
         </thead>
         <tbody>
@@ -247,6 +248,7 @@
                 <td><a th:href="@{/crate?crateid=__${crate.crateid}__}" th:text="${crate.crateid}"></a></td>
                 <td th:text="${crate.name}"></td>
                 <td th:text="${crate.total}"></td>
+                <td th:text="${crate.createTimeStamp.toLocalDate()}"></td>
             </tr>
         </tbody>
     </table>
