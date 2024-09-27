@@ -87,7 +87,6 @@ public class PackageViewController {
         packageHelper.getAllPackageTypes(model)
         techvvsAuthService.checkuserauth(model)
         model.addAttribute("package", packageVO);
-        techvvsAuthService.checkuserauth(model)
         return "package/pendingpackages.html";
     }
 

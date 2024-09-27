@@ -67,41 +67,32 @@ class PackageHelper {
         return cartVO
     }
 
-    void findPendingPackages(Model model, Optional<Integer> page, Optional<Integer> size){
-
+    void findPendingPackages(Model model, Optional<Integer> page, Optional<Integer> size) {
         // START PAGINATION
-        // https://www.baeldung.com/spring-data-jpa-pagination-sorting
-        //pagination
-        int currentPage = page.orElse(0);
-        int pageSize = size.orElse(5);
-        Pageable pageable;
-        if(currentPage == 0){
-            pageable = PageRequest.of(0 , pageSize);
-        } else {
-            pageable = PageRequest.of(currentPage - 1, pageSize);
-        }
+        // pagination
+        int currentPage = page.orElse(0);    // Default to first page
+        int pageSize = size.orElse(5);       // Default page size to 5
+        Pageable pageable = PageRequest.of(currentPage, pageSize);
 
-        Page<PackageVO> pageOfPackage = packageRepo.findAll(pageable);
+        Page<PackageVO> pageOfPackage = packageRepo.findAllByIsprocessed(0,pageable);  // Fetch paginated results
 
         int totalPages = pageOfPackage.getTotalPages();
 
+        // Create page numbers list from 0 to totalPages - 1
         List<Integer> pageNumbers = new ArrayList<>();
-
-        while(totalPages > 0){
-            pageNumbers.add(totalPages);
-            totalPages = totalPages - 1;
+        for (int i = 1; i <= totalPages; i++) {
+            pageNumbers.add(i);
         }
 
 
-        model.addAttribute("pageNumbers", pageNumbers);
-        model.addAttribute("page", currentPage);
-        model.addAttribute("size", pageOfPackage.getTotalPages());
-        model.addAttribute("pageOfPackage", pageOfPackage);
+        // Add attributes to the model
+        model.addAttribute("pageNumbers", pageNumbers);           // List of page numbers for pagination
+        model.addAttribute("page", currentPage);                  // Current page number
+        model.addAttribute("size", pageSize);                     // Page size (items per page)
+        model.addAttribute("pageOfPackage", pageOfPackage);       // Paginated data
         // END PAGINATION
-
-
-
     }
+
 
     // this condenses down the list of products into a map of products with a displayquantity
     // i don't know if this is the right way to do this for packages but we'll see.....
