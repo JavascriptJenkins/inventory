@@ -40,34 +40,24 @@ class CrateHelper {
         // START PAGINATION
         // https://www.baeldung.com/spring-data-jpa-pagination-sorting
         //pagination
-        int currentPage = page.orElse(0);
-        int pageSize = size.orElse(5);
-        Pageable pageable;
-        if(currentPage == 0){
-            pageable = PageRequest.of(0 , pageSize);
-        } else {
-            pageable = PageRequest.of(currentPage - 1, pageSize);
-        }
+        int currentPage = page.orElse(0);    // Default to first page
+        int pageSize = size.orElse(5);       // Default page size to 5
+        Pageable pageable = PageRequest.of(currentPage, pageSize);
 
-        Page<CrateVO> pageOfCrate = crateRepo.findAll(pageable);
+        Page<CrateVO> pageOfCrate = crateRepo.findAllByIsprocessed(0,pageable);
 
         int totalPages = pageOfCrate.getTotalPages();
 
         List<Integer> pageNumbers = new ArrayList<>();
-
-        while(totalPages > 0){
-            pageNumbers.add(totalPages);
-            totalPages = totalPages - 1;
+        for (int i = 1; i <= totalPages; i++) {
+            pageNumbers.add(i);
         }
-
 
         model.addAttribute("pageNumbers", pageNumbers);
         model.addAttribute("page", currentPage);
         model.addAttribute("size", pageOfCrate.getTotalPages());
         model.addAttribute("pageOfCrate", pageOfCrate);
         // END PAGINATION
-
-
 
     }
 

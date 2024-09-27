@@ -78,7 +78,6 @@ class PackageHelper {
 
         int totalPages = pageOfPackage.getTotalPages();
 
-        // Create page numbers list from 0 to totalPages - 1
         List<Integer> pageNumbers = new ArrayList<>();
         for (int i = 1; i <= totalPages; i++) {
             pageNumbers.add(i);

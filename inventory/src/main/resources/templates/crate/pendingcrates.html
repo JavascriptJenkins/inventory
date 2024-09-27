@@ -255,7 +255,7 @@
         <ul class="pagination">
             <li class="page-item" th:each="pageNumber : ${pageNumbers}">
                 <a class="page-link"
-                   th:href="@{/crate/pendingcrates?size=__${#lists.size(pageOfCrate.content)}__&page=__${pageNumber}__}"
+                   th:href="@{/crate/pendingcrates?size=__${#lists.size(pageOfCrate.content) > 5 ? #lists.size(pageOfCrate.content) : 5}__&page=__${pageNumber == 1 ? 0 : pageNumber}__}"
                    th:text="${pageNumber}"
                    th:classappend="${pageNumber==pageOfCrate.number + 1} ? 'active'">
                 </a>
