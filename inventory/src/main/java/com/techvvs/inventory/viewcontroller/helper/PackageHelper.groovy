@@ -73,12 +73,29 @@ class PackageHelper {
         // pagination
         int currentPage = page.orElse(0);    // Default to first page
         int pageSize = size.orElse(5);       // Default page size to 5
-        pageSize = pageSize < 5 ? 5 : pageSize; // make sure it's not less than 5
-        Pageable pageable = PageRequest.of(currentPage, pageSize, Sort.by(Sort.Direction.ASC, "createTimeStamp"));
 
+
+        if(
+                currentPage > pageSize
+        ){
+            currentPage = 0;
+        }
+
+        pageSize = pageSize < 5 ? 5 : pageSize; // make sure it's not less than 5
+
+        // run first page request
+        Pageable pageable = PageRequest.of(currentPage, pageSize, Sort.by(Sort.Direction.ASC, "createTimeStamp"));
         Page<PackageVO> pageOfPackage = packageRepo.findAllByIsprocessed(0,pageable,);  // Fetch paginated results
 
         int totalPages = pageOfPackage.getTotalPages();
+        int contentsize = pageOfPackage.getContent().size()
+
+        if(contentsize == 0){
+            // we detect contentsize of 0 then we'll just take the first page of data and show it
+            pageable = PageRequest.of(0, pageSize, Sort.by(Sort.Direction.ASC, "createTimeStamp"));
+            pageOfPackage = runPageRequest(pageable)
+        }
+
 
         List<Integer> pageNumbers = new ArrayList<>();
         for (int i = 1; i <= totalPages; i++) {
@@ -98,6 +115,9 @@ class PackageHelper {
         // END PAGINATION
     }
 
+    Page<PackageVO> runPageRequest(Pageable pageable) {
+        return packageRepo.findAll(pageable);
+    }
 
     // this condenses down the list of products into a map of products with a displayquantity
     // i don't know if this is the right way to do this for packages but we'll see.....

@@ -43,12 +43,28 @@ class CrateHelper {
         //pagination
         int currentPage = page.orElse(0);    // Default to first page
         int pageSize = size.orElse(5);       // Default page size to 5
-        pageSize = pageSize < 5 ? 5 : pageSize; // make sure it's not less than 5
-        Pageable pageable = PageRequest.of(currentPage, pageSize, Sort.by(Sort.Direction.ASC, "createTimeStamp"));
 
-        Page<CrateVO> pageOfCrate = crateRepo.findAllByIsprocessed(0,pageable);
+
+        if(
+                currentPage > pageSize
+        ){
+            currentPage = 0;
+        }
+
+        pageSize = pageSize < 5 ? 5 : pageSize; // make sure it's not less than 5
+
+        // run first page request
+        Pageable pageable = PageRequest.of(currentPage, pageSize, Sort.by(Sort.Direction.ASC, "createTimeStamp"));
+        Page<CrateVO> pageOfCrate = runPageRequest(pageable)
 
         int totalPages = pageOfCrate.getTotalPages();
+        int contentsize = pageOfCrate.getContent().size()
+
+        if(contentsize == 0){
+            // we detect contentsize of 0 then we'll just take the first page of data and show it
+            pageable = PageRequest.of(0, pageSize, Sort.by(Sort.Direction.ASC, "createTimeStamp"));
+            pageOfCrate = runPageRequest(pageable)
+        }
 
         List<Integer> pageNumbers = new ArrayList<>();
         for (int i = 1; i <= totalPages; i++) {
@@ -65,6 +81,10 @@ class CrateHelper {
         model.addAttribute("pageOfCrate", pageOfCrate);
         // END PAGINATION
 
+    }
+
+    Page<CrateVO> runPageRequest(Pageable pageable) {
+        return crateRepo.findAllByIsprocessed(0,pageable);
     }
 
     // This will calculate display value for the total number of packages in a crate

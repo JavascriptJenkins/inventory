@@ -63,28 +63,37 @@ class TransactionHelper {
         //pagination
         int currentPage = page.orElse(0);    // Default to first page
         int pageSize = size.orElse(5);       // Default page size to 5
-        pageSize = pageSize < 5 ? 5 : pageSize; // make sure it's not less than 5
-        Pageable pageable = PageRequest.of(currentPage, pageSize, Sort.by(Sort.Direction.ASC, "createTimeStamp"));
 
 
-        Page<TransactionVO> pageOfTransaction
-        // this means someone selected a value on the ui and we need to run a filtered query
-        if(customerid.isPresent()){
-            pageOfTransaction = transactionRepo.findByCustomervo_customerid(customerid.get(),pageable);
-        } else {
-            pageOfTransaction = transactionRepo.findAll(pageable);
+        if(
+                currentPage > pageSize ||
+                customerid.isPresent() && currentPage > pageSize
+        ){
+            currentPage = 0;
         }
 
+        pageSize = pageSize < 5 ? 5 : pageSize; // make sure it's not less than 5
+
+
+        // run first page request
+        Pageable pageable = PageRequest.of(currentPage, pageSize, Sort.by(Sort.Direction.ASC, "createTimeStamp"));
+        Page<TransactionVO> pageOfTransaction = runPageRequest(pageable, customerid)
+
         int totalPages = pageOfTransaction.getTotalPages();
+        int contentsize = pageOfTransaction.getContent().size()
+
+
+        if(contentsize == 0){
+            // we detect contentsize of 0 then we'll just take the first page of data and show it
+            pageable = PageRequest.of(0, pageSize, Sort.by(Sort.Direction.ASC, "createTimeStamp"));
+            pageOfTransaction = runPageRequest(pageable, customerid)
+        }
 
         List<Integer> pageNumbers = new ArrayList<>();
         for (int i = 1; i <= totalPages; i++) {
             pageNumbers.add(i);
         }
 
-        if(currentPage > totalPages){
-            currentPage = 0;
-        }
 
         model.addAttribute("pageNumbers", pageNumbers);
         model.addAttribute("page", currentPage);
@@ -94,6 +103,17 @@ class TransactionHelper {
 
 
 
+    }
+
+    Page<TransactionVO> runPageRequest(Pageable pageable, Optional<Integer> customerid) {
+        Page<TransactionVO> pageOfTransaction
+                // this means someone selected a value on the ui and we need to run a filtered query
+        if(customerid.isPresent()){
+            pageOfTransaction = transactionRepo.findByCustomervo_customerid(customerid.get(),pageable);
+        } else {
+             pageOfTransaction = transactionRepo.findAll(pageable);
+        }
+        return pageOfTransaction
     }
 
 
