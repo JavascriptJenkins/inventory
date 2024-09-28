@@ -258,8 +258,9 @@ class BatchControllerHelper {
         model.addAttribute("quantityRemainingInCarts", quantityRemainingInCarts)
         model.addAttribute("quantityInTransactions", quantityInTransactions)//
         model.addAttribute("quantityInPaidTransactions", quantityInPaidTransactions)//
-        model.addAttribute("batchValueTotal", batchValueTotal)
-        model.addAttribute("batchValueRemainingTotal", batchValueRemainingTotal)
+        // todo: move these bottom 2 to accounting page
+//        model.addAttribute("batchValueTotal", batchValueTotal)
+//        model.addAttribute("batchValueRemainingTotal", batchValueRemainingTotal)
     }
 
 
