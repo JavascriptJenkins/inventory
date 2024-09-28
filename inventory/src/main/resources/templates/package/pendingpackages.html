@@ -257,7 +257,7 @@
         <ul class="pagination">
             <li class="page-item" th:each="pageNumber : ${pageNumbers}">
                 <a class="page-link"
-                   th:href="@{/package/pendingpackages?size=__${size}__&page=__${pageNumber == 1 ? 0 : pageNumber}__}"
+                   th:href="@{/package/pendingpackages?size=__${size}__&page=__${pageNumber == 1 ? 0 : pageNumber - 1}__}"
                    th:text="${pageNumber}"
                    th:classappend="${pageNumber==pageOfPackage.number + 1} ? 'active'">
                 </a>
