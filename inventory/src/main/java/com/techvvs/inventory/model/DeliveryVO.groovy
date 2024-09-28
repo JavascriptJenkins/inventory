@@ -25,6 +25,11 @@ class DeliveryVO implements Serializable{
     @JoinColumn(name="locationid")
     LocationVO destination
 
+    @JsonProperty
+    @OneToOne(cascade=CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name="transactionid")
+    TransactionVO transaction;
+
     // NOTE: A delivery can either have a list of packages, or a list of pallets
     @JsonProperty
     @ElementCollection(fetch = FetchType.LAZY)
@@ -32,7 +37,7 @@ class DeliveryVO implements Serializable{
 
     @JsonProperty
     @ElementCollection(fetch = FetchType.LAZY)
-    List<PalletVO> pallet_list
+    List<CrateVO> crate_list
 
     @JsonProperty
     int iscanceled;

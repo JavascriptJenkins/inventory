@@ -31,6 +31,20 @@ class CrateVO implements Serializable{
     @ElementCollection(fetch = FetchType.EAGER)
     List<PackageVO> package_list
 
+    @OneToOne
+    @JoinColumn(name = "customerid")
+    CustomerVO customer
+
+    @JsonProperty
+    @ManyToOne(cascade=CascadeType.REFRESH, fetch = FetchType.LAZY)
+    @JoinColumn(name="deliveryid")
+    DeliveryVO delivery
+
+    @JsonProperty
+    @ManyToOne(cascade=CascadeType.REFRESH, fetch = FetchType.LAZY)
+    @JoinColumn(name="transactionid")
+    TransactionVO transaction
+
     @JsonProperty
     Double total;
 
@@ -42,6 +56,14 @@ class CrateVO implements Serializable{
 
     @Transient
     int displayquantitytotal
+
+
+
+
+
+
+
+
 
     @Transient
     PackageVO packageinscope

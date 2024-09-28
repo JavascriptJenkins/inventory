@@ -36,12 +36,17 @@ class TransactionVO implements Serializable {
 
     @JsonProperty
     @ElementCollection(fetch = FetchType.EAGER)
-    List<PackageVO> package_list
+    List<PackageVO> package_list // this package list would be packages getting sold without being associated to a delivery
 
     @JsonProperty
     @OneToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name="customerid")
     CustomerVO customervo;
+
+    @JsonProperty
+    @OneToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name="deliveryid")
+    DeliveryVO delivery; // delivery contains the list of packages and crates
 
     @JsonProperty
     Double total;

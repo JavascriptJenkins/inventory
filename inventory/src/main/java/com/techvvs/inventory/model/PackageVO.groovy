@@ -48,6 +48,11 @@ class PackageVO implements Serializable{
     @JoinColumn(name = "customerid")
     CustomerVO customer
 
+    @JsonProperty
+    @ManyToOne(cascade=CascadeType.REFRESH, fetch = FetchType.EAGER)
+    @JoinColumn(name="deliveryid")
+    DeliveryVO delivery
+
     @ManyToMany
     @JoinTable(
             name = "package_product",
@@ -55,12 +60,6 @@ class PackageVO implements Serializable{
             inverseJoinColumns = @JoinColumn(name = "productid")
     )
     List<ProductVO> product_package_list
-
-
-    @JsonProperty
-    @ManyToOne(cascade=CascadeType.REFRESH, fetch = FetchType.EAGER)
-    @JoinColumn(name="deliveryid")
-    DeliveryVO delivery
 
     @JsonProperty
     @ManyToOne(cascade=CascadeType.REFRESH, fetch = FetchType.EAGER)
