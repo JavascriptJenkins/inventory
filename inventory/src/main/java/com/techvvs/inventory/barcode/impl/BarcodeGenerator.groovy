@@ -85,12 +85,14 @@ class BarcodeGenerator {
 
     }
 
-    void generateBarcodeSheetForPackageUPCA(
+    // takes in a barcode and genrates a whole sheet
+    void generateBarcodeSheetForBarcodeUPCA(
             int entitynumber,
             int pagenumber,
-            PackageVO packageVO,
+            String barcode,
             String entityname,
-            PDDocument document
+            PDDocument document,
+            String entity
 
     ) throws IOException {
 
@@ -114,10 +116,10 @@ class BarcodeGenerator {
         PDType0Font ttfFont = PDType0Font.load(document, new File("./uploads/font/Oswald-VariableFont_wght.ttf"));
 
         // Write text on the top of page - Batchnumber, date, page number, etc
-        writeMetadataOnTopOfPageForPackage(contentStream, ttfFont, leftMargin, topMargin, pagenumber, entitynumber, entityname)
+        writeMetadataOnTopOfPageForBarcode(contentStream, ttfFont, leftMargin, topMargin, pagenumber, entitynumber, entityname, entity)
 
-        generateAndDrawUpcaBarcodesForPackage(
-                packageVO,
+        generateAndDrawUpcaBarcodesForBarcode(
+                barcode,
                 leftMargin,
                 labelWidth,
                 topMargin,
@@ -132,7 +134,7 @@ class BarcodeGenerator {
     }
 
 
-    void generateAndDrawUpcaBarcodesForPackage(PackageVO packageVO,
+    void generateAndDrawUpcaBarcodesForBarcode(String barcode,
                                      float leftMargin,
                                      float labelWidth,
                                      float topMargin,
@@ -153,7 +155,7 @@ class BarcodeGenerator {
 
 
                 // Generate new barcode data for the product
-                String barcodeData = packageVO.packagebarcode
+                String barcodeData = barcode
 
                 // Generate the barcode image
                 BufferedImage barcodeImage = imageGenerator.generateUPCABarcodeImage(barcodeData, labelWidth, labelHeight, col)
@@ -285,14 +287,15 @@ class BarcodeGenerator {
         contentStream.endText();
     }
 
-    void writeMetadataOnTopOfPageForPackage(
+    void writeMetadataOnTopOfPageForBarcode(
             PDPageContentStream contentStream,
             PDType0Font ttfFont,
             float leftMargin,
             float topMargin,
             int pagenumber,
             int entitynumber,
-            String entityname
+            String entityname,
+            String entity // ex Package / Crate / Product
 
     ) {
 
@@ -311,8 +314,8 @@ class BarcodeGenerator {
         contentStream.newLineAtOffset(leftMargin+100 as float, PDRectangle.LETTER.getHeight() - topMargin / 2 as float);
         contentStream.showText(
                 "Date: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-                        + " | Package #: " + entitynumber
-                        + " | Package Name: " + entityname
+                        + " | " + entity + " #: " + entitynumber
+                        + " | " + entity + " Name: " + entityname
         );
         contentStream.endText();
     }

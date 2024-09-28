@@ -122,6 +122,9 @@ class CrateService {
 
         // this will generate and save a sheet of pdf barcodes for the package when it is created
         // barcodeService.createBarcodeSheetForSinglePackageUPCA(packageVO)
+        // this will generate and save a sheet of pdf barcodes for the package when it is created
+        barcodeService.createBarcodeSheetForSingleCrateUPCA(crateVO)
+
 
         return crateVO;
     }
