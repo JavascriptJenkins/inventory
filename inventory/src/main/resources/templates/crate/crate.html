@@ -428,7 +428,13 @@
                     </thead>
                     <tbody>
                     <tr th:each="item : ${crate.package_list}" th:data-barcode="${item.packagebarcode}">
-                        <td th:text="${item.packagebarcode}" data-barcode="${item.packagebarcode}"></td>
+<!--                        <td th:text="${item.packagebarcode}" data-barcode="${item.packagebarcode}"></td>-->
+                        <td>
+                            <a th:href="@{/crate?crateid=__${crate.crateid}__&packageid=__${item.packageid}__}"
+                               th:text="${item.packagebarcode}"
+                               class="btn btn-secondary btn-sm">
+                            </a>
+                        </td>
                         <td th:text="${item.name}" data-barcode="${item.packagebarcode}"></td>
                         <td>
                             <a id="deleteItemID" href="#" onclick="deleteItemFromCrate(this)">
@@ -460,7 +466,7 @@
                     </tr>
                     </tbody>
                 </table>
-                <button type="button" class="btn-submit-dark" onclick="hydrateBarcodeInput()">Add To Crate</button>
+                <button th:if="${crate.packageinscope.crate == null}" type="button" class="btn-submit-dark" onclick="hydrateBarcodeInput()">Add To Crate</button>
             </div>
         </div>
     </div>

@@ -82,10 +82,9 @@ public class CrateViewController {
                 model = crateHelper.loadCrate(String.valueOf(packageVO.crate.crateid), model)
             } else {
                 model = crateHelper.loadCrate(crateid, model)
-                CrateVO crateVO = (CrateVO) model.getAttribute("crate")
-
-                crateVO.packageinscope = packageVO // if it's first time navigating from package create page, add the package to the packageinscope
             }
+            CrateVO crateVO = (CrateVO) model.getAttribute("crate")
+            crateVO.packageinscope = packageVO // if it's first time navigating from package create page, add the package to the packageinscope
         } else {
             model = crateHelper.loadCrate(crateid, model)
         }

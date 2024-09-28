@@ -95,7 +95,7 @@ class CrateHelper {
 
         for(PackageVO packageincrate : crateVO.package_list){
 
-            if(packageincrate.displayquantitytotal == null){
+            if(crateVO.displayquantitytotal == 0){
                 packageincrate.displayquantitytotal = 1
                 crateVO.displayquantitytotal = 1
             } else {
