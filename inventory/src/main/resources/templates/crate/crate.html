@@ -137,6 +137,17 @@
             background-color: #333;
             border-color: #23272b;
         }
+        .btn-dark-custom {
+            background-color: #343a40;
+            color: #fff;
+            border: 1px solid #343a40;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .btn-dark-custom:hover {
+            background-color: #1d2124; /* Darker shade on hover */
+            color: #f8f9fa; /* Lighter text on hover */
+        }
         .pagination .page-link {
             color: #fff;
             background-color: #343a40;
@@ -356,6 +367,26 @@
         }
     </script>
 
+    <script>
+        function copyToClipboard(buttonElement) {
+            // Get the value from the data-barcode attribute
+            var barcodeValue = buttonElement.getAttribute('data-barcode');
+
+            // Copy to clipboard (assuming you've already implemented this logic)
+            var tempInput = document.createElement('input');
+            tempInput.value = barcodeValue;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempInput);
+
+            // Provide feedback (optional)
+            alert("Copied: " + barcodeValue);
+        }
+
+    </script>
+
+
 </head>
 <body>
 <form id="deleteItemFromCrateForm" th:action="@{/crate/deletepackage?crateid=__${crate.crateid}__}" th:object="${crate}" method="post">
@@ -375,6 +406,15 @@
             <h3>Total Packages:
                 <span th:text="${crate.displayquantitytotal}"></span>
             </h3>
+            <h6 th:if="${crate.cratebarcode}">Crate UPCA:
+                <span th:text="${crate.cratebarcode}"></span>
+                <button type="button" class="btn btn-dark-custom btn-sm"
+                        onclick="copyToClipboard(this)"
+                        th:data-barcode="${crate.cratebarcode}"
+                >
+                    Copy
+                </button>
+            </h6>
 
         </div>
     </div>
@@ -418,7 +458,7 @@
 
         <div class="col-md-4">
                 <h3 class="text-center table-title">Packages in Crate</h3>
-                <table id="itemTable" class="table table-hover table-striped table-dark">
+                <table th:if="${pageOfPackageInCrate != null}" id="itemTable" class="table table-hover table-striped table-dark">
                     <thead>
                     <tr>
                         <th>UPCA</th>
@@ -437,8 +477,17 @@
                         <td>
                             <a th:href="@{/crate?crateid=__${crate.crateid}__&packageid=__${item.packageid}__}"
                                th:text="${item.packagebarcode}"
+                               th:id="${'barcode-'+item.packagebarcode}"
+                               th:data-barcode="${item.packagebarcode}"
                                class="btn btn-secondary btn-sm">
                             </a>
+                            <!-- Button to copy barcode -->
+                            <button type="button" class="btn btn-dark-custom btn-sm"
+                                    onclick="copyToClipboard(this)"
+                                    th:data-barcode="${item.packagebarcode}"
+                            >
+                                Copy
+                            </button>
                         </td>
                         <td th:text="${item.name}" data-barcode="${item.packagebarcode}"></td>
                         <td>
@@ -449,7 +498,7 @@
                     </tr>
                     </tbody>
                 </table>
-                <nav th:if="${pageOfPackageInCrate.totalPages > 0}">
+                <nav th:if="${pageOfPackageInCrate != null && pageOfPackageInCrate.totalPages > 0}">
                     <ul class="pagination justify-content-center">
                         <li class="page-item" th:each="pageNumber : ${cratepageNumbers}">
                             <a class="page-link btn btn-secondary btn-sm mx-1"
@@ -509,8 +558,16 @@
                     <td>
                         <a th:href="@{/crate?crateid=__${crate.crateid}__&packageid=__${package.packageid}__}"
                            th:text="${package.packagebarcode}"
+                           th:data-barcode="${package.packagebarcode}"
                            class="btn btn-secondary btn-sm">
                         </a>
+                        <!-- Button to copy barcode -->
+                        <button type="button" class="btn btn-dark-custom btn-sm"
+                                onclick="copyToClipboard(this)"
+                                th:data-barcode="${package.packagebarcode}"
+                        >
+                            Copy
+                        </button>
                     </td>
                     <td th:text="${package.name}"></td>
                 </tr>

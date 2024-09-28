@@ -4,6 +4,7 @@ import com.techvvs.inventory.barcode.impl.BarcodeGenerator
 import com.techvvs.inventory.barcode.impl.BarcodeHelper
 import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.model.BatchVO
+import com.techvvs.inventory.model.CrateVO
 import com.techvvs.inventory.model.PackageVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.viewcontroller.helper.ProductHelper
@@ -67,16 +68,42 @@ class BarcodeService {
             // run this 50 times to make a barcode sheet
             PDDocument document = new PDDocument()
 
-            barcodeGenerator.generateBarcodeSheetForPackageUPCA(
+            barcodeGenerator.generateBarcodeSheetForBarcodeUPCA(
                     packageVO.packageid,
                     0,
-                    packageVO,
+                    packageVO.packagebarcode, // generate a sheet of 50 of same barcode
                     packageVO.name,
-                    document
+                    document,
+                    "Package" // This will show up on the metadata at top of barcode sheet
             )
 
 
             saveBarcodeLabelPdfFileForPackage(document, appConstants.BARCODES_ALL_DIR, packageVO.name, packageVO.packageid)
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    void createBarcodeSheetForSingleCrateUPCA(CrateVO crateVO) {
+
+        // NOTE: right now this is going to generate barcodes for every product in batch regardless of product type
+        try {
+
+            // run this 50 times to make a barcode sheet
+            PDDocument document = new PDDocument()
+
+            barcodeGenerator.generateBarcodeSheetForBarcodeUPCA(
+                    crateVO.crateid,
+                    0,
+                    crateVO.cratebarcode, // generate a sheet of 50 of same barcode
+                    crateVO.name,
+                    document,
+                    "Crate" // This will show up on the metadata at top of barcode sheet
+            )
+
+
+            saveBarcodeLabelPdfFileForCrate(document, appConstants.BARCODES_ALL_DIR, crateVO.name, crateVO.crateid)
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -166,6 +193,16 @@ class BarcodeService {
         String filename = entityname+"-"+entitynumber
         // save the actual file after looping thru all products
         document.save(appConstants.PARENT_LEVEL_DIR+appConstants.PACKAGE_DIR+entitynumber+entitysubdirectory+appConstants.filenameprefix+filename+".pdf");
+        document.close();
+    }
+
+    void saveBarcodeLabelPdfFileForCrate(PDDocument document, String entitysubdirectory, String entityname, int entitynumber) {
+        // create a directory with the batchnumber and /barcodes dir if it doesn't exist yet
+        Files.createDirectories(Paths.get(appConstants.PARENT_LEVEL_DIR+appConstants.CRATE_DIR+String.valueOf(entitynumber)+entitysubdirectory));
+
+        String filename = entityname+"-"+entitynumber
+        // save the actual file after looping thru all products
+        document.save(appConstants.PARENT_LEVEL_DIR+appConstants.CRATE_DIR+entitynumber+entitysubdirectory+appConstants.filenameprefix+filename+".pdf");
         document.close();
     }
 

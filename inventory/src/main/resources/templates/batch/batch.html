@@ -90,27 +90,22 @@
         }
     </style>
     <script>
-        function copyToClipboard(elementId) {
-            // Get the element
-            var element = document.getElementById(elementId);
+        function copyToClipboard(buttonElement) {
+            // Get the value from the data-barcode attribute
+            var barcodeValue = buttonElement.getAttribute('data-barcode');
 
-            // Create a temporary input element to hold the value
+            // Copy to clipboard (assuming you've already implemented this logic)
             var tempInput = document.createElement('input');
-            tempInput.value = element.textContent || element.innerText;  // Get the text inside the element
-
-            // Append it to the document temporarily
+            tempInput.value = barcodeValue;
             document.body.appendChild(tempInput);
-
-            // Select the input's value and copy it to the clipboard
             tempInput.select();
             document.execCommand("copy");
-
-            // Remove the temporary input element
             document.body.removeChild(tempInput);
 
-            // Optional: Show a message or alert
-            alert("Copied to clipboard: " + tempInput.value);
+            // Provide feedback (optional)
+            alert("Copied: " + barcodeValue);
         }
+
     </script>
 
 </head>
@@ -245,11 +240,15 @@
                     <td>
                         <a th:href="@{/product/editform?productnumber=__${product.productnumber}__&editmode=no}"
                            th:text="${product.barcode}"
+                           th:data-barcode="${product.barcode}"
                            id="barcode-${product.productnumber}"
                            class="btn btn-secondary btn-sm">
                         </a>
                         <!-- Button to copy barcode -->
-                        <button type="button" class="btn btn-dark-custom btn-sm" onclick="copyToClipboard('barcode-${product.productnumber}')">
+                        <button type="button" class="btn btn-dark-custom btn-sm"
+                                onclick="copyToClipboard(this)"
+                                th:data-barcode="${product.barcode}"
+                        >
                             Copy
                         </button>
                     </td>
