@@ -7,10 +7,7 @@ import com.techvvs.inventory.modelnonpersist.FileVO;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -149,7 +146,7 @@ public class TechvvsFileHelper {
         }
 
         List<FileVO> fileList = getFilesByDirectory(directoryPath);
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "createTimeStamp"));
         int start = Math.min((int) pageable.getOffset(), fileList.size());
         int end = Math.min((start + pageable.getPageSize()), fileList.size());
         List<FileVO> pagedFiles = fileList.subList(start, end);
