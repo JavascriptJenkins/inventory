@@ -483,6 +483,12 @@
                     </tbody>
                 </table>
                 <button th:if="${crate.packageinscope.crate == null}" type="button" class="btn-submit-dark" onclick="hydrateBarcodeInput()">Add To Crate</button>
+
+                <a th:href="@{/package?packageid=__${crate.packageinscope.packageid}__}"
+                   class="btn-submit-dark">
+                    Modify Package
+                </a>
+
             </div>
         </div>
     </div>

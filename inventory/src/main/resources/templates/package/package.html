@@ -119,6 +119,24 @@
             background-color: #007bff;
             border-color: #007bff;
         }
+        .btn-submit-dark {
+            font-size: 1.2rem;
+            background-color: #444;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: 2px solid #343a40;
+            display: inline-block;
+            text-align: center;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+            margin-top: 10px;
+            width: 100%;
+        }
+        .btn-submit-dark:hover {
+            background-color: #333;
+            border-color: #23272b;
+        }
         .pagination .page-link {
             color: #fff;
             background-color: #343a40;
@@ -403,7 +421,9 @@
 <!--        <button style="margin-top: 5px;" type="submit" class="btn btn-dark-theme">Review Package</button>-->
     </form>
 
-    <a style="margin-top: 5px;" th:href="@{/crate?packageid=__${package.packageid}__&crateid=0}" class="btn btn-dark-theme">Crate</a>
+    <a th:if="${package.crate == null ||package.crate.crateid == 0}" style="margin-top: 5px;" th:href="@{/crate?packageid=__${package.packageid}__&crateid=0}" class="btn-submit-dark">New Crate</a>
+    <a th:if="${package.crate == null ||package.crate.crateid == 0}" style="margin-top: 5px;" th:href="@{/crate/pendingcrates}" class="btn-submit-dark">Assign to Existing Crate</a>
+    <a th:if="${package.crate.crateid > 0}" style="margin-top: 5px;" th:href="@{/crate?packageid=__${package.packageid}__&crateid=__${package.crate.crateid}__}" class="btn-submit-dark">Crate</a>
 </div>
 </body>
 </html>
