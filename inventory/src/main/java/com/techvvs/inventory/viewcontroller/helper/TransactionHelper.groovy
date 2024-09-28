@@ -63,6 +63,7 @@ class TransactionHelper {
         //pagination
         int currentPage = page.orElse(0);    // Default to first page
         int pageSize = size.orElse(5);       // Default page size to 5
+        pageSize = pageSize < 5 ? 5 : pageSize; // make sure it's not less than 5
         Pageable pageable = PageRequest.of(currentPage, pageSize, Sort.by(Sort.Direction.ASC, "createTimeStamp"));
 
 
