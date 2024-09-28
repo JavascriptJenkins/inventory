@@ -93,4 +93,14 @@ class ProductVO implements Serializable, Comparable<ProductVO> {
         return uniqueProducts;
     }
 
+
+    public static void sortProductsByPrice(ArrayList<ProductVO> listofproductsinstock) {
+        Collections.sort(listofproductsinstock, new Comparator<ProductVO>() {
+            @Override
+            public int compare(ProductVO p1, ProductVO p2) {
+                return Double.compare(p1.getPrice(), p2.getPrice());
+            }
+        });
+    }
+
     }

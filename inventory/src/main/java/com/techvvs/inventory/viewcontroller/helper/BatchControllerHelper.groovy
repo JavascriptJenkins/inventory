@@ -466,16 +466,26 @@ class BatchControllerHelper {
         sheet.setColumnWidth(3, 10000); // Set width of the first column for barcode
         row.createCell(3).setCellValue("Barcode")
 
-        // set the values
-        for(int i=1;i<batchVO.product_set.size()+1;i++){
-            row = sheet.createRow(i)
-            ProductVO productVO = batchVO.product_set[i - 1] // need to subtract 1 here to account for header row at index 0
-        //    setColumnWidthBasedOnString(sheet, 0 ,productVO.name) // set width of each name cell based on length
-            row.createCell(0).setCellValue(productVO.quantityremaining)
-            row.createCell(1).setCellValue(productVO.name)
-            row.createCell(2).setCellValue(productVO.price + priceadjustment)
-            row.createCell(3).setCellValue(productVO.barcode)
 
+        ArrayList<ProductVO> listofproductsinstock = new ArrayList()
+        batchVO.product_set.each{ item ->
+            item.quantityremaining > 0 ? listofproductsinstock.add(item) : item.quantityremaining
+        }
+
+        ProductVO.sortProductsByPrice(listofproductsinstock)
+
+        // set the values
+        for(int i=1;i<listofproductsinstock.size()+1;i++){
+            ProductVO productVO = listofproductsinstock[i - 1] // need to subtract 1 here to account for header row at index 0
+            // only export the xlsx if the quantityremaining is over 0
+            if(productVO.quantityremaining > 0){
+                row = sheet.createRow(i)
+                //    setColumnWidthBasedOnString(sheet, 0 ,productVO.name) // set width of each name cell based on length
+                row.createCell(0).setCellValue(productVO.quantityremaining)
+                row.createCell(1).setCellValue(productVO.name)
+                row.createCell(2).setCellValue(productVO.price + priceadjustment)
+                row.createCell(3).setCellValue(productVO.barcode)
+            }
 
         }
 
