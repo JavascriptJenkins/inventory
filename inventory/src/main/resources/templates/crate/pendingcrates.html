@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Pending Packages</title>
+    <title>Pending Crates</title>
 
     <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
@@ -186,7 +186,7 @@
 
             $('#recordSize').change(function() {
                 var selectedSize = $(this).val();
-                var newUrl = '/package/pendingpackages?size=' + selectedSize + '&page=' + currentPage;
+                var newUrl = '/crate/pendingcrates?size=' + selectedSize + '&page=' + currentPage;
                 window.location.href = newUrl;
             });
 
@@ -210,8 +210,8 @@
             <a th:href="@{/dashboard/index}"><i class="bi bi-arrow-left-circle"></i></a>
         </div>
         <div>
-            <h1>Pending Packages</h1>
-            <p>Review pending packages</p>
+            <h1>Pending Crates</h1>
+            <p>Review pending crates</p>
         </div>
     </div>
     <br>
@@ -233,33 +233,33 @@
         <thead>
         <tr>
             <th scope="col">#</th>
-            <th scope="col">Package ID</th>
-            <th scope="col">Package Name</th>
+            <th scope="col">Crate ID</th>
+            <th scope="col">Crate Name</th>
             <th scope="col">Total Amount</th>
             <th scope="col">Create Date</th>
         </tr>
         </thead>
         <tbody>
-            <tr th:each="package, iStat : ${pageOfPackage.content}"
-                th:if="${package.isprocessed != 1}"
+            <tr th:each="crate, iStat : ${pageOfCrate.content}"
+                th:if="${crate.isprocessed != 1}"
                 th:style="${iStat.odd}? 'font-weight: bold;'"
                 th:alt-title="${iStat.even}? 'even' : 'odd'">
-                <td th:text="${package.packageid}"></td>
-                <td><a th:href="@{/package?packageid=__${package.packageid}__}" th:text="${package.packageid}"></a></td>
-                <td th:text="${package.name}"></td>
-                <td th:text="${package.total}"></td>
-                <td th:text="${package.createTimeStamp.toLocalDate()}"></td>
+                <td th:text="${crate.crateid}"></td>
+                <td><a th:href="@{/crate?crateid=__${crate.crateid}__}" th:text="${crate.crateid}"></a></td>
+                <td th:text="${crate.name}"></td>
+                <td th:text="${crate.total}"></td>
+                <td th:text="${crate.createTimeStamp.toLocalDate()}"></td>
             </tr>
         </tbody>
     </table>
 
-    <nav th:if="${pageOfPackage.totalPages > 0}">
+    <nav th:if="${pageOfCrate.totalPages > 0}">
         <ul class="pagination">
             <li class="page-item" th:each="pageNumber : ${pageNumbers}">
                 <a class="page-link"
-                   th:href="@{/package/pendingpackages?size=__${#lists.size(pageOfPackage.content) > 5 ? #lists.size(pageOfPackage.content) : 5}__&page=__${pageNumber == 1 ? 0 : pageNumber}__}"
+                   th:href="@{/crate/pendingcrates?size=__${#lists.size(pageOfCrate.content) > 5 ? #lists.size(pageOfCrate.content) : 5}__&page=__${pageNumber == 1 ? 0 : pageNumber}__}"
                    th:text="${pageNumber}"
-                   th:classappend="${pageNumber==pageOfPackage.number + 1} ? 'active'">
+                   th:classappend="${pageNumber==pageOfCrate.number + 1} ? 'active'">
                 </a>
             </li>
         </ul>

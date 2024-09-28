@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Crate</title>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-kQtW33rZJAHjgefvhyyzcGF3C5TFyBQBA13V1RKPf4uH+bwyzQxZ6CmMZHmNBEfJ" crossorigin="anonymous"></script>
+    <link rel="stylesheet" type="text/css" media="all" href="/css/table.css" th:href="@{/css/table.css}" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            color: #fff;
+            font-family: 'Roboto', sans-serif;
+        }
+        .table-hover tbody tr:hover {
+            background-color: #e0f7fa;
+        }
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: #f1f8fa;
+        }
+        .table-dark thead {
+            background-color: #343a40;
+            color: #fff;
+        }
+        .btn-secondary, .btn-primary, .btn-dark-theme {
+            color: #fff;
+            background-color: #343a40;
+            border-color: #343a40;
+        }
+        .btn-secondary:hover, .btn-primary:hover, .btn-dark-theme:hover {
+            background-color: #23272b;
+            border-color: #1d2124;
+        }
+        .form-control, .form-select {
+            background-color: #343a40;
+            color: #fff;
+            border: 1px solid #343a40;
+        }
+        /* Increase specificity by adding more selectors */
+        select.form-control,
+        select.form-control option,
+        .form-control:focus,
+        .form-select:focus {
+            background-color: #343a40 !important; /* Use !important to force override */
+            color: #fff !important;
+            border: 1px solid #343a40 !important;
+            box-shadow: none !important;
+        }
+
+        /* Ensure option elements inherit the background */
+        select.form-control option {
+            background-color: #343a40 !important;
+            color: #fff !important;
+        }
+        .header-dark {
+            background-color: #343a40;
+            color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-family: 'Roboto', sans-serif;
+            border: 1px solid transparent;
+            border-image: linear-gradient(to right, #c0c0c0, #ffffff);
+            border-image-slice: 1;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+        }
+        .header-small {
+            background-color: #343a40;
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-family: 'Roboto', sans-serif;
+            border: 1px solid transparent;
+            border-image: linear-gradient(to right, #c0c0c0, #ffffff);
+            border-image-slice: 1;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: fit-content;
+            max-width: 400px;
+            margin: 0 auto 15px auto;
+            text-align: center;
+        }
+        .back-button {
+            margin-right: 20px;
+            font-size: 2rem;
+        }
+        .back-button a {
+            color: #343a40;
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 50%;
+            border: 2px solid #343a40;
+        }
+        .back-button a:hover {
+            background-color: #23272b;
+            color: #fff;
+            border-color: #23272b;
+        }
+        .alert {
+            background-color: #343a40;
+            color: #fff;
+            border: 1px solid #343a40;
+        }
+        .alert-danger {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+        .alert-success {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+        .alert-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .btn-submit-dark {
+            font-size: 1.2rem;
+            background-color: #444;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: 2px solid #343a40;
+            display: inline-block;
+            text-align: center;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+            margin-top: 10px;
+            width: 100%;
+        }
+        .btn-submit-dark:hover {
+            background-color: #333;
+            border-color: #23272b;
+        }
+        .pagination .page-link {
+            color: #fff;
+            background-color: #343a40;
+            border: 1px solid #343a40;
+        }
+        .pagination .page-link:hover {
+            background-color: #23272b;
+            border-color: #1d2124;
+        }
+        .pagination .active .page-link {
+            color: #fff;
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .required:after {
+            content: " *";
+            color: red;
+        }
+        .form-label {
+            color: #000;
+        }
+        .notes-bubble {
+            background-color: #f1f8fa;
+            border: 1px solid #c0c0c0;
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+        .progress {
+            flex: 1;
+            margin-left: 20px;
+        }
+        .progress-bar {
+            background-color: #6c757d;
+        }
+        .price-class {
+            color: #000;
+        }
+        .producttype-name {
+            color: #000;
+        }
+        /* Make the checkbox larger */
+        #quantityModeCheckbox {
+            width: 25px;
+            height: 25px;
+
+        }
+        .table-title {
+            color: black;
+        }
+
+        /* Style the label: dark background with white text */
+        .form-check-label {
+            background-color: #343a40; /* Dark background */
+            color: white;              /* White text */
+            padding: 5px 10px;         /* Add some padding */
+            border-radius: 5px;        /* Optional: round the corners */
+        }
+
+        /* Optionally, adjust the label's appearance when the checkbox is focused */
+        #quantityModeCheckbox:focus + .form-check-label {
+            outline: 2px solid white;  /* Add an outline to the label when checkbox is focused */
+        }
+    </style>
+
+    <style>
+        .warning-message {
+            color: red;
+            display: none; /* Hide by default */
+        }
+    </style>
+
+    <script>
+        $(document).ready(function () {
+            // Function to check the crate name validity
+            function validateCrateName() {
+                var crateName = $('#cratename').val().trim();  // Get the trimmed value of the input
+
+                // Show or hide the warning message based on the crate name length
+                if (crateName.length < 1) {
+                    $('#crateNameWarning').show();  // Show the warning message if invalid
+                } else {
+                    $('#crateNameWarning').hide();  // Hide the warning message if valid
+                }
+            }
+
+            // Call validateCrateName on page load
+            validateCrateName();
+
+            // Attach the validateCrateName function to the input event
+            $('#cratename').on('input', validateCrateName);
+        });
+    </script>
+
+    <script>
+        // Function to process barcode scanning
+        function processBarcode(scannedValue) {
+            if (scannedValue.length >= 11) {
+                if ($('#quantityModeCheckbox').is(':checked')) {
+                    // If Quantity Mode is checked, ask for quantity input
+                    let quantity = prompt("Please enter the quantity for the scanned product:");
+
+                    if (quantity !== null && quantity !== "") {
+                        // Set quantity in the hidden input
+                        $('#quantitySelected').val(quantity);
+                        $('#barcodeInput').val(scannedValue.substring(0, 11));
+                        $('#barcodeForm').submit();
+                    }
+                } else {
+                    // If not in Quantity Mode, just submit the form
+                    $('#barcodeInput').val(scannedValue.substring(0, 11));
+                    $('#barcodeForm').submit();
+                }
+            }
+        }
+    </script>
+
+    <script>
+        $(document).ready(function () {
+            // Check if the input with id="cratename" has no value
+            var crateNameInput = $('#cratename').val().trim();
+
+            // Only show the popup if the cratename input is empty
+            if (crateNameInput === '') {
+                let crateName = prompt("Please enter the name of crate you want to create (samplebox, iowa pallet, john's shipment etc):");
+
+                // If the user provides input, set the value of the #cratename input
+                if (crateName !== null && crateName.trim().length > 0) {
+                    $('#cratename').val(crateName.trim());
+                    $('#crateNameWarning').hide();  // Hide the warning message if valid
+
+                }
+            }
+
+            $('#barcodeInput').focus();
+
+            $('#cratetypeselectid').on('change', function() {
+                if ($('#barcodeInput').val().trim() === '') {
+                    $('#barcodeInput').focus();
+                }
+            });
+
+            $('#cratetypeselectid2').on('change', function() {
+                if ($('#barcodeInput').val().trim() === '') {
+                    $('#barcodeInput').focus();
+                }
+            });
+
+            const inputField = document.getElementById('barcodeInput');
+
+            inputField.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter') {
+                    const scannedValue = inputField.value.trim();
+                    processBarcode(scannedValue);
+                }
+            });
+
+            // Add event listener to the checkbox
+            $('#quantityModeCheckbox').on('click', function() {
+                // Refocus on the barcode input field when the checkbox is clicked
+                $('#barcodeInput').focus();
+            });
+
+
+
+
+            function focusInputAfterDelay(selector, delay) {
+                setTimeout(function() {
+                    $(selector).focus();
+                }, delay);
+            }
+
+            focusInputAfterDelay('#barcodeInput', 100);
+
+            $('#barcodeInput').on('input', function () {
+                if ($(this).val().trim() !== '') {
+                    $('#submitTransactionForm button').prop('disabled', true);
+                } else {
+                    $('#submitTransactionForm button').prop('disabled', false);
+                }
+            });
+
+            const reviewCrateButton = $('#submitTransactionForm button');
+            const tableRows = $('#barcodeForm tbody tr');
+            if (tableRows.length === 0) {
+                reviewCrateButton.prop('disabled', true);
+            } else {
+                reviewCrateButton.prop('disabled', false);
+            }
+        });
+
+        function deleteItemFromCrate(element) {
+            event.preventDefault();
+            const barcode = element.closest('tr').getAttribute('data-barcode');
+            const form = document.getElementById('deleteItemFromCrateForm');
+
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = 'barcode';
+            hiddenInput.value = barcode;
+            console.log(hiddenInput);
+            console.log(form);
+            form.appendChild(hiddenInput);
+
+            form.submit();
+        }
+
+        function hydrateBarcodeInput() {
+            // Set the value of the barcode input field
+            document.getElementById('barcodeInput').value = document.getElementById('packageBarcodeId').textContent;
+
+            // Optional: Refocus on the barcode input field
+            document.getElementById('barcodeInput').focus();
+
+            // now call the method that will validate barcode and submit to backend
+            processBarcode(document.getElementById('barcodeInput').value);
+        }
+    </script>
+
+</head>
+<body>
+<form id="deleteItemFromCrateForm" th:action="@{/crate/deletepackage?crateid=__${crate.crateid}__}" th:object="${crate}" method="post">
+    <input type="hidden" name="_method" value="delete" />
+</form>
+<div th:insert="fragments/palletmodenavbar.html :: palletmodefragment"></div>
+<div class="container">
+    <div class="header-dark">
+        <div class="back-button">
+            <a th:href="@{/dashboard/index}"><i class="bi bi-arrow-left-circle"></i></a>
+        </div>
+        <div class="col-md-6">
+            <h1>Crate</h1>
+            <p>Scan Packages to add to Crate</p>
+        </div>
+        <div class="col-md-6">
+            <h3>Total Packages:
+                <span th:text="${crate.displayquantitytotal}"></span>
+            </h3>
+
+        </div>
+    </div>
+
+    <br>
+
+    <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
+    <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
+
+    <!-- Form and Tables Row -->
+    <div class="row">
+        <!-- Left side: Barcode and Crate Name Inputs -->
+        <div class="col-md-4">
+            <form id="barcodeForm" th:action="@{/crate/scan?crateid=__${crate.crateid != null ? crate.crateid : '0'}__}" th:object="${crate}" method="post">
+                        <div style="margin-bottom: 10px;">
+
+                            <input id="barcodeInput" type="text" th:field="*{barcode}" class="form-control" placeholder="barcode" aria-label="barcode">
+
+                        </div>
+                        <div style="margin-bottom: 5px;">
+                            <input type="hidden" th:field="*{isprocessed}">
+                            <input type="hidden" th:field="*{weight}">
+                            <input type="hidden" th:field="*{cratebarcode}">
+                            <input type="hidden" th:field="*{updateTimeStamp}">
+                            <input type="hidden" th:field="*{createTimeStamp}">
+                        </div>
+
+                        <div style="margin-bottom: 5px;">
+                            <label class="form-label required">Crate Name</label>
+                            <input id="cratename" type="text" th:field="*{name}" class="form-control" placeholder="name" aria-label="name">
+                        </div>
+                         <div id="crateNameWarning" class="warning-message">Please name the crate</div>
+
+                         <input type="hidden" th:field="*{package_list}">
+
+                <button style="margin-top: 5px; visibility: hidden;" type="submit" class="btn btn-primary">Submit</button>
+            </form>
+
+
+        </div>
+
+        <div class="col-md-4">
+                <h3 class="text-center table-title">Packages in Crate</h3>
+                <table id="itemTable" class="table table-hover table-striped table-dark">
+                    <thead>
+                    <tr>
+                        <th>UPCA</th>
+                        <th>Package Name</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="item : ${crate.package_list}" th:data-barcode="${item.packagebarcode}">
+                        <td th:text="${item.packagebarcode}" data-barcode="${item.packagebarcode}"></td>
+                        <td th:text="${item.name}" data-barcode="${item.packagebarcode}"></td>
+                        <td>
+                            <a id="deleteItemID" href="#" onclick="deleteItemFromCrate(this)">
+                                <i class="fs-4 bi bi-x text-danger float-end"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+        </div>
+
+
+        <!-- Right side: Package in Scope Table -->
+        <div th:if="${crate.packageinscope != null}" class="col-md-4">
+            <div style="overflow-x: auto;">
+                <h3 class="text-center table-title"><span th:text="${crate.packageinscope.name}"></span> | UPCA:
+                    <span id="packageBarcodeId" th:text="${crate.packageinscope.packagebarcode}"></span></h3>
+                <table id="packageInScopeTable" class="table table-hover table-striped table-dark">
+                    <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Quantity</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="item : ${crate.packageinscope.product_package_list}" th:data-barcode="${item.barcode}">
+                        <td th:text="${item.name}" data-barcode="${item.barcode}">Item Name</td>
+                        <td th:text="${item.displayquantity}" >Item Name</td>
+                    </tr>
+                    </tbody>
+                </table>
+                <button type="button" class="btn-submit-dark" onclick="hydrateBarcodeInput()">Add To Crate</button>
+            </div>
+        </div>
+    </div>
+    <!-- Table that shows the packages available to add -->
+    <div class="row mt-4"> <!-- Added margin top for spacing -->
+        <div class="col-md-8"> <!-- Spanning across the first two columns (4+4 = 8 units out of 12) -->
+            <h3 class="text-center table-title">Packages Not Processed</h3>
+            <table class="table table-hover table-striped table-dark">
+                <thead>
+                <tr>
+                    <th scope="col">UPCA</th>
+                    <th scope="col">Package Name</th>
+                </thead>
+                <tbody>
+                <tr th:each="package, iStat : ${packagePage.content}"
+                    th:style="${iStat.odd}? 'font-weight: bold;'"
+                    th:alt-title="${iStat.even}? 'even' : 'odd'">
+                    <td>
+                        <a th:href="@{/crate?crateid=__${crate.crateid}__&packageid=__${package.packageid}__}"
+                           th:text="${package.packagebarcode}"
+                           class="btn btn-secondary btn-sm">
+                        </a>
+                    </td>
+                    <td th:text="${package.name}"></td>
+                </tr>
+                </tbody>
+            </table>
+            <nav th:if="${packagePage.totalPages > 0}">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" th:each="pageNumber : ${pageNumbers}">
+                        <a class="page-link btn btn-secondary btn-sm mx-1"
+                           th:href="@{/crate?size=__${#lists.size(packagePage.content)}__&page=__${pageNumber}__&crateid=__${crate.crateid}__}"
+                           th:text="${pageNumber}"
+                           th:classappend="${pageNumber==packagePage.number + 1} ? 'active'">
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+</body>
+
+</html>

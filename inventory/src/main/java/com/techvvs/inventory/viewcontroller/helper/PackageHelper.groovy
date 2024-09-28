@@ -1,10 +1,12 @@
 package com.techvvs.inventory.viewcontroller.helper
 
 import com.techvvs.inventory.jparepo.CartRepo
+import com.techvvs.inventory.jparepo.CrateRepo
 import com.techvvs.inventory.jparepo.CustomerRepo
 import com.techvvs.inventory.jparepo.PackageRepo
 import com.techvvs.inventory.jparepo.PackageTypeRepo
 import com.techvvs.inventory.model.CartVO
+import com.techvvs.inventory.model.CrateVO
 import com.techvvs.inventory.model.CustomerVO
 import com.techvvs.inventory.model.PackageTypeVO
 import com.techvvs.inventory.model.PackageVO
@@ -14,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Component
 import org.springframework.ui.Model
 
@@ -26,6 +29,9 @@ class PackageHelper {
 
     @Autowired
     PackageRepo packageRepo
+
+    @Autowired
+    CrateRepo crateRepo
 
     @Autowired
     PackageTypeRepo packageTypeRepo
@@ -62,41 +68,31 @@ class PackageHelper {
         return cartVO
     }
 
-    void findPendingPackages(Model model, Optional<Integer> page, Optional<Integer> size){
-
+    void findPendingPackages(Model model, Optional<Integer> page, Optional<Integer> size) {
         // START PAGINATION
-        // https://www.baeldung.com/spring-data-jpa-pagination-sorting
-        //pagination
-        int currentPage = page.orElse(0);
-        int pageSize = size.orElse(5);
-        Pageable pageable;
-        if(currentPage == 0){
-            pageable = PageRequest.of(0 , pageSize);
-        } else {
-            pageable = PageRequest.of(currentPage - 1, pageSize);
-        }
+        // pagination
+        int currentPage = page.orElse(0);    // Default to first page
+        int pageSize = size.orElse(5);       // Default page size to 5
+        Pageable pageable = PageRequest.of(currentPage, pageSize, Sort.by(Sort.Direction.ASC, "createTimeStamp"));
 
-        Page<PackageVO> pageOfPackage = packageRepo.findAll(pageable);
+        Page<PackageVO> pageOfPackage = packageRepo.findAllByIsprocessed(0,pageable,);  // Fetch paginated results
 
         int totalPages = pageOfPackage.getTotalPages();
 
         List<Integer> pageNumbers = new ArrayList<>();
-
-        while(totalPages > 0){
-            pageNumbers.add(totalPages);
-            totalPages = totalPages - 1;
+        for (int i = 1; i <= totalPages; i++) {
+            pageNumbers.add(i);
         }
 
 
-        model.addAttribute("pageNumbers", pageNumbers);
-        model.addAttribute("page", currentPage);
-        model.addAttribute("size", pageOfPackage.getTotalPages());
-        model.addAttribute("pageOfPackage", pageOfPackage);
+        // Add attributes to the model
+        model.addAttribute("pageNumbers", pageNumbers);           // List of page numbers for pagination
+        model.addAttribute("page", currentPage);                  // Current page number
+        model.addAttribute("size", pageSize);                     // Page size (items per page)
+        model.addAttribute("pageOfPackage", pageOfPackage);       // Paginated data
         // END PAGINATION
-
-
-
     }
+
 
     // this condenses down the list of products into a map of products with a displayquantity
     // i don't know if this is the right way to do this for packages but we'll see.....
@@ -172,6 +168,17 @@ class PackageHelper {
     PackageVO getExistingPackage(String packageid){
 
         Optional<PackageVO> packageVO = packageRepo.findById(Integer.valueOf(packageid))
+
+        if(!packageVO.empty){
+            return packageVO.get()
+        } else {
+            return new PackageVO(packageid: 0)
+        }
+    }
+
+    PackageVO getExistingCrateByPackageId(String packageid){
+
+        Optional<PackageVO> packageVO = crateRepo.findById(Integer.valueOf(packageid))
 
         if(!packageVO.empty){
             return packageVO.get()

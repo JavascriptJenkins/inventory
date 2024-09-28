@@ -17,6 +17,7 @@ import org.springframework.core.env.Environment
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component
@@ -60,14 +61,10 @@ class TransactionHelper {
         // START PAGINATION
         // https://www.baeldung.com/spring-data-jpa-pagination-sorting
         //pagination
-        int currentPage = page.orElse(0);
-        int pageSize = size.orElse(5);
-        Pageable pageable;
-        if(currentPage == 0){
-            pageable = PageRequest.of(0 , pageSize);
-        } else {
-            pageable = PageRequest.of(currentPage - 1, pageSize);
-        }
+        int currentPage = page.orElse(0);    // Default to first page
+        int pageSize = size.orElse(5);       // Default page size to 5
+        Pageable pageable = PageRequest.of(currentPage, pageSize, Sort.by(Sort.Direction.ASC, "createTimeStamp"));
+
 
         Page<TransactionVO> pageOfTransaction
         // this means someone selected a value on the ui and we need to run a filtered query
@@ -80,10 +77,8 @@ class TransactionHelper {
         int totalPages = pageOfTransaction.getTotalPages();
 
         List<Integer> pageNumbers = new ArrayList<>();
-
-        while(totalPages > 0){
-            pageNumbers.add(totalPages);
-            totalPages = totalPages - 1;
+        for (int i = 1; i <= totalPages; i++) {
+            pageNumbers.add(i);
         }
 
 
@@ -152,8 +147,16 @@ class TransactionHelper {
             }
         }
 
-        transactionVO.total = transactionVO.total - amountToSubtract
-        transactionVO.totalwithtax = transactionVO.totalwithtax - amountToSubtract
+        // check to see if the transaction is fully paid, if so then we don't subtract from the total or totalwithtax
+        if(
+                transactionVO.totalwithtax - transactionVO.paid == 0 ||
+                transactionVO.isprocessed == 1 // if we are returning something from an already paid transaction
+        ){
+
+        } else {
+            transactionVO.total = transactionVO.total - amountToSubtract
+            transactionVO.totalwithtax = transactionVO.totalwithtax - amountToSubtract
+        }
 
         transactionVO.updateTimeStamp = LocalDateTime.now()
         transactionVO = transactionRepo.save(transactionVO)

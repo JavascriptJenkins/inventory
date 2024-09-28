@@ -8,7 +8,7 @@ import java.time.LocalDateTime
 
 @JsonIgnoreProperties
 @Entity
-@Table(name="Delivery")
+@Table(name="delivery")
 class DeliveryVO implements Serializable{
 
     @Id

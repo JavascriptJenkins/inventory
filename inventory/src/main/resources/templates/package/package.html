@@ -289,7 +289,7 @@
 
 </head>
 <body>
-<div th:insert="auth/navbar.html :: navbarfragment"></div>
+<div th:insert="fragments/palletmodenavbar.html :: palletmodefragment"></div>
 <div class="container">
     <div class="header-dark">
         <div class="back-button">
@@ -352,6 +352,8 @@
                         <p class="form-control" th:text="${package.total}"></p>
                     </div>
                     <input type="hidden" th:field="*{isprocessed}">
+                    <input type="hidden" th:field="*{weight}">
+                    <input type="hidden" th:field="*{packagebarcode}">
                     <input type="hidden" th:field="*{updateTimeStamp}">
                     <input type="hidden" th:field="*{createTimeStamp}">
                 </div>
@@ -398,9 +400,10 @@
 <!--        <input type="hidden" th:field="*{packagetype.packgetypeid}">-->
         <input type="hidden" th:field="*{packagetype.packagetypeid}">
         <input type="hidden" th:field="*{name}">
-        <button style="margin-top: 5px;" type="submit" class="btn btn-dark-theme">Review Package</button>
+<!--        <button style="margin-top: 5px;" type="submit" class="btn btn-dark-theme">Review Package</button>-->
     </form>
 
+    <a style="margin-top: 5px;" th:href="@{/crate?packageid=__${package.packageid}__&crateid=0}" class="btn btn-dark-theme">Crate</a>
 </div>
 </body>
 </html>

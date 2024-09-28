@@ -8,7 +8,7 @@ import java.time.LocalDateTime
 
 @JsonIgnoreProperties
 @Entity
-@Table(name="PackageType")
+@Table(name="packagetype")
 class PackageTypeVO implements Serializable {
 
     @Id

@@ -63,6 +63,17 @@
             color: #fff;
             border-color: #23272b;
         }
+        .btn-dark-custom {
+            background-color: #343a40;
+            color: #fff;
+            border: 1px solid #343a40;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .btn-dark-custom:hover {
+            background-color: #1d2124; /* Darker shade on hover */
+            color: #f8f9fa; /* Lighter text on hover */
+        }
         .notes-bubble {
             background-color: #f1f8fa;
             border: 1px solid #c0c0c0;
@@ -78,6 +89,30 @@
             background-color: #6c757d; /* Dark theme progress bar */
         }
     </style>
+    <script>
+        function copyToClipboard(elementId) {
+            // Get the element
+            var element = document.getElementById(elementId);
+
+            // Create a temporary input element to hold the value
+            var tempInput = document.createElement('input');
+            tempInput.value = element.textContent || element.innerText;  // Get the text inside the element
+
+            // Append it to the document temporarily
+            document.body.appendChild(tempInput);
+
+            // Select the input's value and copy it to the clipboard
+            tempInput.select();
+            document.execCommand("copy");
+
+            // Remove the temporary input element
+            document.body.removeChild(tempInput);
+
+            // Optional: Show a message or alert
+            alert("Copied to clipboard: " + tempInput.value);
+        }
+    </script>
+
 </head>
 <body>
 
@@ -123,14 +158,15 @@
             <label class="form-label"><b>Units Remaining</b></label>
             <div th:text="${quantityRemaining}"> </div>
         </div>
-        <div class="col-md-3">
-            <label class="form-label"><b>Batch Value</b></label>
-            <div th:text="${batchValueTotal}"> </div>
-        </div>
-        <div class="col-md-3">
-            <label class="form-label"><b>Remaining Batch Value</b></label>
-            <div th:text="${batchValueRemainingTotal}"> </div>
-        </div>
+<!--        todo: move these to an accounting page -->
+<!--        <div class="col-md-3">-->
+<!--            <label class="form-label"><b>Batch Value</b></label>-->
+<!--            <div th:text="${batchValueTotal}"> </div>-->
+<!--        </div>-->
+<!--        <div class="col-md-3">-->
+<!--            <label class="form-label"><b>Remaining Batch Value</b></label>-->
+<!--            <div th:text="${batchValueRemainingTotal}"> </div>-->
+<!--        </div>-->
     </div>
 
 
@@ -209,8 +245,13 @@
                     <td>
                         <a th:href="@{/product/editform?productnumber=__${product.productnumber}__&editmode=no}"
                            th:text="${product.barcode}"
+                           id="barcode-${product.productnumber}"
                            class="btn btn-secondary btn-sm">
                         </a>
+                        <!-- Button to copy barcode -->
+                        <button type="button" class="btn btn-dark-custom btn-sm" onclick="copyToClipboard('barcode-${product.productnumber}')">
+                            Copy
+                        </button>
                     </td>
                     <td th:text="${product.name}"></td>
                     <td th:text="${product.quantity}"></td>

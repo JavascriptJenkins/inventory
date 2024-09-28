@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 
 @JsonIgnoreProperties
 @Entity
-@Table(name="ProductType")
+@Table(name="producttype")
 class ProductTypeVO implements Serializable {
 
     @Id

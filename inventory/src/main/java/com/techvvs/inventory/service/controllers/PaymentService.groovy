@@ -8,10 +8,12 @@ import com.techvvs.inventory.model.PaymentVO
 import com.techvvs.inventory.model.TransactionVO
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import org.springframework.stereotype.Service
 
+import javax.transaction.Transactional
 import java.time.LocalDateTime
 
-@Component
+@Service
 class PaymentService {
 
     @Autowired
@@ -23,6 +25,7 @@ class PaymentService {
     @Autowired
     PaymentRepo paymentRepo
 
+    @Transactional
     TransactionVO submitPaymentForTransaction(int transactionid, int customerid, PaymentVO paymentVO) {
 
         CustomerVO existingCustomer = customerRepo.findById(customerid).get()
@@ -45,11 +48,17 @@ class PaymentService {
                 return existingTransaction
             }
 
+            // apply the payment to the total amount amount paid
             existingTransaction.paid = existingTransaction.paid + paymentVO.amountpaid
 
             // check for null and create if needed
             existingTransaction.payment_list == null ? existingTransaction.payment_list = new ArrayList<>() : existingTransaction.payment_list
             existingTransaction.payment_list.add(paymentVO)
+
+            // check to see if the full amount has been paid
+            if(existingTransaction.paid >= existingTransaction.totalwithtax){
+                existingTransaction.isprocessed = 1 // mark transaction as processed once the transaction is paid for
+            }
 
             existingTransaction = transactionRepo.save(existingTransaction)
 
@@ -59,6 +68,7 @@ class PaymentService {
         return new TransactionVO()
     }
 
+    @Transactional
     PaymentVO savePayment(PaymentVO paymentVO){
 
         paymentVO.createTimeStamp = LocalDateTime.now()

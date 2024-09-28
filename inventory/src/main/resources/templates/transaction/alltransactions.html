@@ -172,6 +172,7 @@
             <th scope="col">Transaction ID</th>
             <th scope="col">Customer Name</th>
             <th scope="col">Total Amount</th>
+            <th scope="col">Create Date</th>
         </tr>
         </thead>
         <tbody>
@@ -182,6 +183,7 @@
             <td><a th:href="@{/transaction?transactionid=__${transaction.transactionid}__&size=5&page=1}" th:text="${transaction.transactionid}"></a></td>
             <td th:text="${transaction.customervo.name}"></td>
             <td th:text="${transaction.totalwithtax - transaction.paid}"></td>
+            <td th:text="${transaction.createTimeStamp.toLocalDate()}"></td>
         </tr>
         </tbody>
     </table>
@@ -190,7 +192,7 @@
         <ul class="pagination">
             <li class="page-item" th:each="pageNumber : ${pageNumbers}">
                 <a class="page-link"
-                   th:href="@{/transaction/listall?size=__${size}__&page=__${pageNumber}__}"
+                   th:href="@{/transaction/listall?size=__${#lists.size(transactionPage.content) > 5 ? #lists.size(transactionPage.content) : 5}__&page=__${pageNumber == 1 ? 0 : pageNumber}__}"
                    th:text="${pageNumber}"
                    th:classappend="${pageNumber==transactionPage.number + 1} ? 'active'">
                 </a>
