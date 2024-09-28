@@ -43,6 +43,7 @@ class CrateHelper {
         //pagination
         int currentPage = page.orElse(0);    // Default to first page
         int pageSize = size.orElse(5);       // Default page size to 5
+        pageSize = pageSize < 5 ? 5 : pageSize; // make sure it's not less than 5
         Pageable pageable = PageRequest.of(currentPage, pageSize, Sort.by(Sort.Direction.ASC, "createTimeStamp"));
 
         Page<CrateVO> pageOfCrate = crateRepo.findAllByIsprocessed(0,pageable);
@@ -60,7 +61,7 @@ class CrateHelper {
 
         model.addAttribute("pageNumbers", pageNumbers);
         model.addAttribute("page", currentPage);
-        model.addAttribute("size", pageOfCrate.getTotalPages());
+        model.addAttribute("size", pageSize);
         model.addAttribute("pageOfCrate", pageOfCrate);
         // END PAGINATION
 
