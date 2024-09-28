@@ -81,6 +81,9 @@ class TransactionHelper {
             pageNumbers.add(i);
         }
 
+        if(currentPage > totalPages){
+            currentPage = 0;
+        }
 
         model.addAttribute("pageNumbers", pageNumbers);
         model.addAttribute("page", currentPage);
