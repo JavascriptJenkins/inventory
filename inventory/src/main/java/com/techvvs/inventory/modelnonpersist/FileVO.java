@@ -1,6 +1,9 @@
 package com.techvvs.inventory.modelnonpersist;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.time.LocalDateTime;
 
 public class FileVO {
 
@@ -8,6 +11,15 @@ public class FileVO {
 
     public String directory;
 
+    LocalDateTime createTimeStamp;
+
+    public LocalDateTime getCreateTimeStamp() {
+        return createTimeStamp;
+    }
+
+    public void setCreateTimeStamp(LocalDateTime createTimeStamp) {
+        this.createTimeStamp = createTimeStamp;
+    }
     public String getDirectory() {
         return directory;
     }

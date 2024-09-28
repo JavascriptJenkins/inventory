@@ -21,6 +21,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -112,6 +116,15 @@ public class TechvvsFileHelper {
             if (files != null) {
                 for (File file : files) {
                     FileVO fileVO = new FileVO();
+
+                    //start get date
+                    Path filePath = file.toPath();
+                    BasicFileAttributes attrs = Files.readAttributes(filePath, BasicFileAttributes.class);
+                    Instant creationInstant = attrs.creationTime().toInstant();
+                    LocalDateTime creationDate = LocalDateTime.ofInstant(creationInstant, ZoneId.systemDefault());
+                    //end get date
+
+                    fileVO.setCreateTimeStamp(creationDate);
                     fileVO.setFilename(file.getName());
                     fileVO.setDirectory(file.getParent()); // .\topdir\2011253\barcodes\all
                     fileList.add(fileVO);

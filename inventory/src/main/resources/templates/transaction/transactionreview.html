@@ -299,6 +299,9 @@
             <h3>Total Units:
                 <span th:text="${transaction.displayquantitytotal}"></span>
             </h3>
+            <h6>
+                <span th:text="${transaction.createTimeStamp.toLocalDate()}"></span>
+            </h6>
         </div>
     </div>
     <br>
@@ -347,6 +350,7 @@
             <thead>
             <tr>
                 <th scope="col">Invoices</th>
+                <th scope="col">Date</th>
             </tr>
             </thead>
             <tbody>
@@ -365,6 +369,9 @@
                         <!-- New View Invoice button -->
                         <button onclick="viewInvoice(event)" type="submit" class="btn btn-primary">View Invoice</button>
                     </div>
+                </td>
+                <td>
+                    <span th:text="${file.createTimeStamp.toLocalDate()}"></span>
                 </td>
             </tr>
             </tbody>
