@@ -54,6 +54,10 @@ class CrateHelper {
             pageNumbers.add(i);
         }
 
+        if(currentPage > totalPages){
+            currentPage = 0;
+        }
+
         model.addAttribute("pageNumbers", pageNumbers);
         model.addAttribute("page", currentPage);
         model.addAttribute("size", pageOfCrate.getTotalPages());

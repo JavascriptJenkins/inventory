@@ -84,6 +84,10 @@ class PackageHelper {
             pageNumbers.add(i);
         }
 
+        if(currentPage > totalPages){
+            currentPage = 0;
+        }
+
 
         // Add attributes to the model
         model.addAttribute("pageNumbers", pageNumbers);           // List of page numbers for pagination
