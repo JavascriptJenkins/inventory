@@ -24,6 +24,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -147,6 +148,10 @@ public class TechvvsFileHelper {
 
         List<FileVO> fileList = getFilesByDirectory(directoryPath);
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "createTimeStamp"));
+        // Apply sorting manually to the fileList
+        if (pageable.getSort().isSorted()) {
+            fileList.sort(Comparator.comparing(FileVO::getCreateTimeStamp)); // Sorting by createTimeStamp field
+        }
         int start = Math.min((int) pageable.getOffset(), fileList.size());
         int end = Math.min((start + pageable.getPageSize()), fileList.size());
         List<FileVO> pagedFiles = fileList.subList(start, end);
