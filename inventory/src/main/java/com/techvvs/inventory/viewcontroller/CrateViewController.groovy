@@ -71,7 +71,9 @@ public class CrateViewController {
             @RequestParam("crateid") String crateid,
             @RequestParam("packageid") Optional<String> packageid,
             @RequestParam("page") Optional<Integer> page,
-            @RequestParam("size") Optional<Integer> size
+            @RequestParam("size") Optional<Integer> size,
+            @RequestParam("cratepage") Optional<Integer> cratepage,
+            @RequestParam("cratesize") Optional<Integer> cratesize
     ){
         if(packageid.isPresent()){
             model = packageHelper.loadPackage(packageid.get(), model)
@@ -79,16 +81,16 @@ public class CrateViewController {
             PackageVO packageVO = (PackageVO) model.getAttribute("package")
             if(packageVO.crate != null){
                 // load the associated crate for the package if it exists
-                model = crateHelper.loadCrate(String.valueOf(packageVO.crate.crateid), model)
+                model = crateHelper.loadCrate(String.valueOf(packageVO.crate.crateid), model, cratepage, cratesize)
             } else {
-                model = crateHelper.loadCrate(crateid, model)
+                model = crateHelper.loadCrate(crateid, model, cratepage, cratesize)
             }
             CrateVO crateVO = (CrateVO) model.getAttribute("crate")
             crateVO.packageinscope = packageVO // if it's first time navigating from package create page, add the package to the packageinscope
         } else {
-            model = crateHelper.loadCrate(crateid, model)
+            model = crateHelper.loadCrate(crateid, model, cratepage, cratesize)
         }
-        crateHelper.bindPackages(model, page, size) // bind all the unprocessed packages to the table for selection
+        crateHelper.bindUnprocessedPackages(model, page, size) // bind all the unprocessed packages to the table for selection
         techvvsAuthService.checkuserauth(model)
         return "crate/crate.html";
     }
@@ -117,7 +119,9 @@ public class CrateViewController {
     String scan(@ModelAttribute( "crate" ) CrateVO crateVO,
                 Model model,
                 @RequestParam("page") Optional<Integer> page,
-                @RequestParam("size") Optional<Integer> size){
+                @RequestParam("size") Optional<Integer> size,
+                @RequestParam("cratepage") Optional<Integer> cratepage,
+                @RequestParam("cratesize") Optional<Integer> cratesize){
 
 
         // check here to see if incoming crateid already exists - idk if we need to
@@ -143,7 +147,8 @@ public class CrateViewController {
 
         crateVO.barcode = "" // reset barcode to empty
 
-        crateHelper.bindPackages(model, page, size) // bind all the unprocessed packages to the table for selection
+        crateHelper.bindUnprocessedPackages(model, page, size) // bind all the unprocessed packages to the table for selection
+        crateHelper.bindPackagesInCrate(model, cratepage, cratesize, crateVO)
         techvvsAuthService.checkuserauth(model)
         model.addAttribute("crate", crateVO);
 
@@ -157,7 +162,9 @@ public class CrateViewController {
                 @RequestParam("crateid") String crateid,
                 @RequestParam("barcode") String barcode,
                 @RequestParam("page") Optional<Integer> page,
-                @RequestParam("size") Optional<Integer> size){
+                @RequestParam("size") Optional<Integer> size,
+                @RequestParam("cratepage") Optional<Integer> cratepage,
+                @RequestParam("cratesize") Optional<Integer> cratesize){
 
         
 
@@ -169,7 +176,8 @@ public class CrateViewController {
 
         crateVO.barcode = "" // reset barcode to empty
 
-        crateHelper.bindPackages(model, page, size) // bind all the unprocessed packages to the table for selection
+        crateHelper.bindUnprocessedPackages(model, page, size) // bind all the unprocessed packages to the table for selection
+        crateHelper.bindPackagesInCrate(model, cratepage, cratesize, crateVO)
         techvvsAuthService.checkuserauth(model)
         model.addAttribute("crate", crateVO);
 
