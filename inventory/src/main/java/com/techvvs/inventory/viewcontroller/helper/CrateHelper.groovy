@@ -95,7 +95,7 @@ class CrateHelper {
 
         for(PackageVO packageincrate : crateVO.package_list){
 
-            if(packageincrate.displayquantitytotal == null){
+            if(crateVO.displayquantitytotal == 0){
                 packageincrate.displayquantitytotal = 1
                 crateVO.displayquantitytotal = 1
             } else {
@@ -206,7 +206,10 @@ class CrateHelper {
 
     }
 
-    Model loadCrate(String crateid, Model model){
+    Model loadCrate(String crateid,
+                    Model model,
+                    Optional<Integer> page,
+                    Optional<Integer> size){
 
         // if crateid == 0 then load normally, otherwise load the existing transaction
         if(crateid == "0"){
@@ -221,8 +224,12 @@ class CrateHelper {
             model.addAttribute("crate", crateVO);
 
         } else {
+
+
             CrateVO crateVO = new CrateVO()
             crateVO = getExistingCrate(crateid)
+            // todo: run pagination here to bind crate
+            bindPackagesInCrate(model, page, size, crateVO) // this binds the pageOfPackageInCrate
             crateVO = hydrateTransientQuantitiesForDisplay(crateVO)
             model.addAttribute("crate", crateVO)
         }
@@ -230,7 +237,7 @@ class CrateHelper {
     }
 
 
-    void bindPackages(Model model,
+    void bindUnprocessedPackages(Model model,
                       Optional<Integer> page,
                       Optional<Integer> size
 
@@ -241,33 +248,91 @@ class CrateHelper {
         int currentPage = page.orElse(0);
         int pageSize = size.orElse(5);
 
-        Pageable pageable;
-        if(currentPage == 0){
-            pageable = PageRequest.of(0 , pageSize);
-        } else {
-            pageable = PageRequest.of(currentPage - 1, pageSize);
+        if(
+                currentPage > pageSize
+        ){
+            currentPage = 0;
         }
 
+        pageSize = pageSize < 5 ? 5 : pageSize; // make sure it's not less than 5
 
-        // this needs to only find these based on their batchid
-//        Page<PackageVO> pageOfPackage = packageRepo.findAllByCrate(crateVO,pageable);
-        Page<PackageVO> pageOfPackage = packageRepo.findAllByIsprocessed(0,pageable);
+        // run first page request
+        Pageable pageable = PageRequest.of(currentPage, pageSize, Sort.by(Sort.Direction.ASC, "createTimeStamp"));
+        Page<PackageVO> pageOfPackage = packageRepo.findAllByIsprocessed(0,pageable,);  // Fetch paginated results
 
         int totalPages = pageOfPackage.getTotalPages();
+        int contentsize = pageOfPackage.getContent().size()
+
+        if(contentsize == 0){
+            // we detect contentsize of 0 then we'll just take the first page of data and show it
+            pageable = PageRequest.of(0, pageSize, Sort.by(Sort.Direction.ASC, "createTimeStamp"));
+            pageOfPackage = packageRepo.findAllByIsprocessed(0,pageable)
+        }
 
         List<Integer> pageNumbers = new ArrayList<>();
+        for (int i = 1; i <= totalPages; i++) {
+            pageNumbers.add(i);
+        }
 
-        while(totalPages > 0){
-            pageNumbers.add(totalPages);
-            totalPages = totalPages - 1;
+        if(currentPage > totalPages){
+            currentPage = 0;
         }
 
         model.addAttribute("pageNumbers", pageNumbers);
         model.addAttribute("page", currentPage);
-        model.addAttribute("size", pageOfPackage.getTotalPages());
+        model.addAttribute("size", pageSize);
         model.addAttribute("packagePage", pageOfPackage);
     }
 
+    // todo: placeholder method here to bind the pages of packages inside the crate
+    void bindPackagesInCrate(Model model,
+                      Optional<Integer> page,
+                      Optional<Integer> size,
+                             CrateVO crateVO
+
+    ){
+
+
+        //pagination
+        int currentPage = page.orElse(0);
+        int pageSize = size.orElse(5);
+
+        if(
+                currentPage > pageSize
+        ){
+            currentPage = 0;
+        }
+
+        pageSize = pageSize < 5 ? 5 : pageSize; // make sure it's not less than 5
+
+
+        // run first page request
+        Pageable pageable = PageRequest.of(currentPage, pageSize, Sort.by(Sort.Direction.ASC, "createTimeStamp"));
+        Page<PackageVO> pageOfPackageInCrate = packageRepo.findAllByCrate(crateVO,pageable);  // Fetch paginated results
+
+        int totalPages = pageOfPackageInCrate.getTotalPages();
+        int contentsize = pageOfPackageInCrate.getContent().size()
+
+        if(contentsize == 0){
+            // we detect contentsize of 0 then we'll just take the first page of data and show it
+            pageable = PageRequest.of(0, pageSize, Sort.by(Sort.Direction.ASC, "createTimeStamp"));
+            pageOfPackageInCrate = packageRepo.findAllByCrate(crateVO,pageable);
+        }
+
+        List<Integer> pageNumbers = new ArrayList<>();
+        for (int i = 1; i <= totalPages; i++) {
+            pageNumbers.add(i);
+        }
+
+        if(currentPage > totalPages){
+            currentPage = 0;
+        }
+
+        model.addAttribute("cratepageNumbers", pageNumbers);
+        model.addAttribute("cratepage", currentPage);
+        model.addAttribute("cratesize", pageSize);
+        model.addAttribute("pageOfPackageInCrate", pageOfPackageInCrate);
+    }
 
 
 }

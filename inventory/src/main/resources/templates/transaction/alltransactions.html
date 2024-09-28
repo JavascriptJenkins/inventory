@@ -157,8 +157,8 @@
     <div class="record-selector">
         <label for="customerselectid">Filter:</label>
         <select class="form-control" id="customerselectid">
-            <option value="" selected="selected">Filter by customer</option>
-            <option th:each="customer : ${customers}" th:value="${customer.customerid}" th:text="${customer.name}"></option>
+            <option value="0">Filter by customer</option>
+            <option th:each="customer : ${customers}" th:value="${customer.customerid}" th:text="${customer.name}" th:selected="${customer.customerid == customerid}"></option>
         </select>
     </div>
 
@@ -192,7 +192,7 @@
         <ul class="pagination">
             <li class="page-item" th:each="pageNumber : ${pageNumbers}">
                 <a class="page-link"
-                   th:href="@{/transaction/listall?size=__${size}__&page=__${pageNumber == 1 ? 0 : pageNumber - 1}__}"
+                   th:href="@{/transaction/listall?size=__${size}__&page=__${pageNumber == 1 ? 0 : pageNumber - 1}__&customerid=__${customerid == 0 ? 0 : customerid}__}"
                    th:text="${pageNumber}"
                    th:classappend="${pageNumber==transactionPage.number + 1} ? 'active'">
                 </a>

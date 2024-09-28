@@ -99,6 +99,7 @@ class TransactionHelper {
         model.addAttribute("page", currentPage);
         model.addAttribute("size", pageSize);
         model.addAttribute("transactionPage", pageOfTransaction);
+        model.addAttribute("customerid", customerid.orElse(0));
         // END PAGINATION
 
 
@@ -108,7 +109,7 @@ class TransactionHelper {
     Page<TransactionVO> runPageRequest(Pageable pageable, Optional<Integer> customerid) {
         Page<TransactionVO> pageOfTransaction
                 // this means someone selected a value on the ui and we need to run a filtered query
-        if(customerid.isPresent()){
+        if(customerid.isPresent() && customerid.get() > 0) {
             pageOfTransaction = transactionRepo.findByCustomervo_customerid(customerid.get(),pageable);
         } else {
              pageOfTransaction = transactionRepo.findAll(pageable);

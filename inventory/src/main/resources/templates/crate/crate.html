@@ -427,8 +427,19 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:each="item : ${crate.package_list}" th:data-barcode="${item.packagebarcode}">
-                        <td th:text="${item.packagebarcode}" data-barcode="${item.packagebarcode}"></td>
+<!--                    <tr th:each="item : ${crate.package_list}" th:data-barcode="${item.packagebarcode}">-->
+                    <tr th:each="item, iStat : ${pageOfPackageInCrate.content}"
+                        th:style="${iStat.odd}? 'font-weight: bold;'"
+                        th:alt-title="${iStat.even}? 'even' : 'odd'"
+                        th:data-barcode="${item.packagebarcode}">
+
+                    <!--                        <td th:text="${item.packagebarcode}" data-barcode="${item.packagebarcode}"></td>-->
+                        <td>
+                            <a th:href="@{/crate?crateid=__${crate.crateid}__&packageid=__${item.packageid}__}"
+                               th:text="${item.packagebarcode}"
+                               class="btn btn-secondary btn-sm">
+                            </a>
+                        </td>
                         <td th:text="${item.name}" data-barcode="${item.packagebarcode}"></td>
                         <td>
                             <a id="deleteItemID" href="#" onclick="deleteItemFromCrate(this)">
@@ -438,6 +449,17 @@
                     </tr>
                     </tbody>
                 </table>
+                <nav th:if="${pageOfPackageInCrate.totalPages > 0}">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item" th:each="pageNumber : ${cratepageNumbers}">
+                            <a class="page-link btn btn-secondary btn-sm mx-1"
+                               th:href="@{/crate?cratesize=__${cratesize}__&cratepage=__${pageNumber == 1 ? 0 : pageNumber - 1}__&crateid=__${crate.crateid}__}"
+                               th:text="${pageNumber}"
+                               th:classappend="${pageNumber==pageOfPackageInCrate.number + 1} ? 'active'">
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
         </div>
 
 
@@ -460,7 +482,13 @@
                     </tr>
                     </tbody>
                 </table>
-                <button type="button" class="btn-submit-dark" onclick="hydrateBarcodeInput()">Add To Crate</button>
+                <button th:if="${crate.packageinscope.crate == null}" type="button" class="btn-submit-dark" onclick="hydrateBarcodeInput()">Add To Crate</button>
+
+                <a th:href="@{/package?packageid=__${crate.packageinscope.packageid}__}"
+                   class="btn-submit-dark">
+                    Modify Package
+                </a>
+
             </div>
         </div>
     </div>
@@ -492,7 +520,7 @@
                 <ul class="pagination justify-content-center">
                     <li class="page-item" th:each="pageNumber : ${pageNumbers}">
                         <a class="page-link btn btn-secondary btn-sm mx-1"
-                           th:href="@{/crate?size=__${#lists.size(packagePage.content)}__&page=__${pageNumber}__&crateid=__${crate.crateid}__}"
+                           th:href="@{/crate?size=__${size}__&page=__${pageNumber == 1 ? 0 : pageNumber - 1}__&crateid=__${crate.crateid}__}"
                            th:text="${pageNumber}"
                            th:classappend="${pageNumber==packagePage.number + 1} ? 'active'">
                         </a>
