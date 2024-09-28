@@ -389,7 +389,7 @@ public class CheckoutViewController {
         String transientemail = transactionVO.email
         String transientphonunumber = transactionVO.phonenumber
         String transientaction =  transactionVO.action
-        String filename =  transactionVO.filename
+        String filename =  removeAfterPdf(transactionVO.filename)
         // end bind transients
         String contentsofinvoice = ""
 
@@ -439,6 +439,14 @@ public class CheckoutViewController {
             return "transaction/transactionreview.html";// return same page with errors
         }
 
+    }
+
+    def removeAfterPdf(String input) {
+        int index = input.indexOf('.pdf')
+        if (index != -1) {
+            return input.substring(0, index + 4)  // Keep everything up to and including '.pdf'
+        }
+        return input  // Return the original string if '.pdf' is not found
     }
 
 
