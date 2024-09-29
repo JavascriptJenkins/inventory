@@ -19,6 +19,8 @@ class DeliveryVO implements Serializable{
     String name;
     @JsonProperty
     String description;
+    @JsonProperty
+    String deliverybarcode
 
     @JsonProperty
     @OneToOne(cascade= CascadeType.ALL, fetch  = FetchType.EAGER)
@@ -43,7 +45,17 @@ class DeliveryVO implements Serializable{
     int iscanceled;
 
     @JsonProperty
-    int isdelivered;
+    int isprocessed;
+
+    @Transient
+    PackageVO packageinscope
+
+    @Transient
+    int displayquantitytotal
+
+    // transient field for passing barcode on checkout page back to controller
+    @Transient
+    String barcode
 
     // generic fields below
     @JsonProperty

@@ -198,6 +198,9 @@
         .table-title {
             color: black;
         }
+        .table-title-popup {
+            color: white;
+        }
 
         /* Style the label: dark background with white text */
         .form-check-label {
@@ -219,6 +222,57 @@
             display: none; /* Hide by default */
         }
     </style>
+
+    <!-- CSS Styles -->
+    <style>
+        .popup-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7); /* Black overlay with transparency */
+            z-index: 9999; /* Ensure it appears above other content */
+        }
+
+        .popup-content {
+            background-color: #343a40;
+            color: white;
+            width: 80%; /* Large portion of the screen */
+            max-width: 900px;
+            height: 80%;
+            padding: 20px;
+            margin: auto;
+            margin-top: 5%;
+            border-radius: 15px;
+            border: 5px solid black; /* Thick black border */
+            box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.8); /* Shadow for hovering effect */
+            position: relative;
+        }
+
+        .close-popup {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 2rem;
+            color: white;
+            cursor: pointer;
+        }
+
+        .close-popup:hover {
+            color: #ff0000; /* Red on hover */
+        }
+
+        /* Blur background when popup is visible */
+        body.blur-background {
+            filter: blur(8px);
+            overflow: hidden; /* Disable scrolling when popup is active */
+        }
+    </style>
+
 
     <script>
         $(document).ready(function () {
@@ -386,6 +440,30 @@
 
     </script>
 
+    <!-- JavaScript to handle popup logic -->
+    <script>
+        $(document).ready(function() {
+            // Check if delivery.packageinscope is not null
+            var packageInScopeExists = /* logic to check delivery.packageinscope != null */ true; // Modify as necessary
+
+            if (packageInScopeExists) {
+                showPopup();
+            }
+
+            // Show popup
+            function showPopup() {
+                $('#popupPackageInScopeTable').fadeIn();  // Display the popup
+                $('#mainContent').addClass('blur-background');  // Blur the main content only
+            }
+
+            // Close popup when 'X' is clicked
+            $('.close-popup').on('click', function() {
+                $('#popupPackageInScopeTable').fadeOut();  // Hide the popup
+                $('#mainContent').removeClass('blur-background');  // Remove blur effect from the main content
+            });
+        });
+    </script>
+
 
 </head>
 <body>
@@ -393,7 +471,7 @@
     <input type="hidden" name="_method" value="delete" />
 </form>
 <div th:insert="fragments/palletmodenavbar.html :: palletmodefragment"></div>
-<div class="container">
+<div id="mainContent" class="container">
     <div class="header-dark">
         <div class="back-button">
             <a th:href="@{/dashboard/index}"><i class="bi bi-arrow-left-circle"></i></a>
@@ -569,35 +647,6 @@
         </div>
 
 
-        <!-- Right side: Package in Scope Table -->
-        <div id="popupPackageInScopeTable" th:if="${delivery.packageinscope != null}" class="col-md-4">
-            <div style="overflow-x: auto;">
-                <h3 class="text-center table-title"><span th:text="${delivery.packageinscope.name}"></span> | UPCA:
-                    <span id="packageBarcodeId" th:text="${delivery.packageinscope.packagebarcode}"></span></h3>
-                <table id="packageInScopeTable" class="table table-hover table-striped table-dark">
-                    <thead>
-                    <tr>
-                        <th>Product</th>
-                        <th>Quantity</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="item : ${delivery.packageinscope.product_package_list}" th:data-barcode="${item.barcode}">
-                        <td th:text="${item.name}" data-barcode="${item.barcode}">Item Name</td>
-                        <td th:text="${item.displayquantity}" >Item Name</td>
-                    </tr>
-                    </tbody>
-                </table>
-                <button th:if="${delivery.packageinscope.delivery == null}" type="button" class="btn-submit-dark" onclick="hydrateBarcodeInput()">Add To Delivery</button>
-
-                <a th:href="@{/package?packageid=__${delivery.packageinscope.packageid}__&deliveryid=__${delivery.deliveryid}__}"
-                   class="btn-submit-dark">
-                    Modify Package
-                </a>
-
-            </div>
-        </div>
-    </div>
     <!-- Table that shows the packages available to add -->
     <div class="row mt-4"> <!-- Added margin top for spacing -->
         <div class="col-md-6"> <!-- Spanning across half the width (6 out of 12) -->
@@ -687,6 +736,38 @@
         </div>
     </div>
 </div>
+
+
+    <!-- Popup Table -->
+    <div id="popupPackageInScopeTable" class="popup-overlay">
+        <div class="popup-content">
+            <button class="close-popup">
+                <i class="bi bi-x-lg"></i>
+            </button>
+            <h3 class="text-center table-title-popup"><span th:text="${delivery.packageinscope.name}"></span> | UPCA:
+                <span id="packageBarcodeId" th:text="${delivery.packageinscope.packagebarcode}"></span></h3>
+            <table id="packageInScopeTable" class="table table-hover table-striped table-dark">
+                <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="item : ${delivery.packageinscope.product_package_list}" th:data-barcode="${item.barcode}">
+                    <td th:text="${item.name}" data-barcode="${item.barcode}">Item Name</td>
+                    <td th:text="${item.displayquantity}" >Item Name</td>
+                </tr>
+                </tbody>
+            </table>
+            <button th:if="${delivery.packageinscope.delivery == null}" type="button" class="btn-submit-dark" onclick="hydrateBarcodeInput()">Add To Delivery</button>
+            <a th:href="@{/package?packageid=__${delivery.packageinscope.packageid}__&deliveryid=__${delivery.deliveryid}__}"
+               class="btn-submit-dark">Modify Package</a>
+        </div>
+    </div>
+</div>
+
+
 
 </body>
 

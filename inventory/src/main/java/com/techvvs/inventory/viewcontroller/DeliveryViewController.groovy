@@ -2,16 +2,21 @@ package com.techvvs.inventory.viewcontroller
 
 import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.jparepo.PackageRepo
+import com.techvvs.inventory.model.CrateVO
+import com.techvvs.inventory.model.DeliveryVO
 import com.techvvs.inventory.model.PackageVO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.modelnonpersist.FileVO
 import com.techvvs.inventory.printers.PrinterService
 import com.techvvs.inventory.service.auth.TechvvsAuthService
+import com.techvvs.inventory.service.controllers.CrateService
+import com.techvvs.inventory.service.controllers.DeliveryService
 import com.techvvs.inventory.service.controllers.PackageService
 import com.techvvs.inventory.service.controllers.TransactionService
 import com.techvvs.inventory.service.paging.FilePagingService
 import com.techvvs.inventory.service.transactional.CartDeleteService
 import com.techvvs.inventory.util.TechvvsFileHelper
+import com.techvvs.inventory.viewcontroller.helper.CrateHelper
 import com.techvvs.inventory.viewcontroller.helper.DeliveryHelper
 import com.techvvs.inventory.viewcontroller.helper.PackageHelper
 import org.springframework.beans.factory.annotation.Autowired
@@ -22,11 +27,9 @@ import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.*
 
-import javax.swing.text.html.Option
-
-@RequestMapping("/package")
+@RequestMapping("/delivery")
 @Controller
-public class PackageViewController {
+public class DeliveryViewController {
 
     @Autowired
     CartDeleteService cartDeleteService
@@ -42,6 +45,12 @@ public class PackageViewController {
 
     @Autowired
     PackageHelper packageHelper
+
+    @Autowired
+    CrateHelper crateHelper
+
+    @Autowired
+    CrateService crateService
 
     @Autowired
     PackageRepo packageRepo
@@ -61,113 +70,130 @@ public class PackageViewController {
     @Autowired
     DeliveryHelper deliveryHelper
 
+    @Autowired
+    DeliveryService deliveryService
+
     //default home mapping
     @GetMapping
     String viewNewForm(
             Model model,
-            @RequestParam("packageid") String packageid,
-            @RequestParam("deliveryid") Optional<String> deliveryid
+            @RequestParam("deliveryid") String deliveryid,
+            @RequestParam("packageid") Optional<String> packageid,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size,
+            @RequestParam("deliverypage") Optional<Integer> deliverypage,
+            @RequestParam("deliverysize") Optional<Integer> deliverysize,
+            @RequestParam("cratepage") Optional<Integer> cratepage,
+            @RequestParam("cratesize") Optional<Integer> cratesize
     ){
-
-
-        model = packageHelper.loadPackage(packageid, model)
-
-        deliveryid.isPresent() ? model = deliveryHelper.loadDelivery(deliveryid.get(), model, Optional.of(0), Optional.of(0)) : model
-
-
-
-        // fetch all customers from database and bind them to model
-        packageHelper.getAllPackageTypes(model)
+        if(packageid.isPresent()){
+            model = packageHelper.loadPackage(packageid.get(), model)
+            // check to see if this package is already in a delivery
+            PackageVO packageVO = (PackageVO) model.getAttribute("package")
+            if(packageVO.delivery != null){
+                // load the associated delivery for the package if it exists
+                model = deliveryHelper.loadDelivery(String.valueOf(packageVO.delivery.deliveryid), model, deliverypage, deliverysize)
+            } else {
+                model = deliveryHelper.loadDelivery(deliveryid, model, deliverypage, deliverysize)
+            }
+            DeliveryVO deliveryVO = (DeliveryVO) model.getAttribute("delivery")
+            deliveryVO.packageinscope = packageVO // if it's first time navigating from package create page, add the package to the packageinscope
+        } else {
+            model = deliveryHelper.loadDelivery(deliveryid, model, deliverypage, deliverysize)
+        }
+        deliveryHelper.bindUnprocessedPackages(model, page, size) // bind all the unprocessed packages to the table for selection
+        deliveryHelper.bindUnprocessedCrates(model, cratepage, cratesize) // bind all the unprocessed packages to the table for selection
         techvvsAuthService.checkuserauth(model)
-        return "package/package.html";
+        return "delivery/delivery.html";
     }
 
     //get the pending carts
-    @GetMapping("pendingpackages")
-    String viewPendingPackages(
-            @ModelAttribute( "package" ) PackageVO packageVO,
+    @GetMapping("pendingdeliveries")
+    String viewPendingCrates(
+            @ModelAttribute( "delivery" ) DeliveryVO deliveryVO,
             Model model,
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size
     ){
 
         // bind the page of packages
-        packageHelper.findPendingPackages(model, page, size)
+        deliveryHelper.findPendingDeliveries(model, page, size)
 
-        // fetch all customers from database and bind them to model
-        packageHelper.getAllPackageTypes(model)
         techvvsAuthService.checkuserauth(model)
-        model.addAttribute("package", packageVO);
-        return "package/pendingpackages.html";
+        model.addAttribute("delivery", deliveryVO);
+        return "delivery/pendingdeliverys.html";
     }
 
     // todo: write in a validation check to make sure you can't add more than is available in the batch
     // first user creates a cart by scanning items.
     // on next page "final package", the cart will be transformed into a transaction
     @PostMapping("/scan")
-    String scan(@ModelAttribute( "package" ) PackageVO packageVO,
+    String scan(@ModelAttribute( "delivery" ) DeliveryVO deliveryVO,
                 Model model,
                 @RequestParam("page") Optional<Integer> page,
-                @RequestParam("size") Optional<Integer> size){
+                @RequestParam("size") Optional<Integer> size,
+                @RequestParam("deliverypage") Optional<Integer> deliverypage,
+                @RequestParam("deliverysize") Optional<Integer> deliverysize){
 
 
+        // check here to see if incoming deliveryid already exists - idk if we need to
 
-        packageVO = packageHelper.validatePackageReviewVO(packageVO, model)
+        deliveryVO = deliveryHelper.validateDeliveryReviewVO(deliveryVO, model)
 
         // only proceed if there is no error
         if(model.getAttribute("errorMessage") == null){
             // save a new transaction object in database if we don't have one
 
-            packageVO = packageService.savePackageIfNew(packageVO)
+            deliveryVO = deliveryService.saveDeliveryIfNew(deliveryVO)
 
             //  if the transactionVO comes back here without a
             // after transaction is created, search for the product based on barcode
 
-           // cartVO = cartService.searchForProductByBarcode(cartVO, model, page, size)
-            packageVO = packageService.searchForProductByBarcodeAndPackage(packageVO, model, page, size)
+            deliveryVO = deliveryService.searchForPackageByBarcodeAndDelivery(deliveryVO, model, page, size)
 
 
         }
 
-        packageVO = packageHelper.hydrateTransientQuantitiesForDisplay(packageVO)
+        deliveryVO = deliveryHelper.hydrateTransientQuantitiesForDisplay(deliveryVO)
 
 
-        packageVO.barcode = "" // reset barcode to empty
-        packageVO.quantityselected = 0 // reset barcode to empty
+        deliveryVO.barcode = "" // reset barcode to empty
 
+        deliveryHelper.bindUnprocessedPackages(model, page, size) // bind all the unprocessed packages to the table for selection
+        deliveryHelper.bindPackagesInDelivery(model, deliverypage, deliverysize, deliveryVO)
         techvvsAuthService.checkuserauth(model)
-        model.addAttribute("package", packageVO);
-        // fetch all customers from database and bind them to model
-        packageHelper.getAllPackageTypes(model)
+        model.addAttribute("delivery", deliveryVO);
 
-        return "package/package.html";
+        return "delivery/delivery.html";
     }
 
-    @PostMapping("/delete")
-    String delete(
+    @PostMapping("/deletepackage")
+    String deletepackage(
                 Model model,
                 
-                @RequestParam("packageid") String packageid,
+                @RequestParam("crateid") String crateid,
                 @RequestParam("barcode") String barcode,
                 @RequestParam("page") Optional<Integer> page,
-                @RequestParam("size") Optional<Integer> size){
+                @RequestParam("size") Optional<Integer> size,
+                @RequestParam("cratepage") Optional<Integer> cratepage,
+                @RequestParam("cratesize") Optional<Integer> cratesize){
 
         
 
-        PackageVO packageVO = packageHelper.getExistingPackage(packageid)
+        CrateVO crateVO = crateHelper.getExistingCrate(crateid)
 
-        packageVO = packageService.deleteProductFromPackage(packageVO, barcode)
+        crateVO = crateService.deletePackageFromCrate(crateVO, barcode)
 
-        packageVO = packageHelper.hydrateTransientQuantitiesForDisplay(packageVO)
+        crateVO = crateHelper.hydrateTransientQuantitiesForDisplay(crateVO)
 
-        packageVO.barcode = "" // reset barcode to empty
+        crateVO.barcode = "" // reset barcode to empty
 
+        crateHelper.bindUnprocessedPackages(model, page, size) // bind all the unprocessed packages to the table for selection
+        crateHelper.bindPackagesInCrate(model, cratepage, cratesize, crateVO)
         techvvsAuthService.checkuserauth(model)
-        model.addAttribute("package", packageVO);
-        // fetch all customers from database and bind them to model
-        packageHelper.getAllPackageTypes(model)
+        model.addAttribute("crate", crateVO);
 
-        return "package/package.html";
+        return "crate/crate.html";
     }
 
 

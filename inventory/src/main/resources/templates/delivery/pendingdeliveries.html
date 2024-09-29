@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pending Deliveries</title>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-kQtW33rZJAHjgefvhyyzcGF3C5TFyBQBA13V1RKPf4uH+bwyzQxZ6CmMZHmNBEfJ" crossorigin="anonymous"></script>
+    <link rel="stylesheet" type="text/css" media="all" href="/css/table.css" th:href="@{/css/table.css}" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            color: #fff;
+            font-family: 'Roboto', sans-serif;
+        }
+        .table-hover tbody tr:hover {
+            background-color: #e0f7fa;
+        }
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: #f1f8fa;
+        }
+        .table-dark thead {
+            background-color: #343a40;
+            color: #fff;
+        }
+        .btn-secondary, .btn-primary {
+            color: #fff;
+            background-color: #343a40;
+            border-color: #343a40;
+        }
+        .btn-secondary:hover, .btn-primary:hover {
+            background-color: #23272b;
+            border-color: #1d2124;
+        }
+        .form-control, .form-select {
+            background-color: #343a40;
+            color: #fff;
+            border: 1px solid #343a40;
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: #343a40;
+            color: #fff;
+            border-color: #1d2124;
+            box-shadow: none;
+        }
+        .header-dark {
+            background-color: #343a40;
+            color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-family: 'Roboto', sans-serif;
+            border: 1px solid transparent;
+            border-image: linear-gradient(to right, #c0c0c0, #ffffff);
+            border-image-slice: 1;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+        }
+        .record-selector {
+            margin-bottom: 15px;
+            background-color: #343a40;
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            display: inline-block;
+        }
+        .record-selector select {
+            background-color: #23272b;
+            color: #fff;
+            border: 1px solid #343a40;
+        }
+        .record-selector select:focus {
+            border-color: #1d2124;
+            box-shadow: none;
+        }
+        .header-small {
+            background-color: #343a40;
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-family: 'Roboto', sans-serif;
+            border: 1px solid transparent;
+            border-image: linear-gradient(to right, #c0c0c0, #ffffff);
+            border-image-slice: 1;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: fit-content;
+            max-width: 400px;
+            margin: 0 auto 15px auto;
+            text-align: center;
+        }
+        .back-button {
+            margin-right: 20px;
+            font-size: 2rem;
+        }
+        .back-button a {
+            color: #343a40;
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 50%;
+            border: 2px solid #343a40;
+        }
+        .back-button a:hover {
+            background-color: #23272b;
+            color: #fff;
+            border-color: #23272b;
+        }
+        .alert {
+            background-color: #343a40;
+            color: #fff;
+            border: 1px solid #343a40;
+        }
+        .alert-danger {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+        .alert-success {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+        .alert-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .pagination .page-link {
+            color: #fff;  /* Changed to white */
+            background-color: #343a40;
+            border: 1px solid #343a40;
+        }
+        .pagination .page-link:hover {
+            background-color: #23272b;
+            border-color: #1d2124;
+        }
+        .pagination .active .page-link {
+            color: #fff;
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .required:after {
+            content: " *";
+            color: red;
+        }
+        .form-label {
+            color: #000;  /* Changed to black */
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $('#barcodeInput').focus();
+        });
+
+        $('#barcodeInput').on('input', function() {
+            var barcode = $(this).val();
+            if (barcode.length >= 11) {
+                $(this).val(barcode.substring(0, 11));
+                $('#barcodeForm').submit();
+            }
+        });
+    </script>
+
+    <script>
+        $(document).ready(function() {
+            function getParameterByName(name) {
+                name = name.replace(/[\[\]]/g, '\\$&');
+                var url = window.location.href;
+                var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)');
+                var results = regex.exec(url);
+                if (!results) return null;
+                if (!results[2]) return '';
+                return decodeURIComponent(results[2].replace(/\+/g, ' '));
+            }
+
+
+            var currentSize = getParameterByName('size') || '5'; // Default to 10 if not set
+            var currentPage = getParameterByName('page') || '0'; // Default to 1 if not set
+
+
+            // Set the dropdown to the current size
+            $('#recordSize').val(currentSize);
+
+            $('#recordSize').change(function() {
+                var selectedSize = $(this).val();
+                var newUrl = '/crate/pendingdeliveries?size=' + selectedSize + '&page=' + currentPage;
+                window.location.href = newUrl;
+            });
+
+<!--            $('#customerselectid').change(function() {-->
+<!--                var selectedCustomerId = $(this).val();-->
+<!--                var newUrl = '/transaction/listall?size=' + currentSize + '&page=' + currentPage + '&customerid=' + selectedCustomerId;-->
+<!--                window.location.href = newUrl;-->
+<!--            });-->
+        });
+    </script>
+
+</head>
+<body>
+
+<div th:insert="fragments/palletmodenavbar.html :: palletmodefragment"></div>
+
+<div class="container">
+
+    <div class="header-dark">
+        <div class="back-button">
+            <a th:href="@{/dashboard/index}"><i class="bi bi-arrow-left-circle"></i></a>
+        </div>
+        <div>
+            <h1>Pending Deliverys</h1>
+            <p>Review pending deliverys</p>
+        </div>
+    </div>
+    <br>
+
+    <!-- Dropdown for selecting record size -->
+    <div class="record-selector">
+        <label for="recordSize">Display Records:</label>
+        <select id="recordSize" class="form-select">
+            <option value="5">5 Records</option>
+            <option value="10">10 Records</option>
+            <option value="100">100 Records</option>
+        </select>
+    </div>
+
+    <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
+    <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
+
+    <table class="table table-hover table-striped table-dark">
+        <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Delivery ID</th>
+            <th scope="col">Delivery Name</th>
+            <th scope="col">Total Amount</th>
+            <th scope="col">Create Date</th>
+        </tr>
+        </thead>
+        <tbody>
+            <tr th:each="delivery, iStat : ${pageOfDelivery.content}"
+                th:if="${delivery.isprocessed != 1}"
+                th:style="${iStat.odd}? 'font-weight: bold;'"
+                th:alt-title="${iStat.even}? 'even' : 'odd'">
+                <td th:text="${delivery.deliveryid}"></td>
+                <td><a th:href="@{/delivery?deliveryid=__${delivery.deliveryid}__}" th:text="${delivery.deliveryid}"></a></td>
+                <td th:text="${delivery.name}"></td>
+                <td th:text="${delivery.total}"></td>
+                <td th:text="${delivery.createTimeStamp.toLocalDate()}"></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <nav th:if="${pageOfDelivery.totalPages > 0}">
+        <ul class="pagination">
+            <li class="page-item" th:each="pageNumber : ${pageNumbers}">
+                <a class="page-link"
+                   th:href="@{/delivery/pendingdeliveries?size=__${size}__&page=__${pageNumber == 1 ? 0 : pageNumber - 1}__}"
+                   th:text="${pageNumber}"
+                   th:classappend="${pageNumber==pageOfDelivery.number + 1} ? 'active'">
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+</div>
+
+</body>
+</html>
