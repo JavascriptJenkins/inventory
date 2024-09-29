@@ -47,6 +47,12 @@ class DeliveryVO implements Serializable{
     @JsonProperty
     int isprocessed;
 
+    @JsonProperty
+    int status;
+
+    @JsonProperty
+    Double total;
+
     @Transient
     PackageVO packageinscope
 

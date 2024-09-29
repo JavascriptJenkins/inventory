@@ -91,7 +91,7 @@ class DeliveryService {
 
 
     @Transactional
-    CrateVO saveDeliveryIfNew(DeliveryVO deliveryVO) {
+    DeliveryVO saveDeliveryIfNew(DeliveryVO deliveryVO) {
         // Ensure packageVO is not null before any operations
         if (deliveryVO == null) {
             throw new IllegalArgumentException("DeliveryVO cannot be null");
@@ -99,9 +99,8 @@ class DeliveryService {
 
         String barcode = deliveryVO.getBarcode();
 
-        // Check if the package is new and if the product list is empty
-        if ((deliveryVO.deliveryid == null || deliveryVO.deliveryid == 0)
-                && (deliveryVO.package_list == null || deliveryVO.package_list.isEmpty())) {
+        // Check if the package is new
+        if ((deliveryVO.deliveryid == null || deliveryVO.deliveryid == 0)) {
 
 //            // Fetch the PackageTypeVO to ensure it exists
 //            PackageTypeVO packageTypeVO = packageTypeRepo.findById(packageVO.getPackagetype().getPackagetypeid()).get()
@@ -110,6 +109,7 @@ class DeliveryService {
             deliveryVO.setUpdateTimeStamp(LocalDateTime.now());
             deliveryVO.setCreateTimeStamp(LocalDateTime.now());
             deliveryVO.setIsprocessed(0);
+            deliveryVO.setStatus(0);
            // deliveryVO.setWeight(0) // todo: set weight from product table in database
             deliveryVO.deliverybarcode = barcodeHelper.generateBarcodeData(generateOneDigitNumber(), generateOneDigitNumber(), generateSevenDigitNumber(), generateOneDigitNumber()); // generate barcode....
 //            packageVO.setPackagetype(packageTypeVO);
@@ -144,25 +144,45 @@ class DeliveryService {
 
     // add product to cart and then update the cart and product associations
     @Transactional
-    CrateVO searchForPackageByBarcodeAndCrate(CrateVO crateVO, Model model, Optional<Integer> page, Optional<Integer> size
+    DeliveryVO searchForPackageByBarcodeAndDelivery(DeliveryVO deliveryVO, Model model, Optional<Integer> page, Optional<Integer> size
 
     ){
 
 
         // validate the barcode and add the last digit here
-        int checksum =barcodeHelper.calculateUPCAChecksum(crateVO.barcode)
+        int checksum =barcodeHelper.calculateUPCAChecksum(deliveryVO.barcode)
 
-        String barcode = crateVO.barcode + String.valueOf(checksum)
+        String barcode = deliveryVO.barcode + String.valueOf(checksum)
 
         // NOTE: reference the packageservice for a method that handles quantity mode when scanning
-        packageService.savePackageCrateAssociations(barcode, crateVO, model, 1)
+        packageService.savePackageDeliveryAssociations(barcode, deliveryVO, model, 1)
 
 
 
 
-        return crateVO
+        return deliveryVO
     }
 
+
+    @Transactional
+    DeliveryVO searchForCrateByBarcodeAndDelivery(DeliveryVO deliveryVO, Model model, Optional<Integer> page, Optional<Integer> size
+
+    ){
+
+
+        // validate the barcode and add the last digit here
+        int checksum =barcodeHelper.calculateUPCAChecksum(deliveryVO.barcode)
+
+        String barcode = deliveryVO.barcode + String.valueOf(checksum)
+
+        // NOTE: reference the packageservice for a method that handles quantity mode when scanning
+        packageService.saveCrateDeliveryAssociations(barcode, deliveryVO, model, 1)
+
+
+
+
+        return deliveryVO
+    }
     // todo: NOTE - these requirements are written in the context of a pallet being delivered.  Will give user ability to create a "PACKAGE DELIVERY" in different user flow
 
     // todo: need to make the concept of a "Pallet" so we can have a "Pallet Building" page

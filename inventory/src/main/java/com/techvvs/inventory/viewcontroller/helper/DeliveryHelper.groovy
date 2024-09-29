@@ -91,29 +91,65 @@ class DeliveryHelper {
 
     // This will calculate display value for the total number of packages in a delivery
     DeliveryVO hydrateTransientQuantitiesForDisplay(DeliveryVO deliveryVO){
-        Map<Integer, PackageVO> packageMap = new HashMap<>();
-        deliveryVO.displayquantitytotal = 0
-        deliveryVO.package_list.sort { a, b -> a.total <=> b.total }
 
-        for(PackageVO packageindelivery : deliveryVO.package_list){
+        sortPackages(deliveryVO)
+        sortCrates(deliveryVO)
 
-            if(deliveryVO.displayquantitytotal == 0){
-                packageindelivery.displayquantitytotal = 1
-                deliveryVO.displayquantitytotal = 1
-            } else {
-                deliveryVO.displayquantitytotal = deliveryVO.displayquantitytotal + 1
-               // packageindelivery.displayquantitytotal = packageindelivery.displayquantitytotal + 1
-            }
-
-            packageMap.put(packageindelivery.packageid, packageindelivery)
-        }
-        deliveryVO.package_list = new ArrayList<>(packageMap.values());
-//        for(PackageVO packageindelivery : deliveryVO.package_list) {
-//            deliveryVO.displayquantitytotal += productindelivery.displayquantity
-//        }
         return deliveryVO
     }
 
+    void sortPackages(DeliveryVO deliveryVO){
+        if(deliveryVO.package_list != null) {
+
+            Map<Integer, PackageVO> packageMap = new HashMap<>();
+            deliveryVO.displayquantitytotal = 0
+            deliveryVO.package_list.sort { a, b -> a.total <=> b.total }
+
+            for (PackageVO packageindelivery : deliveryVO.package_list) {
+
+                if (deliveryVO.displayquantitytotal == 0) {
+                    packageindelivery.displayquantitytotal = 1
+                    deliveryVO.displayquantitytotal = 1
+                } else {
+                    deliveryVO.displayquantitytotal = deliveryVO.displayquantitytotal + 1
+                    // packageindelivery.displayquantitytotal = packageindelivery.displayquantitytotal + 1
+                }
+
+                packageMap.put(packageindelivery.packageid, packageindelivery)
+            }
+            deliveryVO.package_list = new ArrayList<>(packageMap.values());
+//        for(PackageVO packageindelivery : deliveryVO.package_list) {
+//            deliveryVO.displayquantitytotal += productindelivery.displayquantity
+//        }
+        }
+    }
+
+    void sortCrates(DeliveryVO deliveryVO){
+
+        if(deliveryVO.crate_list != null){
+            Map<Integer, CrateVO> crateMap = new HashMap<>();
+            deliveryVO.displayquantitytotal = 0
+            deliveryVO.crate_list.sort { a, b -> a.total <=> b.total }
+
+            for(CrateVO crateindelivery : deliveryVO.crate_list){
+
+                if(deliveryVO.displayquantitytotal == 0){
+                    crateindelivery.displayquantitytotal = 1
+                    deliveryVO.displayquantitytotal = 1
+                } else {
+                    deliveryVO.displayquantitytotal = deliveryVO.displayquantitytotal + 1
+                    // crateindelivery.displayquantitytotal = crateindelivery.displayquantitytotal + 1
+                }
+
+                crateMap.put(crateindelivery.crateid, crateindelivery)
+            }
+            deliveryVO.crate_list = new ArrayList<>(crateMap.values());
+//        for(CrateVO crateindelivery : deliveryVO.crate_list) {
+//            deliveryVO.displayquantitytotal += productindelivery.displayquantity
+//        }
+        }
+
+    }
     // todo: should do a check on here to see if delivery name already exists?
     DeliveryVO validateDeliveryReviewVO(DeliveryVO deliveryVO, Model model){
         if(deliveryVO?.name == null || deliveryVO?.name == "" || deliveryVO.name.trim().length() < 3){
@@ -381,5 +417,53 @@ class DeliveryHelper {
         model.addAttribute("pageOfPackageInDelivery", pageOfPackageInDelivery);
     }
 
+    void bindCratesInDelivery(Model model,
+                                Optional<Integer> page,
+                                Optional<Integer> size,
+                                DeliveryVO deliveryVO
+
+    ){
+
+
+        //pagination
+        int currentPage = page.orElse(0);
+        int pageSize = size.orElse(5);
+
+        if(
+                currentPage > pageSize
+        ){
+            currentPage = 0;
+        }
+
+        pageSize = pageSize < 5 ? 5 : pageSize; // make sure it's not less than 5
+
+
+        // run first page request
+        Pageable pageable = PageRequest.of(currentPage, pageSize, Sort.by(Sort.Direction.ASC, "createTimeStamp"));
+        Page<CrateVO> pageOfCrateInDelivery = crateRepo.findAllByDelivery(deliveryVO,pageable);  // Fetch paginated results
+
+        int totalPages = pageOfCrateInDelivery.getTotalPages();
+        int contentsize = pageOfCrateInDelivery.getContent().size()
+
+        if(contentsize == 0){
+            // we detect contentsize of 0 then we'll just take the first page of data and show it
+            pageable = PageRequest.of(0, pageSize, Sort.by(Sort.Direction.ASC, "createTimeStamp"));
+            pageOfCrateInDelivery = crateRepo.findAllByDelivery(deliveryVO,pageable);
+        }
+
+        List<Integer> pageNumbers = new ArrayList<>();
+        for (int i = 1; i <= totalPages; i++) {
+            pageNumbers.add(i);
+        }
+
+        if(currentPage > totalPages){
+            currentPage = 0;
+        }
+
+        model.addAttribute("cratepageNumbers", pageNumbers);
+        model.addAttribute("cratepage", currentPage);
+        model.addAttribute("cratesize", pageSize);
+        model.addAttribute("pageOfCrateInDelivery", pageOfCrateInDelivery);
+    }
 
 }

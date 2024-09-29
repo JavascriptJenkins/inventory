@@ -4,12 +4,14 @@ import com.techvvs.inventory.barcode.impl.BarcodeHelper
 import com.techvvs.inventory.barcode.service.BarcodeService
 import com.techvvs.inventory.jparepo.CrateRepo
 import com.techvvs.inventory.jparepo.CustomerRepo
+import com.techvvs.inventory.jparepo.DeliveryRepo
 import com.techvvs.inventory.jparepo.PackageRepo
 import com.techvvs.inventory.jparepo.PackageTypeRepo
 import com.techvvs.inventory.jparepo.ProductRepo
 import com.techvvs.inventory.model.CartVO
 import com.techvvs.inventory.model.CrateVO
 import com.techvvs.inventory.model.CustomerVO
+import com.techvvs.inventory.model.DeliveryVO
 import com.techvvs.inventory.model.PackageTypeVO
 import com.techvvs.inventory.model.PackageVO
 import com.techvvs.inventory.model.ProductVO
@@ -36,6 +38,9 @@ class PackageService {
 
     @Autowired
     CrateRepo crateRepo
+
+    @Autowired
+    DeliveryRepo deliveryRepo
 
     @Autowired
     BarcodeHelper barcodeHelper
@@ -284,6 +289,122 @@ class PackageService {
 
     }
 
+    @Transactional
+    void savePackageDeliveryAssociations(String barcode, DeliveryVO deliveryVO, Model model, int counter) {
+        Optional<PackageVO> packageVO = packageRepo.findByPackagebarcode(barcode)
+
+
+        if(!packageVO.empty){
+
+            packageVO.get().delivery = deliveryVO // add the delivery association to the package
+
+            packageVO.get().updateTimeStamp = LocalDateTime.now()
+            // when product is added to the cart, decrease the quantity remaining.
+
+            // set this to processed which means it is now in a delivery (can either be in a crate or in a delivery)
+            packageVO.get().isprocessed = 1
+            PackageVO savedPackage = packageRepo.save(packageVO.get())
+
+            if(deliveryVO.total == null){
+                deliveryVO.total = 0.00
+            }
+
+            /* Fill this out later if needed */
+//            deliveryVO.total += Double.valueOf(packageVO.get().price) // add the product price to the total
+
+            // handle quantity here (have to iterate thru all product cert list and update the quantity)
+
+            // if it's the first time adding a product we need to create the set to hold them
+            if(deliveryVO.package_list == null){
+                deliveryVO.package_list = new ArrayList<PackageVO>()
+            }
+
+            deliveryVO = refreshPackageDeliveryList(deliveryVO)
+
+            // now save the cart side of the many to many
+            deliveryVO.package_list.add(savedPackage)
+            deliveryVO.updateTimeStamp = LocalDateTime.now()
+            deliveryVO = deliveryRepo.save(deliveryVO)
+            model.addAttribute("successMessage","Package: "+packageVO.get().name + " added successfully. Quantity: "+counter)
+        } else {
+            // need to bind the selected customer here otherwise the dropdown wont work
+//            deliveryVO.packagetype = packageTypeRepo.findById(deliveryVO.packagetype.packagetypeid).get()
+            model.addAttribute("errorMessage","Package not found")
+        }
+
+
+    }
+
+
+    @Transactional
+    void saveCrateDeliveryAssociations(String barcode, DeliveryVO deliveryVO, Model model, int counter) {
+        Optional<CrateVO> crateVO = crateRepo.findByCratebarcode(barcode)
+
+
+        if(!crateVO.empty){
+
+            crateVO.get().delivery = deliveryVO // add the delivery association to the package
+
+            crateVO.get().updateTimeStamp = LocalDateTime.now()
+            // when product is added to the cart, decrease the quantity remaining.
+
+            // set this to processed which means it is now in a delivery (can either be in a crate or in a delivery)
+            crateVO.get().isprocessed = 1
+            CrateVO savedCrate = crateRepo.save(crateVO.get())
+
+            if(deliveryVO.total == null){
+                deliveryVO.total = 0.00
+            }
+
+            /* Fill this out later if needed */
+//            deliveryVO.total += Double.valueOf(packageVO.get().price) // add the product price to the total
+
+            // handle quantity here (have to iterate thru all product cert list and update the quantity)
+
+            // if it's the first time adding a product we need to create the set to hold them
+            if(deliveryVO.crate_list == null){
+                deliveryVO.crate_list = new ArrayList<CrateVO>()
+            }
+
+            deliveryVO = refreshCrateDeliveryList(deliveryVO)
+
+            // now save the cart side of the many to many
+            deliveryVO.crate_list.add(savedCrate)
+            deliveryVO.updateTimeStamp = LocalDateTime.now()
+            deliveryVO = deliveryRepo.save(deliveryVO)
+            model.addAttribute("successMessage","Crate: "+crateVO.get().name + " added successfully. Quantity: "+counter)
+        } else {
+            // need to bind the selected customer here otherwise the dropdown wont work
+//            deliveryVO.cratetype = crateTypeRepo.findById(deliveryVO.cratetype.cratetypeid).get()
+            model.addAttribute("errorMessage","Crate not found")
+        }
+
+
+    }
+
+    @Transactional
+    DeliveryVO refreshCrateDeliveryList(DeliveryVO deliveryVO){
+
+        if(deliveryVO.deliveryid == 0){
+            return deliveryVO
+        }
+
+        deliveryVO.crate_list = deliveryRepo.findById(deliveryVO.deliveryid).get().crate_list
+        return deliveryVO
+
+    }
+
+    @Transactional
+    DeliveryVO refreshPackageDeliveryList(DeliveryVO deliveryVO){
+
+        if(deliveryVO.deliveryid == 0){
+            return deliveryVO
+        }
+
+        deliveryVO.package_list = deliveryRepo.findById(deliveryVO.deliveryid).get().package_list
+        return deliveryVO
+
+    }
     @Transactional
     CrateVO refreshPackageCrateList(CrateVO crateVO){
 

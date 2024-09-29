@@ -3,6 +3,8 @@ package com.techvvs.inventory.barcode.service
 import com.techvvs.inventory.barcode.impl.BarcodeGenerator
 import com.techvvs.inventory.barcode.impl.BarcodeHelper
 import com.techvvs.inventory.constants.AppConstants
+import com.techvvs.inventory.jparepo.CrateRepo
+import com.techvvs.inventory.jparepo.PackageRepo
 import com.techvvs.inventory.model.BatchVO
 import com.techvvs.inventory.model.CrateVO
 import com.techvvs.inventory.model.DeliveryVO
@@ -38,6 +40,12 @@ class BarcodeService {
     @Autowired
     ProductHelper productHelper
 
+    @Autowired
+    PackageRepo packageRepo
+
+    @Autowired
+    CrateRepo crateRepo
+
     /* This method will create a single barcode for each product.
     *  If you want to make barcodes for every single product and multiples for the amount of products you have, use the other method
     *  */
@@ -62,6 +70,17 @@ class BarcodeService {
 //    }
 
 
+    String determineTypeOfBarcode(String barcode) {
+
+        int checksum =barcodeHelper.calculateUPCAChecksum(barcode)
+
+        barcode = barcode + String.valueOf(checksum)
+
+        boolean packageBarcode = packageRepo.existsByPackagebarcode(barcode)
+        boolean crateBarcode = crateRepo.existsByCratebarcode(barcode)
+
+        packageBarcode ? "package" : crateBarcode ? "crate" : "NOTFOUND" // NOTFOUND should never happen
+    }
 
     void createBarcodeSheetForSingleDeliveryUPCA(DeliveryVO deliveryVO) {
 

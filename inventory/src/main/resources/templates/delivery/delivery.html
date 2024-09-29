@@ -300,21 +300,12 @@
         // Function to process barcode scanning
         function processBarcode(scannedValue) {
             if (scannedValue.length >= 11) {
-                if ($('#quantityModeCheckbox').is(':checked')) {
-                    // If Quantity Mode is checked, ask for quantity input
-                    let quantity = prompt("Please enter the quantity for the scanned product:");
 
-                    if (quantity !== null && quantity !== "") {
-                        // Set quantity in the hidden input
-                        $('#quantitySelected').val(quantity);
-                        $('#barcodeInput').val(scannedValue.substring(0, 11));
-                        $('#barcodeForm').submit();
-                    }
-                } else {
+                    console.log(scannedValue);
                     // If not in Quantity Mode, just submit the form
                     $('#barcodeInput').val(scannedValue.substring(0, 11));
                     $('#barcodeForm').submit();
-                }
+
             }
         }
     </script>

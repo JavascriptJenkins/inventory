@@ -1,5 +1,6 @@
 package com.techvvs.inventory.viewcontroller
 
+import com.techvvs.inventory.barcode.service.BarcodeService
 import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.jparepo.PackageRepo
 import com.techvvs.inventory.model.CrateVO
@@ -73,6 +74,9 @@ public class DeliveryViewController {
     @Autowired
     DeliveryService deliveryService
 
+    @Autowired
+    BarcodeService barcodeService
+
     //default home mapping
     @GetMapping
     String viewNewForm(
@@ -133,7 +137,11 @@ public class DeliveryViewController {
                 @RequestParam("page") Optional<Integer> page,
                 @RequestParam("size") Optional<Integer> size,
                 @RequestParam("deliverypage") Optional<Integer> deliverypage,
-                @RequestParam("deliverysize") Optional<Integer> deliverysize){
+                @RequestParam("deliverysize") Optional<Integer> deliverysize,
+                @RequestParam("cratepage") Optional<Integer> cratepage,
+                @RequestParam("cratesize") Optional<Integer> cratesize
+
+    ){
 
 
         // check here to see if incoming deliveryid already exists - idk if we need to
@@ -149,8 +157,21 @@ public class DeliveryViewController {
             //  if the transactionVO comes back here without a
             // after transaction is created, search for the product based on barcode
 
-            deliveryVO = deliveryService.searchForPackageByBarcodeAndDelivery(deliveryVO, model, page, size)
+            // determine if the barcode is a package or delivery type of object
+            String type = barcodeService.determineTypeOfBarcode(deliveryVO.barcode)
 
+
+            if(type == "package"){
+                deliveryVO = deliveryService.searchForPackageByBarcodeAndDelivery(deliveryVO, model, page, size)
+            }
+
+            if(type == "crate"){
+                deliveryVO = deliveryService.searchForCrateByBarcodeAndDelivery(deliveryVO, model, page, size)
+            }
+
+            if(type == "NOTFOUND"){
+                model.addAttribute("errorMessage","UPCA Barcode not found in system")
+            }
 
         }
 
@@ -160,7 +181,9 @@ public class DeliveryViewController {
         deliveryVO.barcode = "" // reset barcode to empty
 
         deliveryHelper.bindUnprocessedPackages(model, page, size) // bind all the unprocessed packages to the table for selection
+        deliveryHelper.bindUnprocessedCrates(model, page, size) // bind all the unprocessed packages to the table for selection
         deliveryHelper.bindPackagesInDelivery(model, deliverypage, deliverysize, deliveryVO)
+        deliveryHelper.bindCratesInDelivery(model, cratepage, cratesize, deliveryVO)
         techvvsAuthService.checkuserauth(model)
         model.addAttribute("delivery", deliveryVO);
 
