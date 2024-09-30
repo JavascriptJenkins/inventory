@@ -3,8 +3,11 @@ package com.techvvs.inventory.barcode.service
 import com.techvvs.inventory.barcode.impl.BarcodeGenerator
 import com.techvvs.inventory.barcode.impl.BarcodeHelper
 import com.techvvs.inventory.constants.AppConstants
+import com.techvvs.inventory.jparepo.CrateRepo
+import com.techvvs.inventory.jparepo.PackageRepo
 import com.techvvs.inventory.model.BatchVO
 import com.techvvs.inventory.model.CrateVO
+import com.techvvs.inventory.model.DeliveryVO
 import com.techvvs.inventory.model.PackageVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.viewcontroller.helper.ProductHelper
@@ -37,6 +40,12 @@ class BarcodeService {
     @Autowired
     ProductHelper productHelper
 
+    @Autowired
+    PackageRepo packageRepo
+
+    @Autowired
+    CrateRepo crateRepo
+
     /* This method will create a single barcode for each product.
     *  If you want to make barcodes for every single product and multiples for the amount of products you have, use the other method
     *  */
@@ -59,6 +68,44 @@ class BarcodeService {
 //        }
 //
 //    }
+
+
+    String determineTypeOfBarcode(String barcode) {
+
+        int checksum =barcodeHelper.calculateUPCAChecksum(barcode)
+
+        barcode = barcode + String.valueOf(checksum)
+
+        boolean packageBarcode = packageRepo.existsByPackagebarcode(barcode)
+        boolean crateBarcode = crateRepo.existsByCratebarcode(barcode)
+
+        packageBarcode ? "package" : crateBarcode ? "crate" : "NOTFOUND" // NOTFOUND should never happen
+    }
+
+    void createBarcodeSheetForSingleDeliveryUPCA(DeliveryVO deliveryVO) {
+
+        // NOTE: right now this is going to generate barcodes for every product in batch regardless of product type
+        try {
+
+            // run this 50 times to make a barcode sheet
+            PDDocument document = new PDDocument()
+
+            barcodeGenerator.generateBarcodeSheetForBarcodeUPCA(
+                    deliveryVO.deliveryid,
+                    0,
+                    deliveryVO.deliverybarcode, // generate a sheet of 50 of same barcode
+                    deliveryVO.name,
+                    document,
+                    "Delivery" // This will show up on the metadata at top of barcode sheet
+            )
+
+
+            saveBarcodeLabelPdfFileForDelivery(document, appConstants.BARCODES_ALL_DIR, deliveryVO.name, deliveryVO.deliveryid)
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     void createBarcodeSheetForSinglePackageUPCA(PackageVO packageVO) {
 
@@ -206,6 +253,15 @@ class BarcodeService {
         document.close();
     }
 
+    void saveBarcodeLabelPdfFileForDelivery(PDDocument document, String entitysubdirectory, String entityname, int entitynumber) {
+        // create a directory with the batchnumber and /barcodes dir if it doesn't exist yet
+        Files.createDirectories(Paths.get(appConstants.PARENT_LEVEL_DIR+appConstants.DELIVERY_DIR+String.valueOf(entitynumber)+entitysubdirectory));
+
+        String filename = entityname+"-"+entitynumber
+        // save the actual file after looping thru all products
+        document.save(appConstants.PARENT_LEVEL_DIR+appConstants.DELIVERY_DIR+entitynumber+entitysubdirectory+appConstants.filenameprefix+filename+".pdf");
+        document.close();
+    }
 
     public static List<List<ProductVO>> sortProductListsByName(List<List<ProductVO>> result) {
         for (List<ProductVO> productList : result) {

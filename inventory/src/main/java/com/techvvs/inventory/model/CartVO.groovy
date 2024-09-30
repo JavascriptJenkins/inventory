@@ -40,6 +40,10 @@ class CartVO implements Serializable{
     @JoinColumn(name = "customerid")
     CustomerVO customer
 
+    @OneToOne
+    @JoinColumn(name = "deliveryid")
+    DeliveryVO delivery
+
     @Transient
     String menuid
 

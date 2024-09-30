@@ -15,8 +15,11 @@ public interface PackageRepo extends JpaRepository<PackageVO, Integer> {
     List<PackageVO> findAllByName(String name);
     List<PackageVO> findAllByDescription(String name);
     Optional<PackageVO> findByPackagebarcode(String barcode);
+    boolean existsByPackagebarcode(String barcode);
+
 
     Page<PackageVO> findAllByCrate(CrateVO crateVO, Pageable pageable);
+    Page<PackageVO> findAllByDelivery(DeliveryVO deliveryVO, Pageable pageable);
     Page<PackageVO> findAllByIsprocessed(int isprocessed, Pageable pageable);
 
 

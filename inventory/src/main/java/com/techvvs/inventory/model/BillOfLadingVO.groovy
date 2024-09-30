@@ -41,7 +41,7 @@ class BillOfLadingVO {
 
     @JsonProperty
     @ElementCollection(fetch = FetchType.EAGER)
-    List<PalletVO> pallet_list
+    List<CrateVO> crate_list
 
     @JsonProperty
     @ElementCollection(fetch = FetchType.LAZY)

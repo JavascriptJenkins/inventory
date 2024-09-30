@@ -36,6 +36,11 @@ class CustomerVO implements Serializable {
     @JsonProperty
     String notes
 
+    @JsonProperty
+    @OneToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name="deliveryid")
+    DeliveryVO delivery;
+
     // generic fields below
     @JsonProperty
     LocalDateTime updateTimeStamp

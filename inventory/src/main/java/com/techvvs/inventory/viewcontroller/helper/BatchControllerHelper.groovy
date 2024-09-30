@@ -191,7 +191,7 @@ class BatchControllerHelper {
 
     void calculateStaticPageData(Model model, BatchVO batchVO){
 
-        int quantityRemaining = 0;
+        int quantityRemaining = 0; // todo: find out why this is not calculating properly.  Calculating on client side for now cuz other numbers are correct
         int quantity = 0;
         Double batchValueTotal = 0;
         Double batchValueRemainingTotal = 0;
@@ -254,7 +254,7 @@ class BatchControllerHelper {
 
 
         model.addAttribute("quantity", quantity)
-        model.addAttribute("quantityRemaining", quantityRemaining)
+//        model.addAttribute("quantityRemaining", quantityRemaining)
         model.addAttribute("quantityRemainingInCarts", quantityRemainingInCarts)
         model.addAttribute("quantityInTransactions", quantityInTransactions)//
         model.addAttribute("quantityInPaidTransactions", quantityInPaidTransactions)//
