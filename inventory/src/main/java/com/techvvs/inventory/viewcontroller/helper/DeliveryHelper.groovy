@@ -102,16 +102,16 @@ class DeliveryHelper {
         if(deliveryVO.package_list != null) {
 
             Map<Integer, PackageVO> packageMap = new HashMap<>();
-            deliveryVO.displayquantitytotal = 0
+            deliveryVO.displayquantitytotalpackages = 0
             deliveryVO.package_list.sort { a, b -> a.total <=> b.total }
 
             for (PackageVO packageindelivery : deliveryVO.package_list) {
 
-                if (deliveryVO.displayquantitytotal == 0) {
-                    packageindelivery.displayquantitytotal = 1
-                    deliveryVO.displayquantitytotal = 1
+                if (deliveryVO.displayquantitytotalpackages == 0) {
+               //     packageindelivery.displayquantitytotalpackages = 1
+                    deliveryVO.displayquantitytotalpackages = 1
                 } else {
-                    deliveryVO.displayquantitytotal = deliveryVO.displayquantitytotal + 1
+                    deliveryVO.displayquantitytotalpackages = deliveryVO.displayquantitytotalpackages + 1
                     // packageindelivery.displayquantitytotal = packageindelivery.displayquantitytotal + 1
                 }
 
@@ -128,16 +128,16 @@ class DeliveryHelper {
 
         if(deliveryVO.crate_list != null){
             Map<Integer, CrateVO> crateMap = new HashMap<>();
-            deliveryVO.displayquantitytotal = 0
+            deliveryVO.displayquantitytotalcrates = 0
             deliveryVO.crate_list.sort { a, b -> a.total <=> b.total }
 
             for(CrateVO crateindelivery : deliveryVO.crate_list){
 
-                if(deliveryVO.displayquantitytotal == 0){
-                    crateindelivery.displayquantitytotal = 1
-                    deliveryVO.displayquantitytotal = 1
+                if(deliveryVO.displayquantitytotalcrates == 0){
+                //    crateindelivery.displayquantitytotalcrates = 1
+                    deliveryVO.displayquantitytotalcrates = 1
                 } else {
-                    deliveryVO.displayquantitytotal = deliveryVO.displayquantitytotal + 1
+                    deliveryVO.displayquantitytotalcrates = deliveryVO.displayquantitytotalcrates + 1
                     // crateindelivery.displayquantitytotal = crateindelivery.displayquantitytotal + 1
                 }
 
@@ -210,6 +210,9 @@ class DeliveryHelper {
         Optional<DeliveryVO> deliveryVO = deliveryRepo.findById(Integer.valueOf(deliveryid))
 
         if(!deliveryVO.empty){
+            deliveryVO.get().crate_list = crateRepo.findAllByDelivery(deliveryVO.get())
+            deliveryVO.get().getCrate_list().size(); // initiate lazy list
+            deliveryVO.get().getPackage_list().size(); // initiate lazy list
             return deliveryVO.get()
         } else {
             return new DeliveryVO(deliveryid: 0)
@@ -266,6 +269,7 @@ class DeliveryHelper {
             deliveryVO = getExistingDelivery(deliveryid)
             // todo: run pagination here to bind delivery
             bindPackagesInDelivery(model, page, size, deliveryVO) // this binds the pageOfPackageInDelivery
+            bindCratesInDelivery(model, page, size, deliveryVO) // this binds the pageOfPackageInDelivery
             deliveryVO = hydrateTransientQuantitiesForDisplay(deliveryVO)
             model.addAttribute("delivery", deliveryVO)
         }

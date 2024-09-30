@@ -83,6 +83,7 @@ public class DeliveryViewController {
             Model model,
             @RequestParam("deliveryid") String deliveryid,
             @RequestParam("packageid") Optional<String> packageid,
+            @RequestParam("crateid") Optional<String> crateid,
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size,
             @RequestParam("deliverypage") Optional<Integer> deliverypage,
@@ -91,20 +92,28 @@ public class DeliveryViewController {
             @RequestParam("cratesize") Optional<Integer> cratesize
     ){
         if(packageid.isPresent()){
-            model = packageHelper.loadPackage(packageid.get(), model)
-            // check to see if this package is already in a delivery
-            PackageVO packageVO = (PackageVO) model.getAttribute("package")
-            if(packageVO.delivery != null){
-                // load the associated delivery for the package if it exists
-                model = deliveryHelper.loadDelivery(String.valueOf(packageVO.delivery.deliveryid), model, deliverypage, deliverysize)
-            } else {
-                model = deliveryHelper.loadDelivery(deliveryid, model, deliverypage, deliverysize)
-            }
-            DeliveryVO deliveryVO = (DeliveryVO) model.getAttribute("delivery")
-            deliveryVO.packageinscope = packageVO // if it's first time navigating from package create page, add the package to the packageinscope
-        } else {
+            deliveryService.hadlePackageId(
+                    packageid,
+                    deliveryid,
+                    deliverypage,
+                    deliverysize,
+                    model)
+
+        } else if(crateid.isPresent()){
+            deliveryService.hadleCrateId(
+                    crateid,
+                    deliveryid,
+                    cratepage,
+                    cratesize,
+                    deliverypage,
+                    deliverysize,
+                    model)
+
+        }else {
             model = deliveryHelper.loadDelivery(deliveryid, model, deliverypage, deliverysize)
         }
+        DeliveryVO deliveryVO = (DeliveryVO) model.getAttribute("delivery")
+        deliveryHelper.hydrateTransientQuantitiesForDisplay(deliveryVO)
         deliveryHelper.bindUnprocessedPackages(model, page, size) // bind all the unprocessed packages to the table for selection
         deliveryHelper.bindUnprocessedCrates(model, cratepage, cratesize) // bind all the unprocessed packages to the table for selection
         techvvsAuthService.checkuserauth(model)
@@ -125,7 +134,7 @@ public class DeliveryViewController {
 
         techvvsAuthService.checkuserauth(model)
         model.addAttribute("delivery", deliveryVO);
-        return "delivery/pendingdeliverys.html";
+        return "delivery/pendingdeliveries.html";
     }
 
     // todo: write in a validation check to make sure you can't add more than is available in the batch
@@ -175,7 +184,9 @@ public class DeliveryViewController {
 
         }
 
-        deliveryVO = deliveryHelper.hydrateTransientQuantitiesForDisplay(deliveryVO)
+        model = deliveryHelper.loadDelivery(String.valueOf(deliveryVO.deliveryid), model, deliverypage, deliverysize)
+
+        deliveryVO = deliveryHelper.hydrateTransientQuantitiesForDisplay((DeliveryVO) model.getAttribute("delivery"))
 
 
         deliveryVO.barcode = "" // reset barcode to empty
@@ -190,33 +201,48 @@ public class DeliveryViewController {
         return "delivery/delivery.html";
     }
 
-    @PostMapping("/deletepackage")
-    String deletepackage(
+    @PostMapping("/deleteitem")
+    String deleteitem(
                 Model model,
                 
-                @RequestParam("crateid") String crateid,
+                @RequestParam("deliveryid") String deliveryid,
                 @RequestParam("barcode") String barcode,
                 @RequestParam("page") Optional<Integer> page,
                 @RequestParam("size") Optional<Integer> size,
+                @RequestParam("page") Optional<Integer> deliverypage,
+                @RequestParam("size") Optional<Integer> deliverysize,
                 @RequestParam("cratepage") Optional<Integer> cratepage,
                 @RequestParam("cratesize") Optional<Integer> cratesize){
 
-        
+        // determine if the barcode is a package or delivery type of object
+        String type = barcodeService.determineTypeOfBarcode(barcode)
 
-        CrateVO crateVO = crateHelper.getExistingCrate(crateid)
+        DeliveryVO deliveryVO = deliveryHelper.getExistingDelivery(deliveryid)
 
-        crateVO = crateService.deletePackageFromCrate(crateVO, barcode)
+        if(type == "package"){
+            deliveryVO = deliveryService.deletePackageFromDelivery(deliveryVO, barcode)
+        }
 
-        crateVO = crateHelper.hydrateTransientQuantitiesForDisplay(crateVO)
+        if(type == "crate"){
+            deliveryVO = deliveryService.deleteCrateFromDelivery(deliveryVO, barcode)
+        }
 
-        crateVO.barcode = "" // reset barcode to empty
+        if(type == "NOTFOUND"){
+            model.addAttribute("errorMessage","UPCA Barcode not found in system")
+        }
 
-        crateHelper.bindUnprocessedPackages(model, page, size) // bind all the unprocessed packages to the table for selection
-        crateHelper.bindPackagesInCrate(model, cratepage, cratesize, crateVO)
+        deliveryVO = deliveryHelper.hydrateTransientQuantitiesForDisplay(deliveryVO)
+        deliveryVO.barcode = "" // reset barcode to empty
+
+        deliveryHelper.bindUnprocessedPackages(model, page, size) // bind all the unprocessed packages to the table for selection
+        deliveryHelper.bindUnprocessedCrates(model, page, size) // bind all the unprocessed packages to the table for selection
+        deliveryHelper.bindPackagesInDelivery(model, deliverypage, deliverysize, deliveryVO)
+        deliveryHelper.bindCratesInDelivery(model, cratepage, cratesize, deliveryVO)
         techvvsAuthService.checkuserauth(model)
-        model.addAttribute("crate", crateVO);
 
-        return "crate/crate.html";
+        model.addAttribute("delivery", deliveryVO);
+
+        return "delivery/delivery.html";
     }
 
 

@@ -301,7 +301,7 @@
         function processBarcode(scannedValue) {
             if (scannedValue.length >= 11) {
 
-                    console.log(scannedValue);
+                    console.log(scannedValue );
                     // If not in Quantity Mode, just submit the form
                     $('#barcodeInput').val(scannedValue.substring(0, 11));
                     $('#barcodeForm').submit();
@@ -400,9 +400,20 @@
             form.submit();
         }
 
-        function hydrateBarcodeInput() {
+        function hydratePackageBarcodeInput() {
             // Set the value of the barcode input field
             document.getElementById('barcodeInput').value = document.getElementById('packageBarcodeId').textContent;
+
+            // Optional: Refocus on the barcode input field
+            document.getElementById('barcodeInput').focus();
+
+            // now call the method that will validate barcode and submit to backend
+            processBarcode(document.getElementById('barcodeInput').value);
+        }
+
+        function hydrateCrateBarcodeInput() {
+            // Set the value of the barcode input field
+            document.getElementById('barcodeInput').value = document.getElementById('crateBarcodeId').textContent;
 
             // Optional: Refocus on the barcode input field
             document.getElementById('barcodeInput').focus();
@@ -435,7 +446,9 @@
     <script>
         $(document).ready(function() {
             // Check if delivery.packageinscope is not null
-            var packageInScopeExists = /* logic to check delivery.packageinscope != null */ true; // Modify as necessary
+            // this somehow works with thymeleaf to inject values serverside before this javascript renders
+        var packageInScopeExists = [[${delivery.packageinscope != null}]];
+        console.log(packageInScopeExists);
 
             if (packageInScopeExists) {
                 showPopup();
@@ -455,10 +468,35 @@
         });
     </script>
 
+    <script>
+        $(document).ready(function() {
+            // Check if delivery.crateinscope is not null
+            // this somehow works with thymeleaf to inject values serverside before this javascript renders
+        var crateInScopeExists = [[${delivery.crateinscope != null}]];
+        console.log(crateInScopeExists);
+
+            if (crateInScopeExists) {
+                showPopup();
+            }
+
+            // Show popup
+            function showPopup() {
+                $('#popupCrateInScopeTable').fadeIn();  // Display the popup
+                $('#mainContent').addClass('blur-background');  // Blur the main content only
+            }
+
+            // Close popup when 'X' is clicked
+            $('.close-popup').on('click', function() {
+                $('#popupCrateInScopeTable').fadeOut();  // Hide the popup
+                $('#mainContent').removeClass('blur-background');  // Remove blur effect from the main content
+            });
+        });
+    </script>
+
 
 </head>
 <body>
-<form id="deleteItemFromDeliveryForm" th:action="@{/delivery/deletepackage?deliveryid=__${delivery.deliveryid}__}" th:object="${delivery}" method="post">
+<form id="deleteItemFromDeliveryForm" th:action="@{/delivery/deleteitem?deliveryid=__${delivery.deliveryid}__}" th:object="${delivery}" method="post">
     <input type="hidden" name="_method" value="delete" />
 </form>
 <div th:insert="fragments/palletmodenavbar.html :: palletmodefragment"></div>
@@ -473,7 +511,10 @@
         </div>
         <div class="col-md-6">
             <h3>Total Packages:
-                <span th:text="${delivery.displayquantitytotal}"></span>
+                <span th:text="${delivery.displayquantitytotalpackages}"></span>
+            </h3>
+            <h3>Total Crates:
+                <span th:text="${delivery.displayquantitytotalcrates}"></span>
             </h3>
 <!--            <h6 th:if="${delivery.deliverybarcode}">Delivery UPCA:-->
 <!--                <span th:text="${delivery.deliverybarcode}"></span>-->
@@ -730,7 +771,7 @@
 
 
     <!-- Popup Table -->
-    <div id="popupPackageInScopeTable" class="popup-overlay">
+    <div th:if="${delivery.packageinscope}" id="popupPackageInScopeTable" class="popup-overlay">
         <div class="popup-content">
             <button class="close-popup">
                 <i class="bi bi-x-lg"></i>
@@ -751,9 +792,34 @@
                 </tr>
                 </tbody>
             </table>
-            <button th:if="${delivery.packageinscope.delivery == null}" type="button" class="btn-submit-dark" onclick="hydrateBarcodeInput()">Add To Delivery</button>
+            <button th:if="${delivery.packageinscope.delivery == null}" type="button" class="btn-submit-dark" onclick="hydratePackageBarcodeInput()">Add To Delivery</button>
             <a th:href="@{/package?packageid=__${delivery.packageinscope.packageid}__&deliveryid=__${delivery.deliveryid}__}"
                class="btn-submit-dark">Modify Package</a>
+        </div>
+    </div>
+    <!-- Popup Table -->
+    <div th:if="${delivery.crateinscope}" id="popupCrateInScopeTable" class="popup-overlay">
+        <div class="popup-content">
+            <button class="close-popup">
+                <i class="bi bi-x-lg"></i>
+            </button>
+            <h3 class="text-center table-title-popup"><span th:text="${delivery.crateinscope.name}"></span> | UPCA:
+                <span id="crateBarcodeId" th:text="${delivery.crateinscope.cratebarcode}"></span></h3>
+            <table id="crateInScopeTable" class="table table-hover table-striped table-dark">
+                <thead>
+                <tr>
+                    <th>Crate</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="item : ${delivery.crateinscope.package_list}" th:data-barcode="${item.barcode}">
+                    <td th:text="${item.name}" data-barcode="${item.barcode}">Item Name</td>
+                </tr>
+                </tbody>
+            </table>
+            <button th:if="${delivery.crateinscope.delivery == null}" type="button" class="btn-submit-dark" onclick="hydrateCrateBarcodeInput()">Add To Delivery</button>
+            <a th:href="@{/crate?crateid=__${delivery.crateinscope.crateid}__&deliveryid=__${delivery.deliveryid}__}"
+               class="btn-submit-dark">Modify Crate</a>
         </div>
     </div>
 </div>

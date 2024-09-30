@@ -246,7 +246,7 @@ class BatchControllerHelper {
             }
 
 
-            quantityRemaining = productVO.quantityremaining + quantityRemaining
+            quantityRemaining = productVO.quantityremaining + quantityRemaining // not calculating properly, its off by +1.  idk why
             quantity = productVO.quantity + quantity
             batchValueTotal = (Double.valueOf(productVO?.price) * Integer.valueOf(productVO.quantity)) + batchValueTotal
             batchValueRemainingTotal = (Double.valueOf(productVO.price) * productVO.quantityremaining) + batchValueRemainingTotal

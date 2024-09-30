@@ -56,8 +56,19 @@ class DeliveryVO implements Serializable{
     @Transient
     PackageVO packageinscope
 
+
+    @Transient
+    CrateVO crateinscope
+
+
     @Transient
     int displayquantitytotal
+
+    @Transient
+    int displayquantitytotalpackages
+
+    @Transient
+    int displayquantitytotalcrates
 
     // transient field for passing barcode on checkout page back to controller
     @Transient

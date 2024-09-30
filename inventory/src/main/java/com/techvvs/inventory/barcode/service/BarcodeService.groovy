@@ -72,6 +72,9 @@ class BarcodeService {
 
     String determineTypeOfBarcode(String barcode) {
 
+        // chop the checksum digit off if it exists
+        barcode = barcode.length() == 12 ? barcode.substring(0,11) : barcode
+
         int checksum =barcodeHelper.calculateUPCAChecksum(barcode)
 
         barcode = barcode + String.valueOf(checksum)
