@@ -808,13 +808,26 @@
             <table id="crateInScopeTable" class="table table-hover table-striped table-dark">
                 <thead>
                 <tr>
-                    <th>Crate</th>
+                    <th>Package Name</th>
                 </tr>
                 </thead>
                 <tbody>
+                 Iterate over the delivery crateinscope package_list
                 <tr th:each="item : ${delivery.crateinscope.package_list}" th:data-barcode="${item.barcode}">
-                    <td th:text="${item.name}" data-barcode="${item.barcode}">Item Name</td>
+                    <td th:data-barcode="${item.barcode}">
+                        <!-- Display item name -->
+                        <div th:text="${item.name}">Item Name</div>
+
+                        <!-- Iterate over the product_package_list and display name and displayquantity -->
+                        <ul>
+                            <li th:each="productPackage : ${item.product_package_list}">
+                                <span th:text="${productPackage.name}">Package Name</span> -
+                                <span th:text="${productPackage.displayquantity}">Quantity</span>
+                            </li>
+                        </ul>
+                    </td>
                 </tr>
+
                 </tbody>
             </table>
             <button th:if="${delivery.crateinscope.delivery == null}" type="button" class="btn-submit-dark" onclick="hydrateCrateBarcodeInput()">Add To Delivery</button>

@@ -29,6 +29,9 @@ class DeliveryHelper {
     @Autowired
     DeliveryRepo deliveryRepo
 
+    @Autowired
+    ProductHelper productHelper
+
     // method to get all customers from db
     void getAllCustomers(Model model){
 
@@ -94,6 +97,9 @@ class DeliveryHelper {
 
         sortPackages(deliveryVO)
         sortCrates(deliveryVO)
+        // consolidate the product lists down for display
+
+        deliveryVO.crateinscope != null ? deliveryVO.crateinscope.package_list.each {item -> productHelper.consolidateProductListForDisplay(item)} : null
 
         return deliveryVO
     }
