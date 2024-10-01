@@ -285,7 +285,7 @@ class PackageService {
             }
 
             crateVO = refreshPackageCrateList(crateVO)
-            if(deliveryid.isPresent()){
+            if(deliveryid.isPresent() && Integer.valueOf(deliveryid.get()) > 0){
                 crateVO = refreshCrateDeliveryAssociation(crateVO, Integer.valueOf(deliveryid.get()))
             }
 

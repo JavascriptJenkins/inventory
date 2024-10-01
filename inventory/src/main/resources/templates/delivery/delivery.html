@@ -297,6 +297,23 @@
                 } else {
                     $('#deliveryNameWarning').hide();  // Hide the warning message if valid
                 }
+
+                // here we are checking if the
+                var warningDiv = document.getElementById("deliveryNameWarning");
+
+                // Check if the element is not visible (using offsetParent to determine visibility in DOM)
+                if (!warningDiv || warningDiv.offsetParent === null) {
+                    // Your code to display the element here
+                    // For example, you can show another element
+                    var elementToDisplay = document.getElementById("submitBarcodeFormButton");
+                    if (elementToDisplay) {
+<!--                        document.getElementById('submitBarcodeFormButton').style.visibility = 'visible';-->
+<!--                        elementToDisplay.style.display = "block"; // or set the desired display style-->
+                    }
+                }
+
+
+
             }
 
             // Call validateDeliveryName on page load
@@ -323,20 +340,23 @@
 
     <script>
         $(document).ready(function () {
-            // Check if the input with id="deliveryname" has no value
-            var deliveryNameInput = $('#deliveryname').val().trim();
+<!--                var deliverynameexists = [[${delivery.name != null}]];-->
+<!--                console.log('deliverynameexists: ' + deliverynameexists);-->
 
-            // Only show the popup if the deliveryname input is empty
-            if (deliveryNameInput === '') {
-                let deliveryName = prompt("Please enter the name of delivery you want to create (samplebox, iowa pallet, john's shipment etc):");
+<!--            // Check if the input with id="deliveryname" has no value-->
+<!--            var deliveryNameInput = $('#deliveryname').val().trim();-->
 
-                // If the user provides input, set the value of the #deliveryname input
-                if (deliveryName !== null && deliveryName.trim().length > 0) {
-                    $('#deliveryname').val(deliveryName.trim());
-                    $('#deliveryNameWarning').hide();  // Hide the warning message if valid
+<!--            // Only show the popup if the deliveryname input is empty-->
+<!--            if (deliveryNameInput === '') {-->
+<!--                let deliveryName = prompt("Please enter the name of delivery you want to create (samplebox, iowa pallet, john's shipment etc):");-->
 
-                }
-            }
+<!--                // If the user provides input, set the value of the #deliveryname input-->
+<!--                if (deliveryName !== null && deliveryName.trim().length > 0) {-->
+<!--                    $('#deliveryname').val(deliveryName.trim());-->
+<!--                    $('#deliveryNameWarning').hide();  // Hide the warning message if valid-->
+
+<!--                }-->
+<!--            }-->
 
             $('#barcodeInput').focus();
 
@@ -570,8 +590,9 @@
                          <div id="deliveryNameWarning" class="warning-message">Please name the delivery</div>
 
                          <input type="hidden" th:field="*{package_list}">
+                         <input type="hidden" th:field="*{crate_list}">
 
-                <button style="margin-top: 5px; visibility: hidden;" type="submit" class="btn btn-primary">Submit</button>
+                <button id="submitBarcodeFormButton" style="margin-top: 5px; visibility: hidden;" type="submit" class="btn btn-primary">Submit</button>
             </form>
 
 

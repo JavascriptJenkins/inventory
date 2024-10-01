@@ -111,7 +111,7 @@ class ProductService {
             }
 
             packageVO = refreshProductPackageList(packageVO)
-            if(deliveryid.isPresent()){
+            if(deliveryid.isPresent() && Integer.valueOf(deliveryid.get()) > 0){
                 packageVO = refreshProductPackageDeliveryAssociation(packageVO, Integer.valueOf(deliveryid.get()))
             }
 

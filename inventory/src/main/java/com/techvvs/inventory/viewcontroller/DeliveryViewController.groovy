@@ -178,8 +178,13 @@ public class DeliveryViewController {
                 deliveryVO = deliveryService.searchForCrateByBarcodeAndDelivery(deliveryVO, model, page, size)
             }
 
-            if(type == "NOTFOUND"){
+            if(type == "NOTFOUND" && deliveryVO.package_list.size() > 0 || deliveryVO.crate_list.size() > 0){
                 model.addAttribute("errorMessage","UPCA Barcode not found in system")
+            }
+
+            // This means it is the first time the delivery is being created
+            if(type == "NOTFOUND" && deliveryVO.package_list.size() == 0 && deliveryVO.crate_list.size() == 0){
+                model.addAttribute("successMessage","Delivery created with name: "+deliveryVO.name)
             }
 
         }

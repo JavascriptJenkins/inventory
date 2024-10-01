@@ -217,6 +217,7 @@ class DeliveryHelper {
 
         if(!deliveryVO.empty){
             deliveryVO.get().crate_list = crateRepo.findAllByDelivery(deliveryVO.get())
+            deliveryVO.get().package_list = packageRepo.findAllByDelivery(deliveryVO.get())
             deliveryVO.get().getCrate_list().size(); // initiate lazy list
             deliveryVO.get().getPackage_list().size(); // initiate lazy list
             return deliveryVO.get()

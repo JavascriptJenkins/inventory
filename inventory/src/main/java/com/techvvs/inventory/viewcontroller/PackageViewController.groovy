@@ -72,7 +72,7 @@ public class PackageViewController {
 
         model = packageHelper.loadPackage(packageid, model)
 
-        deliveryid.isPresent() ? model = deliveryHelper.loadDelivery(deliveryid.get(), model, Optional.of(0), Optional.of(0)) : model
+        deliveryid.isPresent() && Integer.valueOf(deliveryid.get()) > 0 ? model = deliveryHelper.loadDelivery(deliveryid.get(), model, Optional.of(0), Optional.of(0)) : model
 
 
 
