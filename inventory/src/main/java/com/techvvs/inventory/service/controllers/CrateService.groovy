@@ -140,7 +140,11 @@ class CrateService {
 
     // add product to cart and then update the cart and product associations
     @Transactional
-    CrateVO searchForPackageByBarcodeAndCrate(CrateVO crateVO, Model model, Optional<Integer> page, Optional<Integer> size
+    CrateVO searchForPackageByBarcodeAndCrate(CrateVO crateVO,
+                                              Model model,
+                                              Optional<Integer> page,
+                                              Optional<Integer> size,
+                                              Optional<String> deliveryid
 
     ){
 
@@ -151,7 +155,7 @@ class CrateService {
         String barcode = crateVO.barcode + String.valueOf(checksum)
 
         // NOTE: reference the packageservice for a method that handles quantity mode when scanning
-        packageService.savePackageCrateAssociations(barcode, crateVO, model, 1)
+        packageService.savePackageCrateAssociations(barcode, crateVO, model, 1, deliveryid)
 
 
 

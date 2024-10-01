@@ -133,6 +133,9 @@
             margin-top: 10px;
             width: 100%;
         }
+        .headerbutton{
+            border-color: #fff;
+        }
         .btn-submit-dark:hover {
             background-color: #333;
             border-color: #23272b;
@@ -313,17 +316,24 @@
         <div class="back-button">
             <a th:href="@{/dashboard/index}"><i class="bi bi-arrow-left-circle"></i></a>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-4">
             <h1>Package</h1>
             <p>Scan Products to add to Package</p>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-4">
             <h3>Total Units:
                 <span th:text="${package.displayquantitytotal}"></span>
             </h3>
             <h6>Package UPCA:
                 <span th:text="${package.packagebarcode}"></span>
             </h6>
+        </div>
+        <div th:if="${deliveryid != null && deliveryid != 'null'}" class="col-md-4">
+            <h3>
+                <a class="btn btn-secondary headerbutton btn-lg" th:href="@{/delivery(deliveryid=${deliveryid})}"><span>Back to Delivery ></span></a>
+            </h3>
+
+
         </div>
 
 
@@ -332,7 +342,7 @@
     <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
     <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
 
-    <form id="barcodeForm" th:action="@{/package/scan?packageid=__${package.packageid != null ? package.packageid : '0'}__}" th:object="${package}" method="post">
+    <form id="barcodeForm" th:action="@{/package/scan?packageid=__${package.packageid != null ? package.packageid : '0'}__&deliveryid=__${deliveryid}__}" th:object="${package}" method="post">
         <div class="row">
             <div class="col-md-8">
                 <div class="row" style="margin-bottom: 5px;">
@@ -409,7 +419,7 @@
         </div>
     </form>
 
-    <form id="deleteItemFromPackageForm" th:action="@{/package/delete?packageid=__${package.packageid}__}" th:object="${package}" method="post">
+    <form id="deleteItemFromPackageForm" th:action="@{/package/delete?packageid=__${package.packageid}__&deliveryid=__${deliveryid}__}" th:object="${package}" method="post">
         <input type="hidden" name="_method" value="delete" />
     </form>
 

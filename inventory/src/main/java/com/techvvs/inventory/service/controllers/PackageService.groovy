@@ -151,7 +151,11 @@ class PackageService {
 
     // add product to cart and then update the cart and product associations
     @Transactional
-    PackageVO searchForProductByBarcodeAndPackage(PackageVO packageVO, Model model, Optional<Integer> page, Optional<Integer> size
+    PackageVO searchForProductByBarcodeAndPackage(PackageVO packageVO,
+                                                  Model model,
+                                                  Optional<Integer> page,
+                                                  Optional<Integer> size,
+                                                  Optional<String> deliveryid
 
     ){
 
@@ -162,13 +166,13 @@ class PackageService {
         String barcode = packageVO.barcode + String.valueOf(checksum)
 
         if(packageVO.quantityselected == 0){
-            productService.saveProductPackageAssociations(barcode, packageVO, model, 1)
+            productService.saveProductPackageAssociations(barcode, packageVO, model, 1, deliveryid)
         } else {
             int j = 0;
             // run the product save once for every quantity selected
             for (int i = 0; i < packageVO.quantityselected; i++) {
                 j++
-                productService.saveProductPackageAssociations(barcode, packageVO, model, j)
+                productService.saveProductPackageAssociations(barcode, packageVO, model, j, deliveryid)
             }
         }
 
@@ -245,8 +249,15 @@ class PackageService {
 
     }
 
+    // todo: somewhere in here it is loosing the association to the delivery when it saves
     @Transactional
-    void savePackageCrateAssociations(String barcode, CrateVO crateVO, Model model, int counter) {
+    void savePackageCrateAssociations(String barcode,
+                                      CrateVO crateVO,
+                                      Model model,
+                                      int counter,
+                                      Optional<String> deliveryid
+
+    ) {
         Optional<PackageVO> packageVO = packageRepo.findByPackagebarcode(barcode)
 
 
@@ -274,6 +285,10 @@ class PackageService {
             }
 
             crateVO = refreshPackageCrateList(crateVO)
+            if(deliveryid.isPresent()){
+                crateVO = refreshCrateDeliveryAssociation(crateVO, Integer.valueOf(deliveryid.get()))
+            }
+
 
             // now save the cart side of the many to many
             crateVO.package_list.add(savedPackage)
@@ -418,7 +433,17 @@ class PackageService {
     }
 
 
+    @Transactional
+    CrateVO refreshCrateDeliveryAssociation(CrateVO crateVO, Integer deliveryid){
 
+        if(crateVO.crateid == 0){
+            return crateVO
+        }
+
+        crateVO.delivery = deliveryRepo.findByDeliveryid(deliveryid).get()
+        return crateVO
+
+    }
 
 
 }

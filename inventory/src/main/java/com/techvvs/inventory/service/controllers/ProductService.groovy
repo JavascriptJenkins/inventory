@@ -1,8 +1,10 @@
 package com.techvvs.inventory.service.controllers
 
+import com.techvvs.inventory.jparepo.DeliveryRepo
 import com.techvvs.inventory.jparepo.PackageRepo
 import com.techvvs.inventory.jparepo.PackageTypeRepo
 import com.techvvs.inventory.jparepo.ProductRepo
+import com.techvvs.inventory.model.CrateVO
 import com.techvvs.inventory.model.PackageVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.TransactionVO
@@ -24,6 +26,9 @@ class ProductService {
 
     @Autowired
     PackageTypeRepo packageTypeRepo
+
+    @Autowired
+    DeliveryRepo deliveryRepo
 
     void saveProductAssociations(TransactionVO transactionVO) {
 
@@ -67,7 +72,13 @@ class ProductService {
     }
 
 
-    void saveProductPackageAssociations(String barcode, PackageVO packageVO, Model model, int counter) {
+    void saveProductPackageAssociations(String barcode,
+                                        PackageVO packageVO,
+                                        Model model,
+                                        int counter,
+                                        Optional<String> deliveryid
+
+    ) {
         Optional<ProductVO> productVO = productRepo.findByBarcode(barcode)
 
         // todo: on second time thru we need to fully hydrate the customer and product_set before saving
@@ -100,6 +111,9 @@ class ProductService {
             }
 
             packageVO = refreshProductPackageList(packageVO)
+            if(deliveryid.isPresent()){
+                packageVO = refreshProductPackageDeliveryAssociation(packageVO, Integer.valueOf(deliveryid.get()))
+            }
 
             // now save the cart side of the many to many
             packageVO.product_package_list.add(savedProduct)
@@ -127,4 +141,18 @@ class ProductService {
         return packageVO
 
     }
+
+    @Transactional
+    PackageVO refreshProductPackageDeliveryAssociation(PackageVO packageVO, Integer deliveryid){
+
+        if(packageVO.packageid == 0){
+            return packageVO
+        }
+
+        packageVO.delivery = deliveryRepo.findByDeliveryid(deliveryid).get()
+        return packageVO
+
+    }
+
+
 }

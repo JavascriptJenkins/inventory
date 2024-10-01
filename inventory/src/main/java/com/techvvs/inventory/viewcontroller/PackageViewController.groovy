@@ -79,6 +79,7 @@ public class PackageViewController {
         // fetch all customers from database and bind them to model
         packageHelper.getAllPackageTypes(model)
         techvvsAuthService.checkuserauth(model)
+        deliveryid.ifPresent { model.addAttribute("deliveryid", deliveryid.get()) }
         return "package/package.html";
     }
 
@@ -108,6 +109,7 @@ public class PackageViewController {
     String scan(@ModelAttribute( "package" ) PackageVO packageVO,
                 Model model,
                 @RequestParam("page") Optional<Integer> page,
+                @RequestParam("deliveryid") Optional<String> deliveryid,
                 @RequestParam("size") Optional<Integer> size){
 
 
@@ -124,7 +126,7 @@ public class PackageViewController {
             // after transaction is created, search for the product based on barcode
 
            // cartVO = cartService.searchForProductByBarcode(cartVO, model, page, size)
-            packageVO = packageService.searchForProductByBarcodeAndPackage(packageVO, model, page, size)
+            packageVO = packageService.searchForProductByBarcodeAndPackage(packageVO, model, page, size, deliveryid)
 
 
         }
@@ -139,6 +141,7 @@ public class PackageViewController {
         model.addAttribute("package", packageVO);
         // fetch all customers from database and bind them to model
         packageHelper.getAllPackageTypes(model)
+        deliveryid.ifPresent { model.addAttribute("deliveryid", deliveryid.get()) }
 
         return "package/package.html";
     }
@@ -149,6 +152,7 @@ public class PackageViewController {
                 
                 @RequestParam("packageid") String packageid,
                 @RequestParam("barcode") String barcode,
+                @RequestParam("deliveryid") Optional<String> deliveryid,
                 @RequestParam("page") Optional<Integer> page,
                 @RequestParam("size") Optional<Integer> size){
 
@@ -166,6 +170,7 @@ public class PackageViewController {
         model.addAttribute("package", packageVO);
         // fetch all customers from database and bind them to model
         packageHelper.getAllPackageTypes(model)
+        deliveryid.ifPresent { model.addAttribute("deliveryid", deliveryid.get()) }
 
         return "package/package.html";
     }
