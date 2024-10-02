@@ -246,7 +246,8 @@ class BatchControllerHelper {
             }
 
 
-            quantityRemaining = productVO.quantityremaining + quantityRemaining // not calculating properly, its off by +1.  idk why
+//            quantityRemaining = productVO.quantityremaining + quantityRemaining // not calculating properly, its off by +1.  idk why
+            quantityRemaining = productRepo.selectCountOfProductsRemainingInBatch(batchVO.batchid) // direct query the database
             quantity = productVO.quantity + quantity
             batchValueTotal = (Double.valueOf(productVO?.price) * Integer.valueOf(productVO.quantity)) + batchValueTotal
             batchValueRemainingTotal = (Double.valueOf(productVO.price) * productVO.quantityremaining) + batchValueRemainingTotal
@@ -254,7 +255,7 @@ class BatchControllerHelper {
 
 
         model.addAttribute("quantity", quantity)
-//        model.addAttribute("quantityRemaining", quantityRemaining)
+        model.addAttribute("quantityRemaining", quantityRemaining)
         model.addAttribute("quantityRemainingInCarts", quantityRemainingInCarts)
         model.addAttribute("quantityInTransactions", quantityInTransactions)//
         model.addAttribute("quantityInPaidTransactions", quantityInPaidTransactions)//
