@@ -35,6 +35,9 @@
             background-color: #23272b;
             border-color: #1d2124;
         }
+        .headerbutton{
+            border-color: #fff;
+        }
         .form-control, .form-select {
             background-color: #343a40;
             color: #fff;
@@ -389,7 +392,7 @@
 
 </head>
 <body>
-<form id="deleteItemFromCrateForm" th:action="@{/crate/deletepackage?crateid=__${crate.crateid}__}" th:object="${crate}" method="post">
+<form id="deleteItemFromCrateForm" th:action="@{/crate/deletepackage?crateid=__${crate.crateid}__&deliveryid=__${deliveryid}__}" th:object="${crate}" method="post">
     <input type="hidden" name="_method" value="delete" />
 </form>
 <div th:insert="fragments/palletmodenavbar.html :: palletmodefragment"></div>
@@ -398,11 +401,11 @@
         <div class="back-button">
             <a th:href="@{/dashboard/index}"><i class="bi bi-arrow-left-circle"></i></a>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-4">
             <h1>Crate</h1>
             <p>Scan Packages to add to Crate</p>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-4">
             <h3>Total Packages:
                 <span th:text="${crate.displayquantitytotal}"></span>
             </h3>
@@ -417,6 +420,13 @@
             </h6>
 
         </div>
+        <div th:if="${deliveryid != null && deliveryid != 'null' && deliveryid != '0'}" class="col-md-4">
+            <h3>
+                <a class="btn btn-secondary headerbutton btn-lg" th:href="@{/delivery(deliveryid=${deliveryid})}"><span>Back to Delivery ></span></a>
+            </h3>
+
+
+        </div>
     </div>
 
     <br>
@@ -428,7 +438,7 @@
     <div class="row">
         <!-- Left side: Barcode and Crate Name Inputs -->
         <div class="col-md-4">
-            <form id="barcodeForm" th:action="@{/crate/scan?crateid=__${crate.crateid != null ? crate.crateid : '0'}__}" th:object="${crate}" method="post">
+            <form id="barcodeForm" th:action="@{/crate/scan?crateid=__${crate.crateid != null ? crate.crateid : '0'}__&deliveryid=__${deliveryid != null ? deliveryid : 0}__}" th:object="${crate}" method="post">
                         <div style="margin-bottom: 10px;">
 
                             <input id="barcodeInput" type="text" th:field="*{barcode}" class="form-control" placeholder="barcode" aria-label="barcode">
@@ -440,6 +450,7 @@
                             <input type="hidden" th:field="*{cratebarcode}">
                             <input type="hidden" th:field="*{updateTimeStamp}">
                             <input type="hidden" th:field="*{createTimeStamp}">
+                            <input type="hidden" th:field="*{name}">
                         </div>
 
                         <div style="margin-bottom: 5px;">
@@ -475,7 +486,7 @@
 
                     <!--                        <td th:text="${item.packagebarcode}" data-barcode="${item.packagebarcode}"></td>-->
                         <td>
-                            <a th:href="@{/crate?crateid=__${crate.crateid}__&packageid=__${item.packageid}__}"
+                            <a th:href="@{/crate?crateid=__${crate.crateid}__&packageid=__${item.packageid}__&deliveryid=__${deliveryid != null ? deliveryid : 0}__}"
                                th:text="${item.packagebarcode}"
                                th:id="${'barcode-'+item.packagebarcode}"
                                th:data-barcode="${item.packagebarcode}"
@@ -502,7 +513,7 @@
                     <ul class="pagination justify-content-center">
                         <li class="page-item" th:each="pageNumber : ${cratepageNumbers}">
                             <a class="page-link btn btn-secondary btn-sm mx-1"
-                               th:href="@{/crate?cratesize=__${cratesize}__&cratepage=__${pageNumber == 1 ? 0 : pageNumber - 1}__&crateid=__${crate.crateid}__}"
+                               th:href="@{/crate?cratesize=__${cratesize}__&cratepage=__${pageNumber == 1 ? 0 : pageNumber - 1}__&crateid=__${crate.crateid}__&deliveryid=__${deliveryid != null ? deliveryid : 0}__}"
                                th:text="${pageNumber}"
                                th:classappend="${pageNumber==pageOfPackageInCrate.number + 1} ? 'active'">
                             </a>
@@ -533,7 +544,7 @@
                 </table>
                 <button th:if="${crate.packageinscope.crate == null}" type="button" class="btn-submit-dark" onclick="hydrateBarcodeInput()">Add To Crate</button>
 
-                <a th:href="@{/package?packageid=__${crate.packageinscope.packageid}__}"
+                <a th:href="@{/package?packageid=__${crate.packageinscope.packageid}__&deliveryid=__${deliveryid != null ? deliveryid : 0}__}"
                    class="btn-submit-dark">
                     Modify Package
                 </a>
@@ -556,7 +567,7 @@
                     th:style="${iStat.odd}? 'font-weight: bold;'"
                     th:alt-title="${iStat.even}? 'even' : 'odd'">
                     <td>
-                        <a th:href="@{/crate?crateid=__${crate.crateid}__&packageid=__${package.packageid}__}"
+                        <a th:href="@{/crate?crateid=__${crate.crateid}__&packageid=__${package.packageid}__&deliveryid=__${deliveryid != null ? deliveryid : 0}__}"
                            th:text="${package.packagebarcode}"
                            th:data-barcode="${package.packagebarcode}"
                            class="btn btn-secondary btn-sm">
@@ -577,7 +588,7 @@
                 <ul class="pagination justify-content-center">
                     <li class="page-item" th:each="pageNumber : ${pageNumbers}">
                         <a class="page-link btn btn-secondary btn-sm mx-1"
-                           th:href="@{/crate?size=__${size}__&page=__${pageNumber == 1 ? 0 : pageNumber - 1}__&crateid=__${crate.crateid}__}"
+                           th:href="@{/crate?size=__${size}__&page=__${pageNumber == 1 ? 0 : pageNumber - 1}__&crateid=__${crate.crateid}__&deliveryid=__${deliveryid != null ? deliveryid : 0}__}"
                            th:text="${pageNumber}"
                            th:classappend="${pageNumber==packagePage.number + 1} ? 'active'">
                         </a>

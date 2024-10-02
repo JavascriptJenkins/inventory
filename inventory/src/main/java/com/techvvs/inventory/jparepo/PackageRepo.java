@@ -20,6 +20,8 @@ public interface PackageRepo extends JpaRepository<PackageVO, Integer> {
 
     Page<PackageVO> findAllByCrate(CrateVO crateVO, Pageable pageable);
     Page<PackageVO> findAllByDelivery(DeliveryVO deliveryVO, Pageable pageable);
+    List<PackageVO> findAllByDelivery(DeliveryVO deliveryVO);
+
     Page<PackageVO> findAllByIsprocessed(int isprocessed, Pageable pageable);
 
 

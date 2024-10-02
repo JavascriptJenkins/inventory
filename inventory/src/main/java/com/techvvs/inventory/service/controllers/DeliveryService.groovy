@@ -12,8 +12,13 @@ import com.techvvs.inventory.model.DeliveryVO
 import com.techvvs.inventory.model.PackageVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.TransactionVO
+import com.techvvs.inventory.util.FormattingUtil
 import com.techvvs.inventory.util.TechvvsAppUtil
+import com.techvvs.inventory.viewcontroller.helper.CrateHelper
+import com.techvvs.inventory.viewcontroller.helper.DeliveryHelper
+import com.techvvs.inventory.viewcontroller.helper.PackageHelper
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.core.env.Environment
 import org.springframework.stereotype.Service
 import org.springframework.ui.Model
 
@@ -54,6 +59,21 @@ class DeliveryService {
     @Autowired
     TechvvsAppUtil techvvsAppUtil
 
+    @Autowired
+    PackageHelper packageHelper
+
+    @Autowired
+    DeliveryHelper deliveryHelper
+
+    @Autowired
+    CrateHelper crateHelper
+
+    @Autowired
+    FormattingUtil formattingUtil
+
+    @Autowired
+    Environment environment
+
     SecureRandom secureRandom = new SecureRandom()
 
     @Transactional
@@ -63,15 +83,18 @@ class DeliveryService {
 
 
     @Transactional
-    CrateVO deletePackageFromCrate(CrateVO crateVO, String barcode){
+    DeliveryVO deletePackageFromDelivery(DeliveryVO deliveryVO, String barcode){
 
-        for(PackageVO packageVO : crateVO.package_list){
+        for(PackageVO packageVO : deliveryVO.package_list){
             if(packageVO.packagebarcode == barcode){
-                crateVO.package_list.remove(packageVO)
-//                crateVO.total = crateVO.total - packageVO.price // subtract the price from the cart total
+                deliveryVO.package_list.remove(packageVO)
 
-                // remove the crate association from the package
-                packageVO.crate = null
+                // subtract the price from total and make sure it doesn't go below 0
+                double result = deliveryVO.total - packageVO.total
+                deliveryVO.total = result < 0.0 ? 0.0 : deliveryVO.total - packageVO.total
+
+                // remove the delivery association from the package
+                packageVO.delivery = null
 
                 packageVO.updateTimeStamp = LocalDateTime.now()
                 packageVO.isprocessed = 0 // reset it to not processed
@@ -80,11 +103,38 @@ class DeliveryService {
             }
         }
 
-        crateVO.updateTimeStamp = LocalDateTime.now()
-        crateVO = crateRepo.save(crateVO)
+        deliveryVO.updateTimeStamp = LocalDateTime.now()
+        deliveryVO = deliveryRepo.save(deliveryVO)
 
 
-        return crateVO
+        return deliveryVO
+
+    }
+
+    @Transactional
+    DeliveryVO deleteCrateFromDelivery(DeliveryVO deliveryVO, String barcode){
+
+        for(CrateVO crateVO : deliveryVO.crate_list){
+            if(crateVO.cratebarcode == barcode){
+                deliveryVO.crate_list.remove(crateVO)
+                // subtract the price from total and make sure it doesn't go below 0
+                double result = deliveryVO.total - crateVO.total
+                deliveryVO.total = result < 0.0 ? 0.0 : deliveryVO.total - crateVO.total
+                // remove the delivery association from the crate
+                crateVO.delivery = null
+
+                crateVO.updateTimeStamp = LocalDateTime.now()
+                crateVO.isprocessed = 0 // reset it to not processed
+                crateRepo.save(crateVO)
+                break
+            }
+        }
+
+        deliveryVO.updateTimeStamp = LocalDateTime.now()
+        deliveryVO = deliveryRepo.save(deliveryVO)
+
+
+        return deliveryVO
 
     }
 
@@ -110,6 +160,7 @@ class DeliveryService {
             deliveryVO.setCreateTimeStamp(LocalDateTime.now());
             deliveryVO.setIsprocessed(0);
             deliveryVO.setStatus(0);
+            deliveryVO.total = calculateDeliveryTotal(deliveryVO)
            // deliveryVO.setWeight(0) // todo: set weight from product table in database
             deliveryVO.deliverybarcode = barcodeHelper.generateBarcodeData(generateOneDigitNumber(), generateOneDigitNumber(), generateSevenDigitNumber(), generateOneDigitNumber()); // generate barcode....
 //            packageVO.setPackagetype(packageTypeVO);
@@ -120,19 +171,33 @@ class DeliveryService {
 
             // Rebind the barcode after saving
             deliveryVO.setBarcode(barcode);
+            // this will generate and save a sheet of pdf barcodes for the package when it is created
+            // barcodeService.createBarcodeSheetForSinglePackageUPCA(packageVO)
+            // this will generate and save a sheet of pdf barcodes for the package when it is created
+            barcodeService.createBarcodeSheetForSingleDeliveryUPCA(deliveryVO)
         } else {
             // TODO: Handle case where a cart already exists
         }
 
-        // this will generate and save a sheet of pdf barcodes for the package when it is created
-        // barcodeService.createBarcodeSheetForSinglePackageUPCA(packageVO)
-        // this will generate and save a sheet of pdf barcodes for the package when it is created
-        barcodeService.createBarcodeSheetForSingleDeliveryUPCA(deliveryVO)
 
 
         return deliveryVO;
     }
 
+    double calculateDeliveryTotal(DeliveryVO deliveryVO) {
+
+        // todo: get this from a database table instead ....
+        Double taxpercentage = environment.getProperty("tax.percentage", Double.class)
+
+
+        // first add up totals of all packages and crates
+        double cratetotal = deliveryVO.crate_list.stream().mapToDouble({ CrateVO crate -> crate.getTotal() }).sum()
+        double packagetotal = deliveryVO.package_list.stream().mapToDouble({ PackageVO pkg -> pkg.getTotal() }).sum()
+        double grandtotal = cratetotal + packagetotal
+
+
+        return formattingUtil.calculateTotalWithTax(grandtotal, taxpercentage)
+    }
 
     def generateSevenDigitNumber() {
         return 1000000 + secureRandom.nextInt(9000000)  // Generates a number between 1,000,000 and 9,999,999
@@ -252,7 +317,50 @@ class DeliveryService {
     }
 
 
+    void hadlePackageId(
+            Optional<String> packageid,
+            String deliveryid,
+            Optional<Integer> deliverypage,
+            Optional<Integer> deliverysize,
+                        Model model
+    ){
+        model = packageHelper.loadPackage(packageid.get(), model)
+        // check to see if this package is already in a delivery
+        PackageVO packageVO = (PackageVO) model.getAttribute("package")
+        if(packageVO.delivery != null){
+            // load the associated delivery for the package if it exists
+            model = deliveryHelper.loadDelivery(String.valueOf(packageVO.delivery.deliveryid), model, deliverypage, deliverysize)
+        } else {
+            model = deliveryHelper.loadDelivery(deliveryid, model, deliverypage, deliverysize)
+        }
+        DeliveryVO deliveryVO = (DeliveryVO) model.getAttribute("delivery")
+        deliveryVO.packageinscope = packageVO // if it's first time navigating from package create page, add the package to the packageinscope
 
+    }
+
+
+    void hadleCrateId(
+            Optional<String> crateid,
+            String deliveryid,
+            Optional<Integer> cratepage,
+            Optional<Integer> cratesize,
+            Optional<Integer> deliverypage,
+            Optional<Integer> deliverysize,
+            Model model
+    ){
+        model = crateHelper.loadCrate(crateid.get(), model, cratepage, cratesize)
+        // check to see if this package is already in a delivery
+        CrateVO crateVO = (CrateVO) model.getAttribute("crate")
+        if(crateVO.delivery != null){
+            // load the associated delivery for the crate if it exists
+            model = deliveryHelper.loadDelivery(String.valueOf(crateVO.delivery.deliveryid), model, deliverypage, deliverysize)
+        } else {
+            model = deliveryHelper.loadDelivery(deliveryid, model, deliverypage, deliverysize)
+        }
+        DeliveryVO deliveryVO = (DeliveryVO) model.getAttribute("delivery")
+        deliveryVO.crateinscope = crateVO // if it's first time navigating from crate create page, add the crate to the crateinscope
+
+    }
 
 
 

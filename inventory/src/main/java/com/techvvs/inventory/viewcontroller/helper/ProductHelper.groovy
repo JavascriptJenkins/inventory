@@ -3,6 +3,8 @@ package com.techvvs.inventory.viewcontroller.helper
 import com.techvvs.inventory.barcode.impl.BarcodeHelper
 import com.techvvs.inventory.barcode.service.BarcodeService
 import com.techvvs.inventory.jparepo.ProductRepo
+import com.techvvs.inventory.model.CartVO
+import com.techvvs.inventory.model.PackageVO
 import com.techvvs.inventory.model.ProductVO
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -80,6 +82,30 @@ class ProductHelper {
             batchNumber.append(secureRandom.nextInt(10));
         }
         return batchNumber.toInteger();
+    }
+
+
+    PackageVO consolidateProductListForDisplay(PackageVO packageVO){
+        packageVO.displayquantitytotal = 0
+        packageVO.product_package_list.sort { a, b -> a.price <=> b.price }
+        Map<Integer, ProductVO> productMap = new HashMap<>();
+        // cycle thru here and if the productid is the same then update the quantity
+        for(ProductVO productinpackage : packageVO.product_package_list){
+
+            if(productinpackage.displayquantity == null){
+                productinpackage.displayquantity = 1
+            } else {
+                productinpackage.displayquantity = productinpackage.displayquantity + 1
+            }
+
+            productMap.put(productinpackage.getProduct_id(), productinpackage)
+        }
+        packageVO.product_package_list = new ArrayList<>(productMap.values());
+//        for(ProductVO productinpackage : packageVO.product_package_list) {
+//            productinpackage.displayquantity += productinpackage.displayquantity
+//        }
+        return packageVO
+
     }
 
 

@@ -20,6 +20,8 @@ public interface CrateRepo extends JpaRepository<CrateVO, Integer> {
     boolean existsByCratebarcode(String barcode);
     Optional<CrateVO> findByCratebarcode(String barcode);
     Page<CrateVO> findAllByDelivery(DeliveryVO deliveryVO, Pageable pageable);
+    List<CrateVO> findAllByDelivery(DeliveryVO deliveryVO);
+
 
 
     //Page<TransactionVO> findByCustomervo_customerid(Integer customerid, Pageable pageable);

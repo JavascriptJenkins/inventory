@@ -198,8 +198,10 @@
         .table-title {
             color: black;
         }
+        /* Optional styling to make the table look nice */
         .table-title-popup {
-            color: white;
+            margin-bottom: 20px;
+            color:white;
         }
 
         /* Style the label: dark background with white text */
@@ -226,7 +228,6 @@
     <!-- CSS Styles -->
     <style>
         .popup-overlay {
-            display: none;
             position: fixed;
             top: 0;
             left: 0;
@@ -236,6 +237,7 @@
             z-index: 9999; /* Ensure it appears above other content */
         }
 
+        /* Popup content styling */
         .popup-content {
             background-color: #343a40;
             color: white;
@@ -246,11 +248,20 @@
             margin: auto;
             margin-top: 5%;
             border-radius: 15px;
+
+            /*start what is needed for scrolling*/
+            max-width: 80%; /* Set a max width for the popup */
+            max-height: 80vh; /* Limit the height of the popup to 80% of the viewport height */
+            overflow-y: auto; /* Allow vertical scrolling inside the popup */
+            /*end what is needed for scrolling*/
+
+
             border: 5px solid black; /* Thick black border */
             box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.8); /* Shadow for hovering effect */
             position: relative;
         }
 
+        /* Close button styling */
         .close-popup {
             position: absolute;
             top: 10px;
@@ -286,6 +297,23 @@
                 } else {
                     $('#deliveryNameWarning').hide();  // Hide the warning message if valid
                 }
+
+                // here we are checking if the
+                var warningDiv = document.getElementById("deliveryNameWarning");
+
+                // Check if the element is not visible (using offsetParent to determine visibility in DOM)
+                if (!warningDiv || warningDiv.offsetParent === null) {
+                    // Your code to display the element here
+                    // For example, you can show another element
+                    var elementToDisplay = document.getElementById("submitBarcodeFormButton");
+                    if (elementToDisplay) {
+<!--                        document.getElementById('submitBarcodeFormButton').style.visibility = 'visible';-->
+<!--                        elementToDisplay.style.display = "block"; // or set the desired display style-->
+                    }
+                }
+
+
+
             }
 
             // Call validateDeliveryName on page load
@@ -301,7 +329,7 @@
         function processBarcode(scannedValue) {
             if (scannedValue.length >= 11) {
 
-                    console.log(scannedValue);
+                    console.log(scannedValue );
                     // If not in Quantity Mode, just submit the form
                     $('#barcodeInput').val(scannedValue.substring(0, 11));
                     $('#barcodeForm').submit();
@@ -312,20 +340,23 @@
 
     <script>
         $(document).ready(function () {
-            // Check if the input with id="deliveryname" has no value
-            var deliveryNameInput = $('#deliveryname').val().trim();
+<!--                var deliverynameexists = [[${delivery.name != null}]];-->
+<!--                console.log('deliverynameexists: ' + deliverynameexists);-->
 
-            // Only show the popup if the deliveryname input is empty
-            if (deliveryNameInput === '') {
-                let deliveryName = prompt("Please enter the name of delivery you want to create (samplebox, iowa pallet, john's shipment etc):");
+<!--            // Check if the input with id="deliveryname" has no value-->
+<!--            var deliveryNameInput = $('#deliveryname').val().trim();-->
 
-                // If the user provides input, set the value of the #deliveryname input
-                if (deliveryName !== null && deliveryName.trim().length > 0) {
-                    $('#deliveryname').val(deliveryName.trim());
-                    $('#deliveryNameWarning').hide();  // Hide the warning message if valid
+<!--            // Only show the popup if the deliveryname input is empty-->
+<!--            if (deliveryNameInput === '') {-->
+<!--                let deliveryName = prompt("Please enter the name of delivery you want to create (samplebox, iowa pallet, john's shipment etc):");-->
 
-                }
-            }
+<!--                // If the user provides input, set the value of the #deliveryname input-->
+<!--                if (deliveryName !== null && deliveryName.trim().length > 0) {-->
+<!--                    $('#deliveryname').val(deliveryName.trim());-->
+<!--                    $('#deliveryNameWarning').hide();  // Hide the warning message if valid-->
+
+<!--                }-->
+<!--            }-->
 
             $('#barcodeInput').focus();
 
@@ -400,9 +431,20 @@
             form.submit();
         }
 
-        function hydrateBarcodeInput() {
+        function hydratePackageBarcodeInput() {
             // Set the value of the barcode input field
             document.getElementById('barcodeInput').value = document.getElementById('packageBarcodeId').textContent;
+
+            // Optional: Refocus on the barcode input field
+            document.getElementById('barcodeInput').focus();
+
+            // now call the method that will validate barcode and submit to backend
+            processBarcode(document.getElementById('barcodeInput').value);
+        }
+
+        function hydrateCrateBarcodeInput() {
+            // Set the value of the barcode input field
+            document.getElementById('barcodeInput').value = document.getElementById('crateBarcodeId').textContent;
 
             // Optional: Refocus on the barcode input field
             document.getElementById('barcodeInput').focus();
@@ -435,7 +477,9 @@
     <script>
         $(document).ready(function() {
             // Check if delivery.packageinscope is not null
-            var packageInScopeExists = /* logic to check delivery.packageinscope != null */ true; // Modify as necessary
+            // this somehow works with thymeleaf to inject values serverside before this javascript renders
+        var packageInScopeExists = [[${delivery.packageinscope != null}]];
+        console.log(packageInScopeExists);
 
             if (packageInScopeExists) {
                 showPopup();
@@ -455,10 +499,35 @@
         });
     </script>
 
+    <script>
+        $(document).ready(function() {
+            // Check if delivery.crateinscope is not null
+            // this somehow works with thymeleaf to inject values serverside before this javascript renders
+        var crateInScopeExists = [[${delivery.crateinscope != null}]];
+        console.log(crateInScopeExists);
+
+            if (crateInScopeExists) {
+                showPopup();
+            }
+
+            // Show popup
+            function showPopup() {
+                $('#popupCrateInScopeTable').fadeIn();  // Display the popup
+                $('#mainContent').addClass('blur-background');  // Blur the main content only
+            }
+
+            // Close popup when 'X' is clicked
+            $('.close-popup').on('click', function() {
+                $('#popupCrateInScopeTable').fadeOut();  // Hide the popup
+                $('#mainContent').removeClass('blur-background');  // Remove blur effect from the main content
+            });
+        });
+    </script>
+
 
 </head>
 <body>
-<form id="deleteItemFromDeliveryForm" th:action="@{/delivery/deletepackage?deliveryid=__${delivery.deliveryid}__}" th:object="${delivery}" method="post">
+<form id="deleteItemFromDeliveryForm" th:action="@{/delivery/deleteitem?deliveryid=__${delivery.deliveryid}__}" th:object="${delivery}" method="post">
     <input type="hidden" name="_method" value="delete" />
 </form>
 <div th:insert="fragments/palletmodenavbar.html :: palletmodefragment"></div>
@@ -473,7 +542,10 @@
         </div>
         <div class="col-md-6">
             <h3>Total Packages:
-                <span th:text="${delivery.displayquantitytotal}"></span>
+                <span th:text="${delivery.displayquantitytotalpackages}"></span>
+            </h3>
+            <h3>Total Crates:
+                <span th:text="${delivery.displayquantitytotalcrates}"></span>
             </h3>
 <!--            <h6 th:if="${delivery.deliverybarcode}">Delivery UPCA:-->
 <!--                <span th:text="${delivery.deliverybarcode}"></span>-->
@@ -518,8 +590,9 @@
                          <div id="deliveryNameWarning" class="warning-message">Please name the delivery</div>
 
                          <input type="hidden" th:field="*{package_list}">
+                         <input type="hidden" th:field="*{crate_list}">
 
-                <button style="margin-top: 5px; visibility: hidden;" type="submit" class="btn btn-primary">Submit</button>
+                <button id="submitBarcodeFormButton" style="margin-top: 5px; visibility: hidden;" type="submit" class="btn btn-primary">Submit</button>
             </form>
 
 
@@ -730,7 +803,7 @@
 
 
     <!-- Popup Table -->
-    <div id="popupPackageInScopeTable" class="popup-overlay">
+    <div th:if="${delivery.packageinscope}" id="popupPackageInScopeTable" class="popup-overlay">
         <div class="popup-content">
             <button class="close-popup">
                 <i class="bi bi-x-lg"></i>
@@ -751,9 +824,46 @@
                 </tr>
                 </tbody>
             </table>
-            <button th:if="${delivery.packageinscope.delivery == null}" type="button" class="btn-submit-dark" onclick="hydrateBarcodeInput()">Add To Delivery</button>
+            <button th:if="${delivery.packageinscope.delivery == null}" type="button" class="btn-submit-dark" onclick="hydratePackageBarcodeInput()">Add To Delivery</button>
             <a th:href="@{/package?packageid=__${delivery.packageinscope.packageid}__&deliveryid=__${delivery.deliveryid}__}"
                class="btn-submit-dark">Modify Package</a>
+        </div>
+    </div>
+    <!-- Popup Table -->
+    <div th:if="${delivery.crateinscope}" id="popupCrateInScopeTable" class="popup-overlay">
+        <div class="popup-content">
+            <button class="close-popup">
+                <i class="bi bi-x-lg"></i>
+            </button>
+            <h3 class="text-center table-title-popup"><span th:text="${delivery.crateinscope.name}"></span> | UPCA:
+                <span id="crateBarcodeId" th:text="${delivery.crateinscope.cratebarcode}"></span></h3>
+            <table id="crateInScopeTable" class="table table-hover table-striped table-dark">
+                <thead>
+                <tr>
+                    <th>Package List Inside Crate</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="item : ${delivery.crateinscope.package_list}" th:data-barcode="${item.barcode}">
+                    <td th:data-barcode="${item.barcode}">
+                        <!-- Display item name -->
+                        <div th:text="${item.name}">Item Name</div>
+
+                        <!-- Iterate over the product_package_list and display name and displayquantity -->
+                        <ul>
+                            <li th:each="productPackage : ${item.product_package_list}">
+                                <span th:text="${productPackage.name}"></span> -
+                                <span th:text="${productPackage.displayquantity}"></span>
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+
+                </tbody>
+            </table>
+            <button th:if="${delivery.crateinscope.delivery == null}" type="button" class="btn-submit-dark" onclick="hydrateCrateBarcodeInput()">Add To Delivery</button>
+            <a th:href="@{/crate?crateid=__${delivery.crateinscope.crateid}__&deliveryid=__${delivery.deliveryid}__}"
+               class="btn-submit-dark">Modify Crate</a>
         </div>
     </div>
 </div>

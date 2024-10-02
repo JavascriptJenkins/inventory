@@ -70,6 +70,7 @@ public class CrateViewController {
             Model model,
             @RequestParam("crateid") String crateid,
             @RequestParam("packageid") Optional<String> packageid,
+            @RequestParam("deliveryid") Optional<String> deliveryid,
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size,
             @RequestParam("cratepage") Optional<Integer> cratepage,
@@ -90,6 +91,7 @@ public class CrateViewController {
         } else {
             model = crateHelper.loadCrate(crateid, model, cratepage, cratesize)
         }
+        deliveryid.ifPresent { model.addAttribute("deliveryid", deliveryid.get()) }
         crateHelper.bindUnprocessedPackages(model, page, size) // bind all the unprocessed packages to the table for selection
         techvvsAuthService.checkuserauth(model)
         return "crate/crate.html";
@@ -120,6 +122,7 @@ public class CrateViewController {
                 Model model,
                 @RequestParam("page") Optional<Integer> page,
                 @RequestParam("size") Optional<Integer> size,
+                @RequestParam("deliveryid") Optional<String> deliveryid,
                 @RequestParam("cratepage") Optional<Integer> cratepage,
                 @RequestParam("cratesize") Optional<Integer> cratesize){
 
@@ -137,7 +140,7 @@ public class CrateViewController {
             //  if the transactionVO comes back here without a
             // after transaction is created, search for the product based on barcode
 
-            crateVO = crateService.searchForPackageByBarcodeAndCrate(crateVO, model, page, size)
+            crateVO = crateService.searchForPackageByBarcodeAndCrate(crateVO, model, page, size, deliveryid)
 
 
         }
@@ -149,6 +152,7 @@ public class CrateViewController {
 
         crateHelper.bindUnprocessedPackages(model, page, size) // bind all the unprocessed packages to the table for selection
         crateHelper.bindPackagesInCrate(model, cratepage, cratesize, crateVO)
+        deliveryid.ifPresent { model.addAttribute("deliveryid", deliveryid.get()) }
         techvvsAuthService.checkuserauth(model)
         model.addAttribute("crate", crateVO);
 
@@ -163,6 +167,7 @@ public class CrateViewController {
                 @RequestParam("barcode") String barcode,
                 @RequestParam("page") Optional<Integer> page,
                 @RequestParam("size") Optional<Integer> size,
+                @RequestParam("deliveryid") Optional<String> deliveryid,
                 @RequestParam("cratepage") Optional<Integer> cratepage,
                 @RequestParam("cratesize") Optional<Integer> cratesize){
 
@@ -179,6 +184,7 @@ public class CrateViewController {
         crateHelper.bindUnprocessedPackages(model, page, size) // bind all the unprocessed packages to the table for selection
         crateHelper.bindPackagesInCrate(model, cratepage, cratesize, crateVO)
         techvvsAuthService.checkuserauth(model)
+        deliveryid.ifPresent { model.addAttribute("deliveryid", deliveryid.get()) }
         model.addAttribute("crate", crateVO);
 
         return "crate/crate.html";
