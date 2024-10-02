@@ -7,6 +7,9 @@ import com.techvvs.inventory.model.TransactionVO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -28,6 +31,12 @@ public interface ProductRepo extends JpaRepository<ProductVO, Integer> {
     Optional<ProductVO> findByBarcode(String barcode);
 
     boolean existsByProductnumber(int productnumber);
+
+    @Query(value = "SELECT SUM(p.quantityremaining) FROM product p " +
+            "JOIN BATCH_PRODUCT_SET bps ON p.product_id = bps.PRODUCT_SET_PRODUCT_ID " +
+            "WHERE bps.BATCHVO_BATCHID = :batchid", nativeQuery = true)
+    int selectCountOfProductsRemainingInBatch(@Param("batchid") int batchid);
+
 
 
 
