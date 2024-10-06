@@ -120,5 +120,27 @@ class CartService {
     }
 
 
+    @Transactional
+    CartVO removeDiscount(CartVO cartVO){
+        // get existing cart
+        CartVO existingCart = getExistingCart(cartVO)
+
+        // remove the discount
+        existingCart.discount = null
+
+        // recalculate the total price based on all products in the product_cart_list
+        existingCart.total = calculateTotalPriceOfProductList(existingCart.product_cart_list)
+
+        return cartRepo.save(existingCart) // save the cart with the discount removed and new total price
+    }
+
+    double calculateTotalPriceOfProductList(List<ProductVO> productlist){
+        double total = 0.0
+        for(ProductVO productVO : productlist){
+            total+=productVO.price
+        }
+        return total
+    }
+
 
 }

@@ -136,6 +136,12 @@
             document.getElementById("applyDiscountCartForm").submit();
         }
     </script>
+    <script>
+        function removeDiscount() {
+            // Submit the form
+            document.getElementById("removeDiscountCartForm").submit();
+        }
+    </script>
 
 
 </head>
@@ -150,6 +156,7 @@
 
     <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
     <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
+    <div class="alert alert-warning" role="alert" th:if="${warningMessage}" th:text="${warningMessage}">Warning</div>
 
     <form id="reviewCartForm" th:action="@{/checkout/transaction?page=1&size=5}" th:object="${cart}" method="post">
 
@@ -185,10 +192,13 @@
             <div th:if="${cart.discount != null && cart.discount.name == null}" class="col-md-6" style="margin-bottom: 5px;">
                 <button class="btn btn-primary" type="button" onclick="applyDiscount()">Apply Discount</button>
             </div>
+            <div th:if="${cart.discount != null && cart.discount.name != null}" class="col-md-6" style="margin-bottom: 5px;">
+                <button class="btn btn-warning" type="button" onclick="removeDiscount()">Remove Discount</button>
+            </div>
         </div>
 
 
-        <div class="row" style="margin-bottom: 5px;">
+        <div th:if="${cart.discount != null && cart.discount.name != null}" class="row" style="margin-bottom: 5px;">
             <div class="col-md-6" style="margin-bottom: 5px;">
                 <label class="form-label"><b>Original Price</b></label>
                 <input type="hidden" class="form-control" placeholder="total" aria-label="total" readonly>
@@ -261,6 +271,15 @@
         <input type="hidden" th:field="*{cartid}">
         <input type="hidden" th:field="*{customer.customerid}">
         <input id="hiddenDiscountId" type="hidden" th:field="*{discount.discountid}">
+    </form>
+    <form id="removeDiscountCartForm" th:action="@{/checkout/removediscount?page=1&size=5}" th:object="${cart}" method="post">
+        <input type="hidden" th:field="*{product_cart_list}">
+        <input type="hidden" th:field="*{isprocessed}">
+        <input type="hidden" th:field="*{updateTimeStamp}">
+        <input type="hidden" th:field="*{createTimeStamp}">
+        <input type="hidden" th:field="*{total}" class="form-control" placeholder="total" aria-label="total" readonly>
+        <input type="hidden" th:field="*{cartid}">
+        <input type="hidden" th:field="*{customer.customerid}">
     </form>
 </div>
 

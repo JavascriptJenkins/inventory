@@ -6,6 +6,7 @@ import com.techvvs.inventory.jparepo.ProductRepo
 import com.techvvs.inventory.jparepo.TransactionRepo
 import com.techvvs.inventory.model.CartVO
 import com.techvvs.inventory.model.CustomerVO
+import com.techvvs.inventory.model.PackageVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.service.controllers.CartService
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Component
 import org.springframework.ui.Model
 
@@ -55,37 +57,53 @@ class CheckoutHelper {
     void findPendingCarts(Model model, Optional<Integer> page, Optional<Integer> size){
 
         // START PAGINATION
-        // https://www.baeldung.com/spring-data-jpa-pagination-sorting
-        //pagination
-        int currentPage = page.orElse(0);
-        int pageSize = 5;
-        Pageable pageable;
-        if(currentPage == 0){
-            pageable = PageRequest.of(0 , pageSize);
-        } else {
-            pageable = PageRequest.of(currentPage - 1, pageSize);
+        // pagination
+        int currentPage = page.orElse(0);    // Default to first page
+        int pageSize = size.orElse(5);       // Default page size to 5
+
+
+        if(
+                currentPage > pageSize
+        ){
+            currentPage = 0;
         }
 
-        Page<CartVO> pageOfCart = cartRepo.findAll(pageable);
+        pageSize = pageSize < 5 ? 5 : pageSize; // make sure it's not less than 5
+
+        // run first page request
+        Pageable pageable = PageRequest.of(currentPage, pageSize, Sort.by(Sort.Direction.ASC, "createTimeStamp"));
+        Page<CartVO> pageOfCart = cartRepo.findAllByIsprocessed(0,pageable,);  // Fetch paginated results
 
         int totalPages = pageOfCart.getTotalPages();
+        int contentsize = pageOfCart.getContent().size()
 
-        List<Integer> pageNumbers = new ArrayList<>();
-
-        while(totalPages > 0){
-            pageNumbers.add(totalPages);
-            totalPages = totalPages - 1;
+        if(contentsize == 0){
+            // we detect contentsize of 0 then we'll just take the first page of data and show it
+            pageable = PageRequest.of(0, pageSize, Sort.by(Sort.Direction.ASC, "createTimeStamp"));
+            pageOfCart = runPageRequest(pageable)
         }
 
+        List<Integer> pageNumbers = new ArrayList<>();
+        for (int i = 1; i <= totalPages; i++) {
+            pageNumbers.add(i);
+        }
+
+        if(currentPage > totalPages){
+            currentPage = 0;
+        }
 
         model.addAttribute("pageNumbers", pageNumbers);
         model.addAttribute("page", currentPage);
-        model.addAttribute("size", pageOfCart.getTotalPages());
+        model.addAttribute("size", pageSize);
         model.addAttribute("cartPage", pageOfCart);
         // END PAGINATION
 
 
 
+    }
+
+    Page<CartVO> runPageRequest(Pageable pageable) {
+        return cartRepo.findAll(pageable);
     }
 
     CartVO hydrateTransientQuantitiesForDisplay(CartVO cartVO){
