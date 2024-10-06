@@ -143,6 +143,31 @@
         }
     </script>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get the elements
+            const discountSelect = document.getElementById('discountSelect');
+            const applyDiscountButton = document.getElementById('applyDiscountButton');
+
+            // Function to toggle the button based on the selected value
+            function toggleButton() {
+            console.log(discountSelect.value)
+                if (discountSelect.value === "") {
+                    applyDiscountButton.disabled = true; // Disable button
+                } else {
+                    applyDiscountButton.disabled = false; // Enable button
+                }
+            }
+
+            // Attach the function to the 'change' event of the dropdown
+            discountSelect.addEventListener('change', toggleButton);
+
+            // Initial check when the page loads
+            toggleButton();
+        });
+    </script>
+
+
 
 </head>
 <body>
@@ -178,7 +203,7 @@
         </div>
         <div class="row" style="margin-bottom: 5px;">
             <div class="col-md-6" style="margin-bottom: 5px;">
-                <b><label class="form-label">Discounts</label></b>
+                <b><label class="form-label">Discount</label></b>
                 <div th:if="${cart.cartid != null && cart.discount != null}">
                     <p th:each="discount : ${discounts}" th:if="${discount.discountid == cart.discount.discountid}" th:text="${discount.name}">Discount Name</p>
                     <input type="hidden" th:field="*{discount.discountid}">
@@ -190,7 +215,7 @@
                 </select>
             </div>
             <div th:if="${cart.discount != null && cart.discount.name == null}" class="col-md-6" style="margin-bottom: 5px;">
-                <button class="btn btn-primary" type="button" onclick="applyDiscount()">Apply Discount</button>
+                <button id="applyDiscountButton" class="btn btn-primary" type="button" onclick="applyDiscount()">Apply Discount</button>
             </div>
             <div th:if="${cart.discount != null && cart.discount.name != null}" class="col-md-6" style="margin-bottom: 5px;">
                 <button class="btn btn-warning" type="button" onclick="removeDiscount()">Remove Discount</button>
@@ -210,7 +235,7 @@
 
                 <!-- If discount amount is applied -->
                 <p th:if="${cart.discount != null && cart.discount.discountamount > 0}"
-                   th:text="${#numbers.formatDecimal(cart.total - cart.discount.discountamount, 1, 'COMMA', 2, 'POINT')}">
+                   th:text="${#numbers.formatDecimal(cart.total - cart.discount.discountamount < 0 ? cart.originalprice : cart.total - cart.discount.discountamount, 1, 'COMMA', 2, 'POINT')}">
                 </p>
             </div>
             <div class="col-md-6" style="margin-bottom: 5px;">
@@ -219,7 +244,7 @@
                 <p th:if="${cart.discount != null && cart.discount.discountpercentage > 0}" th:text="${#numbers.formatDecimal((cart.total / (1 - (cart.discount.discountpercentage / 100.0)) - cart.total), 1, 'COMMA', 2, 'POINT')}"></p>
 
 
-                <p th:if="${cart.discount != null && cart.discount.discountamount > 0}" th:text="${cart.total - cart.discount.discountamount}"></p>
+                <p th:if="${cart.discount != null && cart.discount.discountamount > 0}" th:text="${cart.total - cart.discount.discountamount < 0 ? cart.discount.discountamount : cart.total - cart.discount.discountamount}"></p>
             </div>
         </div>
 

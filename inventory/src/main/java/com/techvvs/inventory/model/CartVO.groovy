@@ -80,6 +80,9 @@ class CartVO implements Serializable{
     @Transient
     int quantityselected = 0
 
+    @Transient
+    double originalprice = 0
+
     @JsonProperty
     LocalDateTime updateTimeStamp;
 

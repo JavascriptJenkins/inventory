@@ -107,6 +107,7 @@ class CheckoutHelper {
     }
 
     CartVO hydrateTransientQuantitiesForDisplay(CartVO cartVO){
+        cartVO.originalprice = 0
         cartVO.displayquantitytotal = 0
         cartVO.product_cart_list.sort { a, b -> a.price <=> b.price }
         Map<Integer, ProductVO> productMap = new HashMap<>();
@@ -118,6 +119,8 @@ class CheckoutHelper {
             } else {
                 productincart.displayquantity = productincart.displayquantity + 1
             }
+
+            cartVO.originalprice += productincart.price // hydrate the originalprice before any discounts
 
             productMap.put(productincart.getProduct_id(), productincart)
         }
