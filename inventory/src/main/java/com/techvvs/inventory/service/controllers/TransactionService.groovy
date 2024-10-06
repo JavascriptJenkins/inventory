@@ -50,6 +50,8 @@ class TransactionService {
     TransactionVO processCartGenerateNewTransaction(CartVO cartVO) {
 
         Double taxpercentage = environment.getProperty("tax.percentage", Double.class)
+        double totalDiscount = formattingUtil.getTotalDiscount(cartVO.discount_list)
+
 
         ArrayList<ProductVO> newlist = cartVO.product_cart_list
 
@@ -61,7 +63,7 @@ class TransactionService {
                 createTimeStamp: LocalDateTime.now(),
                 customervo: cartVO.customer,
                 total: cartVO.total,
-                totalwithtax: formattingUtil.calculateTotalWithTax(cartVO.total, taxpercentage),
+                totalwithtax: formattingUtil.calculateTotalWithTax(cartVO.total, taxpercentage, totalDiscount),
 //                totalwithtax: cartVO.total,
                 paid: 0.00,
                 taxpercentage: techvvsAppUtil.dev1 ? 0 : 0, // we are not going to set a tax percentage here in non dev environments
@@ -120,7 +122,7 @@ class TransactionService {
                 createTimeStamp: LocalDateTime.now(),
                 customervo: packageVO.customer,
                 total: packageVO.total,
-                totalwithtax: formattingUtil.calculateTotalWithTax(packageVO.total, textpercentage),
+                totalwithtax: formattingUtil.calculateTotalWithTax(packageVO.total, textpercentage, 0.0),
 //                totalwithtax: packageVO.total,
                 paid: 0.00,
                 taxpercentage: techvvsAppUtil.dev1 ? 0 : 0, // we are not going to set a tax percentage here in non dev environments

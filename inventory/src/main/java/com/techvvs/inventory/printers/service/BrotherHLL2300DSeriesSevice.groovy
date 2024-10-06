@@ -240,7 +240,7 @@ class BrotherHLL2300DSeriesSevice {
         }
     }
 
-    PDDocument generateInvoicePDDocument(TransactionVO transactionVO){
+    PDDocument generateInvoicePDDocument(TransactionVO transactionVO) {
         String invoiceContent = invoiceGenerator.generateDefaultInvoice(transactionVO)
         ByteArrayOutputStream pdfOutputStream = new ByteArrayOutputStream()
 
@@ -255,9 +255,11 @@ class BrotherHLL2300DSeriesSevice {
     }
 
 
+
     static void generatePdf(String invoiceContent, OutputStream outputStream) {
         PDDocument document = new PDDocument()
-        PDPage page = new PDPage(A4)
+        PDRectangle pageSize = PDRectangle.A4
+        PDPage page = new PDPage(pageSize)
         document.addPage(page)
 
         PDPageContentStream contentStream = new PDPageContentStream(document, page)
@@ -267,11 +269,32 @@ class BrotherHLL2300DSeriesSevice {
         contentStream.setLeading(14.5)
         contentStream.newLineAtOffset(25, 750)
 
+        int maxLinesPerPage = 49 // For 12pt font with 14.5pt line spacing
+        int lineCounter = 0
+
         invoiceContent.eachLine { line ->
+            if (lineCounter == maxLinesPerPage) {
+                // Close the current content stream and page when the limit is reached
+                contentStream.endText()
+                contentStream.close()
+
+                // Add a new page and reset the line counter
+                page = new PDPage(pageSize)
+                document.addPage(page)
+                contentStream = new PDPageContentStream(document, page)
+                contentStream.setFont(PDType1Font.HELVETICA, 12)
+                contentStream.beginText()
+                contentStream.setLeading(14.5)
+                contentStream.newLineAtOffset(25, 750)
+                lineCounter = 0
+            }
+
             contentStream.showText(line)
             contentStream.newLine()
+            lineCounter++
         }
 
+        // Close the last content stream and complete the document
         contentStream.endText()
         contentStream.close()
 

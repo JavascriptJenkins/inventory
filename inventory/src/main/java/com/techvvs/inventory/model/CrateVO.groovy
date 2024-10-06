@@ -46,6 +46,10 @@ class CrateVO implements Serializable{
     TransactionVO transaction
 
     @JsonProperty
+    @ElementCollection(fetch = FetchType.LAZY)
+    List<DiscountVO> discount_list
+
+    @JsonProperty
     Double total;
 
     @JsonProperty

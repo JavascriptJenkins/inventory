@@ -156,6 +156,7 @@ public class CheckoutViewController {
         
 
         cartVO.barcode = "" // reset barcode to empty
+        cartVO.quantityselected = 0 // reset quantity selected
 
         techvvsAuthService.checkuserauth(model)
         model.addAttribute("cart", cartVO);

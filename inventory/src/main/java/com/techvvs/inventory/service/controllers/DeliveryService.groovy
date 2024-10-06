@@ -194,9 +194,10 @@ class DeliveryService {
         double cratetotal = deliveryVO.crate_list.stream().mapToDouble({ CrateVO crate -> crate.getTotal() }).sum()
         double packagetotal = deliveryVO.package_list.stream().mapToDouble({ PackageVO pkg -> pkg.getTotal() }).sum()
         double grandtotal = cratetotal + packagetotal
+        double discount = 0.0;
 
 
-        return formattingUtil.calculateTotalWithTax(grandtotal, taxpercentage)
+        return formattingUtil.calculateTotalWithTax(grandtotal, taxpercentage, discount)
     }
 
     def generateSevenDigitNumber() {

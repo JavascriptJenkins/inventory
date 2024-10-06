@@ -8,6 +8,7 @@ import com.techvvs.inventory.model.CartVO
 import com.techvvs.inventory.model.CustomerVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.service.controllers.CartService
+import com.techvvs.inventory.service.controllers.ProductService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.ui.Model
@@ -32,6 +33,9 @@ class CartDeleteService {
 
     @Autowired
     BarcodeHelper barcodeHelper
+
+    @Autowired
+    ProductService productService
 
     @Transactional
     CartVO deleteProductFromCart(CartVO cartVO, String barcode){
@@ -79,50 +83,16 @@ class CartDeleteService {
 
         String barcode = cartVO.barcode + String.valueOf(checksum)
 
-        Optional<ProductVO> productVO = productRepo.findByBarcode(barcode)
-
-        // todo: on second time thru we need to fully hydrate the customer and product_set before saving
-
-        if(!productVO.empty){
-
-            // update the product cart list association
-            if(productVO.get().cart_list == null){
-                productVO.get().cart_list = new ArrayList<>()
-            }
-            productVO.get().cart_list.add(cartVO)
-
-            productVO.get().updateTimeStamp = LocalDateTime.now()
-            // when product is added to the cart, decrease the quantity remaining.
-            productVO.get().quantityremaining = productVO.get().quantityremaining == 0 ? 0 : productVO.get().quantityremaining - 1
-            ProductVO savedProduct = productRepo.save(productVO.get())
-
-            if(cartVO.total == null){
-                cartVO.total = 0.00
-            }
-
-            /* Cart code below */
-            cartVO.total += Double.valueOf(productVO.get().price) // add the product price to the total
-
-            // handle quantity here (have to iterate thru all product cert list and update the quantity)
-
-            // if it's the first time adding a product we need to create the set to hold them
-            if(cartVO.product_cart_list == null){
-                cartVO.product_cart_list = new ArrayList<ProductVO>()
-            }
-
-            cartVO = refreshProductCartList(cartVO)
-
-            // now save the cart side of the many to many
-            cartVO.product_cart_list.add(savedProduct)
-            cartVO.updateTimeStamp = LocalDateTime.now()
-            cartVO = cartRepo.save(cartVO)
-            model.addAttribute("successMessage","Product: "+productVO.get().name + " added successfully")
+        if(cartVO.quantityselected == 0){
+            productService.saveProductCartAssociations(barcode, cartVO, model, 1)
         } else {
-            // need to bind the selected customer here otherwise the dropdown wont work
-            cartVO.customer = customerRepo.findById(cartVO.customer.customerid).get()
-            model.addAttribute("errorMessage","Product not found")
+            int j = 0;
+            // run the product save once for every quantity selected
+            for (int i = 0; i < cartVO.quantityselected; i++) {
+                j++
+                productService.saveProductCartAssociations(barcode, cartVO, model, j)
+            }
         }
-
 
 
         return cartVO
@@ -130,18 +100,6 @@ class CartDeleteService {
 
 
 
-    // because of how we handle quantities on the frontend, this is needed to refresh the list before saving
-    @Transactional
-    CartVO refreshProductCartList(CartVO cartVO){
-
-        if(cartVO.cartid == 0){
-            return cartVO
-        }
-
-         cartVO.product_cart_list = cartRepo.findById(cartVO.cartid).get().product_cart_list
-        return cartVO
-
-    }
 
 
     @Transactional
@@ -179,7 +137,7 @@ class CartDeleteService {
 
     @Transactional
     int getCountOfProductInCartByBarcode(CartVO cartVO){
-        cartVO = refreshProductCartList(cartVO)
+        cartVO = productService.refreshProductCartList(cartVO)
         int count = 0
         for(ProductVO productincart : cartVO.product_cart_list){
             if(productincart.barcode.equals(cartVO.barcode)){

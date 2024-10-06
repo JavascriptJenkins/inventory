@@ -32,6 +32,10 @@ class TransactionVO implements Serializable {
 
     @JsonProperty
     @ElementCollection(fetch = FetchType.LAZY)
+    List<DiscountVO> discount_list
+
+    @JsonProperty
+    @ElementCollection(fetch = FetchType.LAZY)
     List<ReturnVO> return_list
 
     @JsonProperty

@@ -36,68 +36,102 @@ class InvoiceGenerator {
     // todo: make sure this can handle printing out more than 1 page ......
     String generateDefaultInvoice(TransactionVO transaction) {
 
-        // this aggregates the products to their unique list
+        // Aggregate products to their unique list
         transaction.product_list = getAggregatedTransactionProductList(transaction)
-
 
         def invoice = new StringBuilder()
         def customer = transaction.customervo
 
-        invoice.append('Invoice Date: '+ LocalDateTime.now().format(formatter)+'  Time: '+LocalDateTime.now().format(timeFormatter)+'\n');
-        invoice.append("========\n")
-        invoice.append("\n")
-        invoice.append("Invoice\n")
-        invoice.append("========\n")
-        invoice.append("Transaction ID: ${transaction.transactionid}\n")
-        invoice.append('Original Transaction Date: '+transaction.createTimeStamp.format(formatter)+'\n');
-        invoice.append('Original Transaction Time: '+transaction.createTimeStamp.format(timeFormatter)+'\n');
+        // Invoice header
+        invoice.append('Invoice Date: ' + LocalDateTime.now().format(formatter) + '  Time: ' + LocalDateTime.now().format(timeFormatter) + '\n')
+        invoice.append("========================================\n")
+        invoice.append("                 INVOICE                \n")
+        invoice.append("========================================\n\n")
 
+        // Transaction details
+        invoice.append(String.format("Transaction ID: %-20s\n", transaction.transactionid))
+        invoice.append('Original Transaction Date: ' + transaction.createTimeStamp.format(formatter) + '\n')
+        invoice.append('Original Transaction Time: ' + transaction.createTimeStamp.format(timeFormatter) + '\n')
+        invoice.append("========================================\n\n")
 
+        // Customer details
         invoice.append("Customer Details:\n")
         invoice.append("-----------------\n")
-        invoice.append("Name: ${customer.name}\n")
-        invoice.append("Email: ${customer.email}\n")
-        invoice.append("Phone: ${customer.phone}\n\n")
+        invoice.append(String.format("Name:    %-20s\n", customer.name))
+        invoice.append(String.format("Email:   %-20s\n", customer.email))
+        invoice.append(String.format("Phone:   %-20s\n", customer.phone))
+        invoice.append("========================================\n\n")
 
+        // Product details
         invoice.append("Products:\n")
-        invoice.append("---------\n")
-        for(ProductVO item : transaction.product_list) {
-            invoice.append(formattingUtil.formatInvoiceItem(item.name, item.displayquantity, Double.valueOf(item.price)));
-        }
-        invoice.append("\n")
+        invoice.append("-----------------\n")
+        invoice.append(String.format("%-20s %-10s %-10s\n", "Product", "Quantity", "Price"))
+        invoice.append("--------------------------------------------------\n")
+        transaction.product_list.each { product ->
+            // Ensure price is treated as a double for formatting
+            double priceValue = Double.parseDouble(product.price.toString())
 
-        invoice.append("Payments:\n")
-        invoice.append("---------\n")
-        transaction.payment_list.each { payment ->
-            invoice.append("--------------------------------------------------\n")
-            invoice.append(String.format("Payment ID: %-10s Amount: %-10.2f Method: %-10s Date: %s\n",
-                    payment.paymentid, payment.amountpaid, payment.paymenttype, payment.createTimeStamp))
+            // Format the product name, quantity, and price
+            invoice.append(String.format("%-20s %-10s \$%-10.2f\n", product.name, product.displayquantity, priceValue))
         }
         invoice.append("--------------------------------------------------\n\n")
 
-        if(transaction.return_list != null && transaction.return_list.size() > 0) {
+        // Payment details
+        invoice.append("Payments:\n")
+        invoice.append("-----------------\n")
+        invoice.append(String.format("%-15s %-10s %-10s %-20s\n", "Payment ID", "Amount", "Method", "Date"))
+        invoice.append("--------------------------------------------------\n")
+        transaction.payment_list.each { payment ->
+            invoice.append(String.format("%-15s \$%-10.2f %-10s %s\n", payment.paymentid, payment.amountpaid, payment.paymenttype, payment.createTimeStamp))
+        }
+        invoice.append("--------------------------------------------------\n\n")
+
+        // Return details (if any)
+        if (transaction.return_list != null && transaction.return_list.size() > 0) {
             invoice.append("Returns:\n")
-            invoice.append("---------\n")
+            invoice.append("-----------------\n")
+            invoice.append(String.format("%-30s %-10s %-20s\n", "Product Name", "Price", "Date"))
+            invoice.append("--------------------------------------------------\n")
             transaction.return_list.each { returnvo ->
-                invoice.append(String.format("Product Name: %-10s Price: %-10.2f Date: %s\n",
-                        returnvo.product.name, returnvo.product.price, returnvo.createTimeStamp))
+                invoice.append(String.format("%-30s \$%-10.2f %s\n", returnvo.product.name, returnvo.product.price, returnvo.createTimeStamp))
             }
             invoice.append("--------------------------------------------------\n\n")
         }
 
-        invoice.append('Subtotal                  $'+transaction.total+'\n');
-        invoice.append('Tax ('+transaction.taxpercentage+'%)                 $'+formattingUtil.calculateTaxAmount(transaction.total, transaction.taxpercentage)+'\n')
-        invoice.append('Tax (0%)' +'\n')
-        invoice.append('Total                     $'+formattingUtil.calculateTotalWithTax(transaction.total, transaction.taxpercentage)+'\n')
-        invoice.append('Total                     $'+transaction.total+'\n')
-        invoice.append("Paid: ${transaction.paid == null ? '0' : transaction.paid}\n")
-        invoice.append("Remaining Balance: "+formattingUtil.calculateRemainingBalance(transaction.total, transaction.paid)+"\n")
-        invoice.append("Notes: ${transaction.notes == null ? '' : transaction.notes}\n")
-        invoice.append("Cashier: ${transaction.cashier == null ? '' : transaction.cashier}\n")
-//        invoice.append("Processed: ${transaction.isprocessed == 1 ? 'Yes' : 'No'}\n")
+        // Return details (if any)
+        if (transaction.discount_list != null && transaction.discount_list.size() > 0) {
+            invoice.append("Discounts:\n")
+            invoice.append("-----------------\n")
+            invoice.append(String.format("%-30s %-10s %-20s\n", "Discount Name", "Price", "Date"))
+            invoice.append("--------------------------------------------------\n")
+            transaction.discount_list.each { discountvo ->
+                invoice.append(String.format("%-30s \$%-10.2f %s\n", discountvo.name, discountvo.discountamount, discountvo.createTimeStamp))
+            }
+            invoice.append("--------------------------------------------------\n\n")
+        }
+
+        double totalDiscount = formattingUtil.getTotalDiscount(transaction.discount_list)
+
+
+        // Summary section (Subtotal, Tax, Total, etc.)
+        invoice.append(String.format("%-30s \$%-10.2f\n", "Subtotal", transaction.total))
+        invoice.append(String.format("Discount:                 \$%-10s\n", totalDiscount))
+        invoice.append(String.format("Tax (%s%%)                \$%-10.2f\n", transaction.taxpercentage, formattingUtil.calculateTaxAmount(transaction.total, transaction.taxpercentage, totalDiscount)))
+        invoice.append(String.format("Total (with tax)          \$%-10.2f\n", formattingUtil.calculateTotalWithTax(transaction.total, transaction.taxpercentage, totalDiscount)))
+        invoice.append(String.format("Paid:                     \$%-10s\n", transaction.paid == null ? '0' : transaction.paid))
+        invoice.append(String.format("Remaining Balance:        \$%-10.2f\n", formattingUtil.calculateRemainingBalance(transaction.total, transaction.paid)))
+        invoice.append("========================================\n")
+        invoice.append(String.format("Notes: %s\n", transaction.notes == null ? '' : transaction.notes))
+        invoice.append(String.format("Cashier: %s\n", transaction.cashier == null ? '' : transaction.cashier))
+        invoice.append("========================================\n")
 
         return invoice.toString()
     }
+
+
+
+
+
 
 //// Example usage
 //    def transaction = new TransactionVO(
