@@ -31,8 +31,9 @@ class TransactionVO implements Serializable {
     List<PaymentVO> payment_list
 
     @JsonProperty
-    @ElementCollection(fetch = FetchType.LAZY)
-    List<DiscountVO> discount_list
+    @OneToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name="discountid")
+    DiscountVO discount
 
     @JsonProperty
     @ElementCollection(fetch = FetchType.LAZY)

@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface DiscountRepo extends JpaRepository<ReturnVO, Integer> {
+public interface DiscountRepo extends JpaRepository<DiscountVO, Integer> {
 
     List<DiscountVO> findAllByTransaction(TransactionVO transactionVO);
 

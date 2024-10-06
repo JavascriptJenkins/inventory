@@ -50,7 +50,8 @@ class TransactionService {
     TransactionVO processCartGenerateNewTransaction(CartVO cartVO) {
 
         Double taxpercentage = environment.getProperty("tax.percentage", Double.class)
-        double totalDiscount = formattingUtil.getTotalDiscount(cartVO.discount_list)
+        // todo: calculate the getTotalDiscount differently
+        double totalDiscount = formattingUtil.getTotalDiscount(cartVO.discount)
 
 
         ArrayList<ProductVO> newlist = cartVO.product_cart_list

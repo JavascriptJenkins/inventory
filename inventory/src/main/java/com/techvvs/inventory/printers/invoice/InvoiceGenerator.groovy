@@ -98,26 +98,25 @@ class InvoiceGenerator {
             invoice.append("--------------------------------------------------\n\n")
         }
 
-        // Return details (if any)
-        if (transaction.discount_list != null && transaction.discount_list.size() > 0) {
-            invoice.append("Discounts:\n")
-            invoice.append("-----------------\n")
-            invoice.append(String.format("%-30s %-10s %-20s\n", "Discount Name", "Price", "Date"))
-            invoice.append("--------------------------------------------------\n")
-            transaction.discount_list.each { discountvo ->
-                invoice.append(String.format("%-30s \$%-10.2f %s\n", discountvo.name, discountvo.discountamount, discountvo.createTimeStamp))
-            }
-            invoice.append("--------------------------------------------------\n\n")
-        }
+        // Discount details (if any)
+//        if (transaction.discount_list != null && transaction.discount_list.size() > 0) {
+//            invoice.append("Discounts:\n")
+//            invoice.append("-----------------\n")
+//            invoice.append(String.format("%-30s %-10s %-20s\n", "Discount Name", "Price", "Date"))
+//            invoice.append("--------------------------------------------------\n")
+//            transaction.discount_list.each { discountvo ->
+//                invoice.append(String.format("%-30s \$%-10.2f %s\n", discountvo.name, discountvo.discountamount, discountvo.createTimeStamp))
+//            }
+//            invoice.append("--------------------------------------------------\n\n")
+//        }
 
-        double totalDiscount = formattingUtil.getTotalDiscount(transaction.discount_list)
+        double totalDiscount = transaction.discount.discountpercentage
 
 
         // Summary section (Subtotal, Tax, Total, etc.)
         invoice.append(String.format("%-30s \$%-10.2f\n", "Subtotal", transaction.total))
         invoice.append(String.format("Discount:                 \$%-10s\n", totalDiscount))
-        invoice.append(String.format("Tax (%s%%)                \$%-10.2f\n", transaction.taxpercentage, formattingUtil.calculateTaxAmount(transaction.total, transaction.taxpercentage, totalDiscount)))
-        invoice.append(String.format("Total (with tax)          \$%-10.2f\n", formattingUtil.calculateTotalWithTax(transaction.total, transaction.taxpercentage, totalDiscount)))
+        invoice.append(String.format("Total (with tax)          \$%-10.2f\n", formattingUtil.calculateTotalWithTax(transaction.total, transaction.taxpercentage, transaction.discount.discountpercentage)))
         invoice.append(String.format("Paid:                     \$%-10s\n", transaction.paid == null ? '0' : transaction.paid))
         invoice.append(String.format("Remaining Balance:        \$%-10.2f\n", formattingUtil.calculateRemainingBalance(transaction.total, transaction.paid)))
         invoice.append("========================================\n")

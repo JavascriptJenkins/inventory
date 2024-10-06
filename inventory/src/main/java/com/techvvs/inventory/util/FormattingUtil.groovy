@@ -26,13 +26,15 @@ class FormattingUtil {
     static String formatInvoiceItem(String name, int quantity, Double price) {
         return String.format("%-30s %5d %10.2f\n", name, quantity, price);
     }
-    public static double calculateTotalWithTax(double total, double taxPercentage, double discount) {
+
+    public static double calculateTotalWithTax(double total, double taxPercentage, double discountPercentage) {
         // Validate input values
-        if (total < 0 || taxPercentage < 0 || discount < 0) {
-            throw new IllegalArgumentException("Total, tax percentage, and discount must be non-negative.");
+        if (total < 0 || taxPercentage < 0 || discountPercentage < 0) {
+            throw new IllegalArgumentException("Total, tax percentage, and discount percentage must be non-negative.");
         }
 
         // Apply the discount to the total
+        double discount = total * (discountPercentage / 100.0);
         double discountedTotal = total - discount;
 
         // Ensure the discounted total is not less than zero
@@ -49,6 +51,47 @@ class FormattingUtil {
         // Round to 2 decimal places for currency precision
         return Math.round(totalWithTax * 100.0) / 100.0;
     }
+
+    // calculates total before tax but with discount
+    public static double calculateTotalWithDiscountPercentage(double total, double discountPercentage) {
+        // Validate input values
+        if (total < 0 || discountPercentage < 0) {
+            throw new IllegalArgumentException("Total and discount percentage must be non-negative.");
+        }
+
+        // Apply the discount to the total
+        double discount = total * (discountPercentage / 100.0);
+        double discountedTotal = total - discount;
+
+        // Ensure the discounted total is not less than zero
+        if (discountedTotal < 0) {
+            discountedTotal = 0;
+        }
+
+        // Round to 2 decimal places for currency precision
+        return Math.round(discountedTotal * 100.0) / 100.0;
+    }
+
+    // calculates total before tax but with discount
+    public static double calculateTotalWithDiscountAmount(double total, double discountAmount) {
+        // Validate input values
+        if (total < 0 || discountAmount < 0) {
+            throw new IllegalArgumentException("Total and discount amount must be non-negative.");
+        }
+
+        // Apply the discount to the total
+        double discountedTotal = total - discountAmount;
+
+        // Ensure the discounted total is not less than zero
+        if (discountedTotal < 0) {
+            discountedTotal = 0;
+        }
+
+        // Round to 2 decimal places for currency precision
+        return Math.round(discountedTotal * 100.0) / 100.0;
+    }
+
+
 
 
 //    public static int calculateTaxAmount(int total, int taxPercentage) {
@@ -76,14 +119,6 @@ class FormattingUtil {
         return Math.round(taxAmount * 100.0) / 100.0;
     }
 
-
-
-    double getTotalDiscount(List<DiscountVO> discount_list) {
-        return discount_list ?
-                discount_list.collect { item ->
-                    item?.discountamount ?: 0.0
-                }.sum() : 0.0 as double
-    }
 
     String getDateTimeForFileSystem() {
 

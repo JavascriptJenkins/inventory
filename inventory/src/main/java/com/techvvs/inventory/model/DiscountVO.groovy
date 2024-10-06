@@ -19,10 +19,10 @@ class DiscountVO implements Serializable {
     Integer discountid
 
     @JsonProperty
-    Double discountamount; // handling only discountamount for now
+    Double discountamount;
 
     @JsonProperty
-    Double discountpercentage; // this is placeholder for future funtionality
+    Double discountpercentage;
 
     @JsonProperty
     String name;
@@ -37,6 +37,9 @@ class DiscountVO implements Serializable {
 
     @JsonProperty
     String notes
+
+    @Transient
+    Double discountdisplayamount;
 
     // generic fields below
     @JsonProperty

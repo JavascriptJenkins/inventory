@@ -38,9 +38,9 @@ class CartVO implements Serializable{
     )
     List<ProductVO> product_cart_list
 
-    @JsonProperty
-    @ElementCollection(fetch = FetchType.LAZY)
-    List<DiscountVO> discount_list
+    @OneToOne
+    @JoinColumn(name = "discountid")
+    DiscountVO discount
 
     @OneToOne
     @JoinColumn(name = "customerid")
@@ -64,7 +64,15 @@ class CartVO implements Serializable{
     Integer displayquantitytotal // for displaying total units
 
     @JsonProperty
-    Double total;
+    Double total; // NOTE: this is total before tax
+
+    @JsonProperty
+    Double totalafterdiscount; // NOTE: this is total before tax
+
+    @JsonProperty
+    Double totalafterdiscountandtax; // NOTE: this is total before tax
+
+
 
     @JsonProperty
     Integer isprocessed;
