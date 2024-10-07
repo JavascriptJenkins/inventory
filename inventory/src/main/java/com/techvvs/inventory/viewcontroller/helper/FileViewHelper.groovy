@@ -45,4 +45,10 @@ class FileViewHelper {
         return dirandfilename;
     }
 
+    MenuOptionVO sanitizeTransientsForAdhocLabelView(MenuOptionVO menuOptionVO){
+        menuOptionVO.action = menuOptionVO.action.replace(",", "")
+        menuOptionVO.filenametosend = menuOptionVO.filenametosend.replace(",", "")
+        return menuOptionVO
+    }
+
 }

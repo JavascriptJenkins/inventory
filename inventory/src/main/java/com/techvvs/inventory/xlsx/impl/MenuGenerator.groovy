@@ -39,7 +39,6 @@ class MenuGenerator {
         MenuVO menuVO = new MenuVO(
 
                 name: batchVO.name+"-"+"default-menu",
-                batch: batchVO,
                 menu_product_list: expandedlist,
                 isdefault: 1,
                 notes: "Default Menu",

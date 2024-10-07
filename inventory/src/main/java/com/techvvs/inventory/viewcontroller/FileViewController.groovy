@@ -2,6 +2,7 @@ package com.techvvs.inventory.viewcontroller
 
 import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.model.BatchVO
+import com.techvvs.inventory.model.MenuVO
 import com.techvvs.inventory.modelnonpersist.FileVO
 import com.techvvs.inventory.modelnonpersist.MenuOptionVO
 import com.techvvs.inventory.service.auth.TechvvsAuthService
@@ -171,5 +172,63 @@ public class FileViewController {
     }
 
 
+    @PostMapping("/adhoclabels")
+    String adhoclabels(
+            @ModelAttribute( "menuoption" ) MenuOptionVO menuoption,
+            Model model,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size){
+
+
+
+        menuoption = fileViewHelper.sanitizeTransientsForAdhocLabelView(menuoption)
+        String filename = menuoption.filenametosend // this contains file path from the dropdown
+
+        filename = removeAfterPdf(filename)
+
+        filename = filename.replaceAll(",", "")
+        String contentsofinvoice = ""
+        // now here we need to actually send out the file
+        String dir = appConstants.PARENT_LEVEL_DIR+appConstants.LABEL_DIR+0+appConstants.ADHOC_DIR+"/"+filename
+        String dironly = appConstants.PARENT_LEVEL_DIR+appConstants.LABEL_DIR+0+appConstants.ADHOC_DIR+"/"
+
+        if (menuoption.action.contains(appConstants.TEXT_INVOICE)) {
+            transactionHelper.sendTextMessageWithDownloadLink(menuoption.phonenumber, dir)
+        } else if (menuoption.action.contains(appConstants.EMAIL_INVOICE)) {
+            transactionHelper.sendEmailWithDownloadLink(menuoption.email, dir)
+        } else if (menuoption.action.contains(appConstants.VIEW_INVOICE)) {
+            contentsofinvoice = techvvsFileHelper.readPdfAsBase64String(dir)
+        }
+
+        // start file paging
+        Page<FileVO> filePage = filePagingService.getFilePageFromDirectory(page.get(), size.get(), dironly)
+        filePagingService.bindPageAttributesToModel(model, filePage, page, size);
+        // end file paging
+
+        techvvsAuthService.checkuserauth(model)
+        model.addAttribute("menuoption", new MenuOptionVO(selected: dir));
+        model.addAttribute("invoicecontent", contentsofinvoice)
+        model.addAttribute("menu", new MenuVO())
+
+        // only send a successmessage if we sent out an email or text, viewing file will get no successmessage
+        if(model.getAttribute("errorMessage") == null && contentsofinvoice.length() == 0){
+            model.addAttribute("successMessage", "Successfully sent file: "+filename+
+                    "using method: "+menuoption.action)
+
+            return "label/label.html";
+
+        } else {
+            return "label/label.html";
+        }
+
+    }
+
+    def removeAfterPdf(String input) {
+        int index = input.indexOf('.pdf')
+        if (index != -1) {
+            return input.substring(0, index + 4)  // Keep everything up to and including '.pdf'
+        }
+        return input  // Return the original string if '.pdf' is not found
+    }
 
 }

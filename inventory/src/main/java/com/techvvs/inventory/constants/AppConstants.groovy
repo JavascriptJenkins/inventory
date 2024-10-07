@@ -17,15 +17,18 @@ class AppConstants {
     String TRANSACTION_INVOICE_DIR = "/transaction/invoice/"
     String PACKAGE_DIR = "/package/"
     String CRATE_DIR = "/crate/"
+    String LABEL_DIR = "/label/"
     String DELIVERY_DIR = "/delivery/"
     String QR_ALL_DIR = "/qrcodes/all/"
     String BARCODES_ALL_DIR = "/barcodes/all/"
+    String ADHOC_DIR = "/adhoc/"
     String BATCH_PRICE_SHEETS_DIR = "/pricesheets/"
     public String COA_DIR = "/coa/"
     String BARCODES_MENU_DIR = "/barcodes/menu/"
     String BARCODES_TRANSFER_DIR = "/adhoc/transfers/"
     String filenameprefix = "upca_"
     String filenameprefix_qr = "qr_"
+    String filenameprefix_adhoc_label = "adhoc_label_"
 
 
     String DEV_1 = "dev1"
