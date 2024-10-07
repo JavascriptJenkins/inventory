@@ -58,6 +58,31 @@ class FormattingUtil {
         return Math.round(totalWithTax * 100.0) / 100.0;
     }
 
+    public static double calculateTotalWithTaxUsingDiscountAmount(double total, double taxPercentage, double discountAmount) {
+        // Validate input values
+        if (total < 0 || taxPercentage < 0 || discountAmount < 0) {
+            throw new IllegalArgumentException("Total, tax percentage, and discount amount must be non-negative.");
+        }
+
+        // Apply the discount amount to the total
+        double discountedTotal = total - discountAmount;
+
+        // Ensure the discounted total is not less than zero
+        if (discountedTotal < 0) {
+            discountedTotal = 0;
+        }
+
+        // Calculate the tax amount on the discounted total
+        double taxAmount = discountedTotal * (taxPercentage / 100.0);
+
+        // Calculate the total with tax
+        double totalWithTax = discountedTotal + taxAmount;
+
+        // Round to 2 decimal places for currency precision
+        return Math.round(totalWithTax * 100.0) / 100.0;
+    }
+
+
     // calculates total before tax but with discount
     public static double calculateTotalWithDiscountPercentage(double total, double discountPercentage) {
         // Validate input values
@@ -86,8 +111,7 @@ class FormattingUtil {
             if (cartVO.discount.discountpercentage > 0) {
                 discountPercentage = cartVO.discount.discountpercentage;
             } else if (cartVO.discount.discountamount > 0) {
-                // Calculate the discount percentage from the discount amount
-                discountPercentage = (cartVO.total == 0 || cartVO.discount.discountamount > cartVO.total) ? 100 : (cartVO.discount.discountamount / cartVO.total) * 100.0;
+                return 0; // return 0 because this discount is an amount and not a percentage
             }
         }
         return discountPercentage
