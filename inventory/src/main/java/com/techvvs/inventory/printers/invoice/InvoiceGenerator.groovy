@@ -110,12 +110,22 @@ class InvoiceGenerator {
 //            invoice.append("--------------------------------------------------\n\n")
 //        }
 
-        double totalDiscount = transaction.discount.discountpercentage
+        // todo: recalc this
 
+        boolean hasdiscount = transaction.discount
 
+// todo: conversion problem here
         // Summary section (Subtotal, Tax, Total, etc.)
         invoice.append(String.format("%-30s \$%-10.2f\n", "Subtotal", transaction.total))
-        invoice.append(String.format("Discount:                 \$%-10s\n", totalDiscount))
+
+        if(hasdiscount && transaction.discount.discountpercentage > 0){
+            invoice.append(String.format("Discount %:                 \$%-10f\n", transaction.discount.discountpercentage))
+        }
+        if(hasdiscount && transaction.discount.discountamount > 0){
+            invoice.append(String.format("Discount Amount:                 \$%-10f\n", transaction.discount.discountamount))
+        }
+
+
         invoice.append(String.format("Total (with tax)          \$%-10.2f\n", formattingUtil.calculateTotalWithTax(transaction.total, transaction.taxpercentage, transaction.discount.discountpercentage)))
         invoice.append(String.format("Paid:                     \$%-10s\n", transaction.paid == null ? '0' : transaction.paid))
         invoice.append(String.format("Remaining Balance:        \$%-10.2f\n", formattingUtil.calculateRemainingBalance(transaction.total, transaction.paid)))

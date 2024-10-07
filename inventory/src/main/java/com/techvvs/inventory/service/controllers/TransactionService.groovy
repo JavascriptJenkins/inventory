@@ -45,14 +45,22 @@ class TransactionService {
     @Autowired
     PackageRepo packageRepo
 
+    @Autowired
+    CartService cartService
+
+    @Autowired
+    DiscountService discountService
+
 
     @Transactional
     TransactionVO processCartGenerateNewTransaction(CartVO cartVO) {
 
         Double taxpercentage = environment.getProperty("tax.percentage", Double.class)
-        // todo: calculate the getTotalDiscount differently
-        double totalDiscount = formattingUtil.getTotalDiscount(cartVO.discount)
 
+        // calculate a percentage discount amount
+        double discountPercentage = formattingUtil.calculateTotalDiscountPercentage(cartVO)
+
+        double originalprice = cartService.calculateTotalPriceOfProductList(cartVO.product_cart_list)
 
         ArrayList<ProductVO> newlist = cartVO.product_cart_list
 
@@ -63,8 +71,10 @@ class TransactionService {
                 updateTimeStamp: LocalDateTime.now(),
                 createTimeStamp: LocalDateTime.now(),
                 customervo: cartVO.customer,
+                discount: cartVO.discount,
                 total: cartVO.total,
-                totalwithtax: formattingUtil.calculateTotalWithTax(cartVO.total, taxpercentage, totalDiscount),
+                originalprice: originalprice,
+                totalwithtax: formattingUtil.calculateTotalWithTax(originalprice, taxpercentage, discountPercentage),
 //                totalwithtax: cartVO.total,
                 paid: 0.00,
                 taxpercentage: techvvsAppUtil.dev1 ? 0 : 0, // we are not going to set a tax percentage here in non dev environments

@@ -57,6 +57,9 @@ class TransactionVO implements Serializable {
     Double total;
 
     @JsonProperty
+    Double originalprice;
+
+    @JsonProperty
     Double totalwithtax;
 
     @JsonProperty

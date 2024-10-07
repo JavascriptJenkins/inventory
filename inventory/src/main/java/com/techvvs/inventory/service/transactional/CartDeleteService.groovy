@@ -122,11 +122,13 @@ class CartDeleteService {
                     model.addAttribute("cart", cartVO);
                 }
             } else {
-                int cartcount = getCountOfProductInCartByBarcode(cartVO)
+
+                int cartcount = getCountOfProductInCartByBarcode(cartVO) + cartVO.quantityselected
                 // check here if the quantity we are trying to add will exceed the quantity in stock
-                if(cartcount == productVO.get().quantity){
+                if(cartcount >= productVO.get().quantity){
                     model.addAttribute("errorMessage","Quantity exceeds quantity in stock")
                 }
+
             }
 
         }
@@ -139,11 +141,20 @@ class CartDeleteService {
     int getCountOfProductInCartByBarcode(CartVO cartVO){
         cartVO = productService.refreshProductCartList(cartVO)
         int count = 0
+
+        String nochecksum = cartVO.barcode
+        // validate the barcode and add the last digit here
+        int checksum =barcodeHelper.calculateUPCAChecksum(cartVO.barcode)
+        cartVO.barcode = String.valueOf(cartVO.barcode+checksum)
+
         for(ProductVO productincart : cartVO.product_cart_list){
             if(productincart.barcode.equals(cartVO.barcode)){
                 count = count + 1
             }
         }
+
+        // reset incoming barcode to not have checksum
+        cartVO.barcode = nochecksum
         return count
     }
 

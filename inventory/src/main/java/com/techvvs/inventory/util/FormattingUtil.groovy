@@ -1,5 +1,6 @@
 package com.techvvs.inventory.util
 
+import com.techvvs.inventory.model.CartVO
 import com.techvvs.inventory.model.DiscountVO
 import com.techvvs.inventory.model.TransactionVO
 import org.springframework.stereotype.Component
@@ -27,6 +28,11 @@ class FormattingUtil {
         return String.format("%-30s %5d %10.2f\n", name, quantity, price);
     }
 
+    /*In most cases, if the total amount of a transaction is discounted to zero, no sales tax is due.
+    Sales tax is typically calculated based on the amount actually paid by the customer.
+    If the total is zero after applying discounts, there’s no taxable amount remaining, so no sales tax would apply.
+    */
+    // we input the original price into this method regardless of if we have a 100% discount
     public static double calculateTotalWithTax(double total, double taxPercentage, double discountPercentage) {
         // Validate input values
         if (total < 0 || taxPercentage < 0 || discountPercentage < 0) {
@@ -70,6 +76,21 @@ class FormattingUtil {
 
         // Round to 2 decimal places for currency precision
         return Math.round(discountedTotal * 100.0) / 100.0;
+    }
+
+    static double calculateTotalDiscountPercentage(CartVO cartVO) {
+        double discountPercentage = 0.0;
+
+        if (cartVO.discount != null) {
+            // Use discount percentage if available
+            if (cartVO.discount.discountpercentage > 0) {
+                discountPercentage = cartVO.discount.discountpercentage;
+            } else if (cartVO.discount.discountamount > 0) {
+                // Calculate the discount percentage from the discount amount
+                discountPercentage = (cartVO.total == 0 || cartVO.discount.discountamount > cartVO.total) ? 100 : (cartVO.discount.discountamount / cartVO.total) * 100.0;
+            }
+        }
+        return discountPercentage
     }
 
     // calculates total before tax but with discount
