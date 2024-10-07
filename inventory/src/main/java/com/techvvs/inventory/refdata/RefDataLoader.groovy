@@ -188,19 +188,19 @@ class RefDataLoader {
         if(discountVOS.size() > 0){
             return // return early to not pollute database with duplicates
         }
-        for (int i = 0; i < 20; i++) {
+        for (int i = 1; i <= 100; i++) {
             DiscountVO discountVO = new DiscountVO();
-            discountVO.name = "${i * 5}% off";
-            discountVO.description = "${i * 5}% discount";
-            discountVO.discountamount = 0.00; // Keep discount amount constant
-            discountVO.discountpercentage = i * 5;
+            discountVO.name = i + "% off";
+            discountVO.description = i + "% discount";
+            discountVO.discountamount = 0.00; // Keep discount amount constant for percentage discounts
+            discountVO.discountpercentage = i;
 
             discountVO.setCreateTimeStamp(LocalDateTime.now());
             discountVO.setUpdateTimeStamp(LocalDateTime.now());
             discountRepo.save(discountVO);
         }
 
-        System.out.println("20 Percentage discount options loaded");
+        System.out.println("Percentage discount options loaded");
 
         for (int i = 1; i <= 10; i++) {
             DiscountVO discountVO = new DiscountVO();
