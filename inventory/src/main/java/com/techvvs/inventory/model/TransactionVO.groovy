@@ -31,6 +31,11 @@ class TransactionVO implements Serializable {
     List<PaymentVO> payment_list
 
     @JsonProperty
+    @OneToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name="discountid")
+    DiscountVO discount
+
+    @JsonProperty
     @ElementCollection(fetch = FetchType.LAZY)
     List<ReturnVO> return_list
 
@@ -50,6 +55,9 @@ class TransactionVO implements Serializable {
 
     @JsonProperty
     Double total;
+
+    @JsonProperty
+    Double originalprice;
 
     @JsonProperty
     Double totalwithtax;

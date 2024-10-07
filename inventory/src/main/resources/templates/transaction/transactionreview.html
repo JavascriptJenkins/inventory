@@ -293,6 +293,7 @@
             <h1>Transaction Review</h1>
             <p>Reviewing Transaction ID: <span th:text="${transaction.transactionid}"></span></p>
             <p>Customer: <span th:text="${transaction.customervo.name}"></span></p>
+            <p>Original Price: <span th:text="${transaction.originalprice}"></span></p>
             <p>Amount remaining to pay: <span th:text="${transaction.totalwithtax - (transaction.paid == null ? 0.0 : transaction.paid)}"></span></p>
         </div>
         <div class="col-md-6">
@@ -301,6 +302,9 @@
             </h3>
             <h6>
                 <span th:text="${transaction.createTimeStamp.toLocalDate()}"></span>
+            </h6>
+            <h6 th:if="${transaction.discount}">
+                <p>Discount: <span th:text="${transaction.discount.name}"></span></p>
             </h6>
         </div>
     </div>

@@ -2,10 +2,12 @@ package com.techvvs.inventory.refdata
 
 import com.techvvs.inventory.jparepo.BatchTypeRepo
 import com.techvvs.inventory.jparepo.CustomerRepo
+import com.techvvs.inventory.jparepo.DiscountRepo
 import com.techvvs.inventory.jparepo.PackageTypeRepo
 import com.techvvs.inventory.jparepo.ProductTypeRepo
 import com.techvvs.inventory.model.BatchTypeVO
 import com.techvvs.inventory.model.CustomerVO
+import com.techvvs.inventory.model.DiscountVO
 import com.techvvs.inventory.model.PackageTypeVO
 import com.techvvs.inventory.model.ProductTypeVO
 import org.springframework.beans.factory.annotation.Autowired
@@ -27,6 +29,9 @@ class RefDataLoader {
     CustomerRepo customerRepo
 
     @Autowired
+    DiscountRepo discountRepo
+
+    @Autowired
     PackageTypeRepo packageTypeRepo
 
 
@@ -35,9 +40,14 @@ class RefDataLoader {
         loadProductTypes()
         loadCustomers()
         loadPackageTypes()
+        loadDiscounts()
     }
 
     void loadBatchTypes(){
+        List<BatchTypeVO> list = batchTypeRepo.findAll()
+        if(list.size() > 0){
+            return // return early to not pollute database with duplicates
+        }
         BatchTypeVO batchTypeVO = new BatchTypeVO();
 //        batchTypeVO.setBatch_type_id(1)
         batchTypeVO.name = "INDOOR.MIXED"
@@ -51,6 +61,10 @@ class RefDataLoader {
     }
 
     void loadPackageTypes() {
+        List<PackageTypeVO> list = packageTypeRepo.findAll()
+        if(list.size() > 0){
+            return // return early to not pollute database with duplicates
+        }
         // Creating the first PackageTypeVO instance for "large box"
         PackageTypeVO palletTypeVO = new PackageTypeVO();
         palletTypeVO.setName("LARGE.BOX");
@@ -71,6 +85,12 @@ class RefDataLoader {
     }
 
     void loadProductTypes(){
+
+        List<ProductTypeVO> list = productTypeRepo.findAll()
+        if(list.size() > 0){
+            return // return early to not pollute database with duplicates
+        }
+
 
         ProductTypeVO productTypeVO = new ProductTypeVO();
      //   productTypeVO.producttypeid = 2
@@ -130,6 +150,12 @@ class RefDataLoader {
     }
 
     void loadCustomers(){
+
+        List<CustomerVO> list = customerRepo.findAll()
+        if(list.size() > 0){
+            return // return early to not pollute database with duplicates
+        }
+
         CustomerVO customerVO = new CustomerVO();
         customerVO.name = "John Doe"
         customerVO.email = "mrchihuahua@techvvs.io"
@@ -154,6 +180,45 @@ class RefDataLoader {
 
         System.out.println("Customer ref data loaded")
     }
+
+
+    void loadDiscounts() {
+
+        List<DiscountVO> discountVOS = discountRepo.findAll()
+        if(discountVOS.size() > 0){
+            return // return early to not pollute database with duplicates
+        }
+        for (int i = 0; i < 20; i++) {
+            DiscountVO discountVO = new DiscountVO();
+            discountVO.name = "${i * 5}% off";
+            discountVO.description = "${i * 5}% discount";
+            discountVO.discountamount = 0.00; // Keep discount amount constant
+            discountVO.discountpercentage = i * 5;
+
+            discountVO.setCreateTimeStamp(LocalDateTime.now());
+            discountVO.setUpdateTimeStamp(LocalDateTime.now());
+            discountRepo.save(discountVO);
+        }
+
+        System.out.println("20 Percentage discount options loaded");
+
+        for (int i = 1; i <= 10; i++) {
+            DiscountVO discountVO = new DiscountVO();
+            discountVO.name = "${i * 100} off";
+            discountVO.description = "${i * 100} dollar discount";
+            discountVO.discountamount = i * 100.00;
+            discountVO.discountpercentage = 0;
+
+            discountVO.setCreateTimeStamp(LocalDateTime.now());
+            discountVO.setUpdateTimeStamp(LocalDateTime.now());
+            discountRepo.save(discountVO);
+        }
+
+        System.out.println("Discount ref data loaded");
+
+    }
+
+
 
 
 

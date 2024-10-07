@@ -14,6 +14,7 @@ import javax.persistence.JoinTable
 import javax.persistence.ManyToMany
 import javax.persistence.ManyToOne
 import javax.persistence.Table
+import javax.persistence.Transient
 import java.time.LocalDateTime
 
 @JsonIgnoreProperties
@@ -30,11 +31,6 @@ class MenuVO implements Serializable {
     @JsonProperty
     String name
 
-    // todo: probably don't need to eager fetch or cascade all here but whatever man
-    @ManyToOne(cascade= CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn(name = "batchid")
-    BatchVO batch;
-
     @ManyToMany
     @JoinTable(
             name = "menu_product",
@@ -48,6 +44,15 @@ class MenuVO implements Serializable {
 
     @JsonProperty
     String notes
+
+    @Transient
+    String adhoc_label1 // for printing pages of adhoc labels
+
+    @Transient
+    String adhoc_label2 // for printing pages of adhoc labels
+
+    @Transient
+    String adhoc_label3 // for printing pages of adhoc labels
 
     @JsonProperty
     LocalDateTime updateTimeStamp;

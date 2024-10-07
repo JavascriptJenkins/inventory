@@ -45,11 +45,31 @@ class TransactionService {
     @Autowired
     PackageRepo packageRepo
 
+    @Autowired
+    CartService cartService
+
+    @Autowired
+    DiscountService discountService
+
 
     @Transactional
     TransactionVO processCartGenerateNewTransaction(CartVO cartVO) {
 
         Double taxpercentage = environment.getProperty("tax.percentage", Double.class)
+
+        // calculate a percentage discount amount
+        double discountPercentage = formattingUtil.calculateTotalDiscountPercentage(cartVO)
+
+        double originalprice = cartService.calculateTotalPriceOfProductList(cartVO.product_cart_list)
+
+        double totalwithtax = 0.00
+        if(discountPercentage == 0){
+            totalwithtax = formattingUtil.calculateTotalWithTaxUsingDiscountAmount(originalprice, taxpercentage, cartVO.discount.discountamount)
+        } else if(discountPercentage > 0){
+            totalwithtax = formattingUtil.calculateTotalWithTax(originalprice, taxpercentage, discountPercentage)
+        } else if(cartVO.discount == null){
+            totalwithtax = formattingUtil.calculateTotalWithTax(originalprice, taxpercentage, 0.00)
+        }
 
         ArrayList<ProductVO> newlist = cartVO.product_cart_list
 
@@ -60,8 +80,10 @@ class TransactionService {
                 updateTimeStamp: LocalDateTime.now(),
                 createTimeStamp: LocalDateTime.now(),
                 customervo: cartVO.customer,
+                discount: cartVO.discount,
                 total: cartVO.total,
-                totalwithtax: formattingUtil.calculateTotalWithTax(cartVO.total, taxpercentage),
+                originalprice: originalprice,
+                totalwithtax: totalwithtax,
 //                totalwithtax: cartVO.total,
                 paid: 0.00,
                 taxpercentage: techvvsAppUtil.dev1 ? 0 : 0, // we are not going to set a tax percentage here in non dev environments
@@ -120,7 +142,7 @@ class TransactionService {
                 createTimeStamp: LocalDateTime.now(),
                 customervo: packageVO.customer,
                 total: packageVO.total,
-                totalwithtax: formattingUtil.calculateTotalWithTax(packageVO.total, textpercentage),
+                totalwithtax: formattingUtil.calculateTotalWithTax(packageVO.total, textpercentage, 0.0),
 //                totalwithtax: packageVO.total,
                 paid: 0.00,
                 taxpercentage: techvvsAppUtil.dev1 ? 0 : 0, // we are not going to set a tax percentage here in non dev environments

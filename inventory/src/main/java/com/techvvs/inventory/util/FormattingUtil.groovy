@@ -1,6 +1,8 @@
 package com.techvvs.inventory.util
 
-
+import com.techvvs.inventory.model.CartVO
+import com.techvvs.inventory.model.DiscountVO
+import com.techvvs.inventory.model.TransactionVO
 import org.springframework.stereotype.Component
 
 import java.text.DecimalFormat
@@ -25,39 +27,142 @@ class FormattingUtil {
     static String formatInvoiceItem(String name, int quantity, Double price) {
         return String.format("%-30s %5d %10.2f\n", name, quantity, price);
     }
-    public static double calculateTotalWithTax(double total, double taxPercentage) {
+
+    /*In most cases, if the total amount of a transaction is discounted to zero, no sales tax is due.
+    Sales tax is typically calculated based on the amount actually paid by the customer.
+    If the total is zero after applying discounts, there’s no taxable amount remaining, so no sales tax would apply.
+    */
+    // we input the original price into this method regardless of if we have a 100% discount
+    public static double calculateTotalWithTax(double total, double taxPercentage, double discountPercentage) {
         // Validate input values
-        if (total < 0 || taxPercentage < 0) {
-            throw new IllegalArgumentException("Total and tax percentage must be non-negative.");
+        if (total < 0 || taxPercentage < 0 || discountPercentage < 0) {
+            throw new IllegalArgumentException("Total, tax percentage, and discount percentage must be non-negative.");
         }
 
-        // Calculate tax amount
-        double taxAmount = total * (taxPercentage / 100.0);
+        // Apply the discount to the total
+        double discount = total * (discountPercentage / 100.0);
+        double discountedTotal = total - discount;
 
-        // Calculate total with tax
-        double totalWithTax = total + taxAmount;
+        // Ensure the discounted total is not less than zero
+        if (discountedTotal < 0) {
+            discountedTotal = 0;
+        }
+
+        // Calculate the tax amount on the discounted total
+        double taxAmount = discountedTotal * (taxPercentage / 100.0);
+
+        // Calculate the total with tax
+        double totalWithTax = discountedTotal + taxAmount;
+
+        // Round to 2 decimal places for currency precision
+        return Math.round(totalWithTax * 100.0) / 100.0;
+    }
+
+    public static double calculateTotalWithTaxUsingDiscountAmount(double total, double taxPercentage, double discountAmount) {
+        // Validate input values
+        if (total < 0 || taxPercentage < 0 || discountAmount < 0) {
+            throw new IllegalArgumentException("Total, tax percentage, and discount amount must be non-negative.");
+        }
+
+        // Apply the discount amount to the total
+        double discountedTotal = total - discountAmount;
+
+        // Ensure the discounted total is not less than zero
+        if (discountedTotal < 0) {
+            discountedTotal = 0;
+        }
+
+        // Calculate the tax amount on the discounted total
+        double taxAmount = discountedTotal * (taxPercentage / 100.0);
+
+        // Calculate the total with tax
+        double totalWithTax = discountedTotal + taxAmount;
 
         // Round to 2 decimal places for currency precision
         return Math.round(totalWithTax * 100.0) / 100.0;
     }
 
 
+    // calculates total before tax but with discount
+    public static double calculateTotalWithDiscountPercentage(double total, double discountPercentage) {
+        // Validate input values
+        if (total < 0 || discountPercentage < 0) {
+            throw new IllegalArgumentException("Total and discount percentage must be non-negative.");
+        }
+
+        // Apply the discount to the total
+        double discount = total * (discountPercentage / 100.0);
+        double discountedTotal = total - discount;
+
+        // Ensure the discounted total is not less than zero
+        if (discountedTotal < 0) {
+            discountedTotal = 0;
+        }
+
+        // Round to 2 decimal places for currency precision
+        return Math.round(discountedTotal * 100.0) / 100.0;
+    }
+
+    static double calculateTotalDiscountPercentage(CartVO cartVO) {
+        double discountPercentage = 0.0;
+
+        if (cartVO.discount != null) {
+            // Use discount percentage if available
+            if (cartVO.discount.discountpercentage > 0) {
+                discountPercentage = cartVO.discount.discountpercentage;
+            } else if (cartVO.discount.discountamount > 0) {
+                return 0; // return 0 because this discount is an amount and not a percentage
+            }
+        }
+        return discountPercentage
+    }
+
+    // calculates total before tax but with discount
+    public static double calculateTotalWithDiscountAmount(double total, double discountAmount) {
+        // Validate input values
+        if (total < 0 || discountAmount < 0) {
+            throw new IllegalArgumentException("Total and discount amount must be non-negative.");
+        }
+
+        // Apply the discount to the total
+        double discountedTotal = total - discountAmount;
+
+        // Ensure the discounted total is not less than zero
+        if (discountedTotal < 0) {
+            discountedTotal = 0;
+        }
+
+        // Round to 2 decimal places for currency precision
+        return Math.round(discountedTotal * 100.0) / 100.0;
+    }
+
+
+
+
 //    public static int calculateTaxAmount(int total, int taxPercentage) {
 //        return (int) Math.round(total * (taxPercentage / 100.0));
 //    }
 
-    public static double calculateTaxAmount(double total, double taxPercentage) {
+    public static double calculateTaxAmount(double total, double taxPercentage, double discount) {
         // Validate input values
-        if (total < 0 || taxPercentage < 0) {
-            throw new IllegalArgumentException("Total and tax percentage must be non-negative.");
+        if (total < 0 || taxPercentage < 0 || discount < 0) {
+            throw new IllegalArgumentException("Total, tax percentage, and discount must be non-negative.");
         }
 
-        // Calculate tax amount
-        double taxAmount = total * (taxPercentage / 100.0);
-        return Math.round(taxAmount * 100.0) / 100.0; // rounding to 2 decimal places
+        // Apply the discount to the total
+        double discountedTotal = total - discount;
+
+        // Ensure the discounted total is not less than zero
+        if (discountedTotal < 0) {
+            discountedTotal = 0;
+        }
+
+        // Calculate the tax amount on the discounted total
+        double taxAmount = discountedTotal * (taxPercentage / 100.0);
+
+        // Round to 2 decimal places
+        return Math.round(taxAmount * 100.0) / 100.0;
     }
-
-
 
 
     String getDateTimeForFileSystem() {

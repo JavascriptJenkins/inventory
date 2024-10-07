@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Label</title>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-kQtW33rZJAHjgefvhyyzcGF3C5TFyBQBA13V1RKPf4uH+bwyzQxZ6CmMZHmNBEfJ" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            color: #fff;
+            font-family: 'Roboto', sans-serif;
+            background-color: #343a40;
+        }
+        .header-dark {
+            background-color: #343a40;
+            color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 30px;
+            font-family: 'Roboto', sans-serif;
+            border: 1px solid transparent;
+            border-image: linear-gradient(to right, #c0c0c0, #ffffff);
+            border-image-slice: 1;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .back-button {
+            margin-right: 20px;
+            font-size: 2rem;
+        }
+        .back-button a {
+            color: #343a40;
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 50%;
+            border: 2px solid #343a40;
+        }
+        .back-button a:hover {
+            background-color: #23272b;
+            color: #fff;
+            border-color: #23272b;
+        }
+        .lock-icon {
+            font-size: 4rem;
+            margin-right: 20px;
+        }
+        .form-control, .btn-primary {
+            background-color: #23272b;
+            color: #fff;
+            border: 1px solid #343a40;
+            margin-top: 20px;
+        }
+        .form-control:focus {
+            background-color: #23272b;
+            color: #fff;
+            border-color: #1d2124;
+            box-shadow: none;
+        }
+        .btn-primary:hover {
+            background-color: #1d2124;
+            border-color: #1d2124;
+        }
+        .input-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .input-container .form-control {
+            width: 50%;
+            font-size: 1.5rem;
+        }
+        .input-container .copy-button {
+            margin-left: 10px;
+            background-color: #23272b;
+            border: 1px solid #343a40;
+            color: #fff;
+            font-size: 1.5rem;
+            padding: 10px 15px;
+        }
+        .input-container .copy-button:hover {
+            background-color: #1d2124;
+            color: #fff;
+        }
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+        .button-container .btn {
+            width: 30%;
+            font-size: 1.5rem;
+            text-align: center;
+            margin-top: 10px;
+        }
+        .blurred {
+            filter: blur(5px);
+            pointer-events: none;
+        }
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        .popup-content {
+            background: #343a40;
+            padding: 20px;
+            border-radius: 10px;
+            color: #fff;
+            width: 90%;
+            height: 90%;
+            max-width: 1200px; /* Maximum width for large screens */
+            max-height: 90%;
+            overflow-y: auto;
+            position: relative;
+            z-index: 1001;
+        }
+        .popup-close {
+            position: absolute;
+            top: +5px; /* Adjusted positioning */
+            right: +250px; /* Adjusted positioning */
+            background: #dc3545;
+            border-radius: 50%;
+            color: #fff;
+            width: 50px; /* Slightly larger button */
+            height: 50px; /* Slightly larger button */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            cursor: pointer;
+            z-index: 1002;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); /* Add some shadow */
+        }
+        .popup-content embed {
+            width: 100%;
+            height: 100%;
+            border-radius: 5px;
+        }
+    </style>
+
+    <script>
+        function copyToClipboard() {
+            var copyText = document.getElementById("secretkeyInput");
+            copyText.select();
+            copyText.setSelectionRange(0, 99999);
+            document.execCommand("copy");
+        }
+
+        function verifySecretKey() {
+            alert("I understand if I lose my secret key all of my data is gone FOREVER");
+            document.getElementById("lockDataButton").style.display = "block";
+            document.getElementById("verifyButton").style.display = "none";
+        }
+    </script>
+    <script>
+        function checkLength(input, maxLength) {
+            if (input.value.length > maxLength) {
+                input.value = input.value.substring(0, maxLength);
+            }
+        }
+
+        function concatenateAndSubmit(event) {
+            event.preventDefault();
+
+            const label1 = document.getElementById('label1').value.padEnd(25, ' ');
+            const label2 = document.getElementById('label2').value.padEnd(25, ' ');
+            const label3 = document.getElementById('label3').value.padEnd(25, ' ');
+
+            document.getElementById('label1').value = label1;
+            document.getElementById('label2').value = label2;
+            document.getElementById('label3').value = label3;
+
+            event.target.submit();
+        }
+    </script>
+    <script>
+        function viewInvoice(event) {
+            event.preventDefault();
+
+            // Find the nearest span within the same row as the clicked button
+            var spanText = $(event.target).closest('tr').find('span').text();
+            console.log(spanText);
+
+            spanText = removeCommas(spanText);
+
+            // Set the value of the hidden input field 'filenameaction' to the span text
+            document.getElementById('filenametosend').value = spanText;
+
+            document.getElementById('action').value = "view";
+            document.getElementById('textoremailInvoiceForm').submit();
+        }
+
+        function removeCommas(text) {
+            return text.replace(/,/g, '');
+        }
+    </script>
+    <script>
+        function closePopup() {
+            document.getElementById('popupOverlay').style.display = 'none';
+            document.getElementById('pageContent').classList.remove('blurred');
+        }
+
+        $(document).ready(function() {
+            if ($('#popupOverlay').length) {
+                document.getElementById('pageContent').classList.add('blurred');
+            }
+        });
+    </script>
+</head>
+<body>
+
+<div class="container my-5">
+    <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
+    <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
+
+    <div class="header-dark">
+        <div class="back-button">
+            <a th:href="@{/admin}">
+                <i class="bi bi-arrow-left-circle"></i>
+            </a>
+        </div>
+        <i class="bi bi-upc-scan fs-1"></i> <!-- Large icon -->
+    </div>
+
+    <form th:action="@{/label/printadhoc}" th:object="${menu}" method="post" onsubmit="concatenateAndSubmit(event)">
+
+        <!-- First Input Field -->
+        <div class="mb-3">
+            <label for="label1" class="form-label required">Label Part 1</label>
+            <input th:field="*{adhoc_label1}" type="text" class="form-control" id="label1" maxlength="25" onkeyup="checkLength(this, 25)" required>
+        </div>
+
+        <!-- Second Input Field -->
+        <div class="mb-3">
+            <label for="label2" class="form-label required">Label Part 2</label>
+            <input th:field="*{adhoc_label2}" type="text" class="form-control" id="label2" maxlength="25" onkeyup="checkLength(this, 25)" required>
+        </div>
+
+        <!-- Third Input Field -->
+        <div class="mb-3">
+            <label for="label3" class="form-label required">Label Part 3</label>
+            <input th:field="*{adhoc_label3}" type="text" class="form-control" id="label3" maxlength="25" onkeyup="checkLength(this, 25)" required>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn-submit-dark">Print Label Sheet</button>
+
+    </form>
+
+    <div class="row mt-4"> <!-- Added margin top for spacing -->
+
+        <div class="col-md-6"> <!-- Spanning across half the width (6 out of 12) -->
+            <form id="textoremailInvoiceForm" th:action="@{/viewfiles/adhoclabels?size=5&page=1}" th:object="${menuoption}" method="post">
+                <input type="hidden" id="filenametosend" name="filenametosend" value="">
+                <input type="hidden" id="action" name="action" value="">
+
+                <table class="table table-hover table-striped table-dark table-bordered" style="margin-top: 40px">
+                    <thead>
+                    <tr>
+                        <th scope="col">File Name</th>
+                        <th scope="col">Date</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="file, iStat : ${filePage.content}" th:style="${iStat.odd}? 'font-weight: bold;'" th:alt-title="${iStat.even}? 'even' : 'odd'">
+                        <td>
+                            <span th:text="${file.filename}" th:data-filename="${file.filename}"></span>
+                            <div class="text-end">
+                                <!-- New View Invoice button -->
+                                <button onclick="viewInvoice(event)" type="submit" class="btn btn-primary">View File</button>
+                            </div>
+                        </td>
+                        <td>
+                            <span th:text="${file.createTimeStamp.toLocalDate()}"></span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </form>
+            <nav th:if="${filePage.totalPages > 0}">
+                <ul class="pagination">
+                    <li class="page-item" th:each="pageNumber : ${pageNumbers}">
+                        <a class="page-link" th:href="@{/label?size=5&page=__${pageNumber}__}" th:text="${pageNumber}" th:classappend="${pageNumber==filePage.number + 1} ? 'active'"></a>
+                    </li>
+                </ul>
+            </nav>
+
+        </div>
+    </div>
+
+
+</div>
+
+</body>
+<!-- Popup content if ${invoicecontent} exists -->
+<div th:if="${invoicecontent}" id="popupOverlay" class="popup-overlay">
+    <div class="popup-content">
+        <div class="popup-close" onclick="closePopup()">&times;</div>
+        <!--        <embed th:utext="'data:application/pdf;base64,'+${invoicecontent}" type="application/pdf" width="100%" height="100%" />-->
+        <embed th:src="'data:application/pdf;base64,'+${invoicecontent}" type="application/pdf" width="100%" height="100%" />
+        <!--        <div th:text="${invoicecontent}"></div>-->
+    </div>
+</div>
+</html>

@@ -123,6 +123,51 @@
             console.log(Array.from(seenBarcodes)); // This will log the unique barcodes
         }
     </script>
+    <script>
+        function applyDiscount() {
+            // Get the selected discount value from the dropdown
+            var discountSelect = document.getElementById("discountSelect");
+            var selectedDiscount = discountSelect.value;
+
+            // Set the value of the hidden input with the selected discount ID
+            document.getElementById("hiddenDiscountId").value = selectedDiscount;
+
+            // Submit the form
+            document.getElementById("applyDiscountCartForm").submit();
+        }
+    </script>
+    <script>
+        function removeDiscount() {
+            // Submit the form
+            document.getElementById("removeDiscountCartForm").submit();
+        }
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get the elements
+            const discountSelect = document.getElementById('discountSelect');
+            const applyDiscountButton = document.getElementById('applyDiscountButton');
+
+            // Function to toggle the button based on the selected value
+            function toggleButton() {
+            console.log(discountSelect.value)
+                if (discountSelect.value === "") {
+                    applyDiscountButton.disabled = true; // Disable button
+                } else {
+                    applyDiscountButton.disabled = false; // Enable button
+                }
+            }
+
+            // Attach the function to the 'change' event of the dropdown
+            discountSelect.addEventListener('change', toggleButton);
+
+            // Initial check when the page loads
+            toggleButton();
+        });
+    </script>
+
+
 
 </head>
 <body>
@@ -136,6 +181,7 @@
 
     <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
     <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
+    <div class="alert alert-warning" role="alert" th:if="${warningMessage}" th:text="${warningMessage}">Warning</div>
 
     <form id="reviewCartForm" th:action="@{/checkout/transaction?page=1&size=5}" th:object="${cart}" method="post">
 
@@ -157,9 +203,56 @@
         </div>
         <div class="row" style="margin-bottom: 5px;">
             <div class="col-md-6" style="margin-bottom: 5px;">
+                <b><label class="form-label">Discount</label></b>
+                <div th:if="${cart.cartid != null && cart.discount != null}">
+                    <p th:each="discount : ${discounts}" th:if="${discount.discountid == cart.discount.discountid}" th:text="${discount.name}">Discount Name</p>
+                    <input type="hidden" th:field="*{discount.discountid}">
+                </div>
+                <select th:if="${cart.discount == null}" class="form-select" id="discountSelect">
+                    <option value="" th:field="${cart.discount.discountid}" selected="selected">Select a discount</option>
+                    <!-- Assuming discounts is a passed variable -->
+                    <option th:each="discount : ${discounts}" th:value="${discount.discountid}" th:text="${discount.name}"></option>
+                </select>
+            </div>
+            <div th:if="${cart.discount != null && cart.discount.name == null}" class="col-md-6" style="margin-bottom: 5px;">
+                <button id="applyDiscountButton" class="btn btn-primary" type="button" onclick="applyDiscount()">Apply Discount</button>
+            </div>
+            <div th:if="${cart.discount != null && cart.discount.name != null}" class="col-md-6" style="margin-bottom: 5px;">
+                <button class="btn btn-warning" type="button" onclick="removeDiscount()">Remove Discount</button>
+            </div>
+        </div>
+
+
+        <div th:if="${cart.discount != null && cart.discount.name != null}" class="row" style="margin-bottom: 5px;">
+            <div class="col-md-6" style="margin-bottom: 5px;">
+                <label class="form-label"><b>Original Price</b></label>
+                <input type="hidden" class="form-control" placeholder="total" aria-label="total" readonly>
+
+                <!-- If discount percentage is applied -->
+                <p th:if="${cart.discount != null && cart.discount.discountpercentage > 0}"
+                   th:text="${#numbers.formatDecimal(cart.total / (1 - (cart.discount.discountpercentage / 100.0)), 1, 'COMMA', 2, 'POINT')}">
+                </p>
+
+                <!-- If discount amount is applied -->
+                <p th:if="${cart.discount != null && cart.discount.discountamount > 0}"
+                   th:text="${#numbers.formatDecimal(cart.originalprice, 1, 'COMMA', 2, 'POINT')}">
+                </p>
+            </div>
+            <div class="col-md-6" style="margin-bottom: 5px;">
+                <label class="form-label"><b>Discount Amount</b></label>
+                <input type="hidden" class="form-control" placeholder="total" aria-label="total" readonly>
+                <p th:if="${cart.discount != null && cart.discount.discountpercentage > 0}" th:text="${#numbers.formatDecimal((cart.total / (1 - (cart.discount.discountpercentage / 100.0)) - cart.total), 1, 'COMMA', 2, 'POINT')}"></p>
+
+
+                <p th:if="${cart.discount != null && cart.discount.discountamount > 0}" th:text="${cart.originalprice - cart.discount.discountamount < 0 ? cart.discount.discountamount : cart.discount.discountamount}"></p>
+            </div>
+        </div>
+
+        <div class="row" style="margin-bottom: 5px;">
+            <div class="col-md-6" style="margin-bottom: 5px;">
                 <label class="form-label"><b>Total Price</b></label>
                 <input type="hidden" th:field="*{total}" class="form-control" placeholder="total" aria-label="total" readonly>
-                <p th:text="${cart.total}"></p>
+                <p th:text="${#numbers.formatDecimal(cart.total, 1, 'COMMA', 2, 'POINT')}"></p>
             </div>
             <div class="col-md-6">
                 <h3>Total Units:
@@ -188,10 +281,30 @@
                 </tr>
                 </tbody>
             </table>
+<!--            <input id="hiddenDiscountId" type="hidden" th:field="*{discount.discountid}">-->
             <input type="hidden" th:field="*{product_cart_list}">
         </div>
 
         <button type="submit" class="btn-submit-dark">Submit</button>
+    </form>
+    <form id="applyDiscountCartForm" th:action="@{/checkout/applydiscount?page=1&size=5}" th:object="${cart}" method="post">
+        <input type="hidden" th:field="*{product_cart_list}">
+        <input type="hidden" th:field="*{isprocessed}">
+        <input type="hidden" th:field="*{updateTimeStamp}">
+        <input type="hidden" th:field="*{createTimeStamp}">
+        <input type="hidden" th:field="*{total}" class="form-control" placeholder="total" aria-label="total" readonly>
+        <input type="hidden" th:field="*{cartid}">
+        <input type="hidden" th:field="*{customer.customerid}">
+        <input id="hiddenDiscountId" type="hidden" th:field="*{discount.discountid}">
+    </form>
+    <form id="removeDiscountCartForm" th:action="@{/checkout/removediscount?page=1&size=5}" th:object="${cart}" method="post">
+        <input type="hidden" th:field="*{product_cart_list}">
+        <input type="hidden" th:field="*{isprocessed}">
+        <input type="hidden" th:field="*{updateTimeStamp}">
+        <input type="hidden" th:field="*{createTimeStamp}">
+        <input type="hidden" th:field="*{total}" class="form-control" placeholder="total" aria-label="total" readonly>
+        <input type="hidden" th:field="*{cartid}">
+        <input type="hidden" th:field="*{customer.customerid}">
     </form>
 </div>
 

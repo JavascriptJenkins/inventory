@@ -3,7 +3,9 @@ package com.techvvs.inventory.model
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 
+import javax.persistence.ElementCollection
 import javax.persistence.Entity
+import javax.persistence.FetchType
 import javax.persistence.GeneratedValue
 import javax.persistence.GenerationType
 import javax.persistence.Id
@@ -37,6 +39,10 @@ class CartVO implements Serializable{
     List<ProductVO> product_cart_list
 
     @OneToOne
+    @JoinColumn(name = "discountid")
+    DiscountVO discount
+
+    @OneToOne
     @JoinColumn(name = "customerid")
     CustomerVO customer
 
@@ -58,10 +64,24 @@ class CartVO implements Serializable{
     Integer displayquantitytotal // for displaying total units
 
     @JsonProperty
-    Double total;
+    Double total; // NOTE: this is total before tax
+
+    @JsonProperty
+    Double totalafterdiscount; // NOTE: this is total before tax
+
+    @JsonProperty
+    Double totalafterdiscountandtax; // NOTE: this is total before tax
+
+
 
     @JsonProperty
     Integer isprocessed;
+
+    @Transient
+    int quantityselected = 0
+
+    @Transient
+    double originalprice = 0
 
     @JsonProperty
     LocalDateTime updateTimeStamp;
