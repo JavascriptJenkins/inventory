@@ -235,7 +235,7 @@
 
                 <!-- If discount amount is applied -->
                 <p th:if="${cart.discount != null && cart.discount.discountamount > 0}"
-                   th:text="${#numbers.formatDecimal(cart.total - cart.discount.discountamount < 0 ? cart.originalprice : cart.total - cart.discount.discountamount, 1, 'COMMA', 2, 'POINT')}">
+                   th:text="${#numbers.formatDecimal(cart.originalprice, 1, 'COMMA', 2, 'POINT')}">
                 </p>
             </div>
             <div class="col-md-6" style="margin-bottom: 5px;">
@@ -244,7 +244,7 @@
                 <p th:if="${cart.discount != null && cart.discount.discountpercentage > 0}" th:text="${#numbers.formatDecimal((cart.total / (1 - (cart.discount.discountpercentage / 100.0)) - cart.total), 1, 'COMMA', 2, 'POINT')}"></p>
 
 
-                <p th:if="${cart.discount != null && cart.discount.discountamount > 0}" th:text="${cart.total - cart.discount.discountamount < 0 ? cart.discount.discountamount : cart.total - cart.discount.discountamount}"></p>
+                <p th:if="${cart.discount != null && cart.discount.discountamount > 0}" th:text="${cart.originalprice - cart.discount.discountamount < 0 ? cart.discount.discountamount : cart.discount.discountamount}"></p>
             </div>
         </div>
 

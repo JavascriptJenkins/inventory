@@ -175,6 +175,7 @@ class CartDeleteService {
 
         // need to check to make sure there isn't an existing transaction with the same customer and no objects
         String barcode = cartVO.barcode
+        int quantityselected = cartVO.quantityselected
 
         if((cartVO.cartid == 0 || cartVO.cartid == null
                 && cartVO == null || cartVO?.product_cart_list?.size() == 0)
@@ -193,6 +194,7 @@ class CartDeleteService {
 
             cartVO = cartRepo.save(cartVO)
             cartVO.barcode = barcode // need to re-bind this so that on first save it will not be null
+            cartVO.quantityselected = quantityselected // re-bind this after save
         }
 
         // todo: handle case where a cart does exist
