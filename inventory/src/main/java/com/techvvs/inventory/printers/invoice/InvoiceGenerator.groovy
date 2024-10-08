@@ -116,7 +116,7 @@ class InvoiceGenerator {
 
 // todo: conversion problem here
         // Summary section (Subtotal, Tax, Total, etc.)
-        invoice.append(String.format("%-30s \$%-10.2f\n", "Subtotal", transaction.total))
+        invoice.append(String.format("%-30s \$%-10.2f\n", "Subtotal", transaction.originalprice))
 
         if(hasdiscount && transaction.discount.discountpercentage > 0){
             invoice.append(String.format("Discount %%:                 \$%.2f%%\n", transaction.discount.discountpercentage));
