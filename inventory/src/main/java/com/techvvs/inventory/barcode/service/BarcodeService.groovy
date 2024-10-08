@@ -241,6 +241,9 @@ class BarcodeService {
         Files.createDirectories(Paths.get(appConstants.PARENT_LEVEL_DIR+appConstants.PACKAGE_DIR+String.valueOf(entitynumber)+entitysubdirectory));
 
         String filename = entityname+"-"+entitynumber
+
+        filename = filename.replaceAll(",", "")
+        filename = filename.replace(" ", "_")
         // save the actual file after looping thru all products
         document.save(appConstants.PARENT_LEVEL_DIR+appConstants.PACKAGE_DIR+entitynumber+entitysubdirectory+appConstants.filenameprefix+filename+".pdf");
         document.close();
