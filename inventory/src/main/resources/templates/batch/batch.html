@@ -144,6 +144,11 @@
         <div class="col-md-3">
             <a><label class="form-label"><b>Units In Non Paid Transactions</b></label></a>
             <div id="quantityremainingintransactionsid" th:text="${quantityInTransactions}"> </div>
+            <a th:href="@{/transaction/unpaid?batchid=__${batch.batchid}__}"
+               th:data-barcode="${batch.batchid}"
+               class="btn btn-secondary btn-sm">
+                <span>View Unpaid Products in Batch</span>
+            </a>
         </div>
         <div class="col-md-3">
             <label class="form-label"><b>Units In Paid Transactions</b></label>

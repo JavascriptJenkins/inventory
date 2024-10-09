@@ -177,6 +177,56 @@ public class TransactionViewController {
 
 
 
+    //get the pending transactions with unpaid products in them from a certain batch
+    @GetMapping("/unpaid")
+    String unpaid(
+            @ModelAttribute( "transaction" ) TransactionVO transactionVO,
+            Model model,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size,
+            @RequestParam("batchid") Optional<Integer> batchid
+    ){
+
+
+
+        // bind the page of transactions
+        transactionHelper.findAllUnpaidProductsInTransactionsByBatchId(model, page, size, batchid)
+
+        //transactionHelper.applyCustomerFilter(transactionVO, model)
+
+        // fetch all customers from database and bind them to model
+        techvvsAuthService.checkuserauth(model)
+        checkoutHelper.getAllBatches(model) // bind the batchlist
+        model.addAttribute("transaction", transactionVO);
+        return "transaction/unpaidproducts.html";
+    }
+
+
+    //get the pending transactions with unpaid products in them from a certain batch
+    @GetMapping("/unpaidtransactions")
+    String unpaidtransactions(
+            @ModelAttribute( "transaction" ) TransactionVO transactionVO,
+            Model model,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size,
+            @RequestParam("batchid") Optional<Integer> batchid,
+            @RequestParam("product_id") Optional<Integer> productid
+    ){
+
+
+
+        // bind the page of transactions
+        transactionHelper.findAllUnpaidTransactionsByBatchIdAndProduct_id(model, page, size, batchid, productid)
+
+        //transactionHelper.applyCustomerFilter(transactionVO, model)
+
+        // fetch all customers from database and bind them to model
+        techvvsAuthService.checkuserauth(model)
+        checkoutHelper.getAllBatches(model) // bind the batchlist
+        model.addAttribute("transaction", transactionVO);
+        return "transaction/unpaidtransactions.html";
+    }
+
 
 
 }

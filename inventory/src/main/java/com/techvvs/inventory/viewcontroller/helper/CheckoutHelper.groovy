@@ -1,9 +1,11 @@
 package com.techvvs.inventory.viewcontroller.helper
 
+import com.techvvs.inventory.jparepo.BatchRepo
 import com.techvvs.inventory.jparepo.CartRepo
 import com.techvvs.inventory.jparepo.CustomerRepo
 import com.techvvs.inventory.jparepo.ProductRepo
 import com.techvvs.inventory.jparepo.TransactionRepo
+import com.techvvs.inventory.model.BatchVO
 import com.techvvs.inventory.model.CartVO
 import com.techvvs.inventory.model.CustomerVO
 import com.techvvs.inventory.model.PackageVO
@@ -31,12 +33,22 @@ class CheckoutHelper {
     @Autowired
     CartRepo cartRepo
 
+    @Autowired
+    BatchRepo batchRepo
+
 
     // method to get all customers from db
     void getAllCustomers(Model model){
 
         List<CustomerVO> customers = customerRepo.findAll()
         model.addAttribute("customers", customers)
+    }
+
+    // method to get all customers from db
+    void getAllBatches(Model model){
+
+        List<BatchVO> batchlist = batchRepo.findAll()
+        model.addAttribute("batchlist", batchlist)
     }
 
 

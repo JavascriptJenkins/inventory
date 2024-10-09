@@ -219,4 +219,151 @@ class TransactionHelper {
     }
 
 
+
+    void findAllUnpaidProductsInTransactionsByBatchId(Model model,
+                             Optional<Integer> page,
+                             Optional<Integer> size,
+                             Optional<Integer> batchid
+    ) {
+
+        // START PAGINATION
+        // https://www.baeldung.com/spring-data-jpa-pagination-sorting
+        //pagination
+        int currentPage = page.orElse(0);    // Default to first page
+        int pageSize = size.orElse(5);       // Default page size to 5
+
+
+        if(
+                currentPage > pageSize ||
+                        batchid.isPresent() && currentPage > pageSize
+        ){
+            currentPage = 0;
+        }
+
+        pageSize = pageSize < 5 ? 5 : pageSize; // make sure it's not less than 5
+
+
+        // run first page request
+        Pageable pageable = PageRequest.of(currentPage, pageSize, Sort.by(Sort.Direction.ASC, "create_time_stamp"));
+        Page<ProductVO> pageOfProduct = runPageRequestForUnPaidProducts(pageable, batchid)
+
+        int totalPages = pageOfProduct.getTotalPages();
+        int contentsize = pageOfProduct.getContent().size()
+
+
+        if(contentsize == 0){
+            // we detect contentsize of 0 then we'll just take the first page of data and show it
+            pageable = PageRequest.of(0, pageSize, Sort.by(Sort.Direction.ASC, "create_time_stamp"));
+            pageOfProduct = runPageRequestForUnPaidProducts(pageable, batchid)
+        }
+
+        List<Integer> pageNumbers = new ArrayList<>();
+        for (int i = 1; i <= totalPages; i++) {
+            pageNumbers.add(i);
+        }
+
+
+        model.addAttribute("pageNumbers", pageNumbers);
+        model.addAttribute("page", currentPage);
+        model.addAttribute("size", pageSize);
+        model.addAttribute("productPage", pageOfProduct);
+        model.addAttribute("batchid", batchid.orElse(0));
+        // END PAGINATION
+
+
+
+    }
+
+
+    // do not copy this method
+    Page<ProductVO> runPageRequestForUnPaidProducts(Pageable pageable, Optional<Integer> batchid) {
+        Page<ProductVO> pageOfProduct
+        // this means someone selected a value on the ui and we need to run a filtered query
+        if(batchid.isPresent() && batchid.get() > 0) {
+            // need a custom query here to let user filter by batchid and see all unpaid items
+            pageOfProduct = productRepo.findUnpaidProductsByBatchId(batchid.get(),pageable);
+        } else {
+            return Page.empty() // returning empty here becuase there is a bug.. for some reason spring is looking for property of "create" that doesnt exist on the productVO
+//            pageOfProduct = productRepo.findAll(pageable);
+        }
+        return pageOfProduct
+    }
+
+
+
+
+    void findAllUnpaidTransactionsByBatchIdAndProduct_id(Model model,
+                                                      Optional<Integer> page,
+                                                      Optional<Integer> size,
+                                                      Optional<Integer> batchid,
+                                                      Optional<Integer> productid
+    ) {
+
+        // START PAGINATION
+        // https://www.baeldung.com/spring-data-jpa-pagination-sorting
+        //pagination
+        int currentPage = page.orElse(0);    // Default to first page
+        int pageSize = size.orElse(5);       // Default page size to 5
+
+
+        if(
+                currentPage > pageSize ||
+                        batchid.isPresent() && productid.isPresent() && currentPage > pageSize
+        ){
+            currentPage = 0;
+        }
+
+        pageSize = pageSize < 5 ? 5 : pageSize; // make sure it's not less than 5
+
+
+        // run first page request
+        Pageable pageable = PageRequest.of(currentPage, pageSize, Sort.by(Sort.Direction.ASC, "create_time_stamp"));
+        Page<TransactionVO> pageOfTransaction = runPageRequestForUnPaidTransactions(pageable, batchid, productid)
+
+        int totalPages = pageOfTransaction.getTotalPages();
+        int contentsize = pageOfTransaction.getContent().size()
+
+
+        if(contentsize == 0){
+            // we detect contentsize of 0 then we'll just take the first page of data and show it
+            pageable = PageRequest.of(0, pageSize, Sort.by(Sort.Direction.ASC, "create_time_stamp"));
+            pageOfTransaction = runPageRequestForUnPaidTransactions(pageable, batchid, productid)
+        }
+
+        List<Integer> pageNumbers = new ArrayList<>();
+        for (int i = 1; i <= totalPages; i++) {
+            pageNumbers.add(i);
+        }
+
+
+        model.addAttribute("pageNumbers", pageNumbers);
+        model.addAttribute("page", currentPage);
+        model.addAttribute("size", pageSize);
+        model.addAttribute("transactionPage", pageOfTransaction);
+        model.addAttribute("batchid", batchid.orElse(0));
+        model.addAttribute("product_id", productid.orElse(0));
+        // END PAGINATION
+
+
+
+    }
+
+
+    Page<TransactionVO> runPageRequestForUnPaidTransactions(
+            Pageable pageable,
+            Optional<Integer> batchid,
+            Optional<Integer> product_id
+
+    ) {
+        Page<TransactionVO> pageOfTransaction
+        // this means someone selected a value on the ui and we need to run a filtered query
+        if(batchid.isPresent() && batchid.get() > 0 && product_id.isPresent() && product_id.get() > 0) {
+            // need a custom query here to let user filter by batchid and see all unpaid items
+            pageOfTransaction = transactionRepo.findDistinctTransactionsByProductIdAndBatchId(product_id.get(),batchid.get(),pageable);
+        } else {
+            return Page.empty() // returning empty here becuase there is a bug.. for some reason spring is looking for property of "create" that doesnt exist on the productVO
+//            pageOfProduct = productRepo.findAll(pageable);
+        }
+        return pageOfTransaction
+    }
 }
