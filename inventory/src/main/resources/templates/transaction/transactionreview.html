@@ -493,6 +493,15 @@
     </form>
 </div>
 </body>
+<!-- Popup content if ${invoicecontent} exists -->
+<div th:if="${invoicecontent}" id="popupOverlay" class="popup-overlay">
+    <div class="popup-content">
+        <div class="popup-close" onclick="closePopup()">&times;</div>
+        <!--        <embed th:utext="'data:application/pdf;base64,'+${invoicecontent}" type="application/pdf" width="100%" height="100%" />-->
+        <embed th:src="'data:application/pdf;base64,'+${invoicecontent}" type="application/pdf" width="100%" height="100%" />
+        <!--        <div th:text="${invoicecontent}"></div>-->
+    </div>
+</div>
 <!-- Popup Table For creating new delivery-->
 <div th:if="${popup != null && popup == 1 && transaction.delivery == null}" id="popupNewDeliveryTable" class="popup-overlay">
     <div class="popup-content">
