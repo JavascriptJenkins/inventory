@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
     <title>Transaction Review</title>
@@ -596,6 +596,11 @@
                 </div>
             </div>
         </div>
+        <div th:if="${transaction.delivery != null}" class="col-md-4" style="margin-top: 40px">
+            <a th:href="@{|/file/privatedeliverydownload?filename='upca_delivery_'__${transaction.transactionid}__-__${transaction.delivery.deliveryid}__.pdf|}" type="button" class="btn btn-primary headerbutton" onclick="downloadDeliveryUpca()">Download UPCA Sheet</a>
+        </div>
+
+
 
 
     </div>
