@@ -44,4 +44,8 @@ String VIEW_INVOICE = "view"
 
 
     int DEFAULT_TAX_PERCENTAGE = 0
+
+    //delivery constants below
+    int DELIVERY_STATUS_CREATED = 0
+
 }

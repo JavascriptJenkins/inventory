@@ -3,11 +3,15 @@ package com.techvvs.inventory.refdata
 import com.techvvs.inventory.jparepo.BatchTypeRepo
 import com.techvvs.inventory.jparepo.CustomerRepo
 import com.techvvs.inventory.jparepo.DiscountRepo
+import com.techvvs.inventory.jparepo.LocationRepo
+import com.techvvs.inventory.jparepo.LocationTypeRepo
 import com.techvvs.inventory.jparepo.PackageTypeRepo
 import com.techvvs.inventory.jparepo.ProductTypeRepo
 import com.techvvs.inventory.model.BatchTypeVO
 import com.techvvs.inventory.model.CustomerVO
 import com.techvvs.inventory.model.DiscountVO
+import com.techvvs.inventory.model.LocationTypeVO
+import com.techvvs.inventory.model.LocationVO
 import com.techvvs.inventory.model.PackageTypeVO
 import com.techvvs.inventory.model.ProductTypeVO
 import org.springframework.beans.factory.annotation.Autowired
@@ -29,6 +33,9 @@ class RefDataLoader {
     CustomerRepo customerRepo
 
     @Autowired
+    LocationTypeRepo locationTypeRepo
+
+    @Autowired
     DiscountRepo discountRepo
 
     @Autowired
@@ -41,6 +48,7 @@ class RefDataLoader {
         loadCustomers()
         loadPackageTypes()
         loadDiscounts()
+        loadLocationTypes()
     }
 
     void loadBatchTypes(){
@@ -215,6 +223,36 @@ class RefDataLoader {
         }
 
         System.out.println("Discount ref data loaded");
+
+    }
+
+
+    void loadLocationTypes(){
+
+        List<LocationTypeVO> list = locationTypeRepo.findAll()
+        if(list.size() > 0){
+            return // return early to not pollute database with duplicates
+        }
+
+
+        LocationTypeVO locationType1 = new LocationTypeVO();
+        locationType1.setName("B2B.DISTRO");
+        locationType1.setDescription("biz to biz distribution");
+        locationType1.setCreateTimeStamp(LocalDateTime.now());
+        locationType1.setUpdateTimeStamp(LocalDateTime.now());
+        locationTypeRepo.save(locationType1);
+
+        LocationTypeVO locationType2 = new LocationTypeVO();
+        locationType2.setName("B2C.RETAIL");
+        locationType2.setDescription("biz to customer retail");
+        locationType2.setCreateTimeStamp(LocalDateTime.now());
+        locationType2.setUpdateTimeStamp(LocalDateTime.now());
+
+        locationTypeRepo.save(locationType2);
+
+        System.out.println("Location Type ref data loaded");
+
+
 
     }
 

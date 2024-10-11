@@ -119,6 +119,23 @@ class CartService {
         return cartRepo.save(existingCart) // save the discount after its applied so total will reflect in the database
     }
 
+    @Transactional
+    CartVO applyAdhocDiscount(CartVO cartVO){
+        // get existing cart
+        CartVO existingCart = getExistingCart(cartVO)
+
+        // create a discount record in the DB
+        DiscountVO discountVO = discountService.createAdhocDiscount(cartVO.discount)
+
+        // add the discount to the cart
+        existingCart.discount = discountVO
+
+        // now that new discount has been added to the list, calculate the new total based on all discounts
+        existingCart = discountService.applyDiscountToCart(existingCart)
+
+        return cartRepo.save(existingCart) // save the discount after its applied so total will reflect in the database
+    }
+
 
     @Transactional
     CartVO removeDiscount(CartVO cartVO){

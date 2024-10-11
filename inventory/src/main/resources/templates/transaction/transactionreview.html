@@ -127,6 +127,9 @@
             content: " *";
             color: red;
         }
+        .headerbutton{
+            border-color: #fff;
+        }
         .form-label {
             color: #000;  /* Changed to black */
         }
@@ -181,6 +184,66 @@
             width: 100%;
             height: 100%;
             border-radius: 5px;
+        }
+    </style>
+
+
+    <!-- CSS Styles -->
+    <style>
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7); /* Black overlay with transparency */
+            z-index: 9999; /* Ensure it appears above other content */
+        }
+
+        /* Popup content styling */
+        .popup-content {
+            background-color: #343a40;
+            color: white;
+            width: 80%; /* Large portion of the screen */
+            max-width: 900px;
+            height: 80%;
+            padding: 20px;
+            margin: auto;
+            margin-top: 5%;
+            border-radius: 15px;
+
+            /*start what is needed for scrolling*/
+            max-width: 80%; /* Set a max width for the popup */
+            max-height: 80vh; /* Limit the height of the popup to 80% of the viewport height */
+            overflow-y: auto; /* Allow vertical scrolling inside the popup */
+            /*end what is needed for scrolling*/
+
+
+            border: 5px solid black; /* Thick black border */
+            box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.8); /* Shadow for hovering effect */
+            position: relative;
+        }
+
+        /* Close button styling */
+        .close-popup {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 2rem;
+            color: white;
+            cursor: pointer;
+        }
+
+        .close-popup:hover {
+            color: #ff0000; /* Red on hover */
+        }
+
+        /* Blur background when popup is visible */
+        body.blur-background {
+            filter: blur(8px);
+            overflow: hidden; /* Disable scrolling when popup is active */
         }
     </style>
 
@@ -280,6 +343,43 @@
         });
     </script>
 
+
+
+    <!-- JavaScript to handle popup logic -->
+    <script>
+        $(document).ready(function() {
+            // this somehow works with thymeleaf to inject values serverside before this javascript renders
+            var popup = [[${popup != null && popup == 1}]];
+            console.log(popup);
+
+            if (popup) {
+                showPopup();
+            }
+
+            // Show popup
+            function showPopup() {
+                $('#popupNewDeliveryTable').fadeIn();  // Display the popup
+                $('#mainContent').addClass('blur-background');  // Blur the main content only
+            }
+
+            // Close popup when 'X' is clicked
+            $('.close-popup').on('click', function() {
+                $('#popupNewDeliveryTable').fadeOut();  // Hide the popup
+                $('#popupExistingDeliveryTable').fadeOut();  // Hide the popup
+                $('#mainContent').removeClass('blur-background');  // Remove blur effect from the main content
+            });
+        });
+    </script>
+
+    <script>
+        function submitDeliveryForm(){
+
+                    $('#submitDeliveryForm').submit();
+
+
+        }
+    </script>
+
 </head>
 <body>
 <div th:insert="auth/navbar.html :: navbarfragment"> </div>
@@ -289,14 +389,14 @@
         <div class="back-button">
             <a th:href="@{/transaction/listall}"><i class="bi bi-arrow-left-circle"></i></a>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-4">
             <h1>Transaction Review</h1>
             <p>Reviewing Transaction ID: <span th:text="${transaction.transactionid}"></span></p>
             <p>Customer: <span th:text="${transaction.customervo.name}"></span></p>
             <p>Original Price: <span th:text="${transaction.originalprice}"></span></p>
             <p>Amount remaining to pay: <span th:text="${transaction.totalwithtax - (transaction.paid == null ? 0.0 : transaction.paid)}"></span></p>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-4">
             <h3>Total Units:
                 <span th:text="${transaction.displayquantitytotal}"></span>
             </h3>
@@ -306,6 +406,9 @@
             <h6 th:if="${transaction.discount}">
                 <p>Discount: <span th:text="${transaction.discount.name}"></span></p>
             </h6>
+        </div>
+        <div class="col-md-4">
+            <h3><a class="btn btn-secondary headerbutton btn-lg" th:href="@{/transaction/delivery?size=5&page=1&transactionid=__${transaction.transactionid}__&popup=1}">Delivery</a></h3>
         </div>
     </div>
     <br>
@@ -390,13 +493,84 @@
     </form>
 </div>
 </body>
-<!-- Popup content if ${invoicecontent} exists -->
-<div th:if="${invoicecontent}" id="popupOverlay" class="popup-overlay">
+<!-- Popup Table For creating new delivery-->
+<div th:if="${popup != null && popup == 1 && transaction.delivery == null}" id="popupNewDeliveryTable" class="popup-overlay">
     <div class="popup-content">
-        <div class="popup-close" onclick="closePopup()">&times;</div>
-<!--        <embed th:utext="'data:application/pdf;base64,'+${invoicecontent}" type="application/pdf" width="100%" height="100%" />-->
-        <embed th:src="'data:application/pdf;base64,'+${invoicecontent}" type="application/pdf" width="100%" height="100%" />
-<!--        <div th:text="${invoicecontent}"></div>-->
+        <button class="close-popup">
+            <i class="bi bi-x-lg"></i>
+        </button>
+        <h3 class="text-center table-title-popup"><span>Pick Location Destination for Delivery</span></h3>
+
+        <form id="submitDeliveryForm" th:action="@{/transaction/createdelivery?size=5&page=1&transactionid=__${transaction.transactionid}__&popup=1}" th:object="${transaction}" method="post">
+
+            <div class="col-md-4" style="margin-top: 40px">
+                <div th:if="${transaction.delivery != null}">
+                    <p th:each="location : ${locationlist}" th:if="${location.locationid == transaction.delivery.location.locationid}" th:text="${location.name}" class="location-name">Location Name</p>
+                    <input type="hidden" th:field="*{location.locationid}">
+                </div>
+                <div th:if="${transaction.delivery == null || transaction.delivery.deliveryid == null}">
+                    <select class="form-control headerbutton" th:field="${transaction.delivery.location.locationid}" id="locationselectid">
+                        <option value="" selected="selected">Select a location</option>
+                        <option th:each="location : ${locationlist}" th:value="${location.locationid}" th:text="${location.name}"></option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-4" style="margin-top: 40px">
+                <button type="button" class="btn btn-primary btn-lg headerbutton" onclick="submitDeliveryForm()">Submit</button>
+            </div>
+        </form>
+
+<!--        <table id="newDeliveryTable" class="table table-hover table-striped table-dark">-->
+<!--            <thead>-->
+<!--            <tr>-->
+<!--                <th>Package List Inside Crate</th>-->
+<!--            </tr>-->
+<!--            </thead>-->
+<!--            <tbody>-->
+<!--            <tr th:each="item : ${transaction.delivery.crateinscope.package_list}" th:data-barcode="${item.barcode}">-->
+<!--                <td th:data-barcode="${item.barcode}">-->
+<!--                    &lt;!&ndash; Display item name &ndash;&gt;-->
+<!--                    <div th:text="${item.name}">Item Name</div>-->
+
+<!--                    &lt;!&ndash; Iterate over the product_package_list and display name and displayquantity &ndash;&gt;-->
+<!--                    <ul>-->
+<!--                        <li th:each="productPackage : ${item.product_package_list}">-->
+<!--                            <span th:text="${productPackage.name}"></span> - -->
+<!--                            <span th:text="${productPackage.displayquantity}"></span>-->
+<!--                        </li>-->
+<!--                    </ul>-->
+<!--                </td>-->
+<!--            </tr>-->
+
+<!--            </tbody>-->
+<!--        </table>-->
+<!--        <button th:if="${delivery.crateinscope.delivery == null}" type="button" class="btn-submit-dark" onclick="hydrateCrateBarcodeInput()">Add To Delivery</button>-->
+<!--        <a th:href="@{/crate?crateid=__${delivery.crateinscope.crateid}__&deliveryid=__${delivery.deliveryid}__}"-->
+<!--           class="btn-submit-dark">Modify Crate</a>-->
+    </div>
+</div>
+<!-- Popup Table For viewing existing delivery-->
+<div th:if="${popup != null && popup == 1 && transaction.delivery.deliveryid != null}" id="popupExistingDeliveryTable" class="popup-overlay">
+    <div class="popup-content">
+        <button class="close-popup">
+            <i class="bi bi-x-lg"></i>
+        </button>
+        <h3 class="text-center table-title-popup"><span th:text="${transaction.delivery.name}"></span> | UPCA:
+            <span th:text="${transaction.delivery.deliverybarcode}"></span></h3>
+
+            <div class="col-md-4" style="margin-top: 40px">
+                <div th:if="${transaction.delivery != null}">
+                    Location:<p th:each="location : ${locationlist}" th:if="${location.locationid == transaction.delivery.location.locationid}" th:text="${location.name}" class="location-name">Location Name</p>
+                    <input type="hidden" th:field="*{location.locationid}">
+                </div>
+                <div th:if="${transaction.delivery == null || transaction.delivery.deliveryid == null}">
+                    <select class="form-control headerbutton" th:field="${transaction.delivery.location.locationid}">
+                        <option value="" selected="selected">Select a location</option>
+                        <option th:each="location : ${locationlist}" th:value="${location.locationid}" th:text="${location.name}"></option>
+                    </select>
+                </div>
+            </div>
+
     </div>
 </div>
 </html>

@@ -243,10 +243,21 @@ public class CheckoutViewController {
         // only proceed if there is no error
         if(model.getAttribute("errorMessage") == null){
 
-            //check here for incoming discount
-            if(cartVO.discount != null & Integer.valueOf(cartVO.discount.discountid) > 0){
+
+            // discount from select dropdown
+            if(cartVO.discount != null
+                    & cartVO.discount.discountid != null
+                    & Integer.valueOf(cartVO?.discount?.discountid) > 0){
                 // go apply the discount to the cart
                 cartVO = cartService.applyDiscount(cartVO) // apply discount to cart
+            }
+
+            // adhoc discount
+            if(cartVO.discount != null
+                    & cartVO.discount.discountamount != null
+                    & cartVO.discount.discountamount > 0){
+                // go apply the discount to the cart
+                cartVO = cartService.applyAdhocDiscount(cartVO) // apply discount to cart
             }
 
             // before applying discount, get the existing cart (to handle conversion of displayed quantity back to actual list of producsts)

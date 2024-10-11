@@ -2,13 +2,17 @@ package com.techvvs.inventory.service.controllers
 
 import com.techvvs.inventory.barcode.impl.BarcodeHelper
 import com.techvvs.inventory.barcode.service.BarcodeService
+import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.jparepo.CrateRepo
 import com.techvvs.inventory.jparepo.DeliveryRepo
+import com.techvvs.inventory.jparepo.LocationRepo
 import com.techvvs.inventory.jparepo.PackageRepo
 import com.techvvs.inventory.jparepo.PackageTypeRepo
 import com.techvvs.inventory.jparepo.ProductRepo
+import com.techvvs.inventory.jparepo.TransactionRepo
 import com.techvvs.inventory.model.CrateVO
 import com.techvvs.inventory.model.DeliveryVO
+import com.techvvs.inventory.model.LocationVO
 import com.techvvs.inventory.model.PackageVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.TransactionVO
@@ -40,6 +44,15 @@ class DeliveryService {
 
     @Autowired
     DeliveryRepo deliveryRepo
+
+    @Autowired
+    TransactionRepo transactionRepo
+
+    @Autowired
+    LocationRepo locationRepo
+
+    @Autowired
+    AppConstants appConstants
 
     @Autowired
     ProductRepo productRepo
@@ -360,6 +373,40 @@ class DeliveryService {
         }
         DeliveryVO deliveryVO = (DeliveryVO) model.getAttribute("delivery")
         deliveryVO.crateinscope = crateVO // if it's first time navigating from crate create page, add the crate to the crateinscope
+
+    }
+
+
+    @Transactional
+    void createNewDeliveryFromTransaction(TransactionVO transactionVO){
+
+        //hydrate location based on locationid passed in
+        LocationVO existinglocation = locationRepo.findById(transactionVO.delivery.location.locationid).get()
+        TransactionVO existingTransaction = transactionRepo.findById(transactionVO.getTransactionid()).get()
+
+
+        // create a new delivery using the
+        DeliveryVO deliverytoSave = new DeliveryVO(
+                transaction: existingTransaction,
+                status: appConstants.DELIVERY_STATUS_CREATED,
+                name: "delivery_"+transactionVO.getTransactionid(),
+                isprocessed: 0,
+                iscanceled: 0,
+                description: "delivery created for location: "+existinglocation.name+" from transaction: "+transactionVO.getTransactionid(),
+                location: existinglocation,
+                deliverybarcode: barcodeHelper.generateBarcodeData(generateOneDigitNumber(), generateOneDigitNumber(), generateSevenDigitNumber(), generateOneDigitNumber()),
+                total: transactionVO.totalwithtax,
+                updateTimeStamp: LocalDateTime.now(),
+                createTimeStamp: LocalDateTime.now()
+        )
+
+        DeliveryVO savedDelivery = deliveryRepo.save(deliverytoSave)
+        existingTransaction.delivery = savedDelivery
+
+        // save the transaction with the new delivery that was just created
+        transactionRepo.save(existingTransaction)
+
+        barcodeService.createBarcodeSheetForSingleDeliveryUPCA(savedDelivery) // save a barcode sheet created from this delivery
 
     }
 

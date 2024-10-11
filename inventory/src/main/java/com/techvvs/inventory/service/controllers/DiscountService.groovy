@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service
 import org.springframework.ui.Model
 
 import javax.transaction.Transactional
+import java.time.LocalDateTime
 
 @Service
 class DiscountService {
@@ -44,6 +45,21 @@ class DiscountService {
         }
 
         return cartVO
+    }
+
+    // only will have amount here
+    @Transactional
+    DiscountVO createAdhocDiscount(DiscountVO discountVO){
+        // first we save it here without a transactionid
+        DiscountVO newdiscount = new DiscountVO(
+                discountamount: discountVO.discountamount,
+                name: "Adhoc Discount: "+String.valueOf(discountVO.discountamount),
+                description: "Adhoc Discount: "+String.valueOf(discountVO.discountamount),
+                discountpercentage: 0,
+                updateTimeStamp: LocalDateTime.now(),
+                createTimeStamp: LocalDateTime.now()
+        )
+        discountRepo.save(newdiscount)
     }
 
 

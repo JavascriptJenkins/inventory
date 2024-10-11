@@ -1,10 +1,12 @@
 package com.techvvs.inventory.viewcontroller
 
 import com.techvvs.inventory.constants.AppConstants
+import com.techvvs.inventory.jparepo.LocationRepo
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.modelnonpersist.FileVO
 import com.techvvs.inventory.printers.PrinterService
 import com.techvvs.inventory.service.auth.TechvvsAuthService
+import com.techvvs.inventory.service.controllers.DeliveryService
 import com.techvvs.inventory.service.controllers.TransactionService
 import com.techvvs.inventory.service.paging.FilePagingService
 import com.techvvs.inventory.viewcontroller.helper.CheckoutHelper
@@ -45,6 +47,12 @@ public class TransactionViewController {
     
     @Autowired
     TechvvsAuthService techvvsAuthService
+
+    @Autowired
+    LocationRepo locationRepo
+
+    @Autowired
+    DeliveryService deliveryService
 
     @GetMapping
     String reviewtransaction(
@@ -228,5 +236,78 @@ public class TransactionViewController {
     }
 
 
+
+    // This handles displaying the delivery popup data
+    @GetMapping("/delivery")
+    String delivery(
+            @RequestParam("transactionid" ) String transactionid,
+            Model model,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size,
+            @RequestParam("popup") Optional<Integer> popup
+    ){
+        // bind all page data under the pop (waste of resources but its a nice UI..... )
+        bindTransactionReviewDataUnderPopUp(transactionid, model, page, size)
+
+
+        TransactionVO transactionVO = (TransactionVO) model.getAttribute("transaction")
+
+//        if(transactionVO.delivery != null){
+//            model.addAttribute("delivery", transactionVO.delivery)
+//        }
+
+        model.addAttribute("locationlist", locationRepo.findAll())
+
+        model.addAttribute("popup", popup.orElse(0)) // 1 shows popup, 0 doesnt
+
+
+        techvvsAuthService.checkuserauth(model)
+        return "transaction/transactionreview.html";
+    }
+
+
+    // This handles displaying the delivery popup data
+    @PostMapping("/createdelivery")
+    String createdelivery(
+            @RequestParam("transactionid" ) String transactionid,
+            @ModelAttribute( "transaction" ) TransactionVO transactionVO,
+            Model model,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size,
+            @RequestParam("popup") Optional<Integer> popup
+    ){
+
+        // here we create the delivery
+        deliveryService.createNewDeliveryFromTransaction(transactionVO)
+
+
+        // bind all page data under the pop (waste of resources but its a nice UI..... )
+        bindTransactionReviewDataUnderPopUp(transactionid, model, page, size)
+        transactionVO = (TransactionVO) model.getAttribute("transaction")
+        model.addAttribute("locationlist", locationRepo.findAll())
+        model.addAttribute("popup", popup.orElse(0)) // 1 shows popup, 0 doesnt
+        techvvsAuthService.checkuserauth(model)
+        return "transaction/transactionreview.html";
+    }
+
+    // this binds all the data under the delivery popup so it remains while we do delivery stuff.
+    // this is probably not good for performance (loading stuff for no reason.....), but I am going to see how we like it.
+    void bindTransactionReviewDataUnderPopUp(String transactionid, Model model, Optional<Integer> page, Optional<Integer> size){
+        String name = ""
+        TransactionVO transactionVO = new TransactionVO()
+        transactionVO = transactionService.getExistingTransaction(Integer.valueOf(transactionid))
+
+        // this will set the display quantities
+        transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO)
+
+        // start file paging
+        String dir = appConstants.PARENT_LEVEL_DIR+appConstants.TRANSACTION_INVOICE_DIR+String.valueOf(transactionVO.transactionid)+"/"
+        Page<FileVO> filePage = filePagingService.getFilePageFromDirectory(page.get(), size.get(), dir)
+        filePagingService.bindPageAttributesToModel(model, filePage, page, size);
+        // end file paging
+
+        model.addAttribute("transaction", transactionVO);
+        checkoutHelper.getAllCustomers(model)
+    }
 
 }
