@@ -25,7 +25,7 @@ class DeliveryVO implements Serializable{
     @JsonProperty
     @OneToOne(cascade= CascadeType.ALL, fetch  = FetchType.EAGER)
     @JoinColumn(name="locationid")
-    LocationVO destination
+    LocationVO location
 
     @JsonProperty
     @OneToOne(cascade=CascadeType.ALL, fetch = FetchType.LAZY)
