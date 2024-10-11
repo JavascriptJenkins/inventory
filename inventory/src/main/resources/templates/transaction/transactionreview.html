@@ -565,20 +565,38 @@
             <i class="bi bi-x-lg"></i>
         </button>
         <h3 class="text-center table-title-popup"><span th:text="${transaction.delivery.name}"></span> | UPCA:
-            <span th:text="${transaction.delivery.deliverybarcode}"></span></h3>
+            <span th:text="${transaction.delivery.deliverybarcode}"></span>
+        </h3>
 
-            <div class="col-md-4" style="margin-top: 40px">
-                <div th:if="${transaction.delivery != null}">
-                    Location:<p th:each="location : ${locationlist}" th:if="${location.locationid == transaction.delivery.location.locationid}" th:text="${location.name}" class="location-name">Location Name</p>
-                    <input type="hidden" th:field="*{location.locationid}">
-                </div>
-                <div th:if="${transaction.delivery == null || transaction.delivery.deliveryid == null}">
-                    <select class="form-control headerbutton" th:field="${transaction.delivery.location.locationid}">
-                        <option value="" selected="selected">Select a location</option>
-                        <option th:each="location : ${locationlist}" th:value="${location.locationid}" th:text="${location.name}"></option>
-                    </select>
+        <div class="col-md-4" style="margin-top: 40px">
+            <div th:if="${transaction.delivery != null}">
+                Destination:<p th:each="location : ${locationlist}" th:if="${location.locationid == transaction.delivery.location.locationid}" th:text="${location.name}" class="location-name">Location Name</p>
+            </div>
+            <div th:if="${transaction.delivery == null || transaction.delivery.deliveryid == null}">
+                <select class="form-control headerbutton" th:field="${transaction.delivery.location.locationid}">
+                    <option value="" selected="selected">Select a location</option>
+                    <option th:each="location : ${locationlist}" th:value="${location.locationid}" th:text="${location.name}"></option>
+                </select>
+            </div>
+        </div>
+        <div th:if="${transaction.delivery != null}" class="col-md-4" style="margin-top: 40px">
+            <span>Delivery Progress: </span>
+            <div class="progress" style="height: 30px;">
+                <div
+                        class="progress-bar progress-bar-striped"
+                        role="progressbar"
+                        th:classappend="${transaction.delivery.status == 0 ? 'bg-warning' :
+                             (transaction.delivery.status == 1 ? 'bg-info' : 'bg-success')}"
+                        th:style="'width:' + (transaction.delivery.status == 0 ? 33 :
+                                  (transaction.delivery.status == 1 ? 67 : 100)) + '%'"
+                        aria-valuemin="0"
+                        aria-valuemax="100">
+            <span th:text="${transaction.delivery.status == 0 ? 'Delivery Created (1/3)' :
+                           (transaction.delivery.status == 1 ? 'En Route (2/3)' : 'Complete (3/3)')}"></span>
                 </div>
             </div>
+        </div>
+
 
     </div>
 </div>

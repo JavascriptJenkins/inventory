@@ -47,5 +47,8 @@ String VIEW_INVOICE = "view"
 
     //delivery constants below
     int DELIVERY_STATUS_CREATED = 0
+    int DELIVERY_STATUS_EN_ROUTE = 1
+    int DELIVERY_STATUS_DELIVERED = 2
+    int DELIVERY_STATUS_CANCELED = 3
 
 }

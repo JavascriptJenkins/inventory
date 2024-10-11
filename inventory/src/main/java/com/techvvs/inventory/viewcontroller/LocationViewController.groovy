@@ -2,6 +2,8 @@ package com.techvvs.inventory.viewcontroller
 
 import com.techvvs.inventory.jparepo.LocationRepo
 import com.techvvs.inventory.jparepo.LocationRepo
+import com.techvvs.inventory.jparepo.LocationTypeRepo
+import com.techvvs.inventory.model.LocationTypeVO
 import com.techvvs.inventory.model.LocationVO
 import com.techvvs.inventory.service.auth.TechvvsAuthService
 import com.techvvs.inventory.validation.ValidateLocation
@@ -28,6 +30,7 @@ public class LocationViewController {
     @Autowired LocationRepo locationRepo
     @Autowired ValidateLocation validateLocation
     @Autowired TechvvsAuthService techvvsAuthService
+    @Autowired LocationTypeRepo locationTypeRepo
 
     //default home mapping
     @GetMapping
@@ -50,6 +53,7 @@ public class LocationViewController {
 
         techvvsAuthService.checkuserauth(model)
         model.addAttribute("location", locationVOToBind);
+        model.addAttribute("locationtypes", locationTypeRepo.findAll());
         addPaginatedData(model, page)
         return "admin/location.html";
     }
@@ -87,6 +91,7 @@ public class LocationViewController {
         }
 
         techvvsAuthService.checkuserauth(model)
+        model.addAttribute("locationtypes", locationTypeRepo.findAll());
         addPaginatedData(model, page)
         return "admin/location";
     }
@@ -127,6 +132,7 @@ public class LocationViewController {
             model.addAttribute("location", result);
         }
 
+        model.addAttribute("locationtypes", locationTypeRepo.findAll());
         techvvsAuthService.checkuserauth(model)
         addPaginatedData(model, page)
         return "admin/location";

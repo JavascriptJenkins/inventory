@@ -246,6 +246,15 @@
                 <label class="form-label required">Zipcode</label>
                 <input type="text" name="zipcode" th:field="*{zipcode}" class="form-control" placeholder="zipcode" aria-label="zipcode">
             </div>
+            <div class="col-md-4" style="margin-bottom: 5px;">
+                <label class="form-label required">Location Type</label>
+                <select class="form-control" th:field="${location.locationtype}"  id="locationtypeid" readonly="">
+                    <!--                        <option value="">select operator</option>-->
+                    <!--                        <option th:each="operator : ${}" th:value="${operator.id}" th:text="${operator.operatorName}"></option>-->
+                    <option th:each="locationtype : ${locationtypes}" th:value="${locationtype.locationtypeid}" th:text="${locationtype.name}"></option>
+
+                </select>
+            </div>
         </div>
 
         <br>
