@@ -243,15 +243,6 @@ public class CheckoutViewController {
         // only proceed if there is no error
         if(model.getAttribute("errorMessage") == null){
 
-
-            // discount from select dropdown
-            if(cartVO.discount != null
-                    & cartVO.discount.discountid != null
-                    & Integer.valueOf(cartVO?.discount?.discountid) > 0){
-                // go apply the discount to the cart
-                cartVO = cartService.applyDiscount(cartVO) // apply discount to cart
-            }
-
             // adhoc discount
             if(cartVO.discount != null
                     & cartVO.discount.discountamount != null

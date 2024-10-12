@@ -124,39 +124,53 @@
         }
     </script>
     <script>
-        function applyDiscount() {
-            // Get the selected discount and adhoc discount values
-            var discountSelect = document.getElementById("discountSelect");
+        document.addEventListener("DOMContentLoaded", function () {
             var adhocDiscount = document.getElementById("discountAdhocInputId");
-            var selectedDiscount = discountSelect.value;
-            var selectedAdhocDiscount = adhocDiscount.value;
-
-            // Get the hidden input elements
-            var hiddenDiscountId = document.getElementById("hiddenDiscountId");
             var hiddenAdhocDiscountId = document.getElementById("hiddenAdhocDiscountId");
+            var applyDiscountButton = document.getElementById("applyDiscountButton");
+            var totalPriceInput = document.getElementById("totalPriceInput");
+
+            // Create a message element for invalid inputs
+            var messageElement = document.createElement("span");
+            messageElement.id = "discountMessage";
+            messageElement.style.color = "red";
+            adhocDiscount.parentNode.insertBefore(messageElement, adhocDiscount.nextSibling);
 
             // Helper function to check if a value is numerical
             function isNumeric(value) {
                 return !isNaN(value) && value.trim() !== "";
             }
 
-            // Clear the hidden inputs
-            hiddenDiscountId.value = "";
-            hiddenAdhocDiscountId.value = "";
+            // Bind the keyup event to discountAdhocInputId
+            adhocDiscount.addEventListener("keyup", function () {
+                var discountValue = adhocDiscount.value;
+                var totalPriceValue = parseFloat(totalPriceInput.value);
 
-            // Set the hidden input based on which value is numerical
-            if (isNumeric(selectedDiscount)) {
-                hiddenDiscountId.value = selectedDiscount;
-                hiddenAdhocDiscountId.value = 0;
-            } else if (isNumeric(selectedAdhocDiscount)) {
-                hiddenAdhocDiscountId.value = selectedAdhocDiscount;
-                hiddenDiscountId.value = 0;
-            }
+                // Clear previous message and reset button
+                messageElement.textContent = "";
+                applyDiscountButton.disabled = false;
 
-            // Submit the form
+                if (!isNumeric(discountValue) || parseFloat(discountValue) > totalPriceValue) {
+                    // Show error message and disable the button
+                    if (!isNumeric(discountValue)) {
+                        messageElement.textContent = "Please enter a numerical value.";
+                    } else if (parseFloat(discountValue) > totalPriceValue) {
+                        messageElement.textContent = "Discount cannot exceed the total price.";
+                    }
+                    applyDiscountButton.disabled = true;
+                    hiddenAdhocDiscountId.value = "";
+                } else {
+                    // If valid, update the hidden input
+                    hiddenAdhocDiscountId.value = discountValue;
+                }
+            });
+        });
+
+        function applyDiscount() {
             document.getElementById("applyDiscountCartForm").submit();
         }
     </script>
+
 
     <script>
         function removeDiscount() {
@@ -165,68 +179,6 @@
         }
     </script>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Get the elements
-            const discountSelect = document.getElementById('discountSelect');
-            const discountAdhocInput = document.getElementById('discountAdhocInputId');
-            const totalPriceInput = document.getElementById('totalPriceInput');
-            const applyDiscountButton = document.getElementById('applyDiscountButton');
-
-            // Create and style the error message element
-            const errorMessage = document.createElement('span');
-            errorMessage.classList.add('text-danger');
-            errorMessage.style.display = 'none';
-            discountAdhocInput.insertAdjacentElement('afterend', errorMessage);
-
-            // Validate that the price and discount inputs are positive numbers
-            function isPositiveNumber(value) {
-                return !isNaN(value) && value > 0;
-            }
-
-            // Function to toggle button and handle mutual disabling logic
-            function toggleButton() {
-                const discountSelectValue = discountSelect.value;
-                const discountAdhocValue = parseFloat(discountAdhocInput.value);
-                const totalPriceValue = parseFloat(totalPriceInput.value);
-
-                // Validate totalPriceInput and show an error if invalid
-                if (!isPositiveNumber(totalPriceValue)) {
-                    errorMessage.textContent = "Total price must be a positive number.";
-                    errorMessage.style.display = 'inline';
-                    applyDiscountButton.disabled = true;
-                    return;
-                }
-
-                // Reset states
-                discountAdhocInput.disabled = discountSelectValue !== "";
-                discountSelect.disabled = discountAdhocInput.value !== "";
-                errorMessage.style.display = 'none';
-                applyDiscountButton.disabled = true;
-
-                // Show appropriate messages based on conditions
-                if (discountAdhocInput.value && !isPositiveNumber(discountAdhocValue)) {
-                    errorMessage.textContent = "Discount must be a positive number.";
-                    errorMessage.style.display = 'inline';
-                } else if (discountAdhocInput.value && discountAdhocValue > totalPriceValue) {
-                    errorMessage.textContent = "Enter less or equal to the total price.";
-                    errorMessage.style.display = 'inline';
-                } else if (discountSelectValue !== "" || (discountAdhocValue >= 1 && discountAdhocValue <= totalPriceValue)) {
-                    // Enable button if a valid discountSelect or adhoc discount is provided
-                    applyDiscountButton.disabled = false;
-                }
-            }
-
-            // Attach events to the form elements for real-time feedback
-            discountSelect.addEventListener('change', toggleButton);
-            discountAdhocInput.addEventListener('input', toggleButton);
-            totalPriceInput.addEventListener('input', toggleButton); // in case total price changes dynamically
-
-            // Initial check on page load
-            toggleButton();
-        });
-
-    </script>
 
 
 
@@ -267,22 +219,16 @@
                 <b><label class="form-label">Discount</label></b>
                 <div th:if="${cart.cartid != null && cart.discount != null}">
                     <p th:each="discount : ${discounts}" th:if="${discount.discountid == cart.discount.discountid}" th:text="${discount.name}">Discount Name</p>
-                    <input type="hidden" th:field="*{discount.discountid}">
                 </div>
-                <select th:if="${cart.discount == null}" class="form-select" id="discountSelect">
-                    <option value="" th:field="${cart.discount.discountid}" selected="selected">Select a discount</option>
-                    <!-- Assuming discounts is a passed variable -->
-                    <option th:each="discount : ${discounts}" th:value="${discount.discountid}" th:text="${discount.name}"></option>
-                </select>
-                <div th:if="${cart.discount.discountid == null}" class="col-md-4" style="margin-top:10px;">
-                    <b><label class="form-label">Or Enter Any Amount of Discount Here</label></b>
+                <div th:if="${cart.discount == null}" style="margin-top:10px;">
+                    <b><label class="form-label">Enter Discount Amount</label></b>
                     <input id="discountAdhocInputId" name="adhocdisount" type="number">
                 </div>
             </div>
-            <div th:if="${cart.discount != null && cart.discount.name == null}" class="col-md-6" style="margin-bottom: 5px;">
+            <div th:if="${cart.discount == null}" class="col-md-6" style="margin-bottom: 5px;">
                 <button id="applyDiscountButton" class="btn btn-primary" type="button" onclick="applyDiscount()">Apply Discount</button>
             </div>
-            <div th:if="${cart.discount != null && cart.discount.name != null}" class="col-md-6" style="margin-bottom: 5px;">
+            <div th:if="${cart.discount != null}" class="col-md-6" style="margin-bottom: 5px;">
                 <button class="btn btn-warning" type="button" onclick="removeDiscount()">Remove Discount</button>
             </div>
         </div>
@@ -360,7 +306,6 @@
         <input type="hidden" th:field="*{total}" class="form-control" placeholder="total" aria-label="total" readonly>
         <input type="hidden" th:field="*{cartid}">
         <input type="hidden" th:field="*{customer.customerid}">
-        <input id="hiddenDiscountId" type="hidden" th:field="*{discount.discountid}">
         <input id="hiddenAdhocDiscountId" type="hidden" th:field="*{discount.discountamount}">
     </form>
     <form id="removeDiscountCartForm" th:action="@{/checkout/removediscount?page=1&size=5}" th:object="${cart}" method="post">
