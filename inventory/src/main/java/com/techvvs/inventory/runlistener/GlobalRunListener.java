@@ -1,6 +1,6 @@
 package com.techvvs.inventory.runlistener;
 
-import com.techvvs.inventory.deployment.service.DeploymentManager;
+//import com.techvvs.inventory.deployment.service.DeploymentManager;
 import com.techvvs.inventory.model.ProductVO;
 import com.techvvs.inventory.refdata.RefDataLoader;
 import com.techvvs.inventory.util.SimpleCache;
@@ -32,8 +32,8 @@ public class GlobalRunListener implements ApplicationListener<ApplicationReadyEv
     @Autowired
     Environment environment;
 
-    @Autowired
-    DeploymentManager deploymentManager;
+//    @Autowired
+//    DeploymentManager deploymentManager;
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent applicationReadyEvent) {
