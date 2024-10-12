@@ -18,9 +18,9 @@ class AppConstants {
     String PACKAGE_DIR = "/package/"
     String CRATE_DIR = "/crate/"
     String LABEL_DIR = "/label/"
-    String DELIVERY_DIR = "/delivery/"
+    public String DELIVERY_DIR = "/delivery/"
     String QR_ALL_DIR = "/qrcodes/all/"
-    String BARCODES_ALL_DIR = "/barcodes/all/"
+    public String BARCODES_ALL_DIR = "/barcodes/all/"
     String ADHOC_DIR = "/adhoc/"
     String BATCH_PRICE_SHEETS_DIR = "/pricesheets/"
     public String COA_DIR = "/coa/"
@@ -47,5 +47,8 @@ String VIEW_INVOICE = "view"
 
     //delivery constants below
     int DELIVERY_STATUS_CREATED = 0
+    int DELIVERY_STATUS_EN_ROUTE = 1
+    int DELIVERY_STATUS_DELIVERED = 2
+    int DELIVERY_STATUS_CANCELED = 3
 
 }

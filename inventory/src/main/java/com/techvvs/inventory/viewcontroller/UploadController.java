@@ -31,6 +31,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @RequestMapping("/file")
 @Controller
@@ -542,6 +544,76 @@ public class UploadController {
 
 
 //        return "redirect: /newform/viewNewForm";
+    }
+
+
+
+    @RequestMapping(value="/privatedeliverydownload", method=RequestMethod.GET)
+    public void privatedeliverydownload(
+            @RequestParam("filename") String filename,
+                               HttpServletResponse response
+    ) {
+
+
+        File file;
+        filename = filename.replaceAll("'", "");
+        String deliveryid = extractDeliveryNumber(filename);
+
+        String basefilename = filename;
+
+        try {
+
+            filename = fileViewHelper.buildFileNameForPrivateDeliveryDownload(
+                    appConstants.DELIVERY_DIR+deliveryid+appConstants.BARCODES_ALL_DIR,
+                    filename);
+
+            // todo: set filetype based on file extension here
+            if(filename.contains(".pdf")){
+                response.setContentType("application/pdf");
+            } else if(filename.contains(".xlsx")){
+                response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            }
+
+            response.setHeader("Content-Disposition","attachment; filename="+basefilename);
+
+            file = new File(filename);
+
+            byte[] fileContent = Files.readAllBytes(file.toPath());
+
+            // get your file as InputStream
+            InputStream is = new ByteArrayInputStream(fileContent);
+
+            // copy it to response's OutputStream
+            org.apache.commons.io.IOUtils.copy(is, response.getOutputStream());
+            response.flushBuffer();
+
+        } catch (IOException ex) {
+            System.out.println("Error writing file to output stream. Filename was: " +filename);
+            System.out.println("Error writing file to output stream. exception: " +ex.getMessage());
+            throw new RuntimeException("IOError writing file to output stream");
+        }
+
+
+//        return "redirect: /newform/viewNewForm";
+    }
+
+
+    public static String extractDeliveryNumber(String filename) {
+        // Define the regex pattern
+        String pattern = "(?<=-)\\d+(?=\\.pdf)";
+
+        // Create a Pattern object
+        Pattern regex = Pattern.compile(pattern);
+
+        // Create a Matcher object
+        Matcher matcher = regex.matcher(filename);
+
+        // Find and return the match if available
+        if (matcher.find()) {
+            return matcher.group();
+        } else {
+            return null; // Or handle the case where no match is found
+        }
     }
 
 }
