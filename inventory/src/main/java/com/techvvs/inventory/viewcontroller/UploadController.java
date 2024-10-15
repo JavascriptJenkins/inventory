@@ -2,9 +2,8 @@ package com.techvvs.inventory.viewcontroller;
 
 import com.techvvs.inventory.constants.AppConstants;
 import com.techvvs.inventory.jparepo.BatchTypeRepo;
-import com.techvvs.inventory.model.BatchTypeVO;
-import com.techvvs.inventory.model.BatchVO;
-import com.techvvs.inventory.model.TransactionVO;
+import com.techvvs.inventory.jparepo.ProductTypeRepo;
+import com.techvvs.inventory.model.*;
 import com.techvvs.inventory.modelnonpersist.FileVO;
 import com.techvvs.inventory.security.JwtTokenProvider;
 import com.techvvs.inventory.service.ExcelService;
@@ -51,6 +50,9 @@ public class UploadController {
 
     @Autowired
     BatchTypeRepo batchTypeRepo;
+
+    @Autowired
+    ProductTypeRepo productTypeRepo;
 
     @Autowired
     ExcelService excelService;
@@ -189,10 +191,86 @@ public class UploadController {
         return "/service/xlsxbatch.html";
     }
 
+    // This method is for uploading XLSX file price sheets
+    @PostMapping("/media/upload")
+    public String uploadMediaFile(Model model,
+                                  @ModelAttribute( "product" ) ProductVO productVO,
+                                 @RequestParam("file") MultipartFile file,
+                                 RedirectAttributes attributes) {
+
+        System.out.println("file upload 1");
+        // check if file is empty
+        if (file.isEmpty()) {
+            model.addAttribute("errorMessage","Please select a file to upload.");
+            System.out.println("file upload 2");
+            bindProductTypes(model);
+            model.addAttribute("product",productVO);
+            techvvsAuthService.checkuserauth(model);
+            return "/product/editform.html";
+        }
+        System.out.println("file upload 3");
+        String fileName = "";
+        if(file.getOriginalFilename() != null){
+            System.out.println("file upload 4");
+            // sanitize the file name
+            fileName = techvvsFileHelper.sanitizeMultiPartFileName(file);
+        }
+
+        boolean success = false;
+        // save the file on the local file system
+
+        fileName = fileName.replace("'", "");
+        fileName = fileName.replace(" ", "_");
+        try {
+            System.out.println("file upload 5");
+            Files.createDirectories(Paths.get(appConstants.UPLOAD_DIR_MEDIA+appConstants.UPLOAD_DIR_PRODUCT+"/"+productVO.getProduct_id()));
+            Path path = Paths.get(appConstants.UPLOAD_DIR_MEDIA+appConstants.UPLOAD_DIR_PRODUCT+"/"+productVO.getProduct_id()+"/"+fileName);
+            System.out.println("file upload 6");
+            Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
+            System.out.println("file upload 7");
+            success = true;
+        } catch (IOException e) {
+            success = false;
+            model.addAttribute("editmode", "no");
+            System.out.println("file upload 8");
+            e.printStackTrace();
+            bindProductTypes(model);
+            model.addAttribute("product",productVO);
+            model.addAttribute("errorMessage","file upload failed");
+            techvvsAuthService.checkuserauth(model);
+            return "product/editform.html";
+        }
+
+
+        System.out.println("file upload 10");
+
+
+        if(success){
+            model.addAttribute("successMessage","Upload for media file completed: " + fileName + '!');
+            model.addAttribute("editmode", "no");
+        } else {
+            // this should never happen
+            model.addAttribute("errorMessage","Problem uploading file: " + fileName + '!');
+        }
+
+        bindProductTypes(model);
+        model.addAttribute("product",productVO);
+        model.addAttribute("editmode", "no");
+
+        techvvsAuthService.checkuserauth(model);
+        return "redirect:/product/editform.html?editmode=no&productnumber&"+productVO.getProductnumber()+"successMessage="+"Upload for media file completed: " + fileName + '!';
+    }
+
     void bindBatchTypes(Model model){
         // get all the batchtype objects and bind them to select dropdown
         List<BatchTypeVO> batchTypeVOS = batchTypeRepo.findAll();
         model.addAttribute("batchtypes", batchTypeVOS);
+    }
+
+    void bindProductTypes(Model model){
+        // get all the batchtype objects and bind them to select dropdown
+        List<ProductTypeVO> productTypeVOS = productTypeRepo.findAll();
+        model.addAttribute("producttypes", productTypeVOS);
     }
 
     @PostMapping("/upload2")
@@ -566,6 +644,65 @@ public class UploadController {
             filename = fileViewHelper.buildFileNameForPrivateDeliveryDownload(
                     appConstants.DELIVERY_DIR+deliveryid+appConstants.BARCODES_ALL_DIR,
                     filename);
+
+            // todo: set filetype based on file extension here
+            if(filename.contains(".pdf")){
+                response.setContentType("application/pdf");
+            } else if(filename.contains(".xlsx")){
+                response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            }
+
+            response.setHeader("Content-Disposition","attachment; filename="+basefilename);
+
+            file = new File(filename);
+
+            byte[] fileContent = Files.readAllBytes(file.toPath());
+
+            // get your file as InputStream
+            InputStream is = new ByteArrayInputStream(fileContent);
+
+            // copy it to response's OutputStream
+            org.apache.commons.io.IOUtils.copy(is, response.getOutputStream());
+            response.flushBuffer();
+
+        } catch (IOException ex) {
+            System.out.println("Error writing file to output stream. Filename was: " +filename);
+            System.out.println("Error writing file to output stream. exception: " +ex.getMessage());
+            throw new RuntimeException("IOError writing file to output stream");
+        }
+
+
+//        return "redirect: /newform/viewNewForm";
+    }
+
+    @RequestMapping(value="/privateqrmediadownload", method=RequestMethod.GET)
+    public void privateqrmediadownload(
+            @RequestParam("productid") String productid,
+            @RequestParam("name") String name,
+            @RequestParam("number") String number,
+            @RequestParam("batchnumber") String batchnumber,
+            @RequestParam("batchname") String batchname,
+            HttpServletResponse response
+    ) {
+
+
+        File file;
+        productid = productid.replaceAll("'", "");
+        name = name.replaceAll("'", "");
+        number = number.replaceAll("'", "");
+        batchnumber = batchnumber.replaceAll("'", "");
+        batchname = batchname.replaceAll("'", "");
+       // String deliveryid = extractDeliveryNumber(filename);
+
+        //                         // // Path path = Paths.get(appConstants.UPLOAD_DIR_MEDIA+appConstants.UPLOAD_DIR_PRODUCT+"/"+productVO.getProduct_id()+"/"+fileName);
+        //            document.save(appConstants.PARENT_LEVEL_DIR+batchVO.batchnumber+appConstants.QR_MEDIA_DIR+appConstants.filenameprefix_qr_media+filename+".pdf");
+        String basefilename = appConstants.filenameprefix_qr_media+batchname+"-"+batchnumber+".pdf";
+        String filename = "";
+        try {
+
+            filename = fileViewHelper.buildFileNameForPrivateQrMediaDownload(
+                    batchnumber+appConstants.QR_MEDIA_DIR,
+                    basefilename);
 
             // todo: set filetype based on file extension here
             if(filename.contains(".pdf")){

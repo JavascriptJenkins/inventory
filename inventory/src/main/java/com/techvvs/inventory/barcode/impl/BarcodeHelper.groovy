@@ -53,7 +53,13 @@ class BarcodeHelper {
 
     static String generateBarcodeData(int row, int col, int batchnumber, int pagenumber) {
         // Create base data from batchnumber and pagenumber, ensuring it's exactly 6 characters
+        if(pagenumber > 9){
+            pagenumber = 9
+        }
         String baseData = removeLast2Character(String.valueOf(batchnumber)) + String.valueOf(pagenumber);
+
+        baseData = replaceDigitsWithRandom(baseData)
+
 
         // Ensure the baseData is exactly 6 characters long
         baseData = baseData.length() > 6 ? baseData.substring(0, 6) : baseData.padLeft(6, '0');
@@ -96,6 +102,32 @@ class BarcodeHelper {
             return str; // Return the original string if it's null or empty.
         }
         return str.substring(0, str.length() - 2); // Use substring to remove the last character.
+    }
+
+    static String replaceDigitsWithRandom(String sixDigitString) {
+        // Ensure the input is a valid 6-digit string
+        if (sixDigitString.length() != 6) {
+            System.out.println("ERROR STRING: "+sixDigitString)
+            throw new IllegalArgumentException("Input must be a 6-digit string")
+        }
+
+        Random random = new Random()
+
+        // Convert the string to an integer (though not strictly necessary)
+        int originalNumber = sixDigitString.toInteger()
+
+        // Create a new number by replacing each digit with a random digit
+        def randomDigits = sixDigitString.collect {
+            random.nextInt(10) // Generate a random digit (0 to 9)
+        }.join()
+
+        // Convert the resulting string of random digits to an integer
+        int newRandomNumber = randomDigits.toInteger()
+
+//        println "Original number: $originalNumber"
+//        println "New random number: $newRandomNumber"
+
+        return String.valueOf(newRandomNumber)
     }
 
 

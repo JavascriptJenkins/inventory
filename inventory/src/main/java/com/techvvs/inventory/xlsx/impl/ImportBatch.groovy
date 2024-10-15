@@ -1,14 +1,11 @@
 package com.techvvs.inventory.xlsx.impl
 
 import com.techvvs.inventory.jparepo.BatchRepo
-import com.techvvs.inventory.jparepo.BatchTypeRepo
 import com.techvvs.inventory.jparepo.ProductRepo
 import com.techvvs.inventory.jparepo.ProductTypeRepo
-import com.techvvs.inventory.model.BatchTypeVO
 import com.techvvs.inventory.model.BatchVO
 import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.ProductVO
-import com.techvvs.inventory.viewcontroller.helper.BatchControllerHelper
 import com.techvvs.inventory.viewcontroller.helper.ProductHelper
 import com.techvvs.inventory.xlsx.helper.ImportHelper
 import org.apache.poi.ss.usermodel.CellType
@@ -18,7 +15,7 @@ import org.apache.poi.ss.usermodel.Workbook
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
-import picocli.CommandLine
+import org.apache.poi.ss.usermodel.Cell;
 
 import java.security.SecureRandom
 import java.time.LocalDateTime
@@ -82,9 +79,10 @@ class ImportBatch {
                 // set quantity and quantity remaining on the product record in db
                 productVO.setQuantity((int) row?.getCell(0)?.getNumericCellValue());
                 productVO.setQuantityremaining((int) row?.getCell(0)?.getNumericCellValue());
+                productVO.setVendorquantity((int) row?.getCell(0)?.getNumericCellValue());
 
                 // set name on the product record in db
-                productVO.setName(row.getCell(1).getStringCellValue());
+                productVO.setName(row.getCell(1).getStringCellValue().trim());
 
                 // set price on the product record in db
                 Double price = Double.valueOf(row?.getCell(2)?.getNumericCellValue());
@@ -97,10 +95,26 @@ class ImportBatch {
                 Double cost = row.getCell(4) != null && row.getCell(4).getCellType() == CellType.NUMERIC ? Double.valueOf(row?.getCell(4)?.getNumericCellValue()) : null
                 productVO.cost = cost ?: 0 // if cost is null, set it to 0, otherwise take the value from above
 
+                // set the value of vendor
+                productVO.setVendor(row.getCell(5).getStringCellValue().trim());
+                productVO.setBagcolor(row.getCell(6).getStringCellValue().trim());
+
                 productVO.setProductnumber(Integer.valueOf(productHelper.generateProductNumber())); // we are doing a check here to make sure productnumber is unique
 
+                String producttype = row.getCell(7).getStringCellValue().trim().toUpperCase()
+
                 // todo: reference this in a constants class
-                Optional<ProductTypeVO> productTypeVO = productTypeRepo.findByName("INDOOR.UNIT");
+
+                boolean exists = productTypeRepo.existsByName(producttype);
+                if(!exists){
+                    productTypeRepo.save(new ProductTypeVO(
+                            name: producttype,
+                            description: producttype + " description",
+                            updateTimeStamp: LocalDateTime.now(),
+                            createTimeStamp: LocalDateTime.now()
+                    ))
+                }
+                Optional<ProductTypeVO> productTypeVO = productTypeRepo.findByName(producttype);
 
                 productVO.setCreateTimeStamp(LocalDateTime.now());
                 productVO.setUpdateTimeStamp(LocalDateTime.now());
@@ -138,6 +152,21 @@ class ImportBatch {
     }
 
 
+
+    // Method to check if a row contains any empty or null cells
+    private boolean isRowEmpty(Row row) {
+        for (Cell cell : row) {
+            if (cell == null || cell.getCellType() == CellType.BLANK) {
+                return true; // Cell is empty
+            }
+
+            // Check if the cell is a string and empty
+            if (cell.getCellType() == CellType.STRING && cell.getStringCellValue().trim().isEmpty()) {
+                return true; // Cell has an empty string
+            }
+        }
+        return false; // No empty cells found
+    }
 
 
 

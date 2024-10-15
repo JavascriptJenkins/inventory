@@ -51,6 +51,12 @@ class FileViewHelper {
         return dirandfilename;
     }
 
+    String buildFileNameForPrivateQrMediaDownload(String subdir, String filename){
+        filename = filename.replaceAll(",", "")
+        String dirandfilename = appConstants.PARENT_LEVEL_DIR+subdir+filename
+        return dirandfilename;
+    }
+
     MenuOptionVO sanitizeTransientsForAdhocLabelView(MenuOptionVO menuOptionVO){
         menuOptionVO.action = menuOptionVO.action.replace(",", "")
         menuOptionVO.filenametosend = menuOptionVO.filenametosend.replace(",", "")

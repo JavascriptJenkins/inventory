@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>Package</title>
@@ -383,7 +383,6 @@
                         <input type="hidden" th:field="*{total}" class="form-control" placeholder="total" aria-label="total" readonly>
                         <p class="form-control" th:text="${package.total}"></p>
                     </div>
-                    <input type="hidden" th:field="*{name}">
                     <input type="hidden" th:field="*{isprocessed}">
                     <input type="hidden" th:field="*{weight}">
                     <input type="hidden" th:field="*{packagebarcode}">
@@ -436,9 +435,9 @@
 <!--        <button style="margin-top: 5px;" type="submit" class="btn btn-dark-theme">Review Package</button>-->
     </form>
 
-    <a th:if="${package.crate == null ||package.crate.crateid == 0}" style="margin-top: 5px;" th:href="@{/crate?packageid=__${package.packageid}__&crateid=0}" class="btn-submit-dark">New Crate</a>
-    <a th:if="${package.crate == null ||package.crate.crateid == 0}" style="margin-top: 5px;" th:href="@{/crate/pendingcrates}" class="btn-submit-dark">Assign to Existing Crate</a>
-    <a th:if="${package.crate.crateid > 0 && deliveryid == null}" style="margin-top: 5px;" th:href="@{/crate?packageid=__${package.packageid}__&crateid=__${package.crate.crateid}__}" class="btn-submit-dark">Crate</a>
+    <a th:if="${package.crate == null }" style="margin-top: 5px;" th:href="@{/crate?packageid=__${package.packageid}__&crateid=0}" class="btn-submit-dark">New Crate</a>
+    <a th:if="${package.crate == null }" style="margin-top: 5px;" th:href="@{/crate/pendingcrates}" class="btn-submit-dark">Assign to Existing Crate</a>
+    <a th:if="${package.crate != null && deliveryid == null}" style="margin-top: 5px;" th:href="@{/crate?packageid=__${package.packageid}__&crateid=__${package.crate.crateid}__}" class="btn-submit-dark">Crate</a>
 </div>
 </body>
 </html>

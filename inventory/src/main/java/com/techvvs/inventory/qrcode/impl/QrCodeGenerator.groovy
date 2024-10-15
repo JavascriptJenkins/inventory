@@ -219,6 +219,105 @@ class QrCodeGenerator {
 
     }
 
+    void generateQrcodesForMediaAllItems(
+            String filenameExtension,
+            int batchnumber,
+            int pagenumber,
+            List<ProductVO> productlist,
+            String batchname,
+            PDDocument document
+
+
+    ) throws IOException {
+
+        System.out.println("Generating media qrcodes for " + filenameExtension + " | pagenumber: "+pagenumber);
+
+        PDPage page = new PDPage(PDRectangle.LETTER); // 8.5" x 11"
+        document.addPage(page);
+
+        PDPageContentStream contentStream = new PDPageContentStream(document, page)
+        // Define margins and layout parameters
+        float topMargin = (6.0f / 16.0f) * 72; // 6/16 inches to points
+        float bottomMargin = (1.0f / 16.0f) * 72; // 6/16 inches to points
+        float leftMargin = 0.25f * 72; // 0.25" in points
+        float rightMargin = 0.25f * 72; // 0.25" in points
+        float labelWidth = (PDRectangle.LETTER.getWidth() - leftMargin - rightMargin) / 5; // 5 barcodes per row
+        float labelHeight = (PDRectangle.LETTER.getHeight() - topMargin - bottomMargin) / 10; // 10 rows
+
+
+        // Example of using a TrueType font
+        PDType0Font ttfFont = PDType0Font.load(document, new File("./uploads/font/Oswald-VariableFont_wght.ttf"));
+
+        // write label and metadata info on top of each page
+        techvvsPdfWriterUtil.writeMetadataOnTopOfPage(contentStream, ttfFont, leftMargin, topMargin, pagenumber, batchnumber, batchname)
+
+
+        // Generate and draw UPC-A barcodes
+        for (int row = 0; row < 10; row++) {
+            for (int col = 0; col < 5; col++) {
+
+                // this will prevent duplicate barcodes
+                if(productlist.isEmpty()){
+                    break
+                }
+
+                ProductVO productVO = productlist.remove(0)
+
+                float x = leftMargin + col * labelWidth;
+                float y = PDRectangle.LETTER.getHeight() - topMargin - (row + 1) * labelHeight;
+
+
+                BufferedImage qrImage = null;
+
+                String qrcodeData = ""
+                boolean isdev1 = env.getProperty("spring.profiles.active").equals(appConstants.DEV_1)
+                String baseqrdomain = env.getProperty("base.qr.domain")
+                if(isdev1){
+                    qrcodeData = appConstants.QR_CODE_PUBLIC_INFO_LINK_DEV1+productVO.getProduct_id()
+                } else {
+                    // prod
+                    boolean ismediamode = env.getProperty("qr.mode.media").equals("true") // make the qr codes
+                    if(ismediamode) {
+                        // todo: route this to a media link
+                        // // Path path = Paths.get(appConstants.UPLOAD_DIR_MEDIA+appConstants.UPLOAD_DIR_PRODUCT+"/"+productVO.getProduct_id()+"/"+fileName);
+                        // we are binding productid,name,number - that way if the database gets blown out we can use other items if need be....
+                        qrcodeData = baseqrdomain+"/file/privateqrmediadownload?productid="+productVO.product_id+"&name="+productVO.name+"&number="+productVO.productnumber+"&batchnumber="+batchnumber+"&batchname="+batchname
+                    } else {
+                        qrcodeData = baseqrdomain+appConstants.QR_CODE_URI_EXTENSION+productVO.getProduct_id()
+                    }
+                }
+
+                qrImage = qrImageGenerator.generateQrImage(qrcodeData, limitStringTo20Chars(productVO.name));
+
+
+                // Convert BufferedImage to PDImageXObject
+                PDImageXObject pdImage = LosslessFactory.createFromImage(document, qrImage);
+
+                // Adjust the x position for the last column
+                if (col == 4) {
+                    x += 8
+                }
+
+                y = barcodeHelper.adjustRowXYMargin(row, y)
+
+                // Draw the image on the PDF
+                contentStream.drawImage(pdImage, x, y, labelWidth, labelHeight);
+
+                //write method here to add barcode data to product in database
+                // todo: add a qr link column to product in database
+
+                //productlist.remove(productVO)
+            }
+        }
+
+        // Close the content stream
+        contentStream.close();
+
+        // create a directory with the batchnumber and /barcodes dir if it doesn't exist yet
+        Files.createDirectories(Paths.get(appConstants.PARENT_LEVEL_DIR+batchnumber+appConstants.QR_MEDIA_DIR));
+
+    }
+
     public static String limitStringTo20Chars(String input) {
         if (input == null) {
             return null;

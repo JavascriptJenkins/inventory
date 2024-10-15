@@ -31,6 +31,7 @@ public interface ProductRepo extends JpaRepository<ProductVO, Integer> {
     Optional<ProductVO> findByBarcode(String barcode);
 
     boolean existsByProductnumber(int productnumber);
+    boolean existsByBarcode(String barcode);
 
     @Query(value = "SELECT SUM(p.quantityremaining) FROM product p " +
             "JOIN BATCH_PRODUCT_SET bps ON p.product_id = bps.PRODUCT_SET_PRODUCT_ID " +

@@ -129,6 +129,19 @@ class BatchControllerHelper {
         return true
     }
 
+    boolean generateAllMediaQrcodesForBatch(String batchnumber){
+        List<BatchVO> results = new ArrayList<BatchVO>();
+        if(batchnumber != null){
+            System.out.println("Searching data by batchnumber");
+            results = batchRepo.findAllByBatchnumber(Integer.valueOf(batchnumber));
+        }
+
+        qrCodeService.createAllQrMediaForBatch(results.get(0))
+
+        return true
+
+    }
+
     boolean generateAllQrcodesForBatch(String batchnumber){
 
         List<BatchVO> results = new ArrayList<BatchVO>();

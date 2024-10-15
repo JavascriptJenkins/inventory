@@ -279,6 +279,12 @@
 			<version>2.0.26</version>
 		</dependency>
 
+		<dependency>
+			<groupId>com.itextpdf</groupId>
+			<artifactId>itextpdf</artifactId>
+			<version>5.5.13.2</version>
+		</dependency>
+
 
 
 
@@ -347,8 +353,8 @@
 							<!-- Possible replacementType values: file-contents, filenames, directory-names. To run for multiple types, pass the values as a CSV list. -->
 							<replacementType>file-contents</replacementType>
 							<baseDir>src/</baseDir>
-							<findRegex>https://inventory.techvvs.io</findRegex>
-							<replaceValue>http://localhost:8080</replaceValue>
+							<findRegex>https://alpha.techvvs.io</findRegex>
+							<replaceValue>https://alpha.techvvs.io</replaceValue>
 							<recursive>true</recursive>
 						</configuration>
 					</execution>
@@ -374,8 +380,8 @@
 <!--					</includes>-->
 <!--					<replacements>-->
 <!--						<replacement>-->
-<!--							<token>@https://inventory.techvvs.io@</token>-->
-<!--							<value>https://inventory.techvvs.io</value>-->
+<!--							<token>@https://alpha.techvvs.io@</token>-->
+<!--							<value>https://alpha.techvvs.io</value>-->
 <!--						</replacement>-->
 <!--					</replacements>-->
 <!--				</configuration>-->

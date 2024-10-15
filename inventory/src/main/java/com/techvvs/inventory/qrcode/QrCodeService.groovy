@@ -80,6 +80,32 @@ class QrCodeService {
 
     }
 
+    void createAllQrMediaForBatch(BatchVO batchVO) {
+
+        // NOTE: right now this is going to generate barcodes for every product in batch regardless of product type
+        try {
+
+            List<List<ProductVO>> result = productHelper.sortAndExpandProductSet(batchVO.product_set)
+
+            // pass in pdf doc
+            PDDocument document = new PDDocument()
+            for(int i = 0; i < result.size(); i++) {
+                qrCodeGenerator.generateQrcodesForMediaAllItems(batchVO.name, batchVO.batchnumber, i, result.get(i), batchVO.name, document);
+            }
+
+            // close the pdf doc
+            String filename = batchVO.name+"-"+batchVO.batchnumber
+
+            // save the actual file of the sheets of qrs for media
+            document.save(appConstants.PARENT_LEVEL_DIR+batchVO.batchnumber+appConstants.QR_MEDIA_DIR+appConstants.filenameprefix_qr_media+filename+".pdf");
+            document.close();
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
     public static List<ProductVO> convertSetToList(Set<ProductVO> productSet) {
         return new ArrayList<>(productSet);
     }

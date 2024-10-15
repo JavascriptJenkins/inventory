@@ -39,6 +39,8 @@ class ProductVO implements Serializable, Comparable<ProductVO> {
     @JsonProperty
     Integer quantity; // this is the original quantity in the batch
     @JsonProperty
+    Integer vendorquantity; // quantity claimed by vendor
+    @JsonProperty
     Integer quantityremaining;
     @JsonProperty
     String notes
@@ -46,6 +48,12 @@ class ProductVO implements Serializable, Comparable<ProductVO> {
     String name;
     @JsonProperty
     String description;
+    @JsonProperty
+    String vendor;
+    @JsonProperty
+    String bagcolor;
+    @JsonProperty
+    String crate;
     @JsonProperty
     String barcode;
     @JsonProperty

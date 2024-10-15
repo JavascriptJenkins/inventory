@@ -114,6 +114,9 @@ class CrateHelper {
 
     // todo: should do a check on here to see if crate name already exists?
     CrateVO validateCrateReviewVO(CrateVO crateVO, Model model){
+        System.out.println("CRATE NAME: "+crateVO.name)
+        crateVO.name = crateVO.name.replaceAll(",","")// for some reason need to clear commas
+        System.out.println("CRATE NAME2: "+crateVO.name)
         if(crateVO?.name == null || crateVO?.name == "" || crateVO.name.trim().length() < 3){
             model.addAttribute("errorMessage","Please enter a crate name greater than 3 characters. ")
         }

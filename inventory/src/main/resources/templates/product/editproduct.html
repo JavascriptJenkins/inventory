@@ -323,7 +323,7 @@
     <div style="margin-bottom: 5px;" class="mx-auto">
         <div class="alert alert-info" role="alert">Upload a file</div>
         <!-- pass the product object to the upload file controller to get the correct ID to save it under -->
-        <form method="post" th:object="${product}" th:action="@{/file/upload}" enctype="multipart/form-data">
+        <form method="post" th:object="${product}" th:action="@{/file/media/upload}" enctype="multipart/form-data">
             <div class="form-group">
                 <div th:if="${disableupload}">
                     <input type="file" disabled="disabled" name="file" class="form-control-file">
@@ -336,6 +336,7 @@
                 <!-- pass all these hidden attributes so the data stays on page after uploading the file -->
                 <input type="hidden" th:field="*{productnumber}">
                 <input type="hidden" th:field="*{name}">
+                <input type="hidden" th:field="*{product_id}">
                 <input type="hidden" th:field="*{description}">
                 <input type="hidden" th:field="*{quantity}">
                 <input type="hidden" th:field="*{price}">

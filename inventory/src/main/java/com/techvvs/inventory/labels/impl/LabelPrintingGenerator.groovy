@@ -13,6 +13,11 @@ import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import com.itextpdf.text.*
+import com.itextpdf.text.pdf.*
+import com.itextpdf.text.Image
+
+
 
 import java.awt.image.BufferedImage
 import java.time.LocalDateTime
@@ -300,6 +305,86 @@ class LabelPrintingGenerator {
         document.save(new File(STATIC_LABEL_BATCH_DIR+filename+".pdf"));
 
     }
+
+
+
+    def createLabelPDF(String text, PDImageXObject image1, PDImageXObject image2, String outputFilePath) {
+        // 2-1/8" by 4" label, converted to points (72 points = 1 inch)
+        def labelWidth = 2.125 * 72  // 153 points
+        def labelHeight = 4 * 72     // 288 points
+        def sectionWidth = labelWidth / 3  // Each section gets 1/3 of the width
+
+        // Create a new PDF document with specified size
+        Document document = new Document(new Rectangle(labelWidth, labelHeight))
+        PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(outputFilePath))
+        document.open()
+
+        // Add the first image (left 1/3)
+        Image img1 = Image.getInstance(image1.getImageBytes())
+        img1.scaleToFit((float) sectionWidth, (float) labelHeight)  // Scale to fit within the 1/3 section
+        img1.setAbsolutePosition(0f, 0f)  // Left-most section
+        document.add(img1)
+
+        // Add the second image (right 1/3)
+        Image img2 = Image.getInstance(image2.getImageBytes())
+        img2.scaleToFit((float) sectionWidth, (float) labelHeight)  // Scale to fit within the 1/3 section
+        img2.setAbsolutePosition((float) (2 * sectionWidth), 0f)  // Right-most section
+        document.add(img2)
+
+        // Add the text in the middle 1/3 section
+        BaseFont baseFont = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.WINANSI, BaseFont.EMBEDDED)
+        float fontSize = 72 // Start with a large font size and decrease until it fits
+        boolean textFits = false
+
+        while (!textFits && fontSize > 1) {
+            Font font = new Font(baseFont, fontSize)
+            Paragraph paragraph = new Paragraph(text, font)
+
+            // Measure the width of the text
+            PdfContentByte cb = writer.getDirectContent()
+            float textWidth = baseFont.getWidthPoint(text, fontSize)
+
+            // Check if the text fits within the middle 1/3 section width
+            if (textWidth <= sectionWidth - 10) { // 10 points margin
+                textFits = true
+            } else {
+                fontSize -= 1 // Decrease font size and try again
+            }
+        }
+
+        // Create the text paragraph with the final font size and center it vertically
+        Font finalFont = new Font(baseFont, fontSize)
+        Paragraph finalParagraph = new Paragraph(text, finalFont)
+        finalParagraph.setAlignment(Element.ALIGN_CENTER)
+
+        // Set the text's absolute position in the middle 1/3 section
+        float textXPosition = (float) sectionWidth  // Start at the 1/3 mark
+        float textYPosition = (labelHeight - fontSize) / 2  // Vertically center
+        PdfContentByte cb = writer.getDirectContent()
+        cb.beginText()
+        cb.setFontAndSize(baseFont, fontSize)
+        cb.showTextAligned(Element.ALIGN_CENTER, text, (float) (textXPosition + sectionWidth / 2), textYPosition, 0f)
+        cb.endText()
+
+        // Close the document
+        document.close()
+
+        println "Label PDF created at: $outputFilePath"
+    }
+
+// Mock implementation of PDImageXObject to simulate its behavior
+    class PDImageXObject {
+        byte[] imageBytes
+
+        PDImageXObject(String imagePath) {
+            imageBytes = new File(imagePath).bytes
+        }
+
+        byte[] getImageBytes() {
+            return imageBytes
+        }
+    }
+
 
 
 

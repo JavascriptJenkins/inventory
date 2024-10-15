@@ -23,6 +23,11 @@ class LabelPrintingService {
     AppConstants appConstants
 
 
+    void createDyno450TurboLabel(String labeltext){
+        String outputpath = "";
+        labelPrintingGenerator.createLabelPDF(labeltext, outputpath)
+    }
+
     void printAdhocLabelSheet(MenuVO menuVO) {
 
         // NOTE: right now this is going to generate barcodes for every product in batch regardless of product type
@@ -80,6 +85,22 @@ class LabelPrintingService {
         String filename = entityname+"-"+entitynumber
         // save the actual file after looping thru all products
         document.save(appConstants.PARENT_LEVEL_DIR+appConstants.LABEL_DIR+entitynumber+entitysubdirectory+appConstants.filenameprefix_adhoc_label+filename+".pdf");
+        document.close();
+    }
+
+    void saveQrMediaLabelPdfFile(PDDocument document, String entitysubdirectory, String entityname, int entitynumber) {
+
+
+        entityname = chopRightPaddedString(entityname)
+        entityname = entityname.replace(" ", "_")
+        entityname = entityname.replace("|", "_")
+
+        // create a directory with the batchnumber and /barcodes dir if it doesn't exist yet
+        Files.createDirectories(Paths.get(appConstants.PARENT_LEVEL_DIR+appConstants.LABEL_DIR+String.valueOf(entitynumber)+entitysubdirectory));
+
+        String filename = entityname+"-"+entitynumber
+        // save the actual file after looping thru all products
+        document.save(appConstants.PARENT_LEVEL_DIR+appConstants.LABEL_DIR+entitynumber+entitysubdirectory+appConstants.filenameprefix_qr_media+filename+".pdf");
         document.close();
     }
 

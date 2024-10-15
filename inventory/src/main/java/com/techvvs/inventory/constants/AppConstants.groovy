@@ -8,6 +8,9 @@ class AppConstants {
     /* dir structure is /topdir/$batchnumber/$otherdirs */
 
 
+    public String UPLOAD_DIR_MEDIA = "./uploads/media/";
+    public String UPLOAD_DIR_PRODUCT = "/product/";
+
     // todo: depricate this upload dir?
     String UPLOAD_DIR = "./uploads/";
 
@@ -20,6 +23,7 @@ class AppConstants {
     String LABEL_DIR = "/label/"
     public String DELIVERY_DIR = "/delivery/"
     String QR_ALL_DIR = "/qrcodes/all/"
+    public String QR_MEDIA_DIR = "/qrcodes/media/"
     public String BARCODES_ALL_DIR = "/barcodes/all/"
     String ADHOC_DIR = "/adhoc/"
     String BATCH_PRICE_SHEETS_DIR = "/pricesheets/"
@@ -28,6 +32,7 @@ class AppConstants {
     String BARCODES_TRANSFER_DIR = "/adhoc/transfers/"
     String filenameprefix = "upca_"
     String filenameprefix_qr = "qr_"
+    public String filenameprefix_qr_media = "qr_media_"
     String filenameprefix_adhoc_label = "adhoc_label_"
 
 
@@ -37,7 +42,7 @@ class AppConstants {
 String EMAIL_INVOICE = "email"
 String VIEW_INVOICE = "view"
 
-    String QR_CODE_PUBLIC_INFO_LINK_PROD = "http://northstar1.techvvs.io/qr/publicinfo?productid="
+    String QR_CODE_PUBLIC_INFO_LINK_PROD = "http://alpha.techvvs.io/qr/publicinfo?productid="
     String QR_CODE_PUBLIC_INFO_LINK_DEV1 = "http://localhost:8080/qr/publicinfo?productid="
     String QR_CODE_URI_EXTENSION = "/qr/publicinfo?productid="
     String QR_CODE_URI_LEAFYLY = "https://www.leafly.com/search?q="

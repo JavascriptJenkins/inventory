@@ -52,6 +52,9 @@ class PackageHelper {
 
 
     PackageVO validatePackageReviewVO(PackageVO packageVO, Model model){
+        System.out.println("NAME: "+packageVO.name)
+        packageVO.name = packageVO.name.replaceAll(",","")// for some reason need to clear commas
+        System.out.println("NAME2: "+packageVO.name)
         if(packageVO?.packagetype?.packagetypeid == null){
             model.addAttribute("errorMessage","Please select a package type")
         }

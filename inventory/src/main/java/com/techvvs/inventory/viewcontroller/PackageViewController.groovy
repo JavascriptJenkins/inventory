@@ -80,7 +80,7 @@ public class PackageViewController {
         packageHelper.getAllPackageTypes(model)
         techvvsAuthService.checkuserauth(model)
         deliveryid.ifPresent { model.addAttribute("deliveryid", deliveryid.get()) }
-        return "package/package.html";
+        return "package/package23.html";
     }
 
     //get the pending carts
@@ -143,7 +143,7 @@ public class PackageViewController {
         packageHelper.getAllPackageTypes(model)
         deliveryid.ifPresent { model.addAttribute("deliveryid", deliveryid.get()) }
 
-        return "package/package.html";
+        return "package/package23.html";
     }
 
     @PostMapping("/delete")
@@ -172,7 +172,7 @@ public class PackageViewController {
         packageHelper.getAllPackageTypes(model)
         deliveryid.ifPresent { model.addAttribute("deliveryid", deliveryid.get()) }
 
-        return "package/package.html";
+        return "package/package23.html";
     }
 
 

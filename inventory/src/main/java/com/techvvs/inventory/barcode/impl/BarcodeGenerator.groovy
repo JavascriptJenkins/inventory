@@ -226,6 +226,15 @@ class BarcodeGenerator {
                     barcodeData = barcodeHelper.generateBarcodeData(row, col, entitynumber, pagenumber)
                 }
 
+                // protect a
+//                while (productRepo.existsByBarcode(barcodeData)) {
+//                    System.out.println("Generated duplicate barcode.  This should never happen.....")
+//                    barcodeData = barcodeHelper.generateBarcodeData(row, col, entitynumber, pagenumber)
+//                }
+                // Add the barcode data to the product in the database
+                addBarcodeToProduct(productVO, barcodeData)
+
+
                 // Generate the barcode image
                 BufferedImage barcodeImage = imageGenerator.generateUPCABarcodeImage(barcodeData, labelWidth, labelHeight, col)
 
@@ -241,9 +250,6 @@ class BarcodeGenerator {
 
                 // Draw the barcode image on the PDF
                 contentStream.drawImage(pdImage, x, y, labelWidth, labelHeight)
-
-                // Add the barcode data to the product in the database
-                addBarcodeToProduct(productVO, barcodeData)
 
                 // Update the product in scope and reset the skip flag
                 productInScope = productVO

@@ -182,9 +182,12 @@ public class ProductViewController {
     @GetMapping("/editform")
     String viewEditForm(
                     Model model,
-                    
+
                     @RequestParam("editmode") String editmode,
-                    @RequestParam("productnumber") String productnumber){
+                    @RequestParam("productnumber") String productnumber,
+                    @RequestParam("successMessage") Optional<String> successMessage
+
+    ){
 
 
 
@@ -203,6 +206,9 @@ public class ProductViewController {
             model.addAttribute("filelist", null);
         }
 
+        if(successMessage.isPresent()){
+            model.addAttribute("successMessage", successMessage.get());
+        }
         techvvsAuthService.checkuserauth(model)
         model.addAttribute("product", results.get(0));
         model.addAttribute("editmode", editmode);
