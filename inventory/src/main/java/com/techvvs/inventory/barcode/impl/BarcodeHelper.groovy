@@ -52,14 +52,11 @@ class BarcodeHelper {
 //    }
 
     static String generateBarcodeData(int row, int col, int batchnumber, int pagenumber) {
+
+        int length = pagenumber.toString().length()
+
         // Create base data from batchnumber and pagenumber, ensuring it's exactly 6 characters
-        if(pagenumber > 9){
-            pagenumber = 9
-        }
-        String baseData = removeLast2Character(String.valueOf(batchnumber)) + String.valueOf(pagenumber);
-
-        baseData = replaceDigitsWithRandom(baseData)
-
+        String baseData = removeLast2Character(String.valueOf(batchnumber),String.valueOf(pagenumber),length);
 
         // Ensure the baseData is exactly 6 characters long
         baseData = baseData.length() > 6 ? baseData.substring(0, 6) : baseData.padLeft(6, '0');
@@ -97,11 +94,15 @@ class BarcodeHelper {
     }
 
 
-    static String removeLast2Character(String str) {
-        if (str == null || str.isEmpty()) {
-            return str; // Return the original string if it's null or empty.
+    static String removeLast2Character(String batchnum, String pagenumber, int length) {
+        if (batchnum == null || batchnum.isEmpty()) {
+            return batchnum; // Return the original string if it's null or empty.
         }
-        return str.substring(0, str.length() - 2); // Use substring to remove the last character.
+
+        // substring the batchnum
+        batchnum = batchnum.substring(0, batchnum.length() - length)
+
+        return batchnum+pagenumber; // combine the 2 numbers
     }
 
     static String replaceDigitsWithRandom(String sixDigitString) {
