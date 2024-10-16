@@ -58,8 +58,14 @@ class BarcodeHelper {
         // Create base data from batchnumber and pagenumber, ensuring it's exactly 6 characters
         String baseData = removeLast2Character(String.valueOf(batchnumber),String.valueOf(pagenumber),length);
 
-        // Ensure the baseData is exactly 6 characters long
-        baseData = baseData.length() > 6 ? baseData.substring(0, 6) : baseData.padLeft(6, '0');
+//        // Ensure the baseData is exactly 6 characters long
+//        baseData = baseData.length() > 6 ? baseData.substring(0, 6) : baseData.padLeft(6, '0');
+
+        // If baseData is longer than 6, take the rightmost 6 characters. Otherwise, pad with random digits.
+        baseData = baseData.length() > 6 ?
+                baseData.substring(baseData.length() - 6) :
+                generateRandomPadding(6 - baseData.length()) + baseData
+
 
         // Create row and column data, ensuring it's exactly 4 characters
         String rowColData = String.format("%02d%02d", row, col); // Row and column indices padded with leading zeros
@@ -77,6 +83,12 @@ class BarcodeHelper {
         return barcodeData;
     }
 
+    Random random = new Random()
+
+    // Generate a random number string for padding
+    def generateRandomPadding(int length) {
+        (1..length).collect { random.nextInt(10) }.join() // Generates random digits as string
+    }
 
     // Method to calculate the checksum for UPC-A barcode data
     static int calculateUPCAChecksum(String data) {
@@ -105,20 +117,15 @@ class BarcodeHelper {
         return batchnum+pagenumber; // combine the 2 numbers
     }
 
-    static String replaceDigitsWithRandom(String sixDigitString) {
-        // Ensure the input is a valid 6-digit string
-        if (sixDigitString.length() != 6) {
-            System.out.println("ERROR STRING: "+sixDigitString)
-            throw new IllegalArgumentException("Input must be a 6-digit string")
-        }
+    static String replaceDigitsWithRandom(String numberstring) {
 
         Random random = new Random()
 
         // Convert the string to an integer (though not strictly necessary)
-        int originalNumber = sixDigitString.toInteger()
+        int originalNumber = numberstring.toInteger()
 
         // Create a new number by replacing each digit with a random digit
-        def randomDigits = sixDigitString.collect {
+        def randomDigits = numberstring.collect {
             random.nextInt(10) // Generate a random digit (0 to 9)
         }.join()
 

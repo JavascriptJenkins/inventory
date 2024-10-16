@@ -219,6 +219,7 @@ class BarcodeGenerator {
 
                 String barcodeData
                 if (skip) {
+                  //  System.out.println("Skipping: "+productInScope.product_id)
                     // Use the existing barcode for duplicate products
                     barcodeData = productInScope.barcode
                 } else {
@@ -226,14 +227,8 @@ class BarcodeGenerator {
                     barcodeData = barcodeHelper.generateBarcodeData(row, col, entitynumber, pagenumber)
                 }
 
-                // protect a
-//                while (productRepo.existsByBarcode(barcodeData)) {
-//                    System.out.println("Generated duplicate barcode.  This should never happen.....")
-//                    barcodeData = barcodeHelper.generateBarcodeData(row, col, entitynumber, pagenumber)
-//                }
                 // Add the barcode data to the product in the database
                 addBarcodeToProduct(productVO, barcodeData)
-
 
                 // Generate the barcode image
                 BufferedImage barcodeImage = imageGenerator.generateUPCABarcodeImage(barcodeData, labelWidth, labelHeight, col)
