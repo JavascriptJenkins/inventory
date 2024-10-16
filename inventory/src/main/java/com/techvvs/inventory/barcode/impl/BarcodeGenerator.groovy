@@ -330,6 +330,12 @@ class BarcodeGenerator {
         if(existingproduct.get().barcode != null && existingproduct.get().barcode.length() > 0){
             // do nothing
         } else {
+
+            // probably don't need to do this....
+            if(barcodedata.length() == 11){
+                barcodedata = barcodedata.padLeft(12,'0')
+            }
+
             productVO.setBarcode(barcodedata)
             productRepo.save(productVO)
         }
