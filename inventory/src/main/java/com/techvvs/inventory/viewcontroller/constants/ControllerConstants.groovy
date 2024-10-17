@@ -29,7 +29,8 @@ class ControllerConstants {
                                     appConstants.BATCH_PRICE_SHEETS_DIR,
                                     appConstants.QR_ALL_DIR,
                                     appConstants.QR_MEDIA_DIR,
-                                    appConstants.BARCODES_MANIFEST_DIR
+                                    appConstants.BARCODES_MANIFEST_DIR,
+                                    appConstants.BARCODES_EPSON_64_DIR
         ]
     }
 

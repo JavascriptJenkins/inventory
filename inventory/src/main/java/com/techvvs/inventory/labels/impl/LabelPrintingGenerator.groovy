@@ -6,6 +6,7 @@ import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.model.BatchVO
 import com.techvvs.inventory.model.MenuVO
 import com.techvvs.inventory.model.ProductVO
+import com.techvvs.inventory.qrcode.impl.QrImageGenerator
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.PDPage
 import org.apache.pdfbox.pdmodel.PDPageContentStream
@@ -14,6 +15,7 @@ import org.apache.pdfbox.pdmodel.font.PDType0Font
 import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
 //import com.itextpdf.text.*
 //import com.itextpdf.text.pdf.*
@@ -22,6 +24,7 @@ import org.springframework.stereotype.Component
 
 
 import java.awt.image.BufferedImage
+import java.nio.Buffer
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -37,6 +40,12 @@ class LabelPrintingGenerator {
 
     @Autowired
     ImageGenerator imageGenerator
+
+    @Autowired
+    Environment env
+
+    @Autowired
+    QrImageGenerator qrImageGenerator
 
     String STATIC_LABEL_BATCH_DIR = "./uploads/staticlabels/"
 
@@ -87,10 +96,12 @@ class LabelPrintingGenerator {
     }
 
 
-    void generateEpson4by6point5Label(int entitynumber,
-                                      int pagenumber,
-                                      BatchVO batchVO,
-                                      PDDocument document
+    void generateEpson4by6point5Label(
+            int entitynumber,
+            int pagenumber,
+            BatchVO batchVO,
+            ProductVO productVO,
+            PDDocument document
     ){
 
         // create a pdf sheet
@@ -104,57 +115,116 @@ class LabelPrintingGenerator {
         float leftMargin = 0.25f * 72; // 0.25" in points
         float rightMargin = 0.25f * 72; // 0.25" in points
 
+        // dont need to print a header on the label (only product info)
 
-        // print epson 4x6.5 labels
-        generateEpson6by4point5Page(document,contentStream, page)
+
+
+        generateEpson6by4Point5Page(productVO,document,contentStream, page)
+
 
 
     }
 
-    void generateEpson6by4point5Page(PDDocument document,
-                                     PDPageContentStream contentStream,
-                                     PDPage page
-    ) {
+    void generateEpson6by4Point5Page(
+            ProductVO product,
+            PDDocument document,
+            PDPageContentStream contentStream,
+            PDPage page
+    ) throws IOException {
 
-        // Margins and spacing
-        float margin = 50
-        float barcodeHeight = 72  // 1 inch in points
-        float barcodeWidth = 108  // 1.5 inches in points
-        float nameFontSize = 12
-        float lineSpacing = 5  // Extra space between barcode and name
+        // Set margins and spacing for the label
+        float margin = 20f;
+        float barcodeHeight = 72f;
+        float barcodeWidth = 96f;
+        float qrCodeSize = 72f; // 1 inch square QR code
+        float nameFontSize = 10f;
+        float lineSpacing = 3f;
 
-        // Start coordinates for the left and right columns
-        float leftColumnX = margin
-        float rightColumnX = page.getMediaBox().getWidth() / 2 + margin / 2
-        float startY = page.getMediaBox().getHeight() - margin
+        // Get label dimensions
+        float pageWidth = 4 * 72;  // 4 inches in points
+        float pageHeight = 6.5f * 72;  // 6.5 inches in points
 
-        // Example of using a TrueType font
+        // Start coordinates for layout
+        float startX = margin;
+        float startY = pageHeight - margin;
+
+        // Load the TrueType font
         PDType0Font ttfFont = PDType0Font.load(document, new File("./uploads/font/Oswald-VariableFont_wght.ttf"));
-        contentStream.setFont(ttfFont, nameFontSize)
+        contentStream.setFont(ttfFont, nameFontSize);
 
-        // Draw 5 labels on the left and 5 on the right side
-        for (int i = 0; i < productList.size(); i++) {
-            ProductVO product = productList.get(i)
-            float x = (i < 5) ? leftColumnX : rightColumnX
-            float y = startY - (i % 5) * (barcodeHeight + nameFontSize + lineSpacing + margin)
+        // Generate barcode image
+        BufferedImage barcodeImage = imageGenerator.generateUPCABarcodeImage(product.barcode);
+        PDImageXObject barcodePdImage = LosslessFactory.createFromImage(document, barcodeImage);
 
+        // Generate QR code image
+        PDImageXObject qrPdImage = generateQrImageforEpson(product, document);
 
-            // Generate the barcode image
-            BufferedImage barcodeImage = imageGenerator.generateUPCABarcodeImage(product.barcode)
-            // Convert BufferedImage to PDImageXObject
-            org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject pdImage = LosslessFactory.createFromImage(document, barcodeImage)
-            // Draw barcode image
-            contentStream.drawImage(pdImage, x, y - barcodeHeight as float, barcodeWidth, barcodeHeight)
-            // Draw product name below the barcode, truncate to 20 chars
-            String productName = product.name.take(20)
-            contentStream.beginText()
-            contentStream.newLineAtOffset(x, y - barcodeHeight - nameFontSize - lineSpacing as float)
-            contentStream.showText(productName)
-            contentStream.endText()
+        // Calculate y-coordinate for barcode
+        float barcodeY = startY - barcodeHeight - margin;
+
+        // Draw barcode on the page
+        contentStream.drawImage(barcodePdImage, startX, barcodeY, barcodeWidth, barcodeHeight);
+
+        // Draw QR code next to the barcode (to the right)
+        float qrX = startX + barcodeWidth + margin;  // Place QR code after the barcode with margin
+        float qrY = barcodeY;  // Align QR code with the barcode’s bottom
+        contentStream.drawImage(qrPdImage, qrX, qrY, qrCodeSize, qrCodeSize);
+
+        // Wrap product name if necessary
+        List<String> wrappedText = wrapText(product.name, 25);
+
+        // Draw each line of the wrapped product name below the barcode
+        float textY = barcodeY - nameFontSize - lineSpacing;
+        contentStream.beginText();
+        for (String line : wrappedText) {
+            contentStream.newLineAtOffset(startX, textY);
+            contentStream.showText(line);
+            textY -= (nameFontSize + lineSpacing);  // Adjust for next line
         }
-        contentStream.close()
+        contentStream.endText();
 
+        contentStream.close();
     }
+
+// Helper function to wrap text by character limit
+    private List<String> wrapText(String text, int maxLineLength) {
+        List<String> lines = new ArrayList<>();
+        int index = 0;
+        while (index < text.length()) {
+            int end = Math.min(index + maxLineLength, text.length());
+            lines.add(text.substring(index, end));
+            index = end;
+        }
+        return lines;
+    }
+
+// Generate QR code image for the product
+    PDImageXObject generateQrImageforEpson(ProductVO productVO, PDDocument document) throws IOException {
+        String qrcodeData = "";
+        boolean isDev1 = env.getProperty("spring.profiles.active").equals(appConstants.DEV_1);
+        String baseQrDomain = env.getProperty("base.qr.domain");
+
+        if (isDev1) {
+            qrcodeData = appConstants.QR_CODE_PUBLIC_INFO_LINK_DEV1+productVO.getProduct_id();
+        } else {
+            boolean isMediaMode = env.getProperty("qr.mode.media").equals("true");
+            if (isMediaMode) {
+                qrcodeData = baseQrDomain + "/file/privateqrmediadownload?productid="+productVO.getProduct_id()+"&name="+productVO.name+"&number="+productVO.productnumber;
+            } else {
+                qrcodeData = baseQrDomain+appConstants.QR_CODE_URI_EXTENSION+productVO.getProduct_id();
+            }
+        }
+
+        // Generate the QR code image with a 25-character limit on the product name
+        BufferedImage qrImage = qrImageGenerator.generateQrImage(qrcodeData, limitStringTo25Chars(productVO.name));
+        return LosslessFactory.createFromImage(document, qrImage);
+    }
+
+// Helper function to limit a string to 25 characters
+    private String limitStringTo25Chars(String text) {
+        return text.length() > 25 ? text.substring(0, 25) : text;
+    }
+
 
 
 
@@ -536,17 +606,17 @@ class LabelPrintingGenerator {
 //    }
 
 // Mock implementation of PDImageXObject to simulate its behavior
-    class PDImageXObject {
-        byte[] imageBytes
-
-        PDImageXObject(String imagePath) {
-            imageBytes = new File(imagePath).bytes
-        }
-
-        byte[] getImageBytes() {
-            return imageBytes
-        }
-    }
+//    class PDImageXObject {
+//        byte[] imageBytes
+//
+//        PDImageXObject(String imagePath) {
+//            imageBytes = new File(imagePath).bytes
+//        }
+//
+//        byte[] getImageBytes() {
+//            return imageBytes
+//        }
+//    }
 
 
 

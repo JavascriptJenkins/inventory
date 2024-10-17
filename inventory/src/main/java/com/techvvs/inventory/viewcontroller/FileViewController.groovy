@@ -1,6 +1,7 @@
 package com.techvvs.inventory.viewcontroller
 
 import com.techvvs.inventory.constants.AppConstants
+import com.techvvs.inventory.labels.service.LabelPrintingService
 import com.techvvs.inventory.model.BatchVO
 import com.techvvs.inventory.model.MenuVO
 import com.techvvs.inventory.modelnonpersist.FileVO
@@ -47,6 +48,9 @@ public class FileViewController {
     
     @Autowired
     TechvvsAuthService techvvsAuthService
+
+    @Autowired
+    LabelPrintingService labelPrintingService
 
 
 
@@ -111,6 +115,30 @@ public class FileViewController {
 
         return "files/batchfiles.html";
     }
+
+    @PostMapping("/printepsonlabels")
+    String printepsonlabels(
+            @RequestParam( "batchid" ) String batchid,
+            Model model,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size
+    ){
+
+
+        batchid = batchid == null ? "0" : String.valueOf(batchid)
+        BatchVO batchVO = batchControllerHelper.loadBatch(batchid, model)
+
+        labelPrintingService.createEpsonC6000AuLabel4by6point5(batchVO)
+
+        Page<FileVO> filePage = filePagingService.getFilePage(batchVO, page.get(), size.get(), appConstants.BARCODES_EPSON_64_DIR)
+        filePagingService.bindPageAttributesToModel(model, filePage, page, size);
+        model.addAttribute(controllerConstants.MENU_OPTIONS_DIRECTORIES, controllerConstants.DIRECTORIES_FOR_BATCH_UI);
+        techvvsAuthService.checkuserauth(model)
+        model.addAttribute("menuoption", new MenuOptionVO(selected: appConstants.BARCODES_EPSON_64_DIR));
+
+        return "files/batchfiles.html";
+    }
+
 
 
 

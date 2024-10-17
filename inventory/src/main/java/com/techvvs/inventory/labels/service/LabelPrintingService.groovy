@@ -34,23 +34,34 @@ class LabelPrintingService {
         labelPrintingGenerator.createLabelPDF(labeltext, outputpath)
     }
 
-    void createEpsonC6000AuLabel4by6point5(String labeltext){
+    void createEpsonC6000AuLabel4by6point5(BatchVO batchVO){
 
-        // 4" x 6.5"
-        String outputpath = "";
+        // nee
+      //  List<List<ProductVO>> result = productHelper.convertProductSetIntoListofLists(batchVO.product_set)
 
+
+        // gonna feed in lists of 10 products at a time cuz that seems to work best
         try{
             PDDocument document = new PDDocument()
-            // cycle thru items here
+            int pagenumber = 0;
+            // create a single epson for each product (print multiple times if needed....)
+            for(ProductVO product : batchVO.product_set){
 
+                labelPrintingGenerator.generateEpson4by6point5Label(
+                        batchVO.batchid,
+                        pagenumber,
+                        batchVO,
+                        product,
+                        document)
+                pagenumber++
+            }
 
-            saveBarcodeManifestPdfFile(document, appConstants.BARCODES_MANIFEST_DIR, batchVO.name,batchVO.batchnumber)
+            saveBarcodeEpson4by6point5LabelsPdfFile(document, appConstants.BARCODES_EPSON_64_DIR, batchVO.name,batchVO.batchnumber)
 
         } catch(Exception ex){
             System.out.println("Generate epson failed: "+ex.getMessage().toString())
 
         }
-        labelPrintingGenerator.generateEpson4by6point5Label(labeltext, outputpath)
     }
 
 
@@ -126,25 +137,37 @@ class LabelPrintingService {
     }
 
 
-    void saveBarcodeManifestPdfFile(PDDocument document,
+    void saveBarcodeEpson4by6point5LabelsPdfFile(PDDocument document,
                                     String entitysubdirectory,
                                     String entityname,
                                     int entitynumber) {
-
-        System.out.println("saveBarcodeManifestPdfFile: "+"1")
 
         entityname = chopRightPaddedString(entityname)
         entityname = entityname.replace(" ", "_")
         entityname = entityname.replace("|", "_")
 
-        System.out.println("saveBarcodeManifestPdfFile: "+"2")
         // create a directory with the batchnumber and /barcodes dir if it doesn't exist yet
         Files.createDirectories(Paths.get(appConstants.PARENT_LEVEL_DIR+String.valueOf(entitynumber)+entitysubdirectory));
-        System.out.println("saveBarcodeManifestPdfFile: "+"3")
+        String filename = entityname+"-"+entitynumber
+        // save the actual file after looping thru all products
+        document.save(appConstants.PARENT_LEVEL_DIR+String.valueOf(entitynumber)+entitysubdirectory+appConstants.filenameprefix_epson46+filename+".pdf")
+        document.close();
+    }
+
+    void saveBarcodeManifestPdfFile(PDDocument document,
+                                    String entitysubdirectory,
+                                    String entityname,
+                                    int entitynumber) {
+
+        entityname = chopRightPaddedString(entityname)
+        entityname = entityname.replace(" ", "_")
+        entityname = entityname.replace("|", "_")
+
+        // create a directory with the batchnumber and /barcodes dir if it doesn't exist yet
+        Files.createDirectories(Paths.get(appConstants.PARENT_LEVEL_DIR+String.valueOf(entitynumber)+entitysubdirectory));
         String filename = entityname+"-"+entitynumber
         // save the actual file after looping thru all products
         document.save(appConstants.PARENT_LEVEL_DIR+String.valueOf(entitynumber)+entitysubdirectory+appConstants.filenameprefix_manifest+filename+".pdf")
-        System.out.println("saveBarcodeManifestPdfFile: "+"4")
         document.close();
     }
 

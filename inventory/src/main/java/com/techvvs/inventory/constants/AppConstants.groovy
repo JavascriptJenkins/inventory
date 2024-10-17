@@ -27,6 +27,7 @@ class AppConstants {
     public String QR_MEDIA_DIR = "/qrcodes/media/"
     public String BARCODES_ALL_DIR = "/barcodes/all/"
     public String BARCODES_MANIFEST_DIR = "/barcodes/manifest/"
+    public String BARCODES_EPSON_64_DIR = "/barcodes/epson6by4/"
     String ADHOC_DIR = "/adhoc/"
     String BATCH_PRICE_SHEETS_DIR = "/pricesheets/"
     public String COA_DIR = "/coa/"
@@ -37,6 +38,7 @@ class AppConstants {
     public String filenameprefix_qr_media = "qr_media_"
     String filenameprefix_adhoc_label = "adhoc_label_"
     String filenameprefix_manifest = "_manifest_"
+    String filenameprefix_epson46 = "_epson4by6_"
 
 
     public static final PDRectangle FOUR_BY_SIX_POINT_FIVE = new PDRectangle(288.0F, 468.0F);

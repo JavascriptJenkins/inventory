@@ -343,6 +343,13 @@
         </form>
     </div>
 
+    <div class="col-sm-2" style="margin-bottom: 5px;">
+        <form th:action="@{/viewfiles/printepsonlabels(batchid=${batch.batchid}, size=5, page=1)}" th:object="${menuoption}" method="post">
+            <label class="form-label required">View files in dir</label>
+
+            <button style="margin-top:5px;" type="submit" class="btn btn-primary">Print Epson Labels</button>
+        </form>
+    </div>
 
     <form id="textoremailInvoiceForm" th:action="@{/viewfiles/textemailinvoice?size=5&page=1&batchid=__${batch.batchid}__}" th:object="${menuoption}" method="post">
         <table class="table table-hover table-striped table-dark">
