@@ -62,6 +62,51 @@ class QrImageGenerator {
         return imageWithText;
     }
 
+    public static BufferedImage generateQrImageWithCustomSizes(
+            String qrcodeData,
+            String text,
+            int qrSize,
+            int fontSize
+
+    ) throws WriterException {
+
+        QRCodeWriter qrCodeWriter = new QRCodeWriter();
+        BitMatrix bitMatrix = qrCodeWriter.encode(qrcodeData, BarcodeFormat.QR_CODE, qrSize, qrSize);
+
+        // Convert BitMatrix to BufferedImage
+        BufferedImage qrcodeImage = MatrixToImageWriter.toBufferedImage(bitMatrix);
+
+        // Define the total size of the final image
+        int finalWidth = qrSize * 2; // Make the final image twice the width of the QR code
+        int finalHeight = qrSize * 2; // Keep the same height as the QR code
+
+        // Create a new image with the final dimensions
+        BufferedImage imageWithText = new BufferedImage(finalWidth, finalHeight, BufferedImage.TYPE_INT_RGB);
+
+        // Draw the original QR code image onto the new image
+        Graphics2D g2d = imageWithText.createGraphics();
+        g2d.setColor(Color.WHITE);
+        g2d.fillRect(0, 0, finalWidth, finalHeight); // Fill the entire image with white
+
+        // Draw the QR code in the top-left corner, taking up half the space
+        g2d.drawImage(qrcodeImage, 70, 0, null);
+
+        // Set font and color for the text
+        g2d.setFont(new Font("Arial", Font.PLAIN, fontSize));
+        g2d.setColor(Color.BLACK);
+
+        // Calculate the position for the text to be centered below the QR code
+        int textX = 70; // Adjust the X position as needed to center text in the right half
+        int textY = qrSize; // Adjust the Y position as needed
+
+        // Draw the text on the right side of the image
+        g2d.drawString(text, textX, textY+30);
+
+        g2d.dispose();
+
+        return imageWithText;
+    }
+
 
 
 

@@ -132,54 +132,51 @@ class LabelPrintingGenerator {
             PDPage page
     ) throws IOException {
 
-        // Set margins and spacing for the label
-        float margin = 20f;
-        float barcodeHeight = 72f;
-        float barcodeWidth = 96f;
-        float qrCodeSize = 72f; // 1 inch square QR code
-        float nameFontSize = 10f;
-        float lineSpacing = 3f;
-
-        // Get label dimensions
+        // Layout adjustments for centering
         float pageWidth = 4 * 72;  // 4 inches in points
         float pageHeight = 6.5f * 72;  // 6.5 inches in points
+        float margin = 10f;  // Minimal margin for spacing
 
-        // Start coordinates for layout
-        float startX = margin;
-        float startY = pageHeight - margin;
+        // Calculate available space and element sizes
+        float barcodeWidth = 0.4f * pageWidth;  // 40% of the page width
+        float barcodeHeight = barcodeWidth * 0.75f;  // Maintain aspect ratio
 
-        // Load the TrueType font
+        float qrCodeSize = 0.3f * pageWidth;  // 30% of the page width
+
+        float totalElementWidth = barcodeWidth + margin + qrCodeSize;
+        float startX = (pageWidth - totalElementWidth) / 2;  // Center horizontally
+        float centerY = pageHeight / 2;  // Center vertically
+
+        // Calculate Y positions for barcode and QR code
+        float barcodeY = centerY + barcodeHeight / 2;  // Top alignment for barcode
+        float qrY = barcodeY - qrCodeSize;  // Align QR code to the barcode's bottom
+
+        // Load font
         PDType0Font ttfFont = PDType0Font.load(document, new File("./uploads/font/Oswald-VariableFont_wght.ttf"));
-        contentStream.setFont(ttfFont, nameFontSize);
+        contentStream.setFont(ttfFont, 12f);  // Adjusted font size
 
-        // Generate barcode image
+        // Draw barcode image
         BufferedImage barcodeImage = imageGenerator.generateUPCABarcodeImage(product.barcode);
         PDImageXObject barcodePdImage = LosslessFactory.createFromImage(document, barcodeImage);
+        contentStream.drawImage(barcodePdImage, startX, barcodeY - barcodeHeight as float, barcodeWidth, barcodeHeight);
 
-        // Generate QR code image
+        // Draw QR code image to the right of the barcode
+        float qrX = startX + barcodeWidth + margin;  // Place QR code after barcode
         PDImageXObject qrPdImage = generateQrImageforEpson(product, document);
-
-        // Calculate y-coordinate for barcode
-        float barcodeY = startY - barcodeHeight - margin;
-
-        // Draw barcode on the page
-        contentStream.drawImage(barcodePdImage, startX, barcodeY, barcodeWidth, barcodeHeight);
-
-        // Draw QR code next to the barcode (to the right)
-        float qrX = startX + barcodeWidth + margin;  // Place QR code after the barcode with margin
-        float qrY = barcodeY;  // Align QR code with the barcode’s bottom
         contentStream.drawImage(qrPdImage, qrX, qrY, qrCodeSize, qrCodeSize);
 
-        // Wrap product name if necessary
-        List<String> wrappedText = wrapText(product.name, 25);
+        // Draw product name below the images, centered horizontally
+        List<String> wrappedText = wrapText(product.name, 35);  // Wrap text for better readability
 
-        // Draw each line of the wrapped product name below the barcode
-        float textY = barcodeY - nameFontSize - lineSpacing;
+        float textY = qrY - 15f;  // Start position for text below QR code
         contentStream.beginText();
+        contentStream.setFont(ttfFont, 12f);  // Set the font size for the product name
         for (String line : wrappedText) {
-            contentStream.newLineAtOffset(startX, textY);
+            float textWidth = ttfFont.getStringWidth(line) / 1000 * 12f;  // Calculate the width of the text
+            float textStartX = (pageWidth - textWidth) / 2;  // Center the text horizontally
+            contentStream.newLineAtOffset(textStartX, textY);
             contentStream.showText(line);
-            textY -= (nameFontSize + lineSpacing);  // Adjust for next line
+            textY -= (12f + 3f);  // Adjust for the next line with line spacing
         }
         contentStream.endText();
 
@@ -205,18 +202,18 @@ class LabelPrintingGenerator {
         String baseQrDomain = env.getProperty("base.qr.domain");
 
         if (isDev1) {
-            qrcodeData = appConstants.QR_CODE_PUBLIC_INFO_LINK_DEV1+productVO.getProduct_id();
+            qrcodeData = appConstants.QR_CODE_PUBLIC_INFO_LINK_DEV1 + productVO.getProduct_id();
         } else {
             boolean isMediaMode = env.getProperty("qr.mode.media").equals("true");
             if (isMediaMode) {
                 qrcodeData = baseQrDomain + "/file/privateqrmediadownload?productid="+productVO.getProduct_id()+"&name="+productVO.name+"&number="+productVO.productnumber;
             } else {
-                qrcodeData = baseQrDomain+appConstants.QR_CODE_URI_EXTENSION+productVO.getProduct_id();
+                qrcodeData = baseQrDomain + appConstants.QR_CODE_URI_EXTENSION + productVO.getProduct_id();
             }
         }
 
-        // Generate the QR code image with a 25-character limit on the product name
-        BufferedImage qrImage = qrImageGenerator.generateQrImage(qrcodeData, limitStringTo25Chars(productVO.name));
+        BufferedImage qrImage = qrImageGenerator.generateQrImageWithCustomSizes(
+                qrcodeData, limitStringTo25Chars(productVO.name), 200, 56);
         return LosslessFactory.createFromImage(document, qrImage);
     }
 
@@ -224,7 +221,6 @@ class LabelPrintingGenerator {
     private String limitStringTo25Chars(String text) {
         return text.length() > 25 ? text.substring(0, 25) : text;
     }
-
 
 
 
