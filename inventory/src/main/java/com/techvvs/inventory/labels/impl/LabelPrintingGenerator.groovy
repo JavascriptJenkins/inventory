@@ -1,6 +1,8 @@
 package com.techvvs.inventory.labels.impl
 
 import com.techvvs.inventory.barcode.impl.BarcodeHelper
+import com.techvvs.inventory.barcode.impl.ImageGenerator
+import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.model.BatchVO
 import com.techvvs.inventory.model.MenuVO
 import com.techvvs.inventory.model.ProductVO
@@ -13,9 +15,9 @@ import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
-import com.itextpdf.text.*
-import com.itextpdf.text.pdf.*
-import com.itextpdf.text.Image
+//import com.itextpdf.text.*
+//import com.itextpdf.text.pdf.*
+//import com.itextpdf.text.Image
 
 
 
@@ -27,9 +29,14 @@ import java.time.format.DateTimeFormatter
 class LabelPrintingGenerator {
 
 
+    @Autowired
+    AppConstants appConstants
 
     @Autowired
     BarcodeHelper barcodeHelper
+
+    @Autowired
+    ImageGenerator imageGenerator
 
     String STATIC_LABEL_BATCH_DIR = "./uploads/staticlabels/"
 
@@ -78,6 +85,162 @@ class LabelPrintingGenerator {
         contentStream.close();
 
     }
+
+
+    void generateEpson4by6point5Label(int entitynumber,
+                                      int pagenumber,
+                                      BatchVO batchVO,
+                                      PDDocument document
+    ){
+
+        // create a pdf sheet
+        PDPage page = new PDPage(appConstants.FOUR_BY_SIX_POINT_FIVE); // 4" x 6.5"
+        document.addPage(page);
+
+        PDPageContentStream contentStream = new PDPageContentStream(document, page)
+        // Define margins and layout parameters
+        float topMargin = (6.0f / 16.0f) * 72; // 6/16 inches to points
+        float bottomMargin = (1.0f / 16.0f) * 72; // 6/16 inches to points
+        float leftMargin = 0.25f * 72; // 0.25" in points
+        float rightMargin = 0.25f * 72; // 0.25" in points
+
+
+        // print epson 4x6.5 labels
+        generateEpson6by4point5Page(document,contentStream, page)
+
+
+    }
+
+    void generateEpson6by4point5Page(PDDocument document,
+                                     PDPageContentStream contentStream,
+                                     PDPage page
+    ) {
+
+        // Margins and spacing
+        float margin = 50
+        float barcodeHeight = 72  // 1 inch in points
+        float barcodeWidth = 108  // 1.5 inches in points
+        float nameFontSize = 12
+        float lineSpacing = 5  // Extra space between barcode and name
+
+        // Start coordinates for the left and right columns
+        float leftColumnX = margin
+        float rightColumnX = page.getMediaBox().getWidth() / 2 + margin / 2
+        float startY = page.getMediaBox().getHeight() - margin
+
+        // Example of using a TrueType font
+        PDType0Font ttfFont = PDType0Font.load(document, new File("./uploads/font/Oswald-VariableFont_wght.ttf"));
+        contentStream.setFont(ttfFont, nameFontSize)
+
+        // Draw 5 labels on the left and 5 on the right side
+        for (int i = 0; i < productList.size(); i++) {
+            ProductVO product = productList.get(i)
+            float x = (i < 5) ? leftColumnX : rightColumnX
+            float y = startY - (i % 5) * (barcodeHeight + nameFontSize + lineSpacing + margin)
+
+
+            // Generate the barcode image
+            BufferedImage barcodeImage = imageGenerator.generateUPCABarcodeImage(product.barcode)
+            // Convert BufferedImage to PDImageXObject
+            org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject pdImage = LosslessFactory.createFromImage(document, barcodeImage)
+            // Draw barcode image
+            contentStream.drawImage(pdImage, x, y - barcodeHeight as float, barcodeWidth, barcodeHeight)
+            // Draw product name below the barcode, truncate to 20 chars
+            String productName = product.name.take(20)
+            contentStream.beginText()
+            contentStream.newLineAtOffset(x, y - barcodeHeight - nameFontSize - lineSpacing as float)
+            contentStream.showText(productName)
+            contentStream.endText()
+        }
+        contentStream.close()
+
+    }
+
+
+
+    void generateBarcodeManifest(
+                                int entitynumber,
+                                int pagenumber,
+                                BatchVO batchVO,
+                                List<ProductVO> listofTen,
+                                 PDDocument document
+    ){
+
+
+
+
+        // create a pdf sheet
+        PDPage page = new PDPage(PDRectangle.LETTER); // 8.5" x 11"
+        document.addPage(page);
+
+        PDPageContentStream contentStream = new PDPageContentStream(document, page)
+        // Define margins and layout parameters
+        float topMargin = (6.0f / 16.0f) * 72; // 6/16 inches to points
+        float bottomMargin = (1.0f / 16.0f) * 72; // 6/16 inches to points
+        float leftMargin = 0.25f * 72; // 0.25" in points
+        float rightMargin = 0.25f * 72; // 0.25" in points
+        float labelWidth = (PDRectangle.LETTER.getWidth() - leftMargin - rightMargin) / 5; // 5 barcodes per row
+        float labelHeight = (PDRectangle.LETTER.getHeight() - topMargin - bottomMargin) / 10; // 10 rows
+
+
+        // Example of using a TrueType font
+        PDType0Font ttfFont = PDType0Font.load(document, new File("./uploads/font/Oswald-VariableFont_wght.ttf"));
+
+        // Write text on the top of page - Batchnumber, date, page number, etc
+        writeMetadataOnTopOfPage(contentStream, ttfFont, leftMargin, topMargin, pagenumber, entitynumber, batchVO.name, "Productlist")
+
+        // cycle through all products in the product_set to print each one
+        generateProductManifestPage(listofTen, document,contentStream, page)
+
+
+    }
+
+    void generateProductManifestPage(List<ProductVO> productList,
+                                     PDDocument document,
+                                     PDPageContentStream contentStream,
+                                     PDPage page
+    ) {
+
+        // Margins and spacing
+        float margin = 50
+        float barcodeHeight = 72  // 1 inch in points
+        float barcodeWidth = 108  // 1.5 inches in points
+        float nameFontSize = 12
+        float lineSpacing = 5  // Extra space between barcode and name
+
+        // Start coordinates for the left and right columns
+        float leftColumnX = margin
+        float rightColumnX = page.getMediaBox().getWidth() / 2 + margin / 2
+        float startY = page.getMediaBox().getHeight() - margin
+
+        // Example of using a TrueType font
+        PDType0Font ttfFont = PDType0Font.load(document, new File("./uploads/font/Oswald-VariableFont_wght.ttf"));
+        contentStream.setFont(ttfFont, nameFontSize)
+
+        // Draw 5 labels on the left and 5 on the right side
+        for (int i = 0; i < productList.size(); i++) {
+            ProductVO product = productList.get(i)
+            float x = (i < 5) ? leftColumnX : rightColumnX
+            float y = startY - (i % 5) * (barcodeHeight + nameFontSize + lineSpacing + margin)
+
+
+            // Generate the barcode image
+            BufferedImage barcodeImage = imageGenerator.generateUPCABarcodeImage(product.barcode)
+            // Convert BufferedImage to PDImageXObject
+            org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject pdImage = LosslessFactory.createFromImage(document, barcodeImage)
+            // Draw barcode image
+            contentStream.drawImage(pdImage, x, y - barcodeHeight as float, barcodeWidth, barcodeHeight)
+            // Draw product name below the barcode, truncate to 20 chars
+            String productName = product.name.take(20)
+            contentStream.beginText()
+            contentStream.newLineAtOffset(x, y - barcodeHeight - nameFontSize - lineSpacing as float)
+            contentStream.showText(productName)
+            contentStream.endText()
+        }
+        contentStream.close()
+
+    }
+
 
 
     void generateAdhocLabels(
@@ -153,7 +316,7 @@ class LabelPrintingGenerator {
     }
 
     List<String> splitTextToFitWidth(String text, int maxCharsPerLine) {
-        List<String> lines = new ArrayList<>();
+        List<String> lines = new ArrayList<String>();
         int textLength = text.length();
 
         // Split the text into lines with maxCharsPerLine characters
@@ -166,35 +329,35 @@ class LabelPrintingGenerator {
     }
 
 // Helper method to split text into lines that fit within a given width
-    List<String> splitTextToFitWidth(String text, PDType0Font font, float maxWidth) throws IOException {
-        List<String> lines = new ArrayList<>();
-        StringBuilder currentLine = new StringBuilder();
-        float currentWidth = 0;
-
-        for (String word : text.split(" ")) {
-            float wordWidth = font.getStringWidth(word) / 1000 * 10; // Assume font size 10 here
-            if (currentWidth + wordWidth > maxWidth) {
-                // If the word doesn't fit, add the current line to the list and start a new line
-                lines.add(currentLine.toString());
-                currentLine = new StringBuilder(word);
-                currentWidth = wordWidth;
-            } else {
-                // Otherwise, add the word to the current line
-                if (currentLine.length() > 0) {
-                    currentLine.append(" ");
-                }
-                currentLine.append(word);
-                currentWidth += wordWidth;
-            }
-        }
-
-        // Add the last line
-        if (currentLine.length() > 0) {
-            lines.add(currentLine.toString());
-        }
-
-        return lines;
-    }
+//    List<String> splitTextToFitWidth(String text, PDType0Font font, float maxWidth) throws IOException {
+//        List<String> lines = new ArrayList<>();
+//        StringBuilder currentLine = new StringBuilder();
+//        float currentWidth = 0;
+//
+//        for (String word : text.split(" ")) {
+//            float wordWidth = font.getStringWidth(word) / 1000 * 10; // Assume font size 10 here
+//            if (currentWidth + wordWidth > maxWidth) {
+//                // If the word doesn't fit, add the current line to the list and start a new line
+//                lines.add(currentLine.toString());
+//                currentLine = new StringBuilder(word);
+//                currentWidth = wordWidth;
+//            } else {
+//                // Otherwise, add the word to the current line
+//                if (currentLine.length() > 0) {
+//                    currentLine.append(" ");
+//                }
+//                currentLine.append(word);
+//                currentWidth += wordWidth;
+//            }
+//        }
+//
+//        // Add the last line
+//        if (currentLine.length() > 0) {
+//            lines.add(currentLine.toString());
+//        }
+//
+//        return lines;
+//    }
 
 
 
@@ -308,69 +471,69 @@ class LabelPrintingGenerator {
 
 
 
-    def createLabelPDF(String text, PDImageXObject image1, PDImageXObject image2, String outputFilePath) {
-        // 2-1/8" by 4" label, converted to points (72 points = 1 inch)
-        def labelWidth = 2.125 * 72  // 153 points
-        def labelHeight = 4 * 72     // 288 points
-        def sectionWidth = labelWidth / 3  // Each section gets 1/3 of the width
-
-        // Create a new PDF document with specified size
-        Document document = new Document(new Rectangle(labelWidth, labelHeight))
-        PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(outputFilePath))
-        document.open()
-
-        // Add the first image (left 1/3)
-        Image img1 = Image.getInstance(image1.getImageBytes())
-        img1.scaleToFit((float) sectionWidth, (float) labelHeight)  // Scale to fit within the 1/3 section
-        img1.setAbsolutePosition(0f, 0f)  // Left-most section
-        document.add(img1)
-
-        // Add the second image (right 1/3)
-        Image img2 = Image.getInstance(image2.getImageBytes())
-        img2.scaleToFit((float) sectionWidth, (float) labelHeight)  // Scale to fit within the 1/3 section
-        img2.setAbsolutePosition((float) (2 * sectionWidth), 0f)  // Right-most section
-        document.add(img2)
-
-        // Add the text in the middle 1/3 section
-        BaseFont baseFont = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.WINANSI, BaseFont.EMBEDDED)
-        float fontSize = 72 // Start with a large font size and decrease until it fits
-        boolean textFits = false
-
-        while (!textFits && fontSize > 1) {
-            Font font = new Font(baseFont, fontSize)
-            Paragraph paragraph = new Paragraph(text, font)
-
-            // Measure the width of the text
-            PdfContentByte cb = writer.getDirectContent()
-            float textWidth = baseFont.getWidthPoint(text, fontSize)
-
-            // Check if the text fits within the middle 1/3 section width
-            if (textWidth <= sectionWidth - 10) { // 10 points margin
-                textFits = true
-            } else {
-                fontSize -= 1 // Decrease font size and try again
-            }
-        }
-
-        // Create the text paragraph with the final font size and center it vertically
-        Font finalFont = new Font(baseFont, fontSize)
-        Paragraph finalParagraph = new Paragraph(text, finalFont)
-        finalParagraph.setAlignment(Element.ALIGN_CENTER)
-
-        // Set the text's absolute position in the middle 1/3 section
-        float textXPosition = (float) sectionWidth  // Start at the 1/3 mark
-        float textYPosition = (labelHeight - fontSize) / 2  // Vertically center
-        PdfContentByte cb = writer.getDirectContent()
-        cb.beginText()
-        cb.setFontAndSize(baseFont, fontSize)
-        cb.showTextAligned(Element.ALIGN_CENTER, text, (float) (textXPosition + sectionWidth / 2), textYPosition, 0f)
-        cb.endText()
-
-        // Close the document
-        document.close()
-
-        println "Label PDF created at: $outputFilePath"
-    }
+//    def createLabelPDF(String text, PDImageXObject image1, PDImageXObject image2, String outputFilePath) {
+//        // 2-1/8" by 4" label, converted to points (72 points = 1 inch)
+//        def labelWidth = 2.125 * 72  // 153 points
+//        def labelHeight = 4 * 72     // 288 points
+//        def sectionWidth = labelWidth / 3  // Each section gets 1/3 of the width
+//
+//        // Create a new PDF document with specified size
+//        Document document = new Document(new Rectangle(labelWidth, labelHeight))
+//        PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(outputFilePath))
+//        document.open()
+//
+//        // Add the first image (left 1/3)
+//        Image img1 = Image.getInstance(image1.getImageBytes())
+//        img1.scaleToFit((float) sectionWidth, (float) labelHeight)  // Scale to fit within the 1/3 section
+//        img1.setAbsolutePosition(0f, 0f)  // Left-most section
+//        document.add(img1)
+//
+//        // Add the second image (right 1/3)
+//        Image img2 = Image.getInstance(image2.getImageBytes())
+//        img2.scaleToFit((float) sectionWidth, (float) labelHeight)  // Scale to fit within the 1/3 section
+//        img2.setAbsolutePosition((float) (2 * sectionWidth), 0f)  // Right-most section
+//        document.add(img2)
+//
+//        // Add the text in the middle 1/3 section
+//        BaseFont baseFont = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.WINANSI, BaseFont.EMBEDDED)
+//        float fontSize = 72 // Start with a large font size and decrease until it fits
+//        boolean textFits = false
+//
+//        while (!textFits && fontSize > 1) {
+//            Font font = new Font(baseFont, fontSize)
+//            Paragraph paragraph = new Paragraph(text, font)
+//
+//            // Measure the width of the text
+//            PdfContentByte cb = writer.getDirectContent()
+//            float textWidth = baseFont.getWidthPoint(text, fontSize)
+//
+//            // Check if the text fits within the middle 1/3 section width
+//            if (textWidth <= sectionWidth - 10) { // 10 points margin
+//                textFits = true
+//            } else {
+//                fontSize -= 1 // Decrease font size and try again
+//            }
+//        }
+//
+//        // Create the text paragraph with the final font size and center it vertically
+//        Font finalFont = new Font(baseFont, fontSize)
+//        Paragraph finalParagraph = new Paragraph(text, finalFont)
+//        finalParagraph.setAlignment(Element.ALIGN_CENTER)
+//
+//        // Set the text's absolute position in the middle 1/3 section
+//        float textXPosition = (float) sectionWidth  // Start at the 1/3 mark
+//        float textYPosition = (labelHeight - fontSize) / 2  // Vertically center
+//        PdfContentByte cb = writer.getDirectContent()
+//        cb.beginText()
+//        cb.setFontAndSize(baseFont, fontSize)
+//        cb.showTextAligned(Element.ALIGN_CENTER, text, (float) (textXPosition + sectionWidth / 2), textYPosition, 0f)
+//        cb.endText()
+//
+//        // Close the document
+//        document.close()
+//
+//        println "Label PDF created at: $outputFilePath"
+//    }
 
 // Mock implementation of PDImageXObject to simulate its behavior
     class PDImageXObject {

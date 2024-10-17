@@ -213,8 +213,9 @@
                             $('#barcodeForm').submit();
                         }
                     } else {
-                        // If not in Quantity Mode, just submit the form
+                        // If not in Quantity Mode, just submit the form with quantity 1
                         $('#barcodeInput').val(scannedValue.substring(0, 11));
+                        $('#quantitySelected').val(1);
                         $('#barcodeForm').submit();
                     }
                 }

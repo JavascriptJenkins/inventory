@@ -4,11 +4,14 @@ import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.labels.impl.LabelPrintingGenerator
 import com.techvvs.inventory.model.BatchVO
 import com.techvvs.inventory.model.MenuVO
+import com.techvvs.inventory.model.ProductVO
+import com.techvvs.inventory.viewcontroller.helper.ProductHelper
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 
+import javax.transaction.Transactional
 import java.nio.file.Files
 import java.nio.file.Paths
 
@@ -22,10 +25,63 @@ class LabelPrintingService {
     @Autowired
     AppConstants appConstants
 
+    @Autowired
+    ProductHelper productHelper
+
 
     void createDyno450TurboLabel(String labeltext){
         String outputpath = "";
         labelPrintingGenerator.createLabelPDF(labeltext, outputpath)
+    }
+
+    void createEpsonC6000AuLabel4by6point5(String labeltext){
+
+        // 4" x 6.5"
+        String outputpath = "";
+
+        try{
+            PDDocument document = new PDDocument()
+            // cycle thru items here
+
+
+            saveBarcodeManifestPdfFile(document, appConstants.BARCODES_MANIFEST_DIR, batchVO.name,batchVO.batchnumber)
+
+        } catch(Exception ex){
+            System.out.println("Generate epson failed: "+ex.getMessage().toString())
+
+        }
+        labelPrintingGenerator.generateEpson4by6point5Label(labeltext, outputpath)
+    }
+
+
+    // this will generate a barcode manifest like youre at a grocery store scanning in
+    @Transactional
+    void createBarcodeManifestScanSheetForBatch(BatchVO batchVO){
+
+
+        // chop the batchVO product set into lists of 10
+        List<List<ProductVO>> result = productHelper.convertProductSetIntoListofLists(batchVO.product_set)
+
+
+        try{
+            PDDocument document = new PDDocument()
+
+            int pagenumber = 0;
+            // cycle thru the list of 10 and print 5 on each side of paper sheet
+            for(List<ProductVO> listofTen : result){
+                labelPrintingGenerator.generateBarcodeManifest(
+                        batchVO.batchid,
+                        pagenumber,
+                        batchVO,
+                        listofTen,
+                        document)
+                pagenumber++
+            }
+            saveBarcodeManifestPdfFile(document, appConstants.BARCODES_MANIFEST_DIR, batchVO.name,batchVO.batchnumber)
+
+        } catch (Exception ex){
+            System.out.println("Generate barcode manifest sheet failed: "+ex.getMessage().toString())
+        }
     }
 
     void printAdhocLabelSheet(MenuVO menuVO) {
@@ -70,7 +126,27 @@ class LabelPrintingService {
     }
 
 
+    void saveBarcodeManifestPdfFile(PDDocument document,
+                                    String entitysubdirectory,
+                                    String entityname,
+                                    int entitynumber) {
 
+        System.out.println("saveBarcodeManifestPdfFile: "+"1")
+
+        entityname = chopRightPaddedString(entityname)
+        entityname = entityname.replace(" ", "_")
+        entityname = entityname.replace("|", "_")
+
+        System.out.println("saveBarcodeManifestPdfFile: "+"2")
+        // create a directory with the batchnumber and /barcodes dir if it doesn't exist yet
+        Files.createDirectories(Paths.get(appConstants.PARENT_LEVEL_DIR+String.valueOf(entitynumber)+entitysubdirectory));
+        System.out.println("saveBarcodeManifestPdfFile: "+"3")
+        String filename = entityname+"-"+entitynumber
+        // save the actual file after looping thru all products
+        document.save(appConstants.PARENT_LEVEL_DIR+String.valueOf(entitynumber)+entitysubdirectory+appConstants.filenameprefix_manifest+filename+".pdf")
+        System.out.println("saveBarcodeManifestPdfFile: "+"4")
+        document.close();
+    }
 
     void saveAdhocLabelPdfFile(PDDocument document, String entitysubdirectory, String entityname, int entitynumber) {
 

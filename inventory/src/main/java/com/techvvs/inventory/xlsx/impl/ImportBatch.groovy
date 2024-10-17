@@ -89,7 +89,14 @@ class ImportBatch {
                 productVO.setPrice(price)
 
                 // only set barcode if the value is not empty
-                productVO.barcode = row?.getCell(3)?.getStringCellValue()?.trim() ? "" : productVO.barcode
+                // also, we need to check if length is 11.  If it is, it's because spreadsheets
+                // don't allow leading 0's unless it's explicitly a string type cell
+                // todo: this code doesn't work the way i want it to.... debug this at some point
+                if(11 == row?.getCell(3)?.getStringCellValue()?.trim()?.length()){
+                    productVO.barcode = row?.getCell(3)?.getStringCellValue()?.trim() ? "" : "0"+productVO.barcode
+                } else {
+                    productVO.barcode = row?.getCell(3)?.getStringCellValue()?.trim() ? "" : productVO.barcode
+                }
 
                 // set the cost from row 4
                 Double cost = row.getCell(4) != null && row.getCell(4).getCellType() == CellType.NUMERIC ? Double.valueOf(row?.getCell(4)?.getNumericCellValue()) : null
@@ -102,6 +109,9 @@ class ImportBatch {
                 productVO.setProductnumber(Integer.valueOf(productHelper.generateProductNumber())); // we are doing a check here to make sure productnumber is unique
 
                 String producttype = row.getCell(7).getStringCellValue().trim().toUpperCase()
+
+                productVO.setCrateposition(row.getCell(8).getStringCellValue().trim());
+                productVO.setCrate((int) row.getCell(9).getNumericCellValue()); // crate #
 
                 // todo: reference this in a constants class
 

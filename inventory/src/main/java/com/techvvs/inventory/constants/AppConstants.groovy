@@ -1,5 +1,6 @@
 package com.techvvs.inventory.constants
 
+import org.apache.pdfbox.pdmodel.common.PDRectangle
 import org.springframework.stereotype.Component
 
 @Component
@@ -25,6 +26,7 @@ class AppConstants {
     String QR_ALL_DIR = "/qrcodes/all/"
     public String QR_MEDIA_DIR = "/qrcodes/media/"
     public String BARCODES_ALL_DIR = "/barcodes/all/"
+    public String BARCODES_MANIFEST_DIR = "/barcodes/manifest/"
     String ADHOC_DIR = "/adhoc/"
     String BATCH_PRICE_SHEETS_DIR = "/pricesheets/"
     public String COA_DIR = "/coa/"
@@ -34,6 +36,10 @@ class AppConstants {
     String filenameprefix_qr = "qr_"
     public String filenameprefix_qr_media = "qr_media_"
     String filenameprefix_adhoc_label = "adhoc_label_"
+    String filenameprefix_manifest = "_manifest_"
+
+
+    public static final PDRectangle FOUR_BY_SIX_POINT_FIVE = new PDRectangle(288.0F, 468.0F);
 
 
     String DEV_1 = "dev1"
@@ -55,5 +61,10 @@ String VIEW_INVOICE = "view"
     int DELIVERY_STATUS_EN_ROUTE = 1
     int DELIVERY_STATUS_DELIVERED = 2
     int DELIVERY_STATUS_CANCELED = 3
+
+
+    // tenants
+    String TENANT_HIGHLAND = "highland"
+    String TENANT_TEST1 = "test1"
 
 }

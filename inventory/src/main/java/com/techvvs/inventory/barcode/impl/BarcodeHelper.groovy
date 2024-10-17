@@ -229,6 +229,24 @@ class BarcodeHelper {
         return result;
     }
 
+    public List<List<ProductVO>> splitIntoChunksOf10(List<ProductVO> originalList) {
+        List<List<ProductVO>> result = new ArrayList<>();
+
+        int listSize = originalList.size();
+        int chunkSize = 10;
+
+        for (int i = 0; i < listSize; i += chunkSize) {
+            // Create sublist from the original list, making sure not to exceed the list size
+            List<ProductVO> chunk = originalList.subList(i, Math.min(i + chunkSize, listSize));
+            // Add the chunk to the result
+            List newlist = new ArrayList<>(chunk)
+            newlist = barcodeService.sortByPrice(newlist)
+            result.add(newlist);  // Create a new list to avoid referencing the original sublist
+        }
+
+        return result;
+    }
+
     // need this cuz the barcode code is a bit wavy if u knowwhatimsayin
     static float adjustRowXYMargin(int row, float y){
 

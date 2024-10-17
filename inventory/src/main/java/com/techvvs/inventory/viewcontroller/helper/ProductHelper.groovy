@@ -42,6 +42,16 @@ class ProductHelper {
         return result
     }
 
+    List<List<ProductVO>> convertProductSetIntoListofLists(Set<ProductVO> product_set){
+
+        List<ProductVO> productlist = new ArrayList(product_set)
+        List<ProductVO> sortedlistLowToHighPrice = barcodeService.sortByPrice(productlist)
+
+        List<List<ProductVO>> result1 = barcodeHelper.splitIntoChunksOf10(sortedlistLowToHighPrice);
+
+        return result1
+    }
+
 
     List<List<ProductVO>> sortAndExpandProductSet(Set<ProductVO> product_set){
         LinkedHashSet linkedHashSet = barcodeHelper.convertToLinkedHashSet(product_set)

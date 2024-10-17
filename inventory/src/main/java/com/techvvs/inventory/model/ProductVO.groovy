@@ -53,7 +53,9 @@ class ProductVO implements Serializable, Comparable<ProductVO> {
     @JsonProperty
     String bagcolor;
     @JsonProperty
-    String crate;
+    Integer crate;
+    @JsonProperty
+    String crateposition;
     @JsonProperty
     String barcode;
     @JsonProperty

@@ -142,6 +142,18 @@ class BatchControllerHelper {
 
     }
 
+    boolean generateBarcodeManifestForBatch(String batchnumber){
+        List<BatchVO> results = new ArrayList<BatchVO>();
+        if(batchnumber != null){
+            System.out.println("Searching data by batchnumber");
+            results = batchRepo.findAllByBatchnumber(Integer.valueOf(batchnumber));
+        }
+
+        labelPrintingService.createBarcodeManifestScanSheetForBatch(results.get(0))
+
+        return true
+    }
+
     boolean generateAllQrcodesForBatch(String batchnumber){
 
         List<BatchVO> results = new ArrayList<BatchVO>();

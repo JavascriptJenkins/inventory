@@ -231,7 +231,7 @@ class BarcodeGenerator {
                 addBarcodeToProduct(productVO, barcodeData)
 
                 // Generate the barcode image
-                BufferedImage barcodeImage = imageGenerator.generateUPCABarcodeImage(barcodeData, labelWidth, labelHeight, col)
+                BufferedImage barcodeImage = imageGenerator.generateUPCABarcodeImage(barcodeData)
 
                 // Convert BufferedImage to PDImageXObject
                 PDImageXObject pdImage = LosslessFactory.createFromImage(document, barcodeImage)

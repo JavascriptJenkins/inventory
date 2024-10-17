@@ -125,7 +125,7 @@ class CartDeleteService {
 
                 int cartcount = getCountOfProductInCartByBarcode(cartVO) + cartVO.quantityselected
                 // check here if the quantity we are trying to add will exceed the quantity in stock
-                if(cartcount >= productVO.get().quantity){
+                if(cartcount > productVO.get().quantity){
                     model.addAttribute("errorMessage","Quantity exceeds quantity in stock")
                 }
 

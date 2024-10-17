@@ -21,7 +21,7 @@ import java.nio.file.Path
 @Component
 class ImageGenerator {
 
-    static BufferedImage generateUPCABarcodeImage(String barcodeData, float width, float height, int col) {
+    static BufferedImage generateUPCABarcodeImage(String barcodeData) {
         UPCABean bean = new UPCABean();
         bean.setModuleWidth(0.2); // Adjust module width as needed
         bean.setBarHeight(10f);   // Adjust bar height as needed

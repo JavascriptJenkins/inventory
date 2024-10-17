@@ -25,7 +25,12 @@ class ControllerConstants {
 
     @PostConstruct
     void load(){
-        DIRECTORIES_FOR_BATCH_UI = [appConstants.BARCODES_ALL_DIR, appConstants.BATCH_PRICE_SHEETS_DIR, appConstants.QR_ALL_DIR, appConstants.QR_MEDIA_DIR]
+        DIRECTORIES_FOR_BATCH_UI = [appConstants.BARCODES_ALL_DIR,
+                                    appConstants.BATCH_PRICE_SHEETS_DIR,
+                                    appConstants.QR_ALL_DIR,
+                                    appConstants.QR_MEDIA_DIR,
+                                    appConstants.BARCODES_MANIFEST_DIR
+        ]
     }
 
 }

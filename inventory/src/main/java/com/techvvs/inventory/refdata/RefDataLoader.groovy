@@ -1,5 +1,6 @@
 package com.techvvs.inventory.refdata
 
+import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.jparepo.BatchTypeRepo
 import com.techvvs.inventory.jparepo.CustomerRepo
 import com.techvvs.inventory.jparepo.DiscountRepo
@@ -44,6 +45,9 @@ class RefDataLoader {
 
     @Autowired
     Environment environment
+
+    @Autowired
+    AppConstants appConstants
 
 
     void loadRefData(){
@@ -105,7 +109,19 @@ class RefDataLoader {
         }
 
         switch (tenant){
-            case "highland":
+            case appConstants.TENANT_HIGHLAND:
+                // Load default product types
+                saveProductType("INDOOR", "Indoor Unit");
+                saveProductType("DEP", "light deps");
+                saveProductType("OUTS", "outdoor");
+                saveProductType("LOWS", "move em like its hot");
+                saveProductType("PRODUCT.CART", "cartridges");
+                saveProductType("PRODUCT.JOINTPACK", "joints in packs");
+                saveProductType("PRODUCT.CRUMBLE.BADDER", "crumble badder");
+                saveProductType("PRODUCT.TERPSAUCE", "terp sauce");
+                break;
+
+            case appConstants.TENANT_TEST1:
                 // Load default product types
                 saveProductType("INDOOR", "Indoor Unit");
                 saveProductType("DEP", "light deps");
