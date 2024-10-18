@@ -125,6 +125,7 @@ class LabelPrintingGenerator {
 
     }
 
+
     void generateEpson6by4Point5Page(
             ProductVO product,
             PDDocument document,
@@ -132,56 +133,53 @@ class LabelPrintingGenerator {
             PDPage page
     ) throws IOException {
 
-        // Layout adjustments for centering
+        // Set page dimensions
         float pageWidth = 4 * 72;  // 4 inches in points
         float pageHeight = 6.5f * 72;  // 6.5 inches in points
-        float margin = 10f;  // Minimal margin for spacing
+        float margin = 10f;  // Margin around the content
 
-        // Calculate available space and element sizes
-        float barcodeWidth = 0.4f * pageWidth;  // 40% of the page width
+        // Define sizes for QR code, barcode, and larger font
+        float qrCodeSize = 1.5f * 72;  // 1.5 inch square for the QR code
+        float barcodeWidth = 2.5f * 72;  // Barcode width at 2.5 inches
         float barcodeHeight = barcodeWidth * 0.75f;  // Maintain aspect ratio
+        float largeFontSize = 24f;  // Larger font size for product name
 
-        float qrCodeSize = 0.3f * pageWidth;  // 30% of the page width
-
-        float totalElementWidth = barcodeWidth + margin + qrCodeSize;
-        float startX = (pageWidth - totalElementWidth) / 2;  // Center horizontally
-        float centerY = pageHeight / 2;  // Center vertically
-
-        // Calculate Y positions for barcode and QR code
-        float barcodeY = centerY + barcodeHeight / 2;  // Top alignment for barcode
-        float qrY = barcodeY - qrCodeSize;  // Align QR code to the barcode's bottom
+        // Calculate vertical positions
+        float qrY = pageHeight - qrCodeSize - margin;  // QR code at the top
+        float barcodeY = qrY - barcodeHeight - margin;  // Barcode below QR code
+        float textY = barcodeY - largeFontSize - 20f;  // Product name below barcode with padding
 
         // Load font
         PDType0Font ttfFont = PDType0Font.load(document, new File("./uploads/font/Oswald-VariableFont_wght.ttf"));
-        contentStream.setFont(ttfFont, 12f);  // Adjusted font size
 
-        // Draw barcode image
-        BufferedImage barcodeImage = imageGenerator.generateUPCABarcodeImage(product.barcode);
-        PDImageXObject barcodePdImage = LosslessFactory.createFromImage(document, barcodeImage);
-        contentStream.drawImage(barcodePdImage, startX, barcodeY - barcodeHeight as float, barcodeWidth, barcodeHeight);
-
-        // Draw QR code image to the right of the barcode
-        float qrX = startX + barcodeWidth + margin;  // Place QR code after barcode
+        // Draw QR code (centered horizontally)
         PDImageXObject qrPdImage = generateQrImageforEpson(product, document);
+        float qrX = (pageWidth - qrCodeSize) / 2;  // Center horizontally
         contentStream.drawImage(qrPdImage, qrX, qrY, qrCodeSize, qrCodeSize);
 
-        // Draw product name below the images, centered horizontally
-        List<String> wrappedText = wrapText(product.name, 35);  // Wrap text for better readability
+        // Draw barcode (centered horizontally)
+        BufferedImage barcodeImage = imageGenerator.generateUPCABarcodeImage(product.barcode);
+        PDImageXObject barcodePdImage = LosslessFactory.createFromImage(document, barcodeImage);
+        float barcodeX = (pageWidth - barcodeWidth) / 2;  // Center horizontally
+        contentStream.drawImage(barcodePdImage, barcodeX, barcodeY, barcodeWidth, barcodeHeight);
 
-        float textY = qrY - 15f;  // Start position for text below QR code
+        // Draw product name (centered horizontally with a larger font)
+        contentStream.setFont(ttfFont, largeFontSize);  // Set the larger font size
+        List<String> wrappedText = wrapText(product.name, 20);  // Adjust wrapping for larger font
+
         contentStream.beginText();
-        contentStream.setFont(ttfFont, 12f);  // Set the font size for the product name
         for (String line : wrappedText) {
-            float textWidth = ttfFont.getStringWidth(line) / 1000 * 12f;  // Calculate the width of the text
+            float textWidth = ttfFont.getStringWidth(line) / 1000 * largeFontSize;  // Calculate text width
             float textStartX = (pageWidth - textWidth) / 2;  // Center the text horizontally
             contentStream.newLineAtOffset(textStartX, textY);
             contentStream.showText(line);
-            textY -= (12f + 3f);  // Adjust for the next line with line spacing
+            textY -= (largeFontSize + 5f);  // Adjust for next line with spacing
         }
         contentStream.endText();
 
         contentStream.close();
     }
+
 
 // Helper function to wrap text by character limit
     private List<String> wrapText(String text, int maxLineLength) {
@@ -221,7 +219,6 @@ class LabelPrintingGenerator {
     private String limitStringTo25Chars(String text) {
         return text.length() > 25 ? text.substring(0, 25) : text;
     }
-
 
 
     void generateBarcodeManifest(
