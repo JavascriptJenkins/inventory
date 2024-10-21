@@ -220,6 +220,14 @@
                 </form>
             </div>
             <div class="col-sm-2 mb-3">
+                <form th:action="@{/batch/printmediamenu?batchnumber=__${batch.batchnumber}__&editmode=no&size=__${#lists.size(productPage.content)}__&page=1}" th:object="${searchproducttype}" method="post">
+                    <select class="form-control" th:field="${searchproducttype.priceadjustment}">
+                        <option th:each="menuoption : ${menuoptions}" th:value="${menuoption}" th:text="${menuoption}"></option>
+                    </select>
+                    <button type="submit" class="btn btn-secondary btn-sm mt-2">Txt Media Xslx</button>
+                </form>
+            </div>
+            <div class="col-sm-2 mb-3">
                 <a th:href="@{/viewfiles(batchid=${batch.batchid}, page=1, size=5, selected=pricesheets)}" class="btn btn-secondary btn-sm mt-2">View Files</a>
             </div>
         </div>

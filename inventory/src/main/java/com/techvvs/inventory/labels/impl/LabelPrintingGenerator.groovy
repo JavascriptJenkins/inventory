@@ -147,10 +147,10 @@ class LabelPrintingGenerator {
         // Calculate vertical positions
         float qrY = pageHeight - qrCodeSize - margin;  // QR code at the top
         float barcodeY = qrY - barcodeHeight - margin;  // Barcode below QR code
-        float textY = barcodeY - largeFontSize - 20f;  // Product name below barcode with padding
+        float textYStart = barcodeY - largeFontSize - 20f;  // Product name below barcode with padding
 
         // Load font
-        PDType0Font ttfFont = PDType0Font.load(document, new File("./uploads/font/Oswald-VariableFont_wght.ttf"));
+        PDType0Font ttfFont = PDType0Font.load(document, new File("./uploads/font/SEASRN.ttf"));
 
         // Draw QR code (centered horizontally)
         PDImageXObject qrPdImage = generateQrImageforEpson(product, document);
@@ -165,15 +165,35 @@ class LabelPrintingGenerator {
 
         // Draw product name (centered horizontally with a larger font)
         contentStream.setFont(ttfFont, largeFontSize);  // Set the larger font size
-        List<String> wrappedText = wrapText(product.name, 20);  // Adjust wrapping for larger font
+        List<String> wrappedText = wrapText(product.name, 15);  // Adjust wrapping for larger font
 
+        // Start text writing at the calculated Y-position
+        float currentY = textYStart;
+
+        int linenumber = 1;
         contentStream.beginText();
         for (String line : wrappedText) {
-            float textWidth = ttfFont.getStringWidth(line) / 1000 * largeFontSize;  // Calculate text width
+            // Calculate the width of the current line to center it horizontally
+            float textWidth = ttfFont.getStringWidth(line) / 1000 * largeFontSize;
             float textStartX = (pageWidth - textWidth) / 2;  // Center the text horizontally
-            contentStream.newLineAtOffset(textStartX, textY);
+
+            if(linenumber == 1){
+                // Move to the correct position for each line
+                contentStream.newLineAtOffset(textStartX, currentY);
+            }
+            if(linenumber == 2){
+                textStartX = (textStartX - 35f)
+                // Move to the correct position for each line
+                contentStream.newLineAtOffset(textStartX, currentY);
+            }
+
+
+            // Show the text
             contentStream.showText(line);
-            textY -= (largeFontSize + 5f);  // Adjust for next line with spacing
+
+            // Move down for the next line
+            currentY -= (largeFontSize + 170f);  // Adjust Y-position for line spacing
+            linenumber++
         }
         contentStream.endText();
 
@@ -181,17 +201,32 @@ class LabelPrintingGenerator {
     }
 
 
+
+
+
 // Helper function to wrap text by character limit
+// Helper function to wrap text without breaking words
     private List<String> wrapText(String text, int maxLineLength) {
         List<String> lines = new ArrayList<>();
-        int index = 0;
-        while (index < text.length()) {
-            int end = Math.min(index + maxLineLength, text.length());
-            lines.add(text.substring(index, end));
-            index = end;
+        StringBuilder line = new StringBuilder();
+
+        for (String word : text.split(" ")) {
+            if (line.length() + word.length() + 1 > maxLineLength) {
+                // If adding the next word exceeds the limit, add the current line to the list
+                lines.add(line.toString().trim());
+                line = new StringBuilder();  // Start a new line
+            }
+            line.append(word).append(" ");  // Add the word to the current line
         }
+
+        // Add the last line to the list if there's any leftover text
+        if (line.length() > 0) {
+            lines.add(line.toString().trim());
+        }
+
         return lines;
     }
+
 
 // Generate QR code image for the product
     PDImageXObject generateQrImageforEpson(ProductVO productVO, PDDocument document) throws IOException {

@@ -45,7 +45,8 @@ class ProductHelper {
     List<List<ProductVO>> convertProductSetIntoListofLists(Set<ProductVO> product_set){
 
         List<ProductVO> productlist = new ArrayList(product_set)
-        List<ProductVO> sortedlistLowToHighPrice = barcodeService.sortByPrice(productlist)
+        List<ProductVO> sortedlistLowToHighPrice = barcodeService.sortByName(productlist)
+//        List<ProductVO> sortedlistLowToHighPrice = barcodeService.sortByPrice(productlist)
 
         List<List<ProductVO>> result1 = barcodeHelper.splitIntoChunksOf10(sortedlistLowToHighPrice);
 

@@ -310,6 +310,11 @@ class BarcodeService {
         return productList.sort { a, b -> a.price <=> b.price }
     }
 
+    List<ProductVO> sortByName(List<ProductVO> productList) {
+        return productList.sort { a, b -> a.name <=> b.name }  // Sort by name alphabetically
+    }
+
+
 
     public static List<ProductVO> sortProductsByIdAscending(List<ProductVO> products) {
         Collections.sort(products, new Comparator<ProductVO>() {

@@ -88,8 +88,8 @@ class QrImageGenerator {
         g2d.setColor(Color.WHITE);
         g2d.fillRect(0, 0, finalWidth, finalHeight); // Fill the entire image with white
 
-        // Draw the QR code in the top-left corner, taking up half the space
-        g2d.drawImage(qrcodeImage, 70, 0, null);
+        // Draw the QR code
+        g2d.drawImage(qrcodeImage, 0, 0, null);
 
         // Set font and color for the text
         g2d.setFont(new Font("Arial", Font.PLAIN, fontSize));
@@ -100,7 +100,7 @@ class QrImageGenerator {
         int textY = qrSize; // Adjust the Y position as needed
 
         // Draw the text on the right side of the image
-        g2d.drawString(text, textX, textY+30);
+        //g2d.drawString(text, textX, textY);
 
         g2d.dispose();
 

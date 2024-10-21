@@ -56,6 +56,8 @@ public class JwtTokenProvider {
 
   private long validityInMillisecondsPhoneDownload = 3600000 ; // 1 hour
 
+//  private long validityInMillisecondsMediaDownload = Long.valueOf(7776000000) ; // 90 days
+
   private long validityInMillisecondsPublicToken = 1000 ; // 1 second just for letting people see one page
 
   @Autowired
@@ -94,6 +96,23 @@ public class JwtTokenProvider {
 
     Date now = new Date();
     Date validity = new Date(now.getTime() + validityInMillisecondsPhoneDownload);
+
+    return Jwts.builder()//
+            .setClaims(claims)//
+            .setIssuedAt(now)//
+            .setExpiration(validity)//
+            .signWith(SignatureAlgorithm.HS256, secretKey)//
+            .compact();
+  }
+
+  // this should probably be signed with a different key than regular user tokens
+  public String createTokenForMediaDownloadLinks(String email, List<Role> roles) {
+
+    Claims claims = Jwts.claims().setSubject(email);
+    claims.put("auth", roles.stream().map(s -> new SimpleGrantedAuthority(s.getAuthority())).filter(Objects::nonNull).collect(Collectors.toList()));
+
+    Date now = new Date();
+    Date validity = new Date(now.getTime() +Long.parseLong("7776000000")); // 90 days
 
     return Jwts.builder()//
             .setClaims(claims)//

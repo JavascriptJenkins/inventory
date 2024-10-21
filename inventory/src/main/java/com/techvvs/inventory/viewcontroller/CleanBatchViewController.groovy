@@ -204,7 +204,6 @@ public class CleanBatchViewController {
     String printmenu(
             Model model,
             @ModelAttribute( "searchproducttype" ) ProductTypeVO productTypeVO,
-            
             @RequestParam("editmode") String editmode,
             @RequestParam("batchnumber") String batchnumber,
             @RequestParam("page") Optional<Integer> page,
@@ -224,6 +223,31 @@ public class CleanBatchViewController {
 
         return "batch/batch.html";
     }
+
+    @PostMapping("/printmediamenu")
+    String printmediamenu(
+            Model model,
+            @ModelAttribute( "searchproducttype" ) ProductTypeVO productTypeVO,
+            @RequestParam("editmode") String editmode,
+            @RequestParam("batchnumber") String batchnumber,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size
+    ){
+
+        model = batchControllerHelper.processModel(model,  batchnumber, editmode, page, productTypeVO, true, false);
+        // I need to do here is build a pdf / excel document, store it in uploads folder, then send a download link back to the user
+
+
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication()
+
+        boolean success = batchControllerHelper.sendMediaTextMessageWithDownloadLink(model, authentication.getPrincipal().username, batchnumber, productTypeVO.priceadjustment)
+
+        success ? model.addAttribute("successMessage", "Sent text message link successfully at: "+formattingUtil.getDateTimeForFileSystem()+" | With price adjustment:"+productTypeVO.priceadjustment) : model.addAttribute("errorMessage", "Error sending text message link at:" +formattingUtil.getDateTimeForFileSystem())
+
+        return "batch/batch.html";
+    }
+
 
     @PostMapping("/likesearch")
     String viewLikeSearch(

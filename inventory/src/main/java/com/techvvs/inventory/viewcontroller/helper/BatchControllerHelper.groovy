@@ -17,11 +17,13 @@ import com.techvvs.inventory.model.SystemUserDAO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.modelnonpersist.FileVO
 import com.techvvs.inventory.qrcode.QrCodeService
+import com.techvvs.inventory.qrcode.impl.QrCodeBuilder
 import com.techvvs.inventory.service.auth.TechvvsAuthService
 import com.techvvs.inventory.util.FormattingUtil
 import com.techvvs.inventory.util.TechvvsFileHelper
 import com.techvvs.inventory.util.TwilioTextUtil
 import com.techvvs.inventory.viewcontroller.constants.ControllerConstants
+import org.apache.poi.common.usermodel.HyperlinkType
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
 import org.springframework.data.domain.Page
@@ -85,6 +87,9 @@ class BatchControllerHelper {
 
     @Autowired
     TechvvsAuthService techvvsAuthService
+
+    @Autowired
+    QrCodeBuilder qrCodeBuilder
 
     SecureRandom secureRandom = new SecureRandom();
 
@@ -473,7 +478,116 @@ class BatchControllerHelper {
 
     }
 
+    boolean sendMediaTextMessageWithDownloadLink(Model model, String username, String batchnumber, Double priceadjustment){
 
+        BatchVO batchVO = batchRepo.findAllByBatchnumber(Integer.valueOf(batchnumber))?.get(0)
+
+        SystemUserDAO systemUserDAO = systemUserRepo.findByEmail(username)
+
+
+        if(batchVO != null && systemUserDAO != null){
+            // create the file and put it in /batch/pricesheets/
+
+            String datetime = formattingUtil.getDateTimeForFileSystem()
+
+            String filename = createMediaExcelFile(appConstants.PARENT_LEVEL_DIR+batchVO.batchnumber+appConstants.BATCH_PRICE_SHEETS_DIR+batchVO.name+"_"+datetime+"_pa_"+String.valueOf(priceadjustment)+".xlsx", batchVO, priceadjustment)
+
+            boolean isDev1 = "dev1".equals(env.getProperty("spring.profiles.active"));
+
+            // SystemUserDAO systemUserDAO, String token, boolean isDev1
+            // send a text message with a download link
+            try{
+                textUtil.actuallySendOutDownloadLinkWithToken(filename, systemUserDAO, isDev1)
+            } catch(Exception ex){
+                System.out.println("Caught Exception: "+ex.getMessage())
+            } finally {
+                return true
+            }
+
+        }
+
+
+
+    }
+
+
+    String createMediaExcelFile(String filename, BatchVO batchVO, Double priceadjustment){
+
+        // Create a workbook and a sheet
+        Workbook workbook = new XSSFWorkbook()
+        Sheet sheet = workbook.createSheet("SampleSheet")
+
+        // NOTE: default column width is 2048. (256*8)
+        // TODO: write code to set column width based on character size
+
+        String baseqrdomain = env.getProperty("base.qr.domain")
+
+
+
+
+        // set the column header names
+        Row row = sheet.createRow(0)
+        row.createCell(0).setCellValue("Quantity")
+        sheet.setColumnWidth(1, 10000); // Set width of the first column for flavor
+        row.createCell(1).setCellValue("Flavor")
+        row.createCell(2).setCellValue("Ticket")
+        sheet.setColumnWidth(3, 10000); // Set width of the first column for barcode
+        row.createCell(3).setCellValue("Barcode")
+        sheet.setColumnWidth(4,10000)
+        row.createCell(4).setCellValue("Media")
+
+
+
+        ArrayList<ProductVO> listofproductsinstock = new ArrayList()
+        System.out.println("size of batch set: "+batchVO.product_set)
+        batchVO.product_set.each{ item ->
+            listofproductsinstock.add(item)
+        }
+
+        ProductVO.sortProductsByPrice(listofproductsinstock)
+
+
+
+        // set the values
+        for(int i=1;i<listofproductsinstock.size()+1;i++){
+            ProductVO productVO = listofproductsinstock[i - 1] // need to subtract 1 here to account for header row at index 0
+            // only export the xlsx if the quantityremaining is over 0
+
+            row = sheet.createRow(i)
+            //    setColumnWidthBasedOnString(sheet, 0 ,productVO.name) // set width of each name cell based on length
+            row.createCell(0).setCellValue(productVO.quantityremaining)
+            row.createCell(1).setCellValue(productVO.name)
+            row.createCell(2).setCellValue(productVO.price + priceadjustment)
+            row.createCell(3).setCellValue(productVO.barcode)
+
+
+            // Set the hyperlink (URL)
+            CreationHelper createHelper = workbook.getCreationHelper();
+            Hyperlink hyperlink = createHelper.createHyperlink(HyperlinkType.URL);
+            hyperlink.setAddress(qrCodeBuilder.buildMediaQrCodeForProductAsLink(baseqrdomain, productVO));
+
+            Cell qrcell = row.createCell(4)
+
+            // Set the hyperlink to the cell
+            qrcell.setHyperlink(hyperlink);
+            qrcell.setCellValue(productVO.name+" Media");  // Displayed text for the link
+
+
+        }
+
+
+        // create the directory if it doesn't exist
+        Files.createDirectories(Paths.get(appConstants.PARENT_LEVEL_DIR+batchVO.batchnumber+appConstants.BATCH_PRICE_SHEETS_DIR))
+
+        // Write the output to a file
+        FileOutputStream fileOut = new FileOutputStream(filename)
+        workbook.write(fileOut)
+        fileOut.close()
+        workbook.close()
+
+        println("Excel file '$filename' created successfully.")
+        return filename
+    }
     String createExcelFile(String filename, BatchVO batchVO, Double priceadjustment){
 
         // Create a workbook and a sheet
@@ -491,6 +605,9 @@ class BatchControllerHelper {
         row.createCell(2).setCellValue("Ticket")
         sheet.setColumnWidth(3, 10000); // Set width of the first column for barcode
         row.createCell(3).setCellValue("Barcode")
+        sheet.setColumnWidth(4,10000)
+        row.createCell(4).setCellValue("Media")
+
 
 
         ArrayList<ProductVO> listofproductsinstock = new ArrayList()
@@ -499,6 +616,9 @@ class BatchControllerHelper {
         }
 
         ProductVO.sortProductsByPrice(listofproductsinstock)
+
+        String baseqrdomain = env.getProperty("base.qr.domain")
+
 
         // set the values
         for(int i=1;i<listofproductsinstock.size()+1;i++){
@@ -511,6 +631,7 @@ class BatchControllerHelper {
                 row.createCell(1).setCellValue(productVO.name)
                 row.createCell(2).setCellValue(productVO.price + priceadjustment)
                 row.createCell(3).setCellValue(productVO.barcode)
+                row.createCell(4).setCellValue(qrCodeBuilder.buildMediaQrCodeForProduct(baseqrdomain, productVO))
             }
 
         }

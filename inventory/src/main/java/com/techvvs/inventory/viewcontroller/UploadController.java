@@ -209,22 +209,25 @@ public class UploadController {
             return "/product/editform.html";
         }
         System.out.println("file upload 3");
-        String fileName = "";
-        if(file.getOriginalFilename() != null){
-            System.out.println("file upload 4");
-            // sanitize the file name
-            fileName = techvvsFileHelper.sanitizeMultiPartFileName(file);
-        }
+        String filename = "";
+//        if(file.getOriginalFilename() != null){
+//            System.out.println("file upload 4");
+//            // sanitize the file name
+//            filename = techvvsFileHelper.sanitizeMultiPartFileName(file);
+//        }
 
         boolean success = false;
         // save the file on the local file system
+        filename = techvvsFileHelper.sanitizeMultiPartFileName(file);
 
-        fileName = fileName.replace("'", "");
-        fileName = fileName.replace(" ", "_");
+        filename = productVO.getName()+'_'+productVO.getProduct_id()+".MOV";
+        filename = filename.replaceAll(" ","_");
+
         try {
             System.out.println("file upload 5");
+            // ex. Yellow_Rose_100.MOV
             Files.createDirectories(Paths.get(appConstants.UPLOAD_DIR_MEDIA+appConstants.UPLOAD_DIR_PRODUCT+"/"+productVO.getProduct_id()));
-            Path path = Paths.get(appConstants.UPLOAD_DIR_MEDIA+appConstants.UPLOAD_DIR_PRODUCT+"/"+productVO.getProduct_id()+"/"+fileName);
+            Path path = Paths.get(appConstants.UPLOAD_DIR_MEDIA+appConstants.UPLOAD_DIR_PRODUCT+"/"+productVO.getProduct_id()+"/"+filename);
             System.out.println("file upload 6");
             Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
             System.out.println("file upload 7");
@@ -246,11 +249,11 @@ public class UploadController {
 
 
         if(success){
-            model.addAttribute("successMessage","Upload for media file completed: " + fileName + '!');
+            model.addAttribute("successMessage","Upload for media file completed: " + filename + '!');
             model.addAttribute("editmode", "no");
         } else {
             // this should never happen
-            model.addAttribute("errorMessage","Problem uploading file: " + fileName + '!');
+            model.addAttribute("errorMessage","Problem uploading file: " + filename + '!');
         }
 
         bindProductTypes(model);
@@ -258,7 +261,7 @@ public class UploadController {
         model.addAttribute("editmode", "no");
 
         techvvsAuthService.checkuserauth(model);
-        return "redirect:/product/editform.html?editmode=no&productnumber&"+productVO.getProductnumber()+"successMessage="+"Upload for media file completed: " + fileName + '!';
+        return "redirect:/product/editform.html?editmode=no&productnumber&"+productVO.getProductnumber()+"successMessage="+"Upload for media file completed: " + filename + '!';
     }
 
     void bindBatchTypes(Model model){
@@ -580,6 +583,53 @@ public class UploadController {
 //        return "redirect: /newform/viewNewForm";
     }
 
+    @RequestMapping(value="/smsdownload3", method=RequestMethod.GET)
+    public void smsdownload3(
+            @RequestParam("filename") String filename,
+            @RequestParam("product_id") String product_id,
+            @RequestParam("customJwtParameter") String customJwtParameter,
+            HttpServletResponse response
+    ) {
+
+        // check the token here, will throw 403 if the token is expired
+        jwtTokenProvider.validateTokenForSmsPhoneDownload(customJwtParameter);
+
+        String fullpath = appConstants.UPLOAD_DIR_MEDIA+appConstants.UPLOAD_DIR_PRODUCT+product_id+"/"+filename;
+
+        File file;
+
+        try {
+
+            // todo: set .xlsx filetype here
+            if(filename.contains(".pdf")){
+                response.setContentType("application/pdf");
+            } else if(filename.contains(".xlsx")){
+                response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            } else if(filename.contains(".MOV")){
+                response.setContentType("video/quicktime");
+            }
+            response.setHeader("Content-Disposition","attachment; filename="+filename);
+
+            file = new File(fullpath); // pass in full filepath here
+
+            byte[] fileContent = Files.readAllBytes(file.toPath());
+
+            // get your file as InputStream
+            InputStream is = new ByteArrayInputStream(fileContent);
+
+            // copy it to response's OutputStream
+            org.apache.commons.io.IOUtils.copy(is, response.getOutputStream());
+            response.flushBuffer();
+
+        } catch (IOException ex) {
+            System.out.println("Error writing file to output stream. Filename was: " +filename);
+            System.out.println("Error writing file to output stream. exception: " +ex.getMessage());
+            throw new RuntimeException("IOError writing file to output stream");
+        }
+
+
+//        return "redirect: /newform/viewNewForm";
+    }
 
     // this should be used for public facing whitelisted downloads like coa's for example
     @RequestMapping(value="/publicdownload", method=RequestMethod.GET)

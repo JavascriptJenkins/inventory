@@ -49,6 +49,9 @@ class QrCodeGenerator {
     @Autowired
     TechvvsPdfWriterUtil techvvsPdfWriterUtil
 
+    @Autowired
+    QrCodeBuilder qrCodeBuilder
+
     // need to make a qr code generator that generates a QR for every barcode
     void generateQrcodes(String filenameExtension, int batchnumber, int pagenumber, Set<ProductVO> productset) throws IOException {
 
@@ -281,7 +284,9 @@ class QrCodeGenerator {
                         // todo: route this to a media link
                         // // Path path = Paths.get(appConstants.UPLOAD_DIR_MEDIA+appConstants.UPLOAD_DIR_PRODUCT+"/"+productVO.getProduct_id()+"/"+fileName);
                         // we are binding productid,name,number - that way if the database gets blown out we can use other items if need be....
-                        qrcodeData = baseqrdomain+"/file/privateqrmediadownload?productid="+productVO.product_id+"&name="+productVO.name+"&number="+productVO.productnumber+"&batchnumber="+batchnumber+"&batchname="+batchname
+
+                        qrcodeData = qrCodeBuilder.buildMediaQrCodeForProduct(baseqrdomain, productVO)
+                        //qrcodeData = baseqrdomain+"/file/privateqrmediadownload?productid="+productVO.product_id+"&name="+productVO.name+"&number="+productVO.productnumber+"&batchnumber="+batchnumber+"&batchname="+batchname
                     } else {
                         qrcodeData = baseqrdomain+appConstants.QR_CODE_URI_EXTENSION+productVO.getProduct_id()
                     }
