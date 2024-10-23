@@ -38,7 +38,7 @@ class BarcodeHelperTest extends Specification {
         String result = barcodeHelper.generateBarcodeData(row, col, batchnumber, pagenumber)
 
         then:
-        result == "048739801017"
+        result == "087398101014"
         0*_._
     }
 
@@ -53,7 +53,7 @@ class BarcodeHelperTest extends Specification {
         String result = barcodeHelper.generateBarcodeData(row, col, batchnumber, pagenumber)
 
         then:
-        result == "048739101018"
+        result == "087391001014"
         0*_._
     }
 
@@ -69,7 +69,7 @@ class BarcodeHelperTest extends Specification {
         String result = barcodeHelper.generateBarcodeData(row, col, batchnumber, pagenumber)
 
         then:
-        result == "048731001019"
+        result == "087310001019"
         0*_._
     }
 
