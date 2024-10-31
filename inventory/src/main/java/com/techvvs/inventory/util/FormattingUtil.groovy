@@ -1,8 +1,6 @@
 package com.techvvs.inventory.util
 
 import com.techvvs.inventory.model.CartVO
-import com.techvvs.inventory.model.DiscountVO
-import com.techvvs.inventory.model.TransactionVO
 import org.springframework.stereotype.Component
 
 import java.text.DecimalFormat
