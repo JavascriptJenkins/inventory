@@ -7,6 +7,7 @@ import com.techvvs.inventory.jparepo.TransactionRepo
 import com.techvvs.inventory.model.CartVO
 import com.techvvs.inventory.model.CustomerVO
 import com.techvvs.inventory.model.DiscountVO
+import com.techvvs.inventory.model.PackageVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.util.FormattingUtil
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
 import org.springframework.ui.Model
 import spock.lang.Specification
+import spock.lang.Unroll
 
 import java.time.LocalDateTime
 
@@ -172,4 +174,51 @@ class TransactionServiceTest extends Specification {
 
 
     }
+
+
+    @Unroll
+    def "getAggregatedProductList should return a list with unique barcodes"() {
+        given:
+        TransactionVO transactionVO = new TransactionVO(product_list: products)
+
+        expect:
+        transactionService.getAggregatedProductList(transactionVO).size() == expectedSize
+
+        where:
+        products                                                          | expectedSize
+        [new ProductVO(barcode: "123"), new ProductVO(barcode: "123")]    | 1
+        [new ProductVO(barcode: "123"), new ProductVO(barcode: "456")]    | 2
+        []                                                                | 0
+    }
+
+    @Unroll
+    def "getAggregatedCartProductList should return a list with unique barcodes from cart"() {
+        given:
+        CartVO cartVO = new CartVO(product_cart_list: products)
+
+        expect:
+        transactionService.getAggregatedCartProductList(cartVO).size() == expectedSize
+
+        where:
+        products                                                          | expectedSize
+        [new ProductVO(barcode: "123"), new ProductVO(barcode: "123")]    | 1
+        [new ProductVO(barcode: "123"), new ProductVO(barcode: "456")]    | 2
+        []                                                                | 0
+    }
+
+    @Unroll
+    def "getAggregatedPackageProductList should return a list with unique barcodes from package"() {
+        given:
+        PackageVO packageVO = new PackageVO(product_package_list: products)
+
+        expect:
+        transactionService.getAggregatedPackageProductList(packageVO).size() == expectedSize
+
+        where:
+        products                                                          | expectedSize
+        [new ProductVO(barcode: "123"), new ProductVO(barcode: "123")]    | 1
+        [new ProductVO(barcode: "123"), new ProductVO(barcode: "456")]    | 2
+        []                                                                | 0
+    }
+
 }
