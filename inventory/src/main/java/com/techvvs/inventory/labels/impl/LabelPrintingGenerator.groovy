@@ -237,12 +237,17 @@ class LabelPrintingGenerator {
         if (isDev1) {
             qrcodeData = appConstants.QR_CODE_PUBLIC_INFO_LINK_DEV1 + productVO.getProduct_id();
         } else {
-            boolean isMediaMode = env.getProperty("qr.mode.media").equals("true");
-            if (isMediaMode) {
-                qrcodeData = baseQrDomain + "/file/privateqrmediadownload?productid="+productVO.getProduct_id()+"&name="+productVO.name+"&number="+productVO.productnumber;
-            } else {
-                qrcodeData = baseQrDomain + appConstants.QR_CODE_URI_EXTENSION + productVO.getProduct_id();
+            // todo: this is hack to make it leafly for inventory spooky units
+            boolean isqrmode = env.getProperty("qr.mode.leafly").equals("true") // only do leafly search if this is true
+            if(isqrmode){
+                qrcodeData = appConstants.QR_CODE_URI_LEAFYLY+productVO.name
             }
+//            boolean isMediaMode = env.getProperty("qr.mode.media").equals("true");
+//            if (isMediaMode) {
+//                qrcodeData = baseQrDomain + "/file/privateqrmediadownload?productid="+productVO.getProduct_id()+"&name="+productVO.name+"&number="+productVO.productnumber;
+//            } else {
+//                qrcodeData = baseQrDomain + appConstants.QR_CODE_URI_EXTENSION + productVO.getProduct_id();
+//            }
         }
 
         BufferedImage qrImage = qrImageGenerator.generateQrImageWithCustomSizes(

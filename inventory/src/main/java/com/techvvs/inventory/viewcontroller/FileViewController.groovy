@@ -129,6 +129,8 @@ public class FileViewController {
         BatchVO batchVO = batchControllerHelper.loadBatch(batchid, model)
 
         labelPrintingService.createEpsonC6000AuLabel4by6point5(batchVO)
+        // todo: make a seperate button for this
+        batchControllerHelper.generateBarcodeManifestForBatch(String.valueOf(batchVO.batchnumber))
 
         Page<FileVO> filePage = filePagingService.getFilePage(batchVO, page.get(), size.get(), appConstants.BARCODES_EPSON_64_DIR)
         filePagingService.bindPageAttributesToModel(model, filePage, page, size);

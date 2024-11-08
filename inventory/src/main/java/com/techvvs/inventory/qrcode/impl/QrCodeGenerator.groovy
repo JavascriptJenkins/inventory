@@ -279,17 +279,17 @@ class QrCodeGenerator {
                     qrcodeData = appConstants.QR_CODE_PUBLIC_INFO_LINK_DEV1+productVO.getProduct_id()
                 } else {
                     // prod
-                    boolean ismediamode = env.getProperty("qr.mode.media").equals("true") // make the qr codes
-                    if(ismediamode) {
-                        // todo: route this to a media link
-                        // // Path path = Paths.get(appConstants.UPLOAD_DIR_MEDIA+appConstants.UPLOAD_DIR_PRODUCT+"/"+productVO.getProduct_id()+"/"+fileName);
-                        // we are binding productid,name,number - that way if the database gets blown out we can use other items if need be....
-
-                        qrcodeData = qrCodeBuilder.buildMediaQrCodeForProduct(baseqrdomain, productVO)
-                        //qrcodeData = baseqrdomain+"/file/privateqrmediadownload?productid="+productVO.product_id+"&name="+productVO.name+"&number="+productVO.productnumber+"&batchnumber="+batchnumber+"&batchname="+batchname
-                    } else {
-                        qrcodeData = baseqrdomain+appConstants.QR_CODE_URI_EXTENSION+productVO.getProduct_id()
+                    boolean isqrmode = env.getProperty("qr.mode.leafly").equals("true") // only do leafly search if this is true
+                    if(isqrmode){
+                        qrcodeData = appConstants.QR_CODE_URI_LEAFYLY+productVO.name
                     }
+                    // todo: make this more dynamic.  this works but is a hack to get the leafly qrs on inventory units
+//                    boolean ismediamode = env.getProperty("qr.mode.media").equals("true") // make the qr codes
+//                    if(ismediamode) {
+//                        qrcodeData = qrCodeBuilder.buildMediaQrCodeForProduct(baseqrdomain, productVO)
+//                    } else {
+//                        qrcodeData = baseqrdomain+appConstants.QR_CODE_URI_EXTENSION+productVO.getProduct_id()
+//                    }
                 }
 
                 qrImage = qrImageGenerator.generateQrImage(qrcodeData, limitStringTo20Chars(productVO.name));
