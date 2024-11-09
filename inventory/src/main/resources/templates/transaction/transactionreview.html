@@ -387,7 +387,7 @@
 <div id="pageContent" class="container">
     <div class="header-dark">
         <div class="back-button">
-            <a th:href="@{/transaction/listall}"><i class="bi bi-arrow-left-circle"></i></a>
+            <a id="backLink" th:href="@{/transaction/listall?size=100&page=0&customerid=__${transaction.customervo.customerid}__}"><i class="bi bi-arrow-left-circle"></i></a>
         </div>
         <div class="col-md-4">
             <h1>Transaction Review</h1>
