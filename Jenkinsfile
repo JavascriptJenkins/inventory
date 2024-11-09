@@ -4,7 +4,7 @@ pipeline {
 
     // Define a branch parameter to allow selection of the branch at runtime
     parameters {
-        string(name: 'BRANCH', defaultValue: 'main', description: 'Branch to build')
+        string(name: 'BRANCH', defaultValue: 'prod', description: 'Branch to build')
     }
 
     stages {
@@ -14,7 +14,7 @@ pipeline {
                 checkout([
                     $class: 'GitSCM',
                     branches: [[name: "*/${params.BRANCH}"]],
-                    userRemoteConfigs: [[url: 'https://github.com/your-username/your-repo.git', credentialsId: 'githubcreds']]
+                    userRemoteConfigs: [[url: 'https://github.com/javascriptjenkins/inventory.git', credentialsId: 'githubcreds']]
                 ])
             }
         }
