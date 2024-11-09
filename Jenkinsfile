@@ -4,7 +4,7 @@ pipeline {
 
     // Define a branch parameter to allow selection of the branch at runtime
     parameters {
-        string(name: 'BRANCH', defaultValue: 'prod', description: 'Branch to build')
+        string(name: 'BRANCH', defaultValue: 'main', description: 'Branch to build')
     }
 
     stages {
@@ -14,24 +14,26 @@ pipeline {
                 checkout([
                     $class: 'GitSCM',
                     branches: [[name: "*/${params.BRANCH}"]],
-                    userRemoteConfigs: [[url: 'https://github.com/javascriptjenkins/inventory.git', credentialsId: 'githubcreds']]
+                    userRemoteConfigs: [[url: 'https://github.com/your-username/your-repo.git', credentialsId: 'githubcreds']]
                 ])
             }
         }
 
         stage('Build') {
             steps {
-                // Use Maven to build the project
                 script {
-                    // Ensure Maven is available and run the build
-                    if (fileExists('pom.xml')) {
-                        sh 'mvn clean install'
-                    } else {
-                        error 'pom.xml not found! Ensure you are on the correct branch with a Maven project.'
+                    // Change directory to /inventory
+                    dir('inventory') {
+                        // Check if pom.xml exists within the /inventory directory
+                        if (fileExists('pom.xml')) {
+                            // Run Maven build
+                            sh 'mvn clean install'
+                        } else {
+                            error 'pom.xml not found in the /inventory directory! Ensure this is a Maven project.'
+                        }
                     }
                 }
             }
         }
     }
 }
-
