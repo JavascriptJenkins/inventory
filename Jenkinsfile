@@ -54,7 +54,7 @@ pipeline {
             }
             steps {
                 script {
-                    def jarFile = 'inventory/inventory/target/inventory-0.0.1-SNAPSHOT.jar' // Replace with actual .jar file path
+                    def jarFile = 'inventory/target/inventory-0.0.1-SNAPSHOT.jar'
 
                     if (fileExists(jarFile)) {
                         // SSH into the remote server to stop the running Java process and move existing JAR to backup
