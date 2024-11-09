@@ -53,27 +53,30 @@ pipeline {
                 expression { params.HOSTNAME != '' } // Only run if HOSTNAME parameter is provided
             }
             steps {
-                script {
-                    def jarFile = 'inventory/target/inventory-0.0.1-SNAPSHOT.jar'
+                sshagent(credentials: [SSH_KEY]) {
+                    script {
+                        def jarFile = 'inventory/target/inventory-0.0.1-SNAPSHOT.jar'
 
-                    if (fileExists(jarFile)) {
-                        // SSH into the remote server to stop the running Java process and move existing JAR to backup
-                        sh """
-                            ssh -i ${SSH_KEY} ${params.SSHUSER}@${params.HOSTNAME} << EOF
-                                sudo killall java -15 || echo "No Java process found to kill"
-                                sudo mv /root/deployments/inventory/inventory-0.0.1-SNAPSHOT.jar /root/deployments/inventory/backupdep/inventory-0.0.1-SNAPSHOT.jar || echo "No existing JAR to move"
-                            EOF
-                        """
+                        if (fileExists(jarFile)) {
+                            // Run remote commands to stop the Java process and move existing JAR to backup
+                            sh """
+                                ssh -o StrictHostKeyChecking=no ${params.SSHUSER}@${params.HOSTNAME} << EOF
+                                    sudo killall java -15 || echo "No Java process found to kill"
+                                    sudo mv /root/deployments/inventory/inventory-0.0.1-SNAPSHOT.jar /root/deployments/inventory/backupdep/inventory-0.0.1-SNAPSHOT.jar || echo "No existing JAR to move"
+                                EOF
+                            """
 
-                        // Copy the new .jar file to the remote server
-                        sh """
-                            scp -i ${SSH_KEY} ${jarFile} ${params.SSHUSER}@${params.HOSTNAME}:/root/deployments/inventory/
-                        """
-                    } else {
-                        error "JAR file not found at ${jarFile}"
+                            // Copy the new .jar file to the remote server
+                            sh """
+                                scp -o StrictHostKeyChecking=no ${jarFile} ${params.SSHUSER}@${params.HOSTNAME}:/root/deployments/inventory/
+                            """
+                        } else {
+                            error "JAR file not found at ${jarFile}"
+                        }
                     }
                 }
             }
+
        }
     }
 }
