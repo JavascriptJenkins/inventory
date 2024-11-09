@@ -4,7 +4,7 @@ pipeline {
 
 
     tools {
-        maven 'Maven3' // Use the name you specified in Global Tool Configuration
+        maven 'maven3' // Use the name you specified in Global Tool Configuration
     }
 
 
