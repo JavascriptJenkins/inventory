@@ -2,6 +2,12 @@
 pipeline {
     agent any
 
+
+    tools {
+        maven 'Maven3' // Use the name you specified in Global Tool Configuration
+    }
+
+
     // Define a branch parameter to allow selection of the branch at runtime
     parameters {
         string(name: 'BRANCH', defaultValue: 'prod', description: 'Branch to build')
