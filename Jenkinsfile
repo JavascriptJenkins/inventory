@@ -200,5 +200,18 @@ EOF
             }
 
        }
+
+      stage('Check Application Status') {
+           steps {
+               script {
+                   def response = httpRequest(
+                       url: 'https://inventory.techvvs.io/login',
+                       httpMode: 'GET',
+                       validResponseCodes: '200'  // Expecting a 200 response
+                   )
+                   echo "Application is up and returned 200 OK."
+               }
+           }
+       }
     }
 }
