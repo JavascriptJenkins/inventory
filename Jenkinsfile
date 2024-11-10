@@ -53,7 +53,7 @@ pipeline {
                 expression { params.HOSTNAME != '' } // Only run if HOSTNAME parameter is provided
             }
             steps {
-                sshagent(credentials: [SSH_KEY]) {
+                sshagent(credentials: ['inventory-root-sshkey']) {
                     script {
                         def jarFile = 'inventory/target/inventory-0.0.1-SNAPSHOT.jar'
 
