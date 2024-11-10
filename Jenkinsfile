@@ -19,10 +19,7 @@ pipeline {
         string(name: 'SSHUSER', defaultValue: 'root', description: 'user for ssh key')
         string(name: 'LOAD_REF_DATA', defaultValue: 'no', description: 'Value for load.ref.data (leave blank to keep default)')
         string(name: 'ENVIRONMENT_NAME', defaultValue: 'prod', description: 'environment name, prod and dev1 are the optional values')
-        string(name: 'BASE_QR_DOMAIN', defaultValue: '', description: 'probably can delete this')
-        string(name: 'TWILIO_API_USER', defaultValue: '', description: 'twilio username')
-        string(name: 'TWILIO_API_PASSWORD', defaultValue: '', description: 'twilio password')
-        string(name: 'SENDGRID_API_KEY', defaultValue: '', description: 'sendgrid api key')
+        string(name: 'BASE_QR_DOMAIN', defaultValue: 'https://inventory.techvvs.io', description: 'probably can delete this')
         string(name: 'DB_TYPE', defaultValue: 'h2', description: 'type of database.  only inventory uses h2')
         string(name: 'DB_H2_CONSOLE_ENABLED', defaultValue: 'true', description: 'type of database.  only inventory uses h2')
         string(name: 'DB_H2_WEB_ALLOWOTHERS', defaultValue: 'true', description: 'type of database.  only inventory uses h2')
@@ -30,10 +27,8 @@ pipeline {
         string(name: 'DB_JPA_DATABASE_PLATFORM', defaultValue: 'org.hibernate.dialect.H2Dialect', description: 'type of database.  only inventory uses h2')
         string(name: 'DB_JPA_HIBERNATE_DIALECT', defaultValue: 'org.hibernate.dialect.H2Dialect', description: 'type of database.  only inventory uses h2')
         string(name: 'DB_URI', defaultValue: 'jdbc:h2:file:./data/demo', description: 'datasource uri')
-        string(name: 'DB_USERNAME', defaultValue: '', description: 'spring data username')
-        string(name: 'DB_PASSWORD', defaultValue: '', description: 'spring data password')
+        string(name: 'DB_USERNAME', defaultValue: 'produser', description: 'spring data username')
         string(name: 'SPRING_DATABASE_ACTION', defaultValue: 'update', description: 'this value will control create-drop, update, etc')
-        string(name: 'JWT_SECRET_KEY', defaultValue: '', description: 'key for signing tokens')
         string(name: 'MAX_FILE_SIZE', defaultValue: '500MB', description: 'key for signing tokens')
         string(name: 'MAX_REQ_SIZE', defaultValue: '500MB', description: 'key for signing tokens')
 
@@ -54,14 +49,67 @@ pipeline {
         stage('Update Properties') {
             steps {
                 script {
-                    dir('inventory') {
-                        sh "ls -l"
-                        // Only replace if LOAD_REF_DATA parameter is provided
-                        if (params.LOAD_REF_DATA) {
-                            // Replace the `load.ref.data` property value in application.properties
-                            sh "sed -i 's/^load\\.ref\\.data=.*/load.ref.data=${params.LOAD_REF_DATA}/' src/main/resources/application.properties"
-                            sh "sed -i 's/^load\\.ref\\.data=.*/load.ref.data=${params.LOAD_REF_DATA}/' src/main/resources/application.properties"
-                            sh "sed -i 's/^load\\.ref\\.data=.*/load.ref.data=${params.LOAD_REF_DATA}/' src/main/resources/application.properties"
+                    // Load multiple credentials simultaneously
+                    withCredentials([
+                        string(credentialsId: 'TWILIO_API_USER', variable: 'TWILIO_API_USER'),
+                        string(credentialsId: 'TWILIO_API_PASSWORD', variable: 'TWILIO_API_PASSWORD'),
+                        string(credentialsId: 'SENDGRID_API_KEY', variable: 'SENDGRID_API_KEY'),
+                         string(credentialsId: 'DB_PASSWORD', variable: 'DB_PASSWORD'),
+                         string(credentialsId: 'JWT_SECRET_KEY', variable: 'JWT_SECRET_KEY')
+                    ])
+                    {
+                        dir('inventory') {
+                            sh "ls -l"
+                            // Replace spring.profiles.active if provided
+                            if (params.ENVIRONMENT_NAME) {
+                                sh "sed -i 's/^spring\\.profiles\\.active=.*/spring.profiles.active=${params.ENVIRONMENT_NAME}/' src/main/resources/application.properties"
+                            }
+                            // Only replace if LOAD_REF_DATA parameter is provided
+                            if (params.LOAD_REF_DATA) {
+                                // Replace the `load.ref.data` property value in application.properties
+                                sh "sed -i 's/^load\\.ref\\.data=.*/load.ref.data=${params.LOAD_REF_DATA}/' src/main/resources/application.properties"
+                            }
+                            // Replace spring.datasource.username if provided
+                            if (params.DB_USERNAME) {
+                                sh "sed -i 's/^spring\\.datasource\\.username=.*/spring.datasource.username=${params.DB_USERNAME}/' src/main/resources/application.properties"
+                            }
+                            // Replace spring.jpa.hibernate.ddl-auto if provided
+                            if (params.SPRING_DATABASE_ACTION) {
+                                sh "sed -i 's/^spring\\.jpa\\.hibernate\\.ddl-auto=.*/spring.jpa.hibernate.ddl-auto=${params.SPRING_DATABASE_ACTION}/' src/main/resources/application.properties"
+                            }
+                            // Replace spring.datasource.driver-class-name if provided
+                            if (params.DB_DRIVER_CLASS_NAME) {
+                                sh "sed -i 's/^spring\\.datasource\\.driver-class-name=.*/spring.datasource.driver-class-name=${params.DB_DRIVER_CLASS_NAME}/' src/main/resources/application.properties"
+                            }
+                            // Replace spring.jpa.database-platform if provided
+                            if (params.DB_JPA_DATABASE_PLATFORM) {
+                                sh "sed -i 's/^spring\\.jpa\\.database-platform=.*/spring.jpa.database-platform=${params.DB_JPA_DATABASE_PLATFORM}/' src/main/resources/application.properties"
+                            }
+                            // Replace spring.jpa.properties.hibernate.dialect if provided
+                            if (params.DB_JPA_HIBERNATE_DIALECT) {
+                                sh "sed -i 's/^spring\\.jpa\\.properties\\.hibernate\\.dialect=.*/spring.jpa.properties.hibernate.dialect=${params.DB_JPA_HIBERNATE_DIALECT}/' src/main/resources/application.properties"
+                            }
+                            // Replace spring.datasource.url if provided
+                            if (params.DB_URI) {
+                                sh "sed -i 's/^spring\\.datasource\\.url=.*/spring.datasource.url=${params.DB_URI}/' src/main/resources/application.properties"
+                            }
+                            // Replace spring.h2.console.enabled if provided
+                            if (params.DB_H2_CONSOLE_ENABLED) {
+                                sh "sed -i 's/^spring\\.h2\\.console\\.enabled=.*/spring.h2.console.enabled=${params.DB_H2_CONSOLE_ENABLED}/' src/main/resources/application.properties"
+                            }
+
+                            // Replace spring.h2.console.settings.web-allow-others if provided
+                            if (params.DB_H2_WEB_ALLOWOTHERS) {
+                                sh "sed -i 's/^spring\\.h2\\.console\\.settings\\.web-allow-others=.*/spring.h2.console.settings.web-allow-others=${params.DB_H2_WEB_ALLOWOTHERS}/' src/main/resources/application.properties"
+                            }
+
+                            sh "sed -i 's/^twilio\\.api\\.username=.*/twilio.api.username=${TWILIO_API_USER}/' src/main/resources/application.properties"
+                            sh "sed -i 's/^twilio\\.api\\.password=.*/twilio.api.password=${TWILIO_API_PASSWORD}/' src/main/resources/application.properties"
+                            sh "sed -i 's/^sendgrid\\.api\\.key=.*/sendgrid.api.key=${SENDGRID_API_KEY}/' src/main/resources/application.properties"
+                            sh "sed -i 's/^spring\\.datasource\\.password=.*/spring.datasource.password=${DB_PASSWORD}/' src/main/resources/application.properties"
+                            sh "sed -i 's/^security\\.jwt\\.token\\.secret-key=.*/security.jwt.token.secret-key=${JWT_SECRET_KEY}/' src/main/resources/application.properties"
+
+
                         }
                     }
                 }
