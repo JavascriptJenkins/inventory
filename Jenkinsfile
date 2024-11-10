@@ -151,7 +151,7 @@ pipeline {
 
         stage('Stop Java Process') {
             steps {
-                sshagent(credentials: [SSH_KEY]) {
+                sshagent(credentials: ['inventory-root-sshkey']) {
                     sh """
                         ssh -o StrictHostKeyChecking=no ${params.SSHUSER}@${params.HOSTNAME} "sudo killall java -15 || echo 'No Java process found to kill'"
                     """
