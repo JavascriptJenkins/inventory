@@ -155,6 +155,14 @@ EOF
                             sh """
                                 scp -o StrictHostKeyChecking=no ${jarFile} ${params.SSHUSER}@${params.HOSTNAME}:/root/deployments/inventory/
                             """
+
+                            // Start the application on the remote server as root, using nohup and su -c
+                            sh """
+                                ssh -o StrictHostKeyChecking=no ${params.SSHUSER}@${params.HOSTNAME} << 'EOF'
+                                cd /root/deployments/inventory
+                                sudo su -c "nohup java -jar inventory-0.0.1-SNAPSHOT.jar &" -s /bin/sh root
+EOF
+                            """
                         } else {
                             error "JAR file not found at ${jarFile}"
                         }
