@@ -41,7 +41,7 @@ pipeline {
                         // Only replace if LOAD_REF_DATA parameter is provided
                         if (params.LOAD_REF_DATA) {
                             // Replace the `load.ref.data` property value in application.properties
-                            sh "sed -i 's/^load\\.ref\\.data=.*/load.ref.data=${params.LOAD_REF_DATA}/' inventory/src/main/resources/application.properties"
+                            sh "sed -i 's/^load\\.ref\\.data=.*/load.ref.data=${params.LOAD_REF_DATA}/' src/main/resources/application.properties"
                         }
                     }
                 }
