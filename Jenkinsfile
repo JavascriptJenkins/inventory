@@ -37,7 +37,7 @@ pipeline {
             steps {
                 script {
                     dir('inventory') {
-                        sh ls -l
+                        sh "ls -l"
                         // Only replace if LOAD_REF_DATA parameter is provided
                         if (params.LOAD_REF_DATA) {
                             // Replace the `load.ref.data` property value in application.properties
