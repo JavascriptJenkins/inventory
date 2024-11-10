@@ -18,6 +18,24 @@ pipeline {
         string(name: 'HOSTNAME', defaultValue: '64.227.4.159', description: 'Target host IP address for deployment')
         string(name: 'SSHUSER', defaultValue: 'root', description: 'user for ssh key')
         string(name: 'LOAD_REF_DATA', defaultValue: 'no', description: 'Value for load.ref.data (leave blank to keep default)')
+        string(name: 'ENVIRONMENT_NAME', defaultValue: 'prod', description: 'environment name, prod and dev1 are the optional values')
+        string(name: 'BASE_QR_DOMAIN', defaultValue: '', description: 'probably can delete this')
+        string(name: 'TWILIO_API_USER', defaultValue: '', description: 'twilio username')
+        string(name: 'TWILIO_API_PASSWORD', defaultValue: '', description: 'twilio password')
+        string(name: 'SENDGRID_API_KEY', defaultValue: '', description: 'sendgrid api key')
+        string(name: 'DB_TYPE', defaultValue: 'h2', description: 'type of database.  only inventory uses h2')
+        string(name: 'DB_H2_CONSOLE_ENABLED', defaultValue: 'true', description: 'type of database.  only inventory uses h2')
+        string(name: 'DB_H2_WEB_ALLOWOTHERS', defaultValue: 'true', description: 'type of database.  only inventory uses h2')
+        string(name: 'DB_DRIVER_CLASS_NAME', defaultValue: 'org.h2.Driver', description: 'type of database.  only inventory uses h2')
+        string(name: 'DB_JPA_DATABASE_PLATFORM', defaultValue: 'org.hibernate.dialect.H2Dialect', description: 'type of database.  only inventory uses h2')
+        string(name: 'DB_JPA_HIBERNATE_DIALECT', defaultValue: 'org.hibernate.dialect.H2Dialect', description: 'type of database.  only inventory uses h2')
+        string(name: 'DB_URI', defaultValue: 'jdbc:h2:file:./data/demo', description: 'datasource uri')
+        string(name: 'DB_USERNAME', defaultValue: '', description: 'spring data username')
+        string(name: 'DB_PASSWORD', defaultValue: '', description: 'spring data password')
+        string(name: 'SPRING_DATABASE_ACTION', defaultValue: 'update', description: 'this value will control create-drop, update, etc')
+        string(name: 'JWT_SECRET_KEY', defaultValue: '', description: 'key for signing tokens')
+        string(name: 'MAX_FILE_SIZE', defaultValue: '500MB', description: 'key for signing tokens')
+        string(name: 'MAX_REQ_SIZE', defaultValue: '500MB', description: 'key for signing tokens')
 
     }
 
@@ -41,6 +59,8 @@ pipeline {
                         // Only replace if LOAD_REF_DATA parameter is provided
                         if (params.LOAD_REF_DATA) {
                             // Replace the `load.ref.data` property value in application.properties
+                            sh "sed -i 's/^load\\.ref\\.data=.*/load.ref.data=${params.LOAD_REF_DATA}/' src/main/resources/application.properties"
+                            sh "sed -i 's/^load\\.ref\\.data=.*/load.ref.data=${params.LOAD_REF_DATA}/' src/main/resources/application.properties"
                             sh "sed -i 's/^load\\.ref\\.data=.*/load.ref.data=${params.LOAD_REF_DATA}/' src/main/resources/application.properties"
                         }
                     }
