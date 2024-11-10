@@ -156,11 +156,13 @@ EOF
                                 scp -o StrictHostKeyChecking=no ${jarFile} ${params.SSHUSER}@${params.HOSTNAME}:/root/deployments/inventory/
                             """
 
-                            // Start the application on the remote server as root, using nohup and su -c
+                    // Start the application and tail the log for 15 seconds
                             sh """
                                 ssh -o StrictHostKeyChecking=no ${params.SSHUSER}@${params.HOSTNAME} << 'EOF'
                                 cd /root/deployments/inventory
-                                sudo su -c "nohup java -jar inventory-0.0.1-SNAPSHOT.jar &" -s /bin/sh root
+                                sudo su -c "nohup java -jar inventory-0.0.1-SNAPSHOT.jar > app.log 2>&1 &" -s /bin/sh root
+                                sleep 2  # Give a moment for the app to start and write to the log
+                                sudo timeout 15 tail -f app.log
 EOF
                             """
                         } else {
