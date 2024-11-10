@@ -63,7 +63,7 @@ pipeline {
                                 ssh -o StrictHostKeyChecking=no ${params.SSHUSER}@${params.HOSTNAME} << EOF
                                     sudo killall java -15 || echo "No Java process found to kill"
                                     sudo mv /root/deployments/inventory/inventory-0.0.1-SNAPSHOT.jar /root/deployments/inventory/backupdep/inventory-0.0.1-SNAPSHOT.jar || echo "No existing JAR to move"
-                                EOF
+EOF
                             """
 
                             // Copy the new .jar file to the remote server
