@@ -36,10 +36,13 @@ pipeline {
         stage('Update Properties') {
             steps {
                 script {
-                    // Only replace if LOAD_REF_DATA parameter is provided
-                    if (params.LOAD_REF_DATA) {
-                        // Replace the `load.ref.data` property value in application.properties
-                        sh "sed -i 's/^load\\.ref\\.data=.*/load.ref.data=${params.LOAD_REF_DATA}/' inventory/inventory/src/main/resources/application.properties"
+                    dir('inventory') {
+                        sh ls -l
+                        // Only replace if LOAD_REF_DATA parameter is provided
+                        if (params.LOAD_REF_DATA) {
+                            // Replace the `load.ref.data` property value in application.properties
+                            sh "sed -i 's/^load\\.ref\\.data=.*/load.ref.data=${params.LOAD_REF_DATA}/' inventory/src/main/resources/application.properties"
+                        }
                     }
                 }
             }
