@@ -148,6 +148,18 @@ pipeline {
             }
         }
 
+
+        stage('Stop Java Process') {
+            steps {
+                sshagent(credentials: [SSH_KEY]) {
+                    sh """
+                        ssh -o StrictHostKeyChecking=no ${params.SSHUSER}@${params.HOSTNAME} "sudo killall java -15 || echo 'No Java process found to kill'"
+                    """
+                }
+            }
+        }
+
+
        stage('Deploy') {
             when {
                 expression { params.HOSTNAME != '' } // Only run if HOSTNAME parameter is provided
