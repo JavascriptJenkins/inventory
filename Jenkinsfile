@@ -17,6 +17,8 @@ pipeline {
         string(name: 'BRANCH', defaultValue: 'prod', description: 'Branch to build')
         string(name: 'HOSTNAME', defaultValue: '64.227.4.159', description: 'Target host IP address for deployment')
         string(name: 'SSHUSER', defaultValue: 'root', description: 'user for ssh key')
+        string(name: 'LOAD_REF_DATA', defaultValue: 'no', description: 'Value for load.ref.data (leave blank to keep default)')
+
     }
 
     stages {
@@ -28,6 +30,18 @@ pipeline {
                     branches: [[name: "*/${params.BRANCH}"]],
                     userRemoteConfigs: [[url: 'https://github.com/javascriptjenkins/inventory.git', credentialsId: 'githubcreds']]
                 ])
+            }
+        }
+
+        stage('Update Properties') {
+            steps {
+                script {
+                    // Only replace if LOAD_REF_DATA parameter is provided
+                    if (params.LOAD_REF_DATA) {
+                        // Replace the `load.ref.data` property value in application.properties
+                        sh "sed -i 's/^load\\.ref\\.data=.*/load.ref.data=${params.LOAD_REF_DATA}/' inventory/inventory/src/main/resources/application.properties"
+                    }
+                }
             }
         }
 
