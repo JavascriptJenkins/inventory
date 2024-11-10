@@ -162,7 +162,7 @@ EOF
                                 cd /root/deployments/inventory
                                 sudo su -c "nohup java -jar inventory-0.0.1-SNAPSHOT.jar > app.log 2>&1 &" -s /bin/sh root
                                 sleep 2  # Give a moment for the app to start and write to the log
-                                sudo timeout 15 tail -f app.log
+                                sudo timeout 30 tail -f app.log || true
 EOF
                             """
                         } else {
