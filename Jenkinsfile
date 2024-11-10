@@ -7,10 +7,6 @@ pipeline {
         maven 'maven3' // Use the name you specified in Global Tool Configuration
     }
 
-    environment {
-        SSH_KEY = credentials('inventory-root-sshkey') // Replace 'ssh-key-id' with the Jenkins credentials ID for the SSH key
-    }
-
 
     // Define a branch parameter to allow selection of the branch at runtime
     parameters {
