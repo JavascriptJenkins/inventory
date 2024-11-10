@@ -91,7 +91,7 @@ pipeline {
                             }
                             // Replace spring.datasource.url if provided
                             if (params.DB_URI) {
-                                sh "sed -i 's/^spring\\.datasource\\.url=.*/spring.datasource.url=${params.DB_URI}/' src/main/resources/application.properties"
+                                sh "sed -i 's|^spring\\.datasource\\.url=.*|spring.datasource.url=${params.DB_URI}|' src/main/resources/application.properties"
                             }
                             // Replace spring.h2.console.enabled if provided
                             if (params.DB_H2_CONSOLE_ENABLED) {
