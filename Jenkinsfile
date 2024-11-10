@@ -116,6 +116,21 @@ pipeline {
             }
         }
 
+
+        stage('Replace URLs') {
+            steps {
+                script {
+                    // Run within the 'inventory' directory
+                    dir('inventory') {
+                        // Find all files in src/main/java and src/main/resources and replace occurrences
+                        sh """
+                            find src/main/java src/main/resources -type f -exec sed -i 's|http://localhost:8080|https://inventory.techvvs.io|g' {} +
+                        """
+                    }
+                }
+            }
+        }
+
         stage('Build') {
             steps {
                 script {
