@@ -137,7 +137,7 @@ public class CheckoutViewController {
                 @RequestParam("page") Optional<Integer> page,
                 @RequestParam("size") Optional<Integer> size){
 
-        
+        cartVO.barcode = adjustBarcodeLength(cartVO) // this will chop off the 12th char ie. the checksum
 
         cartVO = cartDeleteService.validateCartVO(cartVO, model)
 
@@ -169,6 +169,14 @@ public class CheckoutViewController {
 
         return "checkout/checkout.html";
     }
+
+    String adjustBarcodeLength(CartVO cart) {
+        if (cart?.barcode?.length() == 12) {
+            cart.barcode = cart.barcode[0..10]  // Keep characters from index 0 to 10
+        }
+        return cart.barcode
+    }
+
 
     @PostMapping("/delete")
     String delete(
