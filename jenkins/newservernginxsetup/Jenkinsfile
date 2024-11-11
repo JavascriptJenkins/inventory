@@ -104,5 +104,21 @@ pipeline {
                 }
             }
         }
+
+        stage('Verify Nginx Setup') {
+            steps {
+                script {
+                    def url = "https://${params.TENANT_NAME}.techvvs.io"
+                    def response = httpRequest(url: url, validResponseCodes: '502')
+
+                    if (!response.content.contains("nginx")) {
+                        error "Verification failed: 'nginx' text not found in the response from ${url}"
+                    } else {
+                        echo "Verification successful: 'nginx' text found in the response from ${url}"
+                    }
+                }
+            }
+        }
+
     }
 }
