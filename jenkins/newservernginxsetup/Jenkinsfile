@@ -1,0 +1,108 @@
+pipeline {
+    agent any
+
+    parameters {
+        string(name: 'HOSTNAME', defaultValue: '206.189.183.0', description: 'The hostname or IP address of the remote Ubuntu server')
+        string(name: 'TENANT_NAME', defaultValue: 'northstar1', description: 'The tenant name to be used in the server_name for Nginx and Certbot')
+    }
+
+    stages {
+        stage('Install Nginx') {
+            steps {
+                script {
+                    sshagent(credentials: ['id_ed2_techvvs']) {
+                        sh """
+                            ssh -o StrictHostKeyChecking=no techvvs@${params.HOSTNAME} << 'EOF'
+
+                            # Update package list and install Nginx
+                            sudo apt-get update -y
+                            sudo apt-get install -y nginx
+
+                            # Enable Nginx to start on boot and start the service
+                            sudo systemctl enable nginx
+                            sudo systemctl start nginx
+
+                            echo "Nginx installed and running successfully."
+
+                            EOF
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Configure Nginx Reverse Proxy') {
+            steps {
+                script {
+                    sshagent(credentials: ['id_ed2_techvvs']) {
+                        sh """
+                            ssh -o StrictHostKeyChecking=no techvvs@${params.HOSTNAME} << 'EOF'
+
+                            # Update the default Nginx configuration file to set up the reverse proxy
+                            sudo bash -c 'cat > /etc/nginx/sites-available/default' << EOL
+                            server {
+                                listen 80 default_server;
+                                listen [::]:80 default_server;
+
+                                root /var/www/html;
+                                index index.html index.htm index.nginx-debian.html;
+
+                                server_name _;
+
+                                location / {
+                                    proxy_pass http://localhost:8081/;
+                                }
+                            }
+
+                            server {
+                                root /var/www/html;
+                                index index.html index.htm index.nginx-debian.html;
+                                server_name ${params.TENANT_NAME}.techvvs.io; # managed by Certbot
+
+                                location / {
+                                    proxy_pass http://localhost:8081/;
+                                }
+                            }
+                            EOL
+
+                            # Test and reload Nginx configuration
+                            sudo nginx -t && sudo systemctl reload nginx
+
+                            echo "Nginx configuration updated with reverse proxy settings."
+
+                            EOF
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Install Certbot and Configure SSL') {
+            steps {
+                script {
+                    sshagent(credentials: ['id_ed2_techvvs']) {
+                        sh """
+                            ssh -o StrictHostKeyChecking=no techvvs@${params.HOSTNAME} << 'EOF'
+
+                            # Install Certbot for managing SSL certificates
+                            sudo apt-get update -y
+                            sudo apt-get install -y certbot python3-certbot-nginx
+
+                            # Generate SSL certificate for the domain using Certbot
+                            sudo certbot --nginx -d ${params.TENANT_NAME}.techvvs.io --non-interactive --agree-tos --email admin@techvvs.io
+
+                            # Restart and reload Nginx to apply SSL settings
+                            sudo systemctl stop nginx
+                            sudo systemctl start nginx
+                            sudo systemctl reload nginx
+
+                            echo "SSL configuration completed for ${params.TENANT_NAME}.techvvs.io."
+
+                            EOF
+                        """
+                    }
+                }
+            }
+        }
+    }
+}
