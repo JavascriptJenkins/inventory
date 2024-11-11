@@ -7,14 +7,7 @@ pipeline {
         maven 'maven3' // Use the name you specified in Global Tool Configuration
     }
 
-    environment {
-        // Define a map of tenants to IP addresses
-        TENANT_IP_MAP = [
-            'inventory|prod': '64.227.4.159',
-            'highland|prod': '157.230.91.190',
-            'inventory|test1': '206.189.183.0'
-        ]
-    }
+
 
 
     // Define a branch parameter to allow selection of the branch at runtime
@@ -45,6 +38,15 @@ pipeline {
        stage('Select Hostname') {
             steps {
                 script {
+
+                    // Define a map of tenants to IP addresses
+                    TENANT_IP_MAP = [
+                        'inventory|prod': '64.227.4.159',
+                        'highland|prod': '157.230.91.190',
+                        'inventory|test1': '206.189.183.0'
+                    ]
+
+
                     // Get the IP address for the selected tenant
                     def hostname = TENANT_IP_MAP[params.TENANT_ENV]
                     echo "Selected Tenant: ${params.TENANT_ENV}, IP Address: ${hostname}"
