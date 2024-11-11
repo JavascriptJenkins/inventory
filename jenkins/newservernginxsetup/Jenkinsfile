@@ -114,13 +114,6 @@ EOF
                             else
                                 echo "SSL certificate already exists for ${params.TENANT_NAME}.techvvs.io. Skipping generation."
                             fi
-
-                            # Restart Nginx
-                            if ! sudo systemctl start nginx; then
-                                echo "Failed to restart Nginx" >&2
-                                exit 1
-                            fi
-
 EOF
                         """
                     }
