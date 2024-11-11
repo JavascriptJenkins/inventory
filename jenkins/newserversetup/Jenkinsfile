@@ -1,0 +1,269 @@
+pipeline {
+    agent any
+
+    tools {
+        maven 'maven3' // Use the name specified in Global Tool Configuration
+    }
+
+    parameters {
+        string(name: 'HOSTNAME', defaultValue: '206.189.183.0', description: 'The hostname or IP address of the new Linux server')
+        string(name: 'BRANCH', defaultValue: 'prod', description: 'The Git branch to check out')
+
+    }
+
+    stages {
+        stage('Setup Server') {
+            steps {
+                script {
+                    sshagent(credentials: ['inventory-root-sshkey']) {
+                        sh """
+                            ssh -o StrictHostKeyChecking=no root@${params.HOSTNAME} << 'EOF'
+
+                            #!/bin/bash
+
+                            # Update and upgrade the system
+                            echo "Updating and upgrading the system..."
+                            sudo apt-get update -y && sudo apt-get upgrade -y
+
+                            # Install security updates
+                            echo "Installing security updates..."
+                            sudo apt-get install unattended-upgrades -y
+                            sudo dpkg-reconfigure --priority=low unattended-upgrades
+
+                            # Enable the firewall
+                            echo "Setting up UFW firewall..."
+                            sudo apt-get install ufw -y
+                            sudo ufw default deny incoming
+                            sudo ufw default allow outgoing
+                            sudo ufw allow ssh
+                            sudo ufw allow 80/tcp  # Allow HTTP traffic
+                            sudo ufw allow 443/tcp # Allow HTTPS traffic
+                            sudo ufw enable
+
+                            # Install fail2ban to prevent brute-force attacks
+                            echo "Installing Fail2Ban..."
+                            sudo apt-get install fail2ban -y
+
+                            # Configure Fail2Ban with basic settings
+                            sudo bash -c 'cat <<EOL > /etc/fail2ban/jail.local
+                            [DEFAULT]
+                            bantime  = 10m
+                            findtime  = 10m
+                            maxretry = 5
+
+                            [sshd]
+                            enabled = true
+                            EOL'
+
+                            sudo systemctl restart fail2ban
+
+                            # Install ClamAV for antivirus protection
+                            echo "Installing ClamAV antivirus..."
+                            sudo apt-get install clamav clamav-daemon -y
+                            sudo freshclam
+                            sudo systemctl enable clamav-freshclam
+
+                            # Install Lynis for a system security audit
+                            echo "Installing Lynis..."
+                            sudo apt-get install lynis -y
+
+                            # Install RKHunter for rootkit detection
+                            echo "Installing RKHunter..."
+                            sudo apt-get install rkhunter -y
+                            sudo rkhunter --update
+                            sudo rkhunter --propupd
+
+                            # Install auditd for auditing system logs
+                            echo "Installing auditd for auditing..."
+                            sudo apt-get install auditd audispd-plugins -y
+                            sudo systemctl enable auditd
+                            sudo systemctl start auditd
+
+                            # Display a message indicating the script has finished
+                            echo "Basic security setup is complete."
+
+                            EOF
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Create User techvvs') {
+            steps {
+                script {
+                    sshagent(credentials: ['inventory-root-sshkey']) {
+                        sh """
+                            ssh -o StrictHostKeyChecking=no root@${params.HOSTNAME} << 'EOF'
+
+                            # Create a new user named "techvvs"
+                            useradd -m techvvs
+
+                            # Generate a 256-bit AES key and use it as a password
+                            AES_KEY=\$(openssl rand -base64 32)
+
+                            # Set the generated AES key as the password for the new user
+                            echo "techvvs:\$AES_KEY" | chpasswd
+
+                            # Add the user to the 'sudo' group for administrative privileges
+                            usermod -aG sudo techvvs
+
+                            echo "User 'techvvs' has been created and added to the 'sudo' group."
+                            echo "The generated AES key used as the password is: \$AES_KEY"
+
+                            # Log the AES key to Jenkins console output
+                            echo "Generated password for 'techvvs': \$AES_KEY"
+
+                            EOF
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Configure Passwordless Sudo for techvvs') {
+            steps {
+                script {
+                    sshagent(credentials: ['inventory-root-sshkey']) {
+                        sh """
+                            ssh -o StrictHostKeyChecking=no root@${params.HOSTNAME} << 'EOF'
+
+                            # Add techvvs user to sudoers file for passwordless sudo
+                            echo "techvvs ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/techvvs
+
+                            # Set correct permissions for the sudoers file
+                            sudo chmod 440 /etc/sudoers.d/techvvs
+
+                            EOF
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Configure SSH Access for techvvs') {
+            steps {
+                script {
+                    withCredentials([string(credentialsId: 'techvvs2_public_key', variable: 'PUBLIC_KEY')]) {
+                        sshagent(credentials: ['inventory-root-sshkey']) {
+                            sh """
+                                ssh -o StrictHostKeyChecking=no root@${params.HOSTNAME} << 'EOF'
+
+                                # Switch to techvvs user and set up SSH access
+                                sudo su - techvvs << 'INNER'
+                                mkdir -p ~/.ssh
+                                chmod 700 ~/.ssh
+
+                                # Add the public key to authorized_keys
+                                echo '${PUBLIC_KEY}' > ~/.ssh/authorized_keys
+                                chmod 600 ~/.ssh/authorized_keys
+                                chown -R techvvs:techvvs ~/.ssh
+                                INNER
+
+                                # Restart SSH service to apply changes
+                                sudo systemctl restart ssh
+
+                                EOF
+                            """
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Confirm SSH Access for techvvs') {
+            steps {
+                script {
+                    sshagent(credentials: ['id_ed2_techvvs']) {
+                        sh """
+                            ssh -o StrictHostKeyChecking=no techvvs@${params.HOSTNAME} 'echo "SSH access confirmed for techvvs user"'
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Create Directory Structure') {
+            steps {
+                script {
+                    sshagent(credentials: ['id_ed2_techvvs']) {
+                        sh """
+                            ssh -o StrictHostKeyChecking=no techvvs@${params.HOSTNAME} << 'EOF'
+
+                            #!/bin/bash
+
+                            # Create the 'deployments' directory if it doesn't exist
+                            mkdir -p ~/deployments
+
+                            # Change directory into 'deployments'
+                            cd ~/deployments
+
+                            # Create the 'inventory' directory if it doesn't exist
+                            mkdir -p inventory
+
+                            # Change directory into 'inventory'
+                            cd inventory
+
+                            # Create the required directories: backup, data, logs, topdir, uploads
+                            mkdir -p backup data logs topdir uploads
+
+                            # Change directory into 'uploads'
+                            cd uploads
+
+                            ## make the dirs for holding admin things
+                            mkdir -p coa font xlsx
+
+                            # Print success message
+                            echo "Directories created successfully."
+
+                            EOF
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Copy Font Files') {
+            steps {
+                script {
+                    dir('inventory') {
+                        sshagent(credentials: ['id_ed2_techvvs']) {
+                            sh """
+                                scp -o StrictHostKeyChecking=no -r uploads/font/ techvvs@${params.HOSTNAME}:~/deployments/inventory/uploads/font
+                            """
+                        }
+                    }
+                }
+            }
+        }
+
+
+        stage('Install JDK 17') {
+            steps {
+                script {
+                    sshagent(credentials: ['id_ed2_techvvs']) {
+                        sh """
+                            ssh -o StrictHostKeyChecking=no techvvs@${params.HOSTNAME} << 'EOF'
+
+                            # Update package index
+                            sudo apt-get update -y
+
+                            # Install JDK 17
+                            sudo apt-get install -y openjdk-17-jdk
+
+                            # Verify installation
+                            java -version
+
+                            echo "JDK 17 installed successfully."
+
+                            EOF
+                        """
+                    }
+                }
+            }
+        }
+
+
+
+    }
+}
