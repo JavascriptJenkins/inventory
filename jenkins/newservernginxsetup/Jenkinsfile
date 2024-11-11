@@ -14,13 +14,29 @@ pipeline {
                         sh """
                             ssh -o StrictHostKeyChecking=no techvvs@${params.HOSTNAME} << 'EOF'
 
-                            # Update package list and install Nginx
-                            sudo apt-get update -y
-                            sudo apt-get install -y nginx
+                            # Update package list
+                            if ! sudo apt-get update -y; then
+                                echo "Failed to update package list" >&2
+                                exit 1
+                            fi
 
-                            # Enable Nginx to start on boot and start the service
-                            sudo systemctl enable nginx
-                            sudo systemctl start nginx
+                            # Install Nginx
+                            if ! sudo apt-get install -y nginx; then
+                                echo "Failed to install Nginx" >&2
+                                exit 1
+                            fi
+
+                            # Enable Nginx to start on boot
+                            if ! sudo systemctl enable nginx; then
+                                echo "Failed to enable Nginx to start on boot" >&2
+                                exit 1
+                            fi
+
+                            # Start Nginx service
+                            if ! sudo systemctl start nginx; then
+                                echo "Failed to start Nginx service" >&2
+                                exit 1
+                            fi
 
                             echo "Nginx installed and running successfully."
 
@@ -30,6 +46,7 @@ EOF
                 }
             }
         }
+
 
         stage('Configure Nginx Reverse Proxy') {
             steps {
