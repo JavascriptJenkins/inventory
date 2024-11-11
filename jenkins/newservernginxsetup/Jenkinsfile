@@ -84,17 +84,37 @@ EOF
                         sh """
                             ssh -o StrictHostKeyChecking=no techvvs@${params.HOSTNAME} << 'EOF'
 
-                            # Install Certbot for managing SSL certificates
-                            sudo apt-get update -y
-                            sudo apt-get install -y certbot python3-certbot-nginx
+                            # Update package lists
+                            if ! sudo apt-get update -y; then
+                                echo "Failed to update package lists" >&2
+                                exit 1
+                            fi
 
-                            # Generate SSL certificate for the domain using Certbot
-                            sudo certbot --nginx -d ${params.TENANT_NAME}.techvvs.io --non-interactive --agree-tos --email admin@techvvs.io
+                            # Install Certbot and the Certbot Nginx plugin
+                            if ! sudo apt-get install -y certbot python3-certbot-nginx; then
+                                echo "Failed to install Certbot and Certbot Nginx plugin" >&2
+                                exit 1
+                            fi
 
-                            # Restart and reload Nginx to apply SSL settings
-                            sudo systemctl stop nginx
-                            sudo systemctl start nginx
-                            sudo systemctl reload nginx
+                            # Check if SSL certificate already exists for the domain
+                            CERT_PATH="/etc/letsencrypt/live/${params.TENANT_NAME}.techvvs.io/fullchain.pem"
+                            if [ ! -f "\$CERT_PATH" ]; then
+                                echo "SSL certificate not found. Generating a new certificate for ${params.TENANT_NAME}.techvvs.io."
+
+                                # Generate SSL certificate using Certbot
+                                if ! sudo certbot --nginx -d ${params.TENANT_NAME}.techvvs.io --non-interactive --agree-tos --email admin@techvvs.io; then
+                                    echo "Certbot failed to obtain an SSL certificate" >&2
+                                    exit 1
+                                fi
+                            else
+                                echo "SSL certificate already exists for ${params.TENANT_NAME}.techvvs.io. Skipping certificate generation."
+                            fi
+
+                            # Reload Nginx to apply SSL settings
+                            if ! sudo systemctl reload nginx; then
+                                echo "Failed to reload Nginx service" >&2
+                                exit 1
+                            fi
 
                             echo "SSL configuration completed for ${params.TENANT_NAME}.techvvs.io."
 
@@ -104,6 +124,7 @@ EOF
                 }
             }
         }
+
 
         stage('Verify Nginx Setup') {
             steps {
