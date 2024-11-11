@@ -199,15 +199,16 @@
             // Listen for input event
             inputField.addEventListener('input', function() {
                 clearTimeout(inputTimeout);
+                let ischecked = $('#quantityModeCheckbox').is(':checked');
 
                 // Delay processing to ensure the entire scan input is captured
                 inputTimeout = setTimeout(() => {
                     const scannedValue = inputField.value.trim();
                     if (scannedValue) {
-                        processBarcode(scannedValue);
-                        //inputField.value = ''; // Clear after processing
+                        processBarcode(scannedValue, ischecked);
+                        inputField.value = ''; // Clear after processing
                     }
-                }, 500); // Adjust delay based on scan speed, if needed
+                }, 200); // Adjust delay based on scan speed, if needed
             });
 
             // Add event listener to the checkbox
@@ -217,9 +218,9 @@
             });
 
             // Function to process barcode scanning
-            function processBarcode(scannedValue) {
+            function processBarcode(scannedValue, ischecked) {
                 if (scannedValue.length >= 12) {
-                    if ($('#quantityModeCheckbox').is(':checked')) {
+                    if (ischecked) {
                         // If Quantity Mode is checked, ask for quantity input
                         let quantity = prompt("Please enter the quantity for the scanned product:");
 
