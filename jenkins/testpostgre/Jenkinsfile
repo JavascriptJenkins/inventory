@@ -230,7 +230,7 @@ EOF
                                 cd /home/techvvs/deployments/inventory
                                 sudo su -c "nohup java -jar inventory-0.0.1-SNAPSHOT.jar > app.log 2>&1 &" -s /bin/sh techvvs
                                 sleep 2  # Give a moment for the app to start and write to the log
-                                sudo timeout 30 tail -f app.log || true
+                                sudo timeout 45 tail -f app.log || true
 EOF
                             """
                         } else {
