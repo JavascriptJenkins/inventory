@@ -57,16 +57,6 @@ pipeline {
             }
         }
 
-        // Assuming DB_URI and TENANT_NAME are already defined as environment variables
-        stage('Set DB_URI with SSL Mode') {
-            steps {
-                script {
-                    env.DB_URI="${env.DB_URI}/${env.TENANT_NAME}?sslmode=require"
-                    echo "Updated DB_URI: ${env.DB_URI}"
-                }
-            }
-        }
-
         // Assuming TENANT_NAME is already defined as an environment variable
         stage('Set BASE_QR_DOMAIN') {
             steps {
