@@ -223,19 +223,19 @@ pipeline {
                             sh """
                                 ssh -o StrictHostKeyChecking=no techvvs@${params.HOSTNAME} << EOF
                                     sudo killall java -15 || echo "No Java process found to kill"
-                                    sudo mv /deployments/inventory/inventory-0.0.1-SNAPSHOT.jar /deployments/inventory/backupdep/inventory-0.0.1-SNAPSHOT.jar || echo "No existing JAR to move"
+                                    sudo mv /home/techvvs/deployments/inventory/inventory-0.0.1-SNAPSHOT.jar /home/techvvs/deployments/inventory/backupdep/inventory-0.0.1-SNAPSHOT.jar || echo "No existing JAR to move"
 EOF
                             """
 
                             // Copy the new .jar file to the remote server
                             sh """
-                                scp -o StrictHostKeyChecking=no ${jarFile} techvvs@${params.HOSTNAME}:/deployments/inventory/
+                                scp -o StrictHostKeyChecking=no ${jarFile} techvvs@${params.HOSTNAME}:/home/techvvs/deployments/inventory/
                             """
 
                     // Start the application and tail the log for 15 seconds
                             sh """
                                 ssh -o StrictHostKeyChecking=no techvvs@${params.HOSTNAME} << 'EOF'
-                                cd /deployments/inventory
+                                cd /home/techvvs/deployments/inventory
                                 sudo su -c "nohup java -jar inventory-0.0.1-SNAPSHOT.jar > app.log 2>&1 &" -s /bin/sh techvvs
                                 sleep 2  # Give a moment for the app to start and write to the log
                                 sudo timeout 30 tail -f app.log || true
