@@ -32,13 +32,8 @@ pipeline {
                                 exit 1
                             fi
 
-                            # Start Nginx service
-                            if ! sudo systemctl start nginx; then
-                                echo "Failed to start Nginx service" >&2
-                                exit 1
-                            fi
 
-                            echo "Nginx installed and running successfully."
+                            echo "Nginx installed."
 
 EOF
                         """
@@ -82,8 +77,8 @@ EOF
                             }
 EOL
 
-                            # Test and reload Nginx configuration
-                            sudo nginx -t && sudo systemctl reload nginx
+                            # Test Nginx configuration
+                            sudo nginx -t
 
                             echo "Nginx configuration updated with reverse proxy settings."
 
@@ -121,7 +116,7 @@ EOF
                             fi
 
                             # Restart Nginx
-                            if ! sudo systemctl restart nginx; then
+                            if ! sudo systemctl start nginx; then
                                 echo "Failed to restart Nginx" >&2
                                 exit 1
                             fi
