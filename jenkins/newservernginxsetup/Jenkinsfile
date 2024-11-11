@@ -31,44 +31,55 @@ EOF
             }
         }
 
-        stage('Configure Nginx Reverse Proxy') {
+        stage('Install Certbot and Configure SSL') {
             steps {
                 script {
                     sshagent(credentials: ['id_ed2_techvvs']) {
                         sh """
                             ssh -o StrictHostKeyChecking=no techvvs@${params.HOSTNAME} << 'EOF'
 
-                            # Update the default Nginx configuration file to set up the reverse proxy
-                            sudo bash -c 'cat > /etc/nginx/sites-available/default' << EOL
-                            server {
-                                listen 80 default_server;
-                                listen [::]:80 default_server;
+                            # Update package lists
+                            if ! sudo apt-get update -y; then
+                                echo "Failed to update package lists" >&2
+                                exit 1
+                            fi
 
-                                root /var/www/html;
-                                index index.html index.htm index.nginx-debian.html;
+                            # Install Certbot and the Certbot Nginx plugin
+                            if ! sudo apt-get install -y certbot python3-certbot-nginx; then
+                                echo "Failed to install Certbot and Certbot Nginx plugin" >&2
+                                exit 1
+                            fi
 
-                                server_name _;
+                            # Check if SSL certificate already exists for the domain
+                            CERT_PATH="/etc/letsencrypt/live/${params.TENANT_NAME}.techvvs.io/fullchain.pem"
+                            if [ ! -f "\$CERT_PATH" ]; then
+                                echo "SSL certificate not found. Generating a new certificate for ${params.TENANT_NAME}.techvvs.io."
 
-                                location / {
-                                    proxy_pass http://localhost:8081/;
-                                }
-                            }
+                                # Generate SSL certificate using Certbot
+                                if ! sudo certbot --nginx -d ${params.TENANT_NAME}.techvvs.io --non-interactive --agree-tos --email admin@techvvs.io; then
+                                    echo "Certbot failed to obtain an SSL certificate" >&2
+                                    exit 1
+                                fi
+                            else
+                                echo "SSL certificate already exists for ${params.TENANT_NAME}.techvvs.io. Skipping certificate generation."
+                            fi
 
-                            server {
-                                root /var/www/html;
-                                index index.html index.htm index.nginx-debian.html;
-                                server_name ${params.TENANT_NAME}.techvvs.io; # managed by Certbot
+                            # Ensure Nginx is running, start if inactive
+                            if ! sudo systemctl is-active --quiet nginx; then
+                                echo "Nginx is not running. Starting Nginx."
+                                if ! sudo systemctl start nginx; then
+                                    echo "Failed to start Nginx service" >&2
+                                    exit 1
+                                fi
+                            fi
 
-                                location / {
-                                    proxy_pass http://localhost:8081/;
-                                }
-                            }
-EOL
+                            # Reload Nginx to apply SSL settings
+                            if ! sudo systemctl reload nginx; then
+                                echo "Failed to reload Nginx service" >&2
+                                exit 1
+                            fi
 
-                            # Test and reload Nginx configuration
-                            sudo nginx -t && sudo systemctl reload nginx
-
-                            echo "Nginx configuration updated with reverse proxy settings."
+                            echo "SSL configuration completed for ${params.TENANT_NAME}.techvvs.io."
 
 EOF
                         """
@@ -76,6 +87,7 @@ EOF
                 }
             }
         }
+
 
         stage('Install Certbot and Configure SSL') {
             steps {
