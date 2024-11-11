@@ -13,9 +13,9 @@ pipeline {
     // Define a branch parameter to allow selection of the branch at runtime
     parameters {
         choice(name: 'BRANCH', choices: ['test1', 'prod', 'prod'], description: 'Branch to build')
+        choice(name: 'HOSTNAME', choices: ['206.189.183.0', '64.227.4.159', '198.199.72.34','157.230.91.190'], description: 'Branch to build')
         string(name: 'TENANT_NAME', defaultValue: 'test', description: 'The tenant name to be used in the server_name for Nginx and Certbot')
         choice(name: 'TENANT_ENV', choices: ['inventory|test1', 'highland|prod', 'inventory|prod'], description: 'Branch to build')
-        string(name: 'HOSTNAME', defaultValue: '64.227.4.159', description: 'Target host IP address for deployment')
         string(name: 'LOAD_REF_DATA', defaultValue: 'no', description: 'Value for load.ref.data (leave blank to keep default)')
         string(name: 'ENVIRONMENT_NAME', defaultValue: 'prod', description: 'environment name, prod and dev1 are the optional values')
         string(name: 'BASE_QR_DOMAIN', defaultValue: 'https://inventory.techvvs.io', description: 'probably can delete this')
