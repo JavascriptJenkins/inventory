@@ -184,13 +184,30 @@
                 }
             });
 
-            const inputField = document.getElementById('barcodeInput');
+<!--            const inputField = document.getElementById('barcodeInput');-->
 
-            inputField.addEventListener('keydown', function(event) {
-                if (event.key === 'Enter') {
+<!--            inputField.addEventListener('keydown', function(event) {-->
+<!--                if (event.key === 'Enter') {-->
+<!--                    const scannedValue = inputField.value.trim();-->
+<!--                    processBarcode(scannedValue);-->
+<!--                }-->
+<!--            });-->
+
+            const inputField = document.getElementById('barcodeInput');
+            let inputTimeout;
+
+            // Listen for input event
+            inputField.addEventListener('input', function() {
+                clearTimeout(inputTimeout);
+
+                // Delay processing to ensure the entire scan input is captured
+                inputTimeout = setTimeout(() => {
                     const scannedValue = inputField.value.trim();
-                    processBarcode(scannedValue);
-                }
+                    if (scannedValue) {
+                        processBarcode(scannedValue);
+                        //inputField.value = ''; // Clear after processing
+                    }
+                }, 100); // Adjust delay based on scan speed, if needed
             });
 
             // Add event listener to the checkbox
@@ -201,7 +218,7 @@
 
             // Function to process barcode scanning
             function processBarcode(scannedValue) {
-                if (scannedValue.length >= 11) {
+                if (scannedValue.length >= 12) {
                     if ($('#quantityModeCheckbox').is(':checked')) {
                         // If Quantity Mode is checked, ask for quantity input
                         let quantity = prompt("Please enter the quantity for the scanned product:");
@@ -209,12 +226,12 @@
                         if (quantity !== null && quantity !== "") {
                             // Set quantity in the hidden input
                             $('#quantitySelected').val(quantity);
-                            $('#barcodeInput').val(scannedValue.substring(0, 11));
+                            $('#barcodeInput').val(scannedValue.substring(0, 12));
                             $('#barcodeForm').submit();
                         }
                     } else {
                         // If not in Quantity Mode, just submit the form with quantity 1
-                        $('#barcodeInput').val(scannedValue.substring(0, 11));
+                        $('#barcodeInput').val(scannedValue.substring(0, 12));
                         $('#quantitySelected').val(1);
                         $('#barcodeForm').submit();
                     }
