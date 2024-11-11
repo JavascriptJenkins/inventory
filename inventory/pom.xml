@@ -339,27 +339,27 @@
 <!--			</plugin>-->
 
 			<!-- if you run this it will replace all the uri references to local  -->
-			<plugin>
-				<groupId>io.github.floverfelt</groupId>
-				<artifactId>find-and-replace-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>exec</id>
-						<phase>package</phase>
-						<goals>
-							<goal>find-and-replace</goal>
-						</goals>
-						<configuration>
-							<!-- Possible replacementType values: file-contents, filenames, directory-names. To run for multiple types, pass the values as a CSV list. -->
-							<replacementType>file-contents</replacementType>
-							<baseDir>src/</baseDir>
-							<findRegex>https://alpha.techvvs.io</findRegex>
-							<replaceValue>https://alpha.techvvs.io</replaceValue>
-							<recursive>true</recursive>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
+<!--			<plugin>-->
+<!--				<groupId>io.github.floverfelt</groupId>-->
+<!--				<artifactId>find-and-replace-maven-plugin</artifactId>-->
+<!--				<executions>-->
+<!--					<execution>-->
+<!--						<id>exec</id>-->
+<!--						<phase>package</phase>-->
+<!--						<goals>-->
+<!--							<goal>find-and-replace</goal>-->
+<!--						</goals>-->
+<!--						<configuration>-->
+<!--							&lt;!&ndash; Possible replacementType values: file-contents, filenames, directory-names. To run for multiple types, pass the values as a CSV list. &ndash;&gt;-->
+<!--							<replacementType>file-contents</replacementType>-->
+<!--							<baseDir>src/</baseDir>-->
+<!--							<findRegex>https://alpha.techvvs.io</findRegex>-->
+<!--							<replaceValue>https://alpha.techvvs.io</replaceValue>-->
+<!--							<recursive>true</recursive>-->
+<!--						</configuration>-->
+<!--					</execution>-->
+<!--				</executions>-->
+<!--			</plugin>-->
 			
 			<!-- replace all hostname files when going to do prod build -->
 <!--			<plugin>-->
