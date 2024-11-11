@@ -24,7 +24,7 @@ pipeline {
 
                             echo "Nginx installed and running successfully."
 
-                            EOF
+EOF
                         """
                     }
                 }
@@ -70,7 +70,7 @@ pipeline {
 
                             echo "Nginx configuration updated with reverse proxy settings."
 
-                            EOF
+EOF
                         """
                     }
                 }
@@ -98,7 +98,7 @@ pipeline {
 
                             echo "SSL configuration completed for ${params.TENANT_NAME}.techvvs.io."
 
-                            EOF
+EOF
                         """
                     }
                 }
