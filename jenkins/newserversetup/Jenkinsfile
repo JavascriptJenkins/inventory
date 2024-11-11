@@ -114,7 +114,7 @@ pipeline {
                             # Log the AES key to Jenkins console output
                             echo "Generated password for 'techvvs': \$AES_KEY"
 
-                            EOF
+EOF
                         """
                     }
                 }
@@ -134,7 +134,7 @@ pipeline {
                             # Set correct permissions for the sudoers file
                             sudo chmod 440 /etc/sudoers.d/techvvs
 
-                            EOF
+EOF
                         """
                     }
                 }
@@ -163,7 +163,7 @@ pipeline {
                                 # Restart SSH service to apply changes
                                 sudo systemctl restart ssh
 
-                                EOF
+EOF
                             """
                         }
                     }
@@ -216,7 +216,7 @@ pipeline {
                             # Print success message
                             echo "Directories created successfully."
 
-                            EOF
+EOF
                         """
                     }
                 }
@@ -256,7 +256,7 @@ pipeline {
 
                             echo "JDK 17 installed successfully."
 
-                            EOF
+EOF
                         """
                     }
                 }
