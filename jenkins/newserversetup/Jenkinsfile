@@ -155,19 +155,17 @@ EOF
                             sh """
                                 ssh -o StrictHostKeyChecking=no root@${params.HOSTNAME} << 'EOF'
 
-                                # Switch to techvvs user and set up SSH access
-                                sudo su - techvvs << 'INNER'
-                                mkdir -p ~/.ssh
-                                chmod 700 ~/.ssh
+                                # Ensure .ssh directory exists with correct permissions
+                                sudo su - techvvs -c "mkdir -p ~/.ssh && chmod 700 ~/.ssh"
 
-                                # Add the public key to authorized_keys
-                                echo '${PUBLIC_KEY}' > ~/.ssh/authorized_keys
-                                chmod 600 ~/.ssh/authorized_keys
-                                chown -R techvvs:techvvs ~/.ssh
-INNER
+                                # Add the public key to authorized_keys with correct permissions
+                                echo '${PUBLIC_KEY}' | sudo tee -a /home/techvvs/.ssh/authorized_keys
+                                sudo chmod 600 /home/techvvs/.ssh/authorized_keys
+                                sudo chown -R techvvs:techvvs /home/techvvs/.ssh
 
-                                # Restart SSH service to apply changes
-                                sudo systemctl restart ssh
+                                # Verify the key was added
+                                echo "Contents of authorized_keys after update:"
+                                sudo cat /home/techvvs/.ssh/authorized_keys
 
 EOF
                             """
@@ -176,6 +174,7 @@ EOF
                 }
             }
         }
+
 
         stage('Confirm SSH Access for techvvs') {
             steps {
