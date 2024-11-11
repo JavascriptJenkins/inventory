@@ -52,7 +52,7 @@ pipeline {
                         'inventory|prod': '',
                         'highland|prod': 'jdbc:postgresql://private-postgresql-test1-do-user-1326368-0.d.db.ondigitalocean.com:25060',
                         'inventory|test1': 'jdbc:postgresql://private-postgresql-test1-do-user-1326368-0.d.db.ondigitalocean.com:25060'
-                        'intake|prod': 'private-postgresql-prod1-do-user-1326368-0.d.db.ondigitalocean.com'
+                        'intake|prod': 'private-postgresql-prod1-do-user-1326368-0.d.db.ondigitalocean.com:25060'
                     ]
 
 
@@ -62,7 +62,7 @@ pipeline {
 
                     // Get the IP address for the selected tenant
                     def postgresql_db_uri = POSTGRESQL_ENV_MAP[params.TENANT_ENV]
-                    echo "Selected postgresql_db_uri: ${params.TENANT_ENV}, IP Address: ${postgresql_db_uri}"
+                    echo "Selected postgresql_db_uri: ${params.TENANT_ENV}, POSTGRE SQL DB URI: ${postgresql_db_uri}"
 
                     // Set the IP address as an environment variable for use in later stages
                     env.HOSTNAME = hostname
