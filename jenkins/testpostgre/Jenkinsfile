@@ -12,13 +12,13 @@ pipeline {
 
     // Define a branch parameter to allow selection of the branch at runtime
     parameters {
-        choice(name: 'BRANCH', choices: ['test1', 'prod', 'prod'], description: 'Branch to build')
-        choice(name: 'HOSTNAME', choices: ['206.189.183.0', '64.227.4.159', '198.199.72.34','157.230.91.190'], description: 'Branch to build')
-        string(name: 'TENANT_NAME', defaultValue: 'test', description: 'The tenant name to be used in the server_name for Nginx and Certbot')
-        choice(name: 'TENANT_ENV', choices: ['inventory|test1', 'highland|prod', 'inventory|prod'], description: 'Branch to build')
+        choice(name: 'BRANCH', choices: ['test1', 'prod'], description: 'Branch to build')
+        choice(name: 'HOSTNAME', choices: ['206.189.183.0', '64.227.4.159', '198.199.72.34','157.230.91.190'], description: 'the host to push the build to')
+        choice(name: 'TENANT_ENV', choices: ['inventory|test1', 'highland|prod', 'inventory|prod', 'intake|prod'], description: 'the tenant and environment name to build')
+        choice(name: 'TENANT_NAME', choices: ['test', 'alpha', 'intake'], description: 'The tenant name will be appended to beginning of domain')
+        choice(name: 'BASE_DOMAIN', choices: ['.techvvs.io', '.jenkins.codes'], description: 'domain')
         string(name: 'LOAD_REF_DATA', defaultValue: 'no', description: 'Value for load.ref.data (leave blank to keep default)')
         string(name: 'ENVIRONMENT_NAME', defaultValue: 'prod', description: 'environment name, prod and dev1 are the optional values')
-        string(name: 'BASE_QR_DOMAIN', defaultValue: 'https://inventory.techvvs.io', description: 'probably can delete this')
         string(name: 'DB_TYPE', defaultValue: 'postgresql', description: 'type of database.  only inventory uses h2')
         string(name: 'DB_H2_CONSOLE_ENABLED', defaultValue: 'false', description: 'type of database.  only inventory uses h2')
         string(name: 'DB_H2_WEB_ALLOWOTHERS', defaultValue: 'false', description: 'type of database.  only inventory uses h2')
@@ -44,6 +44,15 @@ pipeline {
                         'inventory|prod': '64.227.4.159',
                         'highland|prod': '157.230.91.190',
                         'inventory|test1': '206.189.183.0'
+                        'intake|prod': '64.227.18.215'
+                    ]
+
+                    // Define a map of tenants to IP addresses
+                    POSTGRESQL_ENV_MAP = [
+                        'inventory|prod': '',
+                        'highland|prod': 'jdbc:postgresql://private-postgresql-test1-do-user-1326368-0.d.db.ondigitalocean.com:25060',
+                        'inventory|test1': 'jdbc:postgresql://private-postgresql-test1-do-user-1326368-0.d.db.ondigitalocean.com:25060'
+                        'intake|prod': 'private-postgresql-prod1-do-user-1326368-0.d.db.ondigitalocean.com'
                     ]
 
 
@@ -51,23 +60,16 @@ pipeline {
                     def hostname = TENANT_IP_MAP[params.TENANT_ENV]
                     echo "Selected Tenant: ${params.TENANT_ENV}, IP Address: ${hostname}"
 
+                    // Get the IP address for the selected tenant
+                    def postgresql_db_uri = POSTGRESQL_ENV_MAP[params.TENANT_ENV]
+                    echo "Selected postgresql_db_uri: ${params.TENANT_ENV}, IP Address: ${postgresql_db_uri}"
+
                     // Set the IP address as an environment variable for use in later stages
                     env.HOSTNAME = hostname
+                    env.DB_URI = postgresql_db_uri
                 }
             }
         }
-
-        // Assuming TENANT_NAME is already defined as an environment variable
-        stage('Set BASE_QR_DOMAIN') {
-            steps {
-                script {
-                    def baseQrDomain = "https://${env.TENANT_NAME}.techvvs.io"
-                    env.BASE_QR_DOMAIN = baseQrDomain
-                    echo "Updated BASE_QR_DOMAIN: ${env.BASE_QR_DOMAIN}"
-                }
-            }
-        }
-
 
         stage('Checkout') {
             steps {
@@ -142,8 +144,23 @@ pipeline {
                             sh "sed -i 's/^twilio\\.api\\.username=.*/twilio.api.username=${TWILIO_API_USER}/' src/main/resources/application.properties"
                             sh "sed -i 's/^twilio\\.api\\.password=.*/twilio.api.password=${TWILIO_API_PASSWORD}/' src/main/resources/application.properties"
                             sh "sed -i 's/^sendgrid\\.api\\.key=.*/sendgrid.api.key=${SENDGRID_API_KEY}/' src/main/resources/application.properties"
-                            sh "sed -i 's/^spring\\.datasource\\.password=.*/spring.datasource.password=${POSTGRE_TEST_DB_PASSWORD}/' src/main/resources/application.properties"
                             sh "sed -i 's/^security\\.jwt\\.token\\.secret-key=.*/security.jwt.token.secret-key=${JWT_SECRET_KEY}/' src/main/resources/application.properties"
+
+                            switch (env.TENANT_ENV) {
+                                case { it.contains('prod') }:
+                                    echo "Environment contains 'prod'. This is a production environment."
+                                    // Add production-specific steps here
+                                    sh "sed -i 's/^spring\\.datasource\\.password=.*/spring.datasource.password=${POSTGRE_PROD_DB_PASSWORD}/' src/main/resources/application.properties"
+                                    break
+                                case { it.contains('test') }:
+                                    echo "Environment contains 'test'. This is a testing environment."
+                                    sh "sed -i 's/^spring\\.datasource\\.password=.*/spring.datasource.password=${POSTGRE_TEST_DB_PASSWORD}/' src/main/resources/application.properties"
+                                    // Add test-specific steps here
+                                    break
+                                default:
+                                    echo "Environment is unknown or does not contain 'prod' or 'test'."
+                                    // Add default or error handling steps here
+                            }
 
 
                         }
@@ -159,7 +176,7 @@ pipeline {
                     // Run within the 'inventory' directory
                     dir('inventory') {
                         // Define the base URL with TENANT_NAME dynamically replacing 'inventory'
-                        def baseUrl = "https://${env.TENANT_NAME}.techvvs.io"
+                        def baseUrl = "https://${env.TENANT_NAME}${env.BASE_DOMAIN}"
 
                         // Find all files in src/main/java and src/main/resources and replace occurrences
                         sh """
@@ -245,7 +262,7 @@ EOF
         stage('Check Application Status') {
             steps {
                 script {
-                    def url = "https://${env.TENANT_NAME}.techvvs.io/login"
+                    def url = "https://${env.TENANT_NAME}${env.BASE_DOMAIN}/login"
                     def response = httpRequest(
                         url: url,
                         httpMode: 'GET',

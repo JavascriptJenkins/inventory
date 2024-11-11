@@ -4,6 +4,7 @@ pipeline {
     parameters {
         string(name: 'HOSTNAME', defaultValue: '206.189.183.0', description: 'The hostname or IP address of the remote Ubuntu server')
         string(name: 'TENANT_NAME', defaultValue: 'test', description: 'The tenant name to be used in the server_name for Nginx and Certbot')
+        choice(name: 'BASE_DOMAIN', choices: ['.techvvs.io', '.jenkins.codes'], description: 'domain')
     }
 
     stages {
@@ -69,7 +70,7 @@ EOF
                             server {
                                 root /var/www/html;
                                 index index.html index.htm index.nginx-debian.html;
-                                server_name ${params.TENANT_NAME}.techvvs.io; # managed by Certbot
+                                server_name ${params.TENANT_NAME}${params.BASE_DOMAIN}; # managed by Certbot
 
                                 location / {
                                     proxy_pass http://localhost:8081/;
@@ -107,12 +108,12 @@ EOF
                             sudo apt-get install -y certbot python3-certbot-nginx
 
                             # Check if SSL certificate already exists
-                            CERT_PATH="/etc/letsencrypt/live/${params.TENANT_NAME}.techvvs.io/fullchain.pem"
+                            CERT_PATH="/etc/letsencrypt/live/${params.TENANT_NAME}${params.BASE_DOMAIN}/fullchain.pem"
                             if [ ! -f "\$CERT_PATH" ]; then
-                                echo "Generating SSL certificate for ${params.TENANT_NAME}.techvvs.io."
-                                sudo certbot --nginx -d ${params.TENANT_NAME}.techvvs.io --non-interactive --agree-tos --email admin@techvvs.io
+                                echo "Generating SSL certificate for ${params.TENANT_NAME}${params.BASE_DOMAIN}."
+                                sudo certbot --nginx -d ${params.TENANT_NAME}${params.BASE_DOMAIN} --non-interactive --agree-tos --email admin@techvvs.io
                             else
-                                echo "SSL certificate already exists for ${params.TENANT_NAME}.techvvs.io. Skipping generation."
+                                echo "SSL certificate already exists for ${params.TENANT_NAME}${params.BASE_DOMAIN}. Skipping generation."
                             fi
 EOF
                         """
@@ -127,7 +128,7 @@ EOF
         stage('Verify Nginx Setup') {
             steps {
                 script {
-                    def url = "https://${params.TENANT_NAME}.techvvs.io"
+                    def url = "https://${params.TENANT_NAME}${params.BASE_DOMAIN}"
                     def response = httpRequest(url: url, validResponseCodes: '502')
 
                     if (!response.content.contains("nginx")) {
