@@ -153,7 +153,8 @@ class ImportBatch {
                 batchvotoreturn = batchRepo.save(batchVO);
 
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
+            System.out.println("Problem with processing the uploaded xlsx file. " +e.getMessage());
             e.printStackTrace();
         }
 
