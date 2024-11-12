@@ -97,6 +97,25 @@ class LabelPrintingGenerator {
     }
 
 
+    void generateDynmo55028mmx98mmLabel(
+            int entitynumber,
+            int pagenumber,
+            BatchVO batchVO,
+            ProductVO productVO,
+            PDDocument document
+    ){
+
+        // create a pdf sheet
+        PDPage page = new PDPage(appConstants.ONE_AND_ONE_EIGHTH_BY_THREE_AND_A_HALF); // 28mm x 89mm dymno label
+        document.addPage(page);
+
+        PDPageContentStream contentStream = new PDPageContentStream(document, page)
+
+
+        // dont need to print a header on the label (only product info)
+        generateDymno55028mmx89mmPage(productVO,document,contentStream, page)
+    }
+
     void generateDymno55028mmx89mmPage(
             ProductVO product,
             PDDocument document,
