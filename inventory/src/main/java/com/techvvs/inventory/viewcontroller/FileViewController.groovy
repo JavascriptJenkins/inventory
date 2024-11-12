@@ -129,6 +129,7 @@ public class FileViewController {
         BatchVO batchVO = batchControllerHelper.loadBatch(batchid, model)
 
         labelPrintingService.createEpsonC6000AuLabel4by6point5(batchVO)
+        labelPrintingService.createDyno550TurboLabel28mmx89mm(batchVO)
         // todo: make a seperate button for this
         batchControllerHelper.generateBarcodeManifestForBatch(String.valueOf(batchVO.batchnumber))
 

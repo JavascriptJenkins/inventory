@@ -96,6 +96,99 @@ class LabelPrintingGenerator {
     }
 
 
+    void generateDynmo55028mmx98mmLabel(
+            int entitynumber,
+            int pagenumber,
+            BatchVO batchVO,
+            ProductVO productVO,
+            PDDocument document
+    ){
+
+        // create a pdf sheet
+        PDPage page = new PDPage(appConstants.ONE_AND_ONE_EIGHTH_BY_THREE_AND_A_HALF); // 28mm x 89mm dymno label
+        document.addPage(page);
+
+        PDPageContentStream contentStream = new PDPageContentStream(document, page)
+
+
+        // dont need to print a header on the label (only product info)
+        generateDymno55028mmx89mmPage(productVO,document,contentStream, page)
+    }
+
+    void generateDymno55028mmx89mmPage(
+            ProductVO product,
+            PDDocument document,
+            PDPageContentStream contentStream,
+            PDPage page
+    ) throws IOException {
+
+        // Set page dimensions (1.125 inches x 3.5 inches)
+        float pageWidth = 81.0f;   // 1-1/8 inches in points
+        float pageHeight = 252.0f; // 3.5 inches in points
+        float margin = 5f;  // Smaller margin due to reduced page size
+
+        // Define sizes for QR code, barcode, and font
+        float qrCodeSize = 0.75f * 72;  // Scaled down QR code size to 0.75 inches square
+        float barcodeWidth = 1.25f * 72;  // Barcode width scaled down to 1.25 inches
+        float barcodeHeight = barcodeWidth * 0.4f;  // Maintain aspect ratio, but reduce height further
+        float largeFontSize = 10f;  // Smaller font size to fit the narrower page
+
+        // Calculate vertical positions
+        float qrY = pageHeight - qrCodeSize - margin;  // QR code at the top
+        float barcodeY = qrY - barcodeHeight - margin;  // Barcode below QR code
+        float textYStart = barcodeY - largeFontSize - 10f;  // Product name below barcode with padding
+
+        // Load font
+        PDType0Font ttfFont = PDType0Font.load(document, new File("./uploads/font/SEASRN.ttf"));
+
+        // Draw QR code (centered horizontally)
+        PDImageXObject qrPdImage = generateQrImageforEpson(product, document);
+        float qrX = (pageWidth - qrCodeSize) / 2;  // Center horizontally
+        contentStream.drawImage(qrPdImage, qrX, qrY, qrCodeSize, qrCodeSize);
+
+        // Draw barcode (centered horizontally)
+        BufferedImage barcodeImage = imageGenerator.generateUPCABarcodeImage(product.barcode);
+        PDImageXObject barcodePdImage = LosslessFactory.createFromImage(document, barcodeImage);
+        float barcodeX = (pageWidth - barcodeWidth) / 2;  // Center horizontally
+        contentStream.drawImage(barcodePdImage, barcodeX, barcodeY, barcodeWidth, barcodeHeight);
+
+        // Draw product name (centered horizontally with smaller font)
+        contentStream.setFont(ttfFont, largeFontSize);  // Set the smaller font size
+        List<String> wrappedText = wrapText(product.name, 10);  // Adjust wrapping for smaller font
+
+        // Start text writing at the calculated Y-position
+        float currentY = textYStart;
+
+        int lineNumber = 1;
+        contentStream.beginText();
+        for (String line : wrappedText) {
+            // Calculate the width of the current line to center it horizontally
+            float textWidth = ttfFont.getStringWidth(line) / 1000 * largeFontSize;
+            float textStartX = (pageWidth - textWidth) / 2;  // Center the text horizontally
+
+            // Offset first line differently than the second if needed
+            if (lineNumber == 1) {
+                contentStream.newLineAtOffset(textStartX, currentY);
+            } else if (lineNumber == 2) {
+                textStartX -= 10f; // Adjust positioning slightly for second line if necessary
+                contentStream.newLineAtOffset(textStartX, currentY);
+            }
+
+            // Show the text
+            contentStream.showText(line);
+
+            // Move down for the next line
+            currentY -= (largeFontSize + 12f);  // Adjust Y-position for line spacing
+            lineNumber++;
+        }
+        contentStream.endText();
+
+        contentStream.close();
+    }
+
+
+
+
     void generateEpson4by6point5Label(
             int entitynumber,
             int pagenumber,
