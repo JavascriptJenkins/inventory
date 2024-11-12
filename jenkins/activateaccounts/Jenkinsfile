@@ -67,28 +67,29 @@ pipeline {
 
 
 
-                        sshagent(credentials: ['id_ed2_techvvs']) {
+                    sshagent(credentials: ['id_ed2_techvvs']) {
+                        // Determine the database password based on the environment
+                        def dbPassword = env.TENANT_ENV.contains('prod') ? env.POSTGRE_PROD_DB_PASSWORD : env.POSTGRE_TEST_DB_PASSWORD
 
-                            if (env.TENANT_ENV.contains('prod')) {
-                                echo "Environment contains 'prod'. This is a production environment."
-                                sh """
-                                    PGPASSWORD="${POSTGRE_PROD_DB_PASSWORD}" psql -h ${env.DB_URI} -p 25060 -U doadmin -d ${env.TENANT_NAME} -c "UPDATE systemuser SET isuseractive = '1' WHERE email = '${env.SYSTEM_USER_TO_ACTIVATE}';"
-                                """
+                        // Set the PostgreSQL command based on the environment
+                        def updateCommand = """
+                            PGPASSWORD="${dbPassword}" psql -h ${env.DB_URI} -p 25060 -U doadmin -d ${params.TENANT_NAME} -t -c \\
+                            "UPDATE systemuser SET isuseractive = '1' WHERE email = '${params.SYSTEM_USER_TO_ACTIVATE}';"
+                        """
 
+                        // Execute the update command and capture the output
+                        def updateResult = sh(
+                            script: updateCommand,
+                            returnStdout: true
+                        ).trim()
 
-                            } else if (env.TENANT_ENV.contains('test')) {
-                                echo "Environment contains 'test'. This is a testing environment."
-                                sh """
-                                    PGPASSWORD="${POSTGRE_TEST_DB_PASSWORD}" psql -h ${env.DB_URI} -p 25060 -U doadmin -d ${env.TENANT_NAME} -c "UPDATE systemuser SET isuseractive = '1' WHERE email = '${env.SYSTEM_USER_TO_ACTIVATE}';"
-                                """
-
-                            } else {
-                                echo "Environment is unknown or does not contain 'prod' or 'test'."
-                            }
-
-
-
+                        // Verify that exactly one row was updated
+                        if (updateResult == 'UPDATE 1') {
+                            echo "User ${params.SYSTEM_USER_TO_ACTIVATE} was successfully updated to active."
+                        } else {
+                            error("Failed to update user ${params.SYSTEM_USER_TO_ACTIVATE}. Expected 'UPDATE 1' but got '${updateResult}'")
                         }
+                    }
 
 
 
