@@ -138,8 +138,8 @@ class LabelPrintingGenerator {
         float qrX = margin;  // QR code positioned at bottom left
         float qrY = margin;
 
-        float barcodeX = qrX + qrCodeSize + margin;  // Barcode to the right of QR code
-        float barcodeY = margin;  // Align with QR code’s bottom
+        float barcodeX = qrX;  //
+        float barcodeY = qrY + qrCodeSize + margin;  // align above the QR code
 
         float textXStart = margin;  // Product text at the top for testing
         float textYStart = pageHeight - largeFontSize - margin;  // Top of the label
