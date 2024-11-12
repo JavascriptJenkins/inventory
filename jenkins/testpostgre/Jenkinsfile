@@ -14,7 +14,7 @@ pipeline {
     parameters {
         choice(name: 'BRANCH', choices: ['test1', 'prod', 'joebranch', 'peterbranch'], description: 'Branch to build')
         choice(name: 'HOSTNAME', choices: ['206.189.183.0', '64.227.4.159', '198.199.72.34','157.230.91.190'], description: 'the host to push the build to')
-        choice(name: 'TENANT_ENV', choices: ['inventory|test', 'highland|prod', 'inventory|prod', 'intake|prod'], description: 'the tenant and environment name to build')
+        choice(name: 'TENANT_ENV', choices: ['inventory_test', 'highland_prod', 'inventory_prod', 'intake_prod'], description: 'the tenant and environment name to build')
         choice(name: 'TENANT_NAME', choices: ['test', 'alpha', 'intake'], description: 'The tenant name will be appended to beginning of domain')
         choice(name: 'BASE_DOMAIN', choices: ['.techvvs.io', '.jenkins.codes'], description: 'domain')
         string(name: 'LOAD_REF_DATA', defaultValue: 'no', description: 'Value for load.ref.data (leave blank to keep default)')
@@ -41,18 +41,18 @@ pipeline {
 
                     // Define a map of tenants to IP addresses
                     TENANT_IP_MAP = [
-                        'inventory|prod': '64.227.4.159',
-                        'highland|prod': '157.230.91.190',
-                        'inventory|test': '206.189.183.0',
-                        'intake|prod': '64.227.18.215'
+                        'inventory_prod': '64.227.4.159',
+                        'highland_prod': '157.230.91.190',
+                        'inventory_test': '206.189.183.0',
+                        'intake_prod': '64.227.18.215'
                     ]
 
                     // Define a map of tenants to IP addresses
                     POSTGRESQL_ENV_MAP = [
-                        'inventory|prod': '',
-                        'highland|prod': 'jdbc:postgresql://private-postgresql-test1-do-user-1326368-0.d.db.ondigitalocean.com:25060',
-                        'inventory|test': 'jdbc:postgresql://private-postgresql-test1-do-user-1326368-0.d.db.ondigitalocean.com:25060',
-                        'intake|prod': 'private-postgresql-prod1-do-user-1326368-0.d.db.ondigitalocean.com:25060'
+                        'inventory_prod': '',
+                        'highland_prod': 'jdbc:postgresql://private-postgresql-test1-do-user-1326368-0.d.db.ondigitalocean.com:25060',
+                        'inventory_test': 'jdbc:postgresql://private-postgresql-test1-do-user-1326368-0.d.db.ondigitalocean.com:25060',
+                        'intake_prod': 'private-postgresql-prod1-do-user-1326368-0.d.db.ondigitalocean.com:25060'
                     ]
 
 
