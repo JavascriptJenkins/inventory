@@ -91,6 +91,7 @@ pipeline {
                         string(credentialsId: 'TWILIO_API_PASSWORD', variable: 'TWILIO_API_PASSWORD'),
                         string(credentialsId: 'SENDGRID_API_KEY', variable: 'SENDGRID_API_KEY'),
                          string(credentialsId: 'POSTGRE_TEST_DB_PASSWORD', variable: 'POSTGRE_TEST_DB_PASSWORD'),
+                         string(credentialsId: 'POSTGRE_PROD_DB_PASSWORD', variable: 'POSTGRE_PROD_DB_PASSWORD'),
                          string(credentialsId: 'JWT_SECRET_KEY', variable: 'JWT_SECRET_KEY')
                     ])
                     {
