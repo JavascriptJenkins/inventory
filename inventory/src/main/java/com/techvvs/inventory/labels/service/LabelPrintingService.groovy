@@ -48,7 +48,7 @@ class LabelPrintingService {
                 pagenumber++
             }
 
-            saveBarcode28mmx89mmLabelsPdfFile(document, appConstants.BARCODES_EPSON_64_DIR, batchVO.name,batchVO.batchnumber)
+            saveBarcode28mmx89mmLabelsPdfFile(document, appConstants.BARCODES_DYMNO_28mmx89mm_DIR, batchVO.name,batchVO.batchnumber)
 
         } catch(Exception ex){
             System.out.println("Generate epson failed: "+ex.getMessage().toString())
