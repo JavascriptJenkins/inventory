@@ -37,8 +37,8 @@ import java.util.regex.Pattern;
 @Controller
 public class UploadController {
 
-    private final String UPLOAD_DIR = "./uploads/";
-    private final String UPLOAD_DIR_XLSX = "./uploads/xlsx/";
+    private final String UPLOAD_DIR = "inventory/uploads/";
+    private final String UPLOAD_DIR_XLSX = "inventory/uploads/xlsx/";
 
     @GetMapping("/")
     public String homepage() {

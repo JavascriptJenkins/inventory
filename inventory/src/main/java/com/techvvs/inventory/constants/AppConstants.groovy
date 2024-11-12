@@ -9,11 +9,11 @@ class AppConstants {
     /* dir structure is /topdir/$batchnumber/$otherdirs */
 
 
-    public String UPLOAD_DIR_MEDIA = "./uploads/media/";
+    public String UPLOAD_DIR_MEDIA = "inventory/uploads/media/";
     public String UPLOAD_DIR_PRODUCT = "/product/";
 
     // todo: depricate this upload dir?
-    String UPLOAD_DIR = "./uploads/";
+    String UPLOAD_DIR = "inventory/uploads/";
 
     // move to filesystemconstants
     String PARENT_LEVEL_DIR = "./topdir/"

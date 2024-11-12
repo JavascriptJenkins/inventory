@@ -30,7 +30,7 @@ import java.time.LocalDateTime
 @Controller
 public class ProductViewController {
 
-    private final String UPLOAD_DIR = "./uploads/";
+    private final String UPLOAD_DIR = "inventory/uploads/";
     
 
     @Autowired

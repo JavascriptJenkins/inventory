@@ -45,7 +45,7 @@ class ImportBatch {
     BatchVO batchvotoreturn = new BatchVO()
 
 
-    String IMPORT_DIR_XLSX = "./uploads/xlsx/";
+    String IMPORT_DIR_XLSX = "inventory/uploads/xlsx/";
 
     BatchVO importBatchFromExistingXlsxFile(String filename){
 

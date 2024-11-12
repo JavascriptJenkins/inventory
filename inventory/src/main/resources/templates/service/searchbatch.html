@@ -72,7 +72,7 @@
                 </thead>
                 <tbody>
                 <tr th:each="batch : ${batchs}">
-                    <td th:text="${batch.id}"></td>
+                    <td th:text="${batch.batchid}"></td>
                     <td><a th:href="@{/newbatch/editform?batchnumber=__${batch.batchnumber}__}" th:text="${batch.batchnumber}"></a></td>
                     <!--            <td onclick="makeInput($(this).closest('tr'), this)" th:text="${student.studentName}"></td>-->
                     <!--            <td onclick="makeInput($(this).closest('tr'), this)" th:text="${student.birthday}"></td>-->

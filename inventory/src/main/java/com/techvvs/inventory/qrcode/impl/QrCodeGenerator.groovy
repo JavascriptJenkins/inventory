@@ -35,7 +35,7 @@ class QrCodeGenerator {
     @Autowired
     QrImageGenerator qrImageGenerator
 
-    static String QR_BATCH_DIR = "./uploads/qr/"
+    static String QR_BATCH_DIR = "inventory/uploads/qr/"
 
     @Autowired
     AppConstants appConstants
@@ -153,7 +153,7 @@ class QrCodeGenerator {
 
 
         // Example of using a TrueType font
-        PDType0Font ttfFont = PDType0Font.load(document, new File("./uploads/font/Oswald-VariableFont_wght.ttf"));
+        PDType0Font ttfFont = PDType0Font.load(document, new File("inventory/uploads/font/Oswald-VariableFont_wght.ttf"));
 
         // write label and metadata info on top of each page
         techvvsPdfWriterUtil.writeMetadataOnTopOfPage(contentStream, ttfFont, leftMargin, topMargin, pagenumber, batchnumber, batchname)
@@ -249,7 +249,7 @@ class QrCodeGenerator {
 
 
         // Example of using a TrueType font
-        PDType0Font ttfFont = PDType0Font.load(document, new File("./uploads/font/Oswald-VariableFont_wght.ttf"));
+        PDType0Font ttfFont = PDType0Font.load(document, new File("inventory/uploads/font/Oswald-VariableFont_wght.ttf"));
 
         // write label and metadata info on top of each page
         techvvsPdfWriterUtil.writeMetadataOnTopOfPage(contentStream, ttfFont, leftMargin, topMargin, pagenumber, batchnumber, batchname)
