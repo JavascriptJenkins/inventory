@@ -129,41 +129,52 @@ class LabelPrintingGenerator {
         float margin = 5f;  // Small margin to keep content visible
 
         // Define sizes for QR code, barcode, and font
-        float qrCodeSize = 0.6f * 72;  // Adjusted QR code size to 0.6 inches for visibility
-        float barcodeWidth = 0.5f * 72;  // Narrow barcode width
-        float barcodeHeight = 1.8f * 72;  // Span height of the label
-        float largeFontSize = 10f;  // Smaller font size to fit narrower label
+        float qrCodeSize = 0.6f * 72;  // QR code size of 0.6 inches for visibility
+        float barcodeWidth = 0.4f * 72;  // Reduce barcode width to fit label width
+        float barcodeHeight = 1.5f * 72;  // Smaller barcode height after rotation
+        float largeFontSize = 10f;  // Font size for product text
 
         // Set positions for elements
-        float qrX = margin;
-        float qrY = margin;  // QR code at the bottom-left corner
+        float qrX = margin;  // QR code positioned at bottom left
+        float qrY = margin;
 
         float barcodeX = qrX + qrCodeSize + margin;  // Barcode to the right of QR code
         float barcodeY = (pageHeight - barcodeHeight) / 2;  // Centered vertically
 
+        // Position for product text, to the right of the barcode
+        float textXStart = barcodeX + barcodeWidth + margin;
+        float textYStart = pageHeight - largeFontSize - margin;  // Positioned at the top-right area
+
         // Load font
         PDType0Font ttfFont = PDType0Font.load(document, new File("./uploads/font/SEASRN.ttf"));
 
-        // Draw QR code (bottom-left without rotation for debugging)
+        // Draw QR code (bottom-left without rotation)
         PDImageXObject qrPdImage = generateQrImageforEpson(product, document);
         contentStream.drawImage(qrPdImage, qrX, qrY, qrCodeSize, qrCodeSize);
 
-        // Draw barcode without rotation for debugging
+        // Draw barcode with 90-degree rotation for vertical alignment
         BufferedImage barcodeImage = imageGenerator.generateUPCABarcodeImage(product.barcode);
         PDImageXObject barcodePdImage = LosslessFactory.createFromImage(document, barcodeImage);
+        contentStream.saveGraphicsState();  // Save current state to apply rotation
 
-        // Center barcode on the page, right of the QR code, without rotation
-        contentStream.drawImage(barcodePdImage, barcodeX, barcodeY, barcodeWidth, barcodeHeight);
+        // Apply 90-degree rotation and draw barcode vertically aligned
+        contentStream.transform(Matrix.getRotateInstance((float) Math.PI / 2, barcodeX + barcodeWidth / 2 as float, barcodeY + barcodeHeight / 2 as float));
+        contentStream.drawImage(
+                barcodePdImage,
+                barcodeX - (barcodeHeight / 2) as float,  // Adjust to center horizontally
+                barcodeY,  // Centered vertically
+                barcodeHeight,  // Spans the height of the label after rotation
+                barcodeWidth  // Fits width of the label
+        );
+        contentStream.restoreGraphicsState();  // Restore after rotation
 
-        // Draw product name text (positioned above QR code and barcode for simplicity)
-        float textXStart = barcodeX + barcodeWidth + margin;
-        float textYStart = pageHeight - largeFontSize - margin;
-
+        // Draw product name text to the right of the barcode
         contentStream.setFont(ttfFont, largeFontSize);  // Set font size
         contentStream.beginText();
-        contentStream.newLineAtOffset(textXStart, textYStart);
+        contentStream.newLineAtOffset(textXStart, textYStart);  // Position text at top-right area
 
-        List<String> wrappedText = wrapText(product.name, 15);  // Adjust wrapping for font size
+        // Add wrapped product name text
+        List<String> wrappedText = wrapText(product.name, 15);  // Wrap to fit the label width
         for (String line : wrappedText) {
             contentStream.showText(line);
             contentStream.newLineAtOffset(0, -largeFontSize - 2 as float);  // Move down for next line
@@ -172,6 +183,7 @@ class LabelPrintingGenerator {
 
         contentStream.close();
     }
+
 
 
 
