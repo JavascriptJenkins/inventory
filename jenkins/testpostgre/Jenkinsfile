@@ -52,7 +52,7 @@ pipeline {
                         'inventory_prod': '',
                         'highland_prod': 'jdbc:postgresql://private-postgresql-test1-do-user-1326368-0.d.db.ondigitalocean.com:25060',
                         'inventory_test': 'jdbc:postgresql://private-postgresql-test1-do-user-1326368-0.d.db.ondigitalocean.com:25060',
-                        'intake_prod': 'private-postgresql-prod1-do-user-1326368-0.d.db.ondigitalocean.com:25060'
+                        'intake_prod': 'jdbc:private-postgresql-prod1-do-user-1326368-0.d.db.ondigitalocean.com:25060'
                     ]
 
 

@@ -31,11 +31,11 @@ pipeline {
                     ]
 
                     // Define a map of tenants to IP addresses
-                    // NOTE: this map has no ports attached, unlike the maps in the build jobs
-                    POSTGRESQL_ENV_MAP_NO_PORT = [
+                    // NOTE: this map has no ports/jdbc attached, unlike the maps in the build jobs
+                    POSTGRESQL_ENV_MAP_NO_PORT_NOJDBC = [
                         'inventory_prod': '',
-                        'highland_prod': 'jdbc:postgresql://private-postgresql-test1-do-user-1326368-0.d.db.ondigitalocean.com',
-                        'inventory_test': 'jdbc:postgresql://private-postgresql-test1-do-user-1326368-0.d.db.ondigitalocean.com',
+                        'highland_prod': 'postgresql://private-postgresql-test1-do-user-1326368-0.d.db.ondigitalocean.com',
+                        'inventory_test': 'postgresql://private-postgresql-test1-do-user-1326368-0.d.db.ondigitalocean.com',
                         'intake_prod': 'private-postgresql-prod1-do-user-1326368-0.d.db.ondigitalocean.com'
                     ]
 
@@ -45,7 +45,7 @@ pipeline {
                     echo "Selected Tenant: ${params.TENANT_ENV}, IP Address: ${hostname}"
 
                     // Get the IP address for the selected tenant
-                    def postgresql_db_uri = POSTGRESQL_ENV_MAP_NO_PORT[params.TENANT_ENV]
+                    def postgresql_db_uri = POSTGRESQL_ENV_MAP_NO_PORT_NOJDBC[params.TENANT_ENV]
                     echo "Selected postgresql_db_uri: ${params.TENANT_ENV}, POSTGRE SQL DB URI: ${postgresql_db_uri}"
 
                     // Set the IP address as an environment variable for use in later stages
