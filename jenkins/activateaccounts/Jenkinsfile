@@ -1,0 +1,293 @@
+pipeline {
+    agent any
+
+    tools {
+        maven 'maven3' // Use the name specified in Global Tool Configuration
+    }
+
+    parameters {
+        string(name: 'SYSTEM_USER_TO_ACTIVATE', defaultValue: 'myuser@techvvs.io', description: 'enter in the username to activate')
+        choice(name: 'BRANCH', choices: ['test1', 'prod', 'joebranch', 'peterbranch'], description: 'Branch to build')
+        choice(name: 'HOSTNAME', choices: ['206.189.183.0', '64.227.4.159', '198.199.72.34','157.230.91.190'], description: 'the host to push the build to')
+        choice(name: 'TENANT_ENV', choices: ['inventory_test', 'highland_prod', 'inventory_prod', 'intake_prod'], description: 'the tenant and environment name to build')
+        choice(name: 'TENANT_NAME', choices: ['test', 'alpha', 'intake'], description: 'The tenant name will be appended to beginning of domain')
+        choice(name: 'BASE_DOMAIN', choices: ['.techvvs.io', '.jenkins.codes'], description: 'domain')
+    }
+
+   stage('Select Hostname') {
+        steps {
+            script {
+
+                // Define a map of tenants to IP addresses
+                TENANT_IP_MAP = [
+                    'inventory_prod': '64.227.4.159',
+                    'highland_prod': '157.230.91.190',
+                    'inventory_test': '206.189.183.0',
+                    'intake_prod': '64.227.18.215'
+                ]
+
+                // Define a map of tenants to IP addresses
+                // NOTE: this map has no ports attached, unlike the maps in the build jobs
+                POSTGRESQL_ENV_MAP_NO_PORT = [
+                    'inventory_prod': '',
+                    'highland_prod': 'jdbc:postgresql://private-postgresql-test1-do-user-1326368-0.d.db.ondigitalocean.com',
+                    'inventory_test': 'jdbc:postgresql://private-postgresql-test1-do-user-1326368-0.d.db.ondigitalocean.com',
+                    'intake_prod': 'private-postgresql-prod1-do-user-1326368-0.d.db.ondigitalocean.com'
+                ]
+
+
+                // Get the IP address for the selected tenant
+                def hostname = TENANT_IP_MAP[params.TENANT_ENV]
+                echo "Selected Tenant: ${params.TENANT_ENV}, IP Address: ${hostname}"
+
+                // Get the IP address for the selected tenant
+                def postgresql_db_uri = POSTGRESQL_ENV_MAP_NO_PORT[params.TENANT_ENV]
+                echo "Selected postgresql_db_uri: ${params.TENANT_ENV}, POSTGRE SQL DB URI: ${postgresql_db_uri}"
+
+                // Set the IP address as an environment variable for use in later stages
+                env.HOSTNAME = hostname
+                env.DB_URI = postgresql_db_uri
+            }
+        }
+    }
+
+    stages {
+        stage('Log int postgresql db and update user to active') {
+            steps {
+                script {
+
+                    // Load multiple credentials simultaneously
+                    withCredentials([
+                         string(credentialsId: 'POSTGRE_TEST_DB_PASSWORD', variable: 'POSTGRE_TEST_DB_PASSWORD'),
+                         string(credentialsId: 'POSTGRE_PROD_DB_PASSWORD', variable: 'POSTGRE_PROD_DB_PASSWORD')
+                    ]){
+
+
+
+                        sshagent(credentials: ['id_ed2_techvvs']) {
+
+                            if (env.TENANT_ENV.contains('prod')) {
+                                echo "Environment contains 'prod'. This is a production environment."
+                                sh """
+                                    PGPASSWORD="${POSTGRE_PROD_DB_PASSWORD}" psql -h ${env.DB_URI} -p 25060 -U doadmin -d ${env.TENANT_NAME} -c "UPDATE systemuser SET isactive = '1' WHERE name = '${env.SYSTEM_USER_TO_ACTIVATE}';"
+                                """
+
+
+                            } else if (env.TENANT_ENV.contains('test')) {
+                                echo "Environment contains 'test'. This is a testing environment."
+                                sh """
+                                    PGPASSWORD="${POSTGRE_TEST_DB_PASSWORD}" psql -h ${env.DB_URI} -p 25060 -U doadmin -d ${env.TENANT_NAME} -c "UPDATE systemuser SET isactive = '1' WHERE name = '${env.SYSTEM_USER_TO_ACTIVATE}';"
+                                """
+
+                            } else {
+                                echo "Environment is unknown or does not contain 'prod' or 'test'."
+                            }
+
+
+
+                        }
+
+
+
+
+
+
+                    }
+
+                }
+            }
+        }
+
+        stage('Create User techvvs') {
+            steps {
+                script {
+                    sshagent(credentials: ['inventory-root-sshkey']) {
+                        sh """
+                            ssh -o StrictHostKeyChecking=no root@${params.HOSTNAME} << 'EOF'
+
+                            # Check if user 'techvvs' exists
+                            if id "techvvs" &>/dev/null; then
+                                echo "User 'techvvs' already exists. Skipping creation."
+                            else
+                                # Create a new user named "techvvs"
+                                useradd -m techvvs
+
+                                # Generate a 256-bit AES key and use it as a password
+                                AES_KEY=\$(openssl rand -base64 32)
+
+                                # Set the generated AES key as the password for the new user
+                                echo "techvvs:\$AES_KEY" | chpasswd
+
+                                # Add the user to the 'sudo' group for administrative privileges
+                                usermod -aG sudo techvvs
+
+                                echo "User 'techvvs' has been created and added to the 'sudo' group."
+                                echo "The generated AES key used as the password is: \$AES_KEY"
+
+                                # Log the AES key to Jenkins console output
+                                echo "Generated password for 'techvvs': \$AES_KEY"
+                            fi
+
+EOF
+                        """
+                    }
+                }
+            }
+        }
+
+
+        stage('Configure Passwordless Sudo for techvvs') {
+            steps {
+                script {
+                    sshagent(credentials: ['inventory-root-sshkey']) {
+                        sh """
+                            ssh -o StrictHostKeyChecking=no root@${params.HOSTNAME} << 'EOF'
+
+                            # Add techvvs user to sudoers file for passwordless sudo
+                            echo "techvvs ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/techvvs
+
+                            # Set correct permissions for the sudoers file
+                            sudo chmod 440 /etc/sudoers.d/techvvs
+
+EOF
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Configure SSH Access for techvvs') {
+            steps {
+                script {
+                    withCredentials([string(credentialsId: 'techvvs2_public_key', variable: 'PUBLIC_KEY')]) {
+                        sshagent(credentials: ['inventory-root-sshkey']) {
+                            sh """
+                                ssh -o StrictHostKeyChecking=no root@${params.HOSTNAME} << 'EOF'
+
+                                # Ensure .ssh directory exists with correct permissions
+                                sudo su - techvvs -c "mkdir -p ~/.ssh && chmod 700 ~/.ssh"
+
+                                # Add the public key to authorized_keys with correct permissions
+                                echo '${PUBLIC_KEY}' | sudo tee -a /home/techvvs/.ssh/authorized_keys
+                                sudo chmod 600 /home/techvvs/.ssh/authorized_keys
+                                sudo chown -R techvvs:techvvs /home/techvvs/.ssh
+
+                                # Verify the key was added
+                                echo "Contents of authorized_keys after update:"
+                                sudo cat /home/techvvs/.ssh/authorized_keys
+
+EOF
+                            """
+                        }
+                    }
+                }
+            }
+        }
+
+
+        stage('Confirm SSH Access for techvvs') {
+            steps {
+                script {
+                    sshagent(credentials: ['id_ed2_techvvs']) {
+                        sh """
+                            ssh -o StrictHostKeyChecking=no techvvs@${params.HOSTNAME} 'echo "SSH access confirmed for techvvs user"'
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Create Directory Structure') {
+            steps {
+                script {
+                    sshagent(credentials: ['id_ed2_techvvs']) {
+                        sh """
+                            ssh -o StrictHostKeyChecking=no techvvs@${params.HOSTNAME} << 'EOF'
+
+                            #!/bin/bash
+
+                            # Check and create the 'deployments' directory if it doesn't exist
+                            if [ ! -d ~/deployments ]; then
+                                mkdir ~/deployments
+                            fi
+
+                            # Check and create the 'inventory' directory inside 'deployments' if it doesn't exist
+                            if [ ! -d ~/deployments/inventory ]; then
+                                mkdir ~/deployments/inventory
+                            fi
+
+                            # Check and create the required directories inside 'inventory'
+                            for dir in backup data logs topdir uploads; do
+                                if [ ! -d ~/deployments/inventory/\$dir ]; then
+                                    mkdir ~/deployments/inventory/\$dir
+                                fi
+                            done
+
+                            # Check and create the subdirectories inside 'uploads'
+                            for subdir in coa font xlsx; do
+                                if [ ! -d ~/deployments/inventory/uploads/\$subdir ]; then
+                                    mkdir ~/deployments/inventory/uploads/\$subdir
+                                fi
+                            done
+
+                            # Print success message
+                            echo "Directories created successfully if they did not already exist."
+
+EOF
+                        """
+                    }
+                }
+            }
+        }
+
+
+        stage('Copy Font Files') {
+            steps {
+                script {
+                    dir('inventory') {
+                        sshagent(credentials: ['id_ed2_techvvs']) {
+                            sh """
+                                scp -o StrictHostKeyChecking=no -r uploads/font/ techvvs@${params.HOSTNAME}:~/deployments/inventory/uploads
+                            """
+                        }
+                    }
+                }
+            }
+        }
+
+
+        stage('Install JDK 17') {
+            steps {
+                script {
+                    sshagent(credentials: ['id_ed2_techvvs']) {
+                        sh """
+                            ssh -o StrictHostKeyChecking=no techvvs@${params.HOSTNAME} << 'EOF'
+
+                            # Check if JDK 17 is already installed
+                            if java -version 2>&1 | grep '17' > /dev/null; then
+                                echo "JDK 17 is already installed. Skipping installation."
+                            else
+                                # Update package index
+                                sudo apt-get update -y
+
+                                # Install JDK 17
+                                sudo apt-get install -y openjdk-17-jdk
+
+                                # Verify installation
+                                java -version
+
+                                echo "JDK 17 installed successfully."
+                            fi
+
+EOF
+                        """
+                    }
+                }
+            }
+        }
+
+
+
+
+    }
+}
