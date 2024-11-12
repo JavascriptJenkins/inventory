@@ -51,7 +51,7 @@ pipeline {
                     POSTGRESQL_ENV_MAP = [
                         'inventory|prod': '',
                         'highland|prod': 'jdbc:postgresql://private-postgresql-test1-do-user-1326368-0.d.db.ondigitalocean.com:25060',
-                        'inventory|test1': 'jdbc:postgresql://private-postgresql-test1-do-user-1326368-0.d.db.ondigitalocean.com:25060'
+                        'inventory|test1': 'jdbc:postgresql://private-postgresql-test1-do-user-1326368-0.d.db.ondigitalocean.com:25060',
                         'intake|prod': 'private-postgresql-prod1-do-user-1326368-0.d.db.ondigitalocean.com:25060'
                     ]
 
