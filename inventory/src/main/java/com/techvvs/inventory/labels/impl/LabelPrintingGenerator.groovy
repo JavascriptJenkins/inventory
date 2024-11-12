@@ -134,57 +134,45 @@ class LabelPrintingGenerator {
         float barcodeHeight = 1.8f * 72;  // Span height of the label
         float largeFontSize = 10f;  // Smaller font size to fit narrower label
 
-        // Set positions for a bottom-to-top layout
-        float qrY = margin;  // QR code positioned at the bottom with margin
-        float qrX = (pageWidth - qrCodeSize) / 2;  // Center horizontally
+        // Set positions for elements
+        float qrX = margin;
+        float qrY = margin;  // QR code at the bottom-left corner
 
-        float barcodeY = qrY + qrCodeSize + margin;  // Barcode above QR code
-        float barcodeX = (pageWidth - barcodeWidth) / 2;  // Centered horizontally
-
-        float textYStart = barcodeY + barcodeHeight + margin;  // Text above barcode
-        float textXStart = pageWidth / 2;  // Center text horizontally
+        float barcodeX = qrX + qrCodeSize + margin;  // Barcode to the right of QR code
+        float barcodeY = (pageHeight - barcodeHeight) / 2;  // Centered vertically
 
         // Load font
         PDType0Font ttfFont = PDType0Font.load(document, new File("./uploads/font/SEASRN.ttf"));
 
-        // Begin transformation for 90-degree rotation
-        contentStream.saveGraphicsState();
-        contentStream.transform(Matrix.getRotateInstance((float) Math.PI / 2, pageWidth / 2, pageHeight / 2));
-
-        // Draw QR code at the bottom (leftmost after rotation)
+        // Draw QR code (bottom-left without rotation for debugging)
         PDImageXObject qrPdImage = generateQrImageforEpson(product, document);
         contentStream.drawImage(qrPdImage, qrX, qrY, qrCodeSize, qrCodeSize);
 
-        // Draw barcode vertically aligned above QR code
+        // Draw barcode without rotation for debugging
         BufferedImage barcodeImage = imageGenerator.generateUPCABarcodeImage(product.barcode);
         PDImageXObject barcodePdImage = LosslessFactory.createFromImage(document, barcodeImage);
-        contentStream.drawImage(
-                barcodePdImage,
-                barcodeX,  // Centered horizontally above QR code
-                barcodeY,  // Above QR code
-                barcodeWidth,
-                barcodeHeight
-        );
 
-        // Draw product name text above the barcode
+        // Center barcode on the page, right of the QR code, without rotation
+        contentStream.drawImage(barcodePdImage, barcodeX, barcodeY, barcodeWidth, barcodeHeight);
+
+        // Draw product name text (positioned above QR code and barcode for simplicity)
+        float textXStart = barcodeX + barcodeWidth + margin;
+        float textYStart = pageHeight - largeFontSize - margin;
+
         contentStream.setFont(ttfFont, largeFontSize);  // Set font size
-        List<String> wrappedText = wrapText(product.name, 15);  // Adjust wrapping for font size
-
-        // Write each line of text, vertically aligned from top to bottom
         contentStream.beginText();
-        contentStream.newLineAtOffset(textXStart, textYStart);  // Position at top-right after rotation
+        contentStream.newLineAtOffset(textXStart, textYStart);
 
+        List<String> wrappedText = wrapText(product.name, 15);  // Adjust wrapping for font size
         for (String line : wrappedText) {
             contentStream.showText(line);
-            contentStream.newLineAtOffset(0, -largeFontSize - 2);  // Move down for next line
+            contentStream.newLineAtOffset(0, -largeFontSize - 2 as float);  // Move down for next line
         }
         contentStream.endText();
 
-        // Restore graphics state to finalize rotation
-        contentStream.restoreGraphicsState();
-
         contentStream.close();
     }
+
 
 
 
