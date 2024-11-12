@@ -146,21 +146,24 @@ pipeline {
                             sh "sed -i 's/^sendgrid\\.api\\.key=.*/sendgrid.api.key=${SENDGRID_API_KEY}/' src/main/resources/application.properties"
                             sh "sed -i 's/^security\\.jwt\\.token\\.secret-key=.*/security.jwt.token.secret-key=${JWT_SECRET_KEY}/' src/main/resources/application.properties"
 
-                            switch (env.TENANT_ENV) {
-                                case { it.contains('prod') }:
-                                    echo "Environment contains 'prod'. This is a production environment."
-                                    // Add production-specific steps here
-                                    sh "sed -i 's/^spring\\.datasource\\.password=.*/spring.datasource.password=${POSTGRE_PROD_DB_PASSWORD}/' src/main/resources/application.properties"
-                                    break
-                                case { it.contains('test') }:
-                                    echo "Environment contains 'test'. This is a testing environment."
-                                    sh "sed -i 's/^spring\\.datasource\\.password=.*/spring.datasource.password=${POSTGRE_TEST_DB_PASSWORD}/' src/main/resources/application.properties"
-                                    // Add test-specific steps here
-                                    break
-                                default:
-                                    echo "Environment is unknown or does not contain 'prod' or 'test'."
-                                    // Add default or error handling steps here
+
+                            if (env.TENANT_ENV.contains('prod')) {
+                                echo "Environment contains 'prod'. This is a production environment."
+                                // Update production-specific settings
+                                sh """
+                                    sed -i 's/^spring\\.datasource\\.password=.*/spring.datasource.password=${POSTGRE_PROD_DB_PASSWORD}/' src/main/resources/application.properties
+                                """
+                            } else if (env.TENANT_ENV.contains('test')) {
+                                echo "Environment contains 'test'. This is a testing environment."
+                                // Update test-specific settings
+                                sh """
+                                    sed -i 's/^spring\\.datasource\\.password=.*/spring.datasource.password=${POSTGRE_TEST_DB_PASSWORD}/' src/main/resources/application.properties
+                                """
+                            } else {
+                                echo "Environment is unknown or does not contain 'prod' or 'test'."
+                                // Add default or error handling steps here
                             }
+
 
 
                         }
