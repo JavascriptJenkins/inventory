@@ -34,8 +34,8 @@ pipeline {
                     // NOTE: this map has no ports/jdbc attached, unlike the maps in the build jobs
                     POSTGRESQL_ENV_MAP_NO_PORT_NOJDBC = [
                         'inventory_prod': '',
-                        'highland_prod': 'postgresql://private-postgresql-test1-do-user-1326368-0.d.db.ondigitalocean.com',
-                        'inventory_test': 'postgresql://private-postgresql-test1-do-user-1326368-0.d.db.ondigitalocean.com',
+                        'highland_prod': 'private-postgresql-test1-do-user-1326368-0.d.db.ondigitalocean.com',
+                        'inventory_test': 'private-postgresql-test1-do-user-1326368-0.d.db.ondigitalocean.com',
                         'intake_prod': 'private-postgresql-prod1-do-user-1326368-0.d.db.ondigitalocean.com'
                     ]
 
