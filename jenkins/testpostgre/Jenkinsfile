@@ -43,7 +43,7 @@ pipeline {
                     TENANT_IP_MAP = [
                         'inventory|prod': '64.227.4.159',
                         'highland|prod': '157.230.91.190',
-                        'inventory|test1': '206.189.183.0'
+                        'inventory|test1': '206.189.183.0',
                         'intake|prod': '64.227.18.215'
                     ]
 
