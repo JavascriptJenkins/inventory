@@ -110,9 +110,18 @@ class ImportBatch {
 
                 String producttype = row.getCell(7).getStringCellValue().trim().toUpperCase()
 
-                productVO.setCrateposition(row.getCell(8).getStringCellValue().trim());
-                productVO.setCrate((int) row.getCell(9).getNumericCellValue()); // crate #
 
+                if(row.getCell(8).getStringCellValue() == null || row.getCell(8).getStringCellValue().trim() == ""){
+                    System.out.println("SKIPPING cell 9 | CRATE NUMBER")
+                } else {
+                    productVO.setCrateposition(row.getCell(8).getStringCellValue().trim()); // crate position
+                }
+
+                if(row.getCell(9).getNumericCellValue() == null){
+                    System.out.println("SKIPPING cell 9 | CRATE NUMBER")
+                } else {
+                    productVO.setCrate((int) row.getCell(9).getNumericCellValue()) // crate #
+                }
                 // todo: reference this in a constants class
 
                 boolean exists = productTypeRepo.existsByName(producttype);
