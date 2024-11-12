@@ -36,6 +36,7 @@ class LabelPrintingService {
         try{
             PDDocument document = new PDDocument()
             int pagenumber = 0;
+            batchVO.product_set = batchVO.product_set.sort { it.name?.toLowerCase() }
             // create a single epson for each product (print multiple times if needed....)
             for(ProductVO product : batchVO.product_set){
 
