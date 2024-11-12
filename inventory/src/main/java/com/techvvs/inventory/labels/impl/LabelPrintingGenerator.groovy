@@ -126,54 +126,54 @@ class LabelPrintingGenerator {
         // Set page dimensions (1.125 inches x 3.5 inches)
         float pageWidth = 81.0f;   // 1-1/8 inches in points
         float pageHeight = 252.0f; // 3.5 inches in points
-        float margin = 5f;  // Smaller margin due to reduced page size
+        float margin = 5f;  // Small margin to keep content visible
 
         // Define sizes for QR code, barcode, and font
-        float qrCodeSize = 0.75f * 72;  // Scaled down QR code size to 0.75 inches square
-        float barcodeWidth = 1.25f * 72;  // Barcode width scaled down to 1.25 inches
-        float barcodeHeight = barcodeWidth * 0.4f;  // Maintain aspect ratio for height
-        float largeFontSize = 10f;  // Smaller font size to fit the narrower page
+        float qrCodeSize = 0.6f * 72;  // Adjusted QR code size to 0.6 inches for visibility
+        float barcodeWidth = 1.2f * 72;  // Barcode width adjusted to 1.2 inches
+        float barcodeHeight = barcodeWidth * 0.4f;  // Maintain aspect ratio for barcode height
+        float largeFontSize = 10f;  // Smaller font size to fit narrower label
 
-        // Calculate positions for vertically oriented elements
-        float qrY = pageHeight - qrCodeSize - margin;  // QR code at the top
-        float barcodeX = (pageWidth - barcodeHeight) / 2;  // Center barcode horizontally
-        float barcodeY = qrY - barcodeWidth;  // Position barcode below QR code
+        // Set bottom alignment for elements
+        float qrY = margin;  // QR code aligned near the bottom margin
+        float barcodeY = qrY + qrCodeSize + margin;  // Barcode above QR code
+        float textYStart = barcodeY + barcodeHeight + 10f;  // Product name text above the barcode
 
         // Load font
         PDType0Font ttfFont = PDType0Font.load(document, new File("./uploads/font/SEASRN.ttf"));
 
-        // Draw QR code (centered horizontally)
+        // Draw QR code (aligned at bottom-left corner)
         PDImageXObject qrPdImage = generateQrImageforEpson(product, document);
         float qrX = (pageWidth - qrCodeSize) / 2;  // Center horizontally
         contentStream.drawImage(qrPdImage, qrX, qrY, qrCodeSize, qrCodeSize);
 
-        // Draw barcode vertically aligned with page height
+        // Draw barcode vertically aligned above QR code
         BufferedImage barcodeImage = imageGenerator.generateUPCABarcodeImage(product.barcode);
         PDImageXObject barcodePdImage = LosslessFactory.createFromImage(document, barcodeImage);
         contentStream.saveGraphicsState();  // Save current state to apply rotation
 
-        // Rotate the barcode by 90 degrees and position it
-        contentStream.transform(Matrix.getRotateInstance((float) Math.PI / 2, (float) (barcodeX + barcodeHeight / 2), (float) (barcodeY + barcodeWidth / 2)));
-        // Draw barcode image with float casting for position and size
-                contentStream.drawImage(
-                        barcodePdImage,
-                        (float) (barcodeX - barcodeHeight / 2),
-                        (float) (barcodeY - barcodeWidth / 2),
-                        barcodeHeight,
-                        barcodeWidth
-                );        contentStream.restoreGraphicsState();  // Restore after rotation
+        // Rotate barcode by 90 degrees and position it above QR code
+        contentStream.transform(Matrix.getRotateInstance((float) Math.PI / 2, (float) (pageWidth / 2), barcodeY + barcodeWidth / 2 as float));
+        contentStream.drawImage(
+                barcodePdImage,
+                (float) (pageWidth / 2 - barcodeHeight / 2),
+                barcodeY,
+                barcodeHeight,
+                barcodeWidth
+        );
+        contentStream.restoreGraphicsState();  // Restore after rotation
 
-        // Rotate text to align vertically and position it below the barcode
+        // Rotate text and position it above the barcode
         contentStream.saveGraphicsState();
-        contentStream.setFont(ttfFont, largeFontSize);  // Set the smaller font size
+        contentStream.setFont(ttfFont, largeFontSize);  // Set smaller font size
         List<String> wrappedText = wrapText(product.name, 15);  // Adjust wrapping for smaller font
 
         // Calculate starting position for rotated text
-        float textStartX = (pageWidth - largeFontSize) / 2;  // Center along width
-        float textStartY = barcodeY - margin - (wrappedText.size() * (largeFontSize + 2));  // Position below barcode
+        float textStartX = pageWidth / 2;  // Center text horizontally
+        float textStartY = textYStart;  // Start text above barcode
 
-        // Apply 90-degree rotation to the text, rotating around its starting point
-        contentStream.transform(Matrix.getRotateInstance(Math.PI / 2, textStartX, textStartY));
+        // Apply 90-degree rotation to the text, rotating around starting point
+        contentStream.transform(Matrix.getRotateInstance((float) Math.PI / 2, textStartX, textStartY));
 
         // Write each line of text, vertically aligned, with adjusted spacing
         float currentY = 0;  // Start at origin after transformation
@@ -188,6 +188,7 @@ class LabelPrintingGenerator {
 
         contentStream.close();
     }
+
 
 
 
