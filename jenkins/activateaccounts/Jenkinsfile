@@ -72,14 +72,14 @@ pipeline {
                             if (env.TENANT_ENV.contains('prod')) {
                                 echo "Environment contains 'prod'. This is a production environment."
                                 sh """
-                                    PGPASSWORD="${POSTGRE_PROD_DB_PASSWORD}" psql -h ${env.DB_URI} -p 25060 -U doadmin -d ${env.TENANT_NAME} -c "UPDATE systemuser SET isuseractive = '1' WHERE name = '${env.SYSTEM_USER_TO_ACTIVATE}';"
+                                    PGPASSWORD="${POSTGRE_PROD_DB_PASSWORD}" psql -h ${env.DB_URI} -p 25060 -U doadmin -d ${env.TENANT_NAME} -c "UPDATE systemuser SET isuseractive = '1' WHERE email = '${env.SYSTEM_USER_TO_ACTIVATE}';"
                                 """
 
 
                             } else if (env.TENANT_ENV.contains('test')) {
                                 echo "Environment contains 'test'. This is a testing environment."
                                 sh """
-                                    PGPASSWORD="${POSTGRE_TEST_DB_PASSWORD}" psql -h ${env.DB_URI} -p 25060 -U doadmin -d ${env.TENANT_NAME} -c "UPDATE systemuser SET isuseractive = '1' WHERE name = '${env.SYSTEM_USER_TO_ACTIVATE}';"
+                                    PGPASSWORD="${POSTGRE_TEST_DB_PASSWORD}" psql -h ${env.DB_URI} -p 25060 -U doadmin -d ${env.TENANT_NAME} -c "UPDATE systemuser SET isuseractive = '1' WHERE email = '${env.SYSTEM_USER_TO_ACTIVATE}';"
                                 """
 
                             } else {
