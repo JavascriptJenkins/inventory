@@ -130,14 +130,14 @@ class LabelPrintingGenerator {
 
         // Define sizes for QR code, barcode, and font
         float qrCodeSize = 0.6f * 72;  // Adjusted QR code size to 0.6 inches for visibility
-        float barcodeWidth = 1.2f * 72;  // Barcode width adjusted to 1.2 inches
-        float barcodeHeight = barcodeWidth * 0.4f;  // Maintain aspect ratio for barcode height
+        float barcodeWidth = 0.5f * 72;  // Narrow barcode width to fit within label width after rotation
+        float barcodeHeight = 1.8f * 72;  // Span the height of the label after 90-degree rotation
         float largeFontSize = 10f;  // Smaller font size to fit narrower label
 
         // Set bottom alignment for elements
         float qrY = margin;  // QR code aligned near the bottom margin
         float barcodeY = qrY + qrCodeSize + margin;  // Barcode above QR code
-        float textYStart = barcodeY + barcodeHeight + 10f;  // Product name text above the barcode
+        float textYStart = barcodeY + barcodeWidth + 10f;  // Product name text above the barcode
 
         // Load font
         PDType0Font ttfFont = PDType0Font.load(document, new File("./uploads/font/SEASRN.ttf"));
@@ -152,14 +152,16 @@ class LabelPrintingGenerator {
         PDImageXObject barcodePdImage = LosslessFactory.createFromImage(document, barcodeImage);
         contentStream.saveGraphicsState();  // Save current state to apply rotation
 
-        // Rotate barcode by 90 degrees and position it above QR code
-        contentStream.transform(Matrix.getRotateInstance((float) Math.PI / 2, (float) (pageWidth / 2), barcodeY + barcodeWidth / 2 as float));
+        // Rotate the barcode by 90 degrees and center it to span label height
+        float barcodeX = (pageWidth / 2);  // Centered horizontally after rotation
+        float barcodeVerticalPosition = barcodeY + (barcodeWidth / 2); // Center on label height
+        contentStream.transform(Matrix.getRotateInstance((float) Math.PI / 2, barcodeX, barcodeVerticalPosition));
         contentStream.drawImage(
                 barcodePdImage,
-                (float) (pageWidth / 2 - barcodeHeight / 2),
+                barcodeX - (barcodeHeight / 2) as float,  // Centered horizontally after rotation
                 barcodeY,
-                barcodeHeight,
-                barcodeWidth
+                barcodeHeight,  // Span the label height
+                barcodeWidth  // Keep narrow width for proper fit
         );
         contentStream.restoreGraphicsState();  // Restore after rotation
 
@@ -188,6 +190,7 @@ class LabelPrintingGenerator {
 
         contentStream.close();
     }
+
 
 
 
