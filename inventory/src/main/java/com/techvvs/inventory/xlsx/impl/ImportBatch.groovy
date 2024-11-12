@@ -112,13 +112,13 @@ class ImportBatch {
 
 
                 if(row.getCell(8).getStringCellValue() == null || row.getCell(8).getStringCellValue().trim() == ""){
-                    System.out.println("SKIPPING cell 8 | CRATE POSITION")
+                    //System.out.println("SKIPPING cell 8 | CRATE POSITION")
                 } else {
                     productVO.setCrateposition(row.getCell(8).getStringCellValue().trim()); // crate position
                 }
 
                 if(row.getCell(9) == null){
-                    System.out.println("SKIPPING cell 9 | CRATE NUMBER")
+                    //System.out.println("SKIPPING cell 9 | CRATE NUMBER")
                 } else {
                     productVO.setCrate((int) row.getCell(9).getNumericCellValue()) // crate #
                 }
