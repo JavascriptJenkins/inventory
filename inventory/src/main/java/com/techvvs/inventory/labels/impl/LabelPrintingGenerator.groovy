@@ -97,25 +97,6 @@ class LabelPrintingGenerator {
     }
 
 
-    void generateDynmo55028mmx98mmLabel(
-            int entitynumber,
-            int pagenumber,
-            BatchVO batchVO,
-            ProductVO productVO,
-            PDDocument document
-    ){
-
-        // create a pdf sheet
-        PDPage page = new PDPage(appConstants.ONE_AND_ONE_EIGHTH_BY_THREE_AND_A_HALF); // 28mm x 89mm dymno label
-        document.addPage(page);
-
-        PDPageContentStream contentStream = new PDPageContentStream(document, page)
-
-
-        // dont need to print a header on the label (only product info)
-        generateDymno55028mmx89mmPage(productVO,document,contentStream, page)
-    }
-
     void generateDymno55028mmx89mmPage(
             ProductVO product,
             PDDocument document,
@@ -138,39 +119,47 @@ class LabelPrintingGenerator {
         float qrX = margin;  // QR code positioned at bottom left
         float qrY = margin;
 
-        float barcodeX = qrX;  //
-        float barcodeY = qrY + qrCodeSize + margin;  // align above the QR code
+        float barcodeX = qrX;  // Barcode positioned above QR code
+        float barcodeY = qrY + qrCodeSize + margin;
 
-        float textXStart = margin;  // Product text at the top for testing
+        float textXStart = margin;  // Product text at the top
         float textYStart = pageHeight - largeFontSize - margin;  // Top of the label
 
         // Load font
         PDType0Font ttfFont = PDType0Font.load(document, new File("./uploads/font/SEASRN.ttf"));
 
-        // Draw QR code
+        // Draw QR code (no rotation)
         PDImageXObject qrPdImage = generateQrImageforEpson(product, document);
         contentStream.drawImage(qrPdImage, qrX, qrY, qrCodeSize, qrCodeSize);
 
-        // Draw barcode without rotation for visibility check
+        // Draw rotated barcode
         BufferedImage barcodeImage = imageGenerator.generateUPCABarcodeImage(product.barcode);
         PDImageXObject barcodePdImage = LosslessFactory.createFromImage(document, barcodeImage);
-        contentStream.drawImage(barcodePdImage, barcodeX, barcodeY, barcodeWidth, barcodeHeight);
+        contentStream.saveGraphicsState();  // Save state before rotation
 
-        // Draw product name text at the top of the label for visibility
+        // Apply 90-degree rotation to the barcode and draw it
+        contentStream.transform(Matrix.getRotateInstance((float) Math.PI / 2, barcodeX + (barcodeWidth / 2) as float, barcodeY + (barcodeHeight / 2) as float));
+        contentStream.drawImage(barcodePdImage, barcodeX, barcodeY, barcodeHeight, barcodeWidth);  // Swap height and width after rotation
+        contentStream.restoreGraphicsState();  // Restore state after rotation
+
+        // Draw rotated product name text
+        contentStream.saveGraphicsState();
         contentStream.setFont(ttfFont, largeFontSize);
         contentStream.beginText();
-        contentStream.newLineAtOffset(textXStart, textYStart);
 
-        // Wrap product name text
+        // Rotate text 90 degrees, position it above the rotated barcode
+        contentStream.setTextMatrix(Matrix.getRotateInstance((float) Math.PI / 2, textXStart + largeFontSize as float, textYStart));
         List<String> wrappedText = wrapText(product.name, 15);
         for (String line : wrappedText) {
             contentStream.showText(line);
-            contentStream.newLineAtOffset(0, -largeFontSize - 2 as float);  // Move down for next line
+            contentStream.newLineAtOffset(0, -largeFontSize - 2 as float);  // Move down for the next line
         }
         contentStream.endText();
+        contentStream.restoreGraphicsState();  // Restore state after text rotation
 
         contentStream.close();
     }
+
 
 
 
