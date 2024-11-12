@@ -133,6 +133,18 @@ class RefDataLoader {
                 saveProductType("PRODUCT.TERPSAUCE", "terp sauce");
                 break;
 
+            case appConstants.TENANT_TEST:
+                // Load default product types
+                saveProductType("INDOOR", "Indoor Unit");
+                saveProductType("DEP", "light deps");
+                saveProductType("OUTS", "outdoor");
+                saveProductType("LOWS", "move em like its hot");
+                saveProductType("PRODUCT.CART", "cartridges");
+                saveProductType("PRODUCT.JOINTPACK", "joints in packs");
+                saveProductType("PRODUCT.CRUMBLE.BADDER", "crumble badder");
+                saveProductType("PRODUCT.TERPSAUCE", "terp sauce");
+                break;
+
             default:
                 // Load default product types
                 saveProductType("INDOOR.UNIT", "Indoor Unit");

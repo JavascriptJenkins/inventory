@@ -68,5 +68,6 @@ String VIEW_INVOICE = "view"
     // tenants
     String TENANT_HIGHLAND = "highland"
     String TENANT_TEST1 = "test1"
+    String TENANT_TEST = "test"
 
 }
