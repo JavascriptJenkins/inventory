@@ -130,13 +130,13 @@ class LabelPrintingGenerator {
         // Define sizes for QR code, barcode, and font
         float qrCodeSize = 0.75f * 72;  // Scaled down QR code size to 0.75 inches square
         float barcodeWidth = 1.25f * 72;  // Barcode width scaled down to 1.25 inches
-        float barcodeHeight = barcodeWidth * 0.4f;  // Maintain aspect ratio, but reduce height further
+        float barcodeHeight = barcodeWidth * 0.4f;  // Maintain aspect ratio for height
         float largeFontSize = 10f;  // Smaller font size to fit the narrower page
 
-        // Calculate vertical positions
+        // Calculate positions for vertically oriented elements
         float qrY = pageHeight - qrCodeSize - margin;  // QR code at the top
-        float barcodeY = qrY - barcodeHeight - margin;  // Barcode below QR code
-        float textYStart = barcodeY - largeFontSize - 10f;  // Product name below barcode with padding
+        float barcodeX = (pageWidth - barcodeHeight) / 2;  // Center barcode horizontally
+        float textYStart = qrY - qrCodeSize - largeFontSize - 20f;  // Position text below QR code
 
         // Load font
         PDType0Font ttfFont = PDType0Font.load(document, new File("./uploads/font/SEASRN.ttf"));
@@ -146,32 +146,34 @@ class LabelPrintingGenerator {
         float qrX = (pageWidth - qrCodeSize) / 2;  // Center horizontally
         contentStream.drawImage(qrPdImage, qrX, qrY, qrCodeSize, qrCodeSize);
 
-        // Draw barcode (centered horizontally)
+        // Draw barcode vertically aligned with page height
         BufferedImage barcodeImage = imageGenerator.generateUPCABarcodeImage(product.barcode);
         PDImageXObject barcodePdImage = LosslessFactory.createFromImage(document, barcodeImage);
-        float barcodeX = (pageWidth - barcodeWidth) / 2;  // Center horizontally
-        contentStream.drawImage(barcodePdImage, barcodeX, barcodeY, barcodeWidth, barcodeHeight);
+        contentStream.saveGraphicsState();  // Save current state to apply rotation
+        contentStream.transform(Matrix.getRotateInstance(Math.PI / 2, barcodeX + (barcodeHeight / 2), qrY - (barcodeWidth / 2)));
+        contentStream.drawImage(barcodePdImage, barcodeX, qrY - barcodeWidth, barcodeHeight, barcodeWidth);
+        contentStream.restoreGraphicsState();  // Restore after rotation
 
-        // Draw product name (centered horizontally with smaller font)
+        // Draw product name text, wrapped and centered, below the QR code and barcode
         contentStream.setFont(ttfFont, largeFontSize);  // Set the smaller font size
-        List<String> wrappedText = wrapText(product.name, 10);  // Adjust wrapping for smaller font
+        List<String> wrappedText = wrapText(product.name, 15);  // Adjust wrapping for smaller font
 
-        // Start text writing at the calculated Y-position
+        // Calculate text starting position
         float currentY = textYStart;
 
-        int lineNumber = 1;
         contentStream.beginText();
+        int lineNumber = 1;
         for (String line : wrappedText) {
             // Calculate the width of the current line to center it horizontally
             float textWidth = ttfFont.getStringWidth(line) / 1000 * largeFontSize;
             float textStartX = (pageWidth - textWidth) / 2;  // Center the text horizontally
 
-            // Offset first line differently than the second if needed
+            // Position each line carefully to avoid barcode overlap on the second line
             if (lineNumber == 1) {
-                contentStream.newLineAtOffset(textStartX, currentY);
+                contentStream.newLineAtOffset(textStartX, currentY);  // First line
             } else if (lineNumber == 2) {
-                textStartX -= 10f; // Adjust positioning slightly for second line if necessary
-                contentStream.newLineAtOffset(textStartX, currentY);
+                textStartX = Math.min(textStartX, pageWidth - barcodeHeight - margin - textWidth); // Prevent overlap with rotated barcode
+                contentStream.newLineAtOffset(textStartX, currentY);  // Second line with adjusted positioning
             }
 
             // Show the text
