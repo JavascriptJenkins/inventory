@@ -130,66 +130,62 @@ class LabelPrintingGenerator {
 
         // Define sizes for QR code, barcode, and font
         float qrCodeSize = 0.6f * 72;  // Adjusted QR code size to 0.6 inches for visibility
-        float barcodeWidth = 0.5f * 72;  // Narrow barcode width to fit within label width after rotation
-        float barcodeHeight = 1.8f * 72;  // Span the height of the label after 90-degree rotation
+        float barcodeWidth = 0.5f * 72;  // Narrow barcode width
+        float barcodeHeight = 1.8f * 72;  // Span height of the label
         float largeFontSize = 10f;  // Smaller font size to fit narrower label
 
-        // Set bottom alignment for elements
-        float qrY = margin;  // QR code aligned near the bottom margin
+        // Set positions for a bottom-to-top layout
+        float qrY = margin;  // QR code positioned at the bottom with margin
+        float qrX = (pageWidth - qrCodeSize) / 2;  // Center horizontally
+
         float barcodeY = qrY + qrCodeSize + margin;  // Barcode above QR code
-        float textYStart = barcodeY + barcodeWidth + 10f;  // Product name text above the barcode
+        float barcodeX = (pageWidth - barcodeWidth) / 2;  // Centered horizontally
+
+        float textYStart = barcodeY + barcodeHeight + margin;  // Text above barcode
+        float textXStart = pageWidth / 2;  // Center text horizontally
 
         // Load font
         PDType0Font ttfFont = PDType0Font.load(document, new File("./uploads/font/SEASRN.ttf"));
 
-        // Draw QR code (aligned at bottom-left corner)
+        // Begin transformation for 90-degree rotation
+        contentStream.saveGraphicsState();
+        contentStream.transform(Matrix.getRotateInstance((float) Math.PI / 2, pageWidth / 2, pageHeight / 2));
+
+        // Draw QR code at the bottom (leftmost after rotation)
         PDImageXObject qrPdImage = generateQrImageforEpson(product, document);
-        float qrX = (pageWidth - qrCodeSize) / 2;  // Center horizontally
         contentStream.drawImage(qrPdImage, qrX, qrY, qrCodeSize, qrCodeSize);
 
         // Draw barcode vertically aligned above QR code
         BufferedImage barcodeImage = imageGenerator.generateUPCABarcodeImage(product.barcode);
         PDImageXObject barcodePdImage = LosslessFactory.createFromImage(document, barcodeImage);
-        contentStream.saveGraphicsState();  // Save current state to apply rotation
-
-        // Rotate the barcode by 90 degrees and center it to span label height
-        float barcodeX = (pageWidth / 2);  // Centered horizontally after rotation
-        float barcodeVerticalPosition = barcodeY + (barcodeWidth / 2); // Center on label height
-        contentStream.transform(Matrix.getRotateInstance((float) Math.PI / 2, barcodeX, barcodeVerticalPosition));
         contentStream.drawImage(
                 barcodePdImage,
-                barcodeX - (barcodeHeight / 2) as float,  // Centered horizontally after rotation
-                barcodeY,
-                barcodeHeight,  // Span the label height
-                barcodeWidth  // Keep narrow width for proper fit
+                barcodeX,  // Centered horizontally above QR code
+                barcodeY,  // Above QR code
+                barcodeWidth,
+                barcodeHeight
         );
-        contentStream.restoreGraphicsState();  // Restore after rotation
 
-        // Rotate text and position it above the barcode
-        contentStream.saveGraphicsState();
-        contentStream.setFont(ttfFont, largeFontSize);  // Set smaller font size
-        List<String> wrappedText = wrapText(product.name, 15);  // Adjust wrapping for smaller font
+        // Draw product name text above the barcode
+        contentStream.setFont(ttfFont, largeFontSize);  // Set font size
+        List<String> wrappedText = wrapText(product.name, 15);  // Adjust wrapping for font size
 
-        // Calculate starting position for rotated text
-        float textStartX = pageWidth / 2;  // Center text horizontally
-        float textStartY = textYStart;  // Start text above barcode
+        // Write each line of text, vertically aligned from top to bottom
+        contentStream.beginText();
+        contentStream.newLineAtOffset(textXStart, textYStart);  // Position at top-right after rotation
 
-        // Apply 90-degree rotation to the text, rotating around starting point
-        contentStream.transform(Matrix.getRotateInstance((float) Math.PI / 2, textStartX, textStartY));
-
-        // Write each line of text, vertically aligned, with adjusted spacing
-        float currentY = 0;  // Start at origin after transformation
         for (String line : wrappedText) {
-            contentStream.beginText();
-            contentStream.newLineAtOffset(0, currentY);
             contentStream.showText(line);
-            contentStream.endText();
-            currentY -= (largeFontSize + 2);  // Adjust Y-position for line spacing
+            contentStream.newLineAtOffset(0, -largeFontSize - 2);  // Move down for next line
         }
-        contentStream.restoreGraphicsState();  // Restore after text rotation
+        contentStream.endText();
+
+        // Restore graphics state to finalize rotation
+        contentStream.restoreGraphicsState();
 
         contentStream.close();
     }
+
 
 
 
