@@ -14,6 +14,7 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle
 import org.apache.pdfbox.pdmodel.font.PDType0Font
 import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject
+import org.apache.pdfbox.util.Matrix
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
@@ -136,7 +137,7 @@ class LabelPrintingGenerator {
         // Calculate positions for vertically oriented elements
         float qrY = pageHeight - qrCodeSize - margin;  // QR code at the top
         float barcodeX = (pageWidth - barcodeHeight) / 2;  // Center barcode horizontally
-        float textYStart = qrY - qrCodeSize - largeFontSize - 20f;  // Position text below QR code
+        float barcodeY = qrY - barcodeWidth;  // Position barcode below QR code
 
         // Load font
         PDType0Font ttfFont = PDType0Font.load(document, new File("./uploads/font/SEASRN.ttf"));
@@ -150,43 +151,44 @@ class LabelPrintingGenerator {
         BufferedImage barcodeImage = imageGenerator.generateUPCABarcodeImage(product.barcode);
         PDImageXObject barcodePdImage = LosslessFactory.createFromImage(document, barcodeImage);
         contentStream.saveGraphicsState();  // Save current state to apply rotation
-        contentStream.transform(Matrix.getRotateInstance(Math.PI / 2, barcodeX + (barcodeHeight / 2), qrY - (barcodeWidth / 2)));
-        contentStream.drawImage(barcodePdImage, barcodeX, qrY - barcodeWidth, barcodeHeight, barcodeWidth);
-        contentStream.restoreGraphicsState();  // Restore after rotation
 
-        // Draw product name text, wrapped and centered, below the QR code and barcode
+        // Rotate the barcode by 90 degrees and position it
+        contentStream.transform(Matrix.getRotateInstance((float) Math.PI / 2, (float) (barcodeX + barcodeHeight / 2), (float) (barcodeY + barcodeWidth / 2)));
+        // Draw barcode image with float casting for position and size
+                contentStream.drawImage(
+                        barcodePdImage,
+                        (float) (barcodeX - barcodeHeight / 2),
+                        (float) (barcodeY - barcodeWidth / 2),
+                        barcodeHeight,
+                        barcodeWidth
+                );        contentStream.restoreGraphicsState();  // Restore after rotation
+
+        // Rotate text to align vertically and position it below the barcode
+        contentStream.saveGraphicsState();
         contentStream.setFont(ttfFont, largeFontSize);  // Set the smaller font size
         List<String> wrappedText = wrapText(product.name, 15);  // Adjust wrapping for smaller font
 
-        // Calculate text starting position
-        float currentY = textYStart;
+        // Calculate starting position for rotated text
+        float textStartX = (pageWidth - largeFontSize) / 2;  // Center along width
+        float textStartY = barcodeY - margin - (wrappedText.size() * (largeFontSize + 2));  // Position below barcode
 
-        contentStream.beginText();
-        int lineNumber = 1;
+        // Apply 90-degree rotation to the text, rotating around its starting point
+        contentStream.transform(Matrix.getRotateInstance(Math.PI / 2, textStartX, textStartY));
+
+        // Write each line of text, vertically aligned, with adjusted spacing
+        float currentY = 0;  // Start at origin after transformation
         for (String line : wrappedText) {
-            // Calculate the width of the current line to center it horizontally
-            float textWidth = ttfFont.getStringWidth(line) / 1000 * largeFontSize;
-            float textStartX = (pageWidth - textWidth) / 2;  // Center the text horizontally
-
-            // Position each line carefully to avoid barcode overlap on the second line
-            if (lineNumber == 1) {
-                contentStream.newLineAtOffset(textStartX, currentY);  // First line
-            } else if (lineNumber == 2) {
-                textStartX = Math.min(textStartX, pageWidth - barcodeHeight - margin - textWidth); // Prevent overlap with rotated barcode
-                contentStream.newLineAtOffset(textStartX, currentY);  // Second line with adjusted positioning
-            }
-
-            // Show the text
+            contentStream.beginText();
+            contentStream.newLineAtOffset(0, currentY);
             contentStream.showText(line);
-
-            // Move down for the next line
-            currentY -= (largeFontSize + 12f);  // Adjust Y-position for line spacing
-            lineNumber++;
+            contentStream.endText();
+            currentY -= (largeFontSize + 2);  // Adjust Y-position for line spacing
         }
-        contentStream.endText();
+        contentStream.restoreGraphicsState();  // Restore after text rotation
 
         contentStream.close();
     }
+
 
 
 
