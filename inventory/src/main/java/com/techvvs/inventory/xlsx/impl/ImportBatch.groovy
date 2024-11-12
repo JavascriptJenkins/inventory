@@ -117,7 +117,7 @@ class ImportBatch {
                     productVO.setCrateposition(row.getCell(8).getStringCellValue().trim()); // crate position
                 }
 
-                if(row.getCell(9).getNumericCellValue() == null){
+                if(row.getCell(9) == null){
                     System.out.println("SKIPPING cell 9 | CRATE NUMBER")
                 } else {
                     productVO.setCrate((int) row.getCell(9).getNumericCellValue()) // crate #
