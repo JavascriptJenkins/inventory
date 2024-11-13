@@ -158,7 +158,7 @@ class LabelPrintingGenerator {
 
         // Apply 90-degree rotation to the barcode and draw it
         //contentStream.transform(Matrix.getRotateInstance((float) Math.PI / 2, barcodeX + (barcodeWidth / 2) as float, barcodeY + (barcodeHeight / 2) as float));
-        contentStream.drawImage(barcodePdImage, barcodeX, barcodeY, barcodeHeight, barcodeWidth);  // Swap height and width after rotation
+        contentStream.drawImage(barcodePdImage, barcodeX, barcodeY, barcodeWidth, barcodeHeight);
         //contentStream.restoreGraphicsState();  // Restore state after rotation
 
         // Draw rotated product name text
