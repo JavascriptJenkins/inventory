@@ -6,7 +6,7 @@ pipeline {
     }
 
     parameters {
-        string(name: 'HOSTNAME', defaultValue: '206.189.183.0', description: 'The hostname or IP address of the new Linux server')
+        choice(name: 'HOSTNAME', choices: ['206.189.183.0', '64.227.4.159', '198.199.72.34','157.230.91.190', '159.223.128.46'], description: 'the host to push the build to')
         string(name: 'BRANCH', defaultValue: 'prod', description: 'The Git branch to check out')
 
     }

@@ -13,9 +13,9 @@ pipeline {
     // Define a branch parameter to allow selection of the branch at runtime
     parameters {
         choice(name: 'BRANCH', choices: ['test1', 'prod', 'joebranch', 'peterbranch'], description: 'Branch to build')
-        choice(name: 'HOSTNAME', choices: ['206.189.183.0', '64.227.4.159', '198.199.72.34','157.230.91.190'], description: 'the host to push the build to')
-        choice(name: 'TENANT_ENV', choices: ['inventory_test', 'highland_prod', 'inventory_prod', 'intake_prod'], description: 'the tenant and environment name to build')
-        choice(name: 'TENANT_NAME', choices: ['test', 'alpha', 'intake'], description: 'The tenant name will be appended to beginning of domain')
+        choice(name: 'HOSTNAME', choices: ['206.189.183.0', '64.227.4.159', '198.199.72.34','157.230.91.190', '159.223.128.46'], description: 'the host to push the build to')
+        choice(name: 'TENANT_ENV', choices: ['inventory_test', 'highland_prod', 'inventory_prod', 'intake_prod', 'swerve_prod'], description: 'the tenant and environment name to build')
+        choice(name: 'TENANT_NAME', choices: ['test', 'alpha', 'intake', 'swerve'], description: 'The tenant name will be appended to beginning of domain')
         choice(name: 'BASE_DOMAIN', choices: ['.techvvs.io', '.jenkins.codes'], description: 'domain')
         string(name: 'LOAD_REF_DATA', defaultValue: 'no', description: 'Value for load.ref.data (leave blank to keep default)')
         string(name: 'ENVIRONMENT_NAME', defaultValue: 'prod', description: 'environment name, prod and dev1 are the optional values')
