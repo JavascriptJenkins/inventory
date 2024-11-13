@@ -45,8 +45,8 @@ pipeline {
                         'highland_prod': '157.230.91.190',
                         'inventory_test': '206.189.183.0',
                         'intake_prod': '64.227.18.215',
-                        'swerve_prod': '159.223.128.46'
-
+                        'swerve_prod': '159.223.128.46',
+                        'sap_prod': '159.203.182.152'
                     ]
 
                     // Define a map of tenants to IP addresses
@@ -55,7 +55,8 @@ pipeline {
                         'highland_prod': 'jdbc:postgresql://private-postgresql-test1-do-user-1326368-0.d.db.ondigitalocean.com:25060',
                         'inventory_test': 'jdbc:postgresql://private-postgresql-test1-do-user-1326368-0.d.db.ondigitalocean.com:25060',
                         'swerve_prod': 'jdbc:postgresql://private-postgresql-prod1-do-user-1326368-0.d.db.ondigitalocean.com:25060',
-                        'intake_prod': 'jdbc:postgresql://private-postgresql-prod1-do-user-1326368-0.d.db.ondigitalocean.com:25060'
+                        'intake_prod': 'jdbc:postgresql://private-postgresql-prod1-do-user-1326368-0.d.db.ondigitalocean.com:25060',
+                        'sap_prod': 'jdbc:postgresql://private-postgresql-prod1-do-user-1326368-0.d.db.ondigitalocean.com:25060'
                     ]
 
 
