@@ -84,9 +84,10 @@ class ImageGenerator {
 
         // Draw the original barcode image onto the new image with the margin
         Graphics2D g2d = imageWithMargin.createGraphics();
-        g2d.setColor(Color.WHITE);
-        g2d.fillRect(0, barcodeImage.getHeight(), widthWithMargin, marginPixels);
-        g2d.drawImage(barcodeImage, 0, 0, null);
+        g2d.setColor(Color.WHITE);  // Set background color to white
+        g2d.fillRect(0, 0, widthWithMargin, heightWithMargin);  // Fill entire background
+        g2d.setColor(Color.BLACK);  // Set color for barcode drawing
+        g2d.drawImage(barcodeImage, 0, 0, null);  // Draw barcode at the top
         g2d.dispose();
 
         // Rotate the image with the margin by 90 degrees
@@ -95,11 +96,17 @@ class ImageGenerator {
         BufferedImage rotatedImage = new BufferedImage(rotatedWidth, rotatedHeight, BufferedImage.TYPE_BYTE_BINARY);
         Graphics2D g2dRotated = rotatedImage.createGraphics();
 
-        // Apply rotation transformation
-        g2dRotated.rotate(Math.toRadians(90), rotatedWidth / 2.0, rotatedWidth / 2.0);
+        // Set the background for the rotated image to white
+        g2dRotated.setColor(Color.WHITE);
+        g2dRotated.fillRect(0, 0, rotatedWidth, rotatedHeight);
+
+        // Apply rotation transformation around the center
+        g2dRotated.rotate(Math.toRadians(90), rotatedWidth / 2.0, rotatedHeight / 2.0);
+
+        // Translate to align the original image within the rotated canvas
         g2dRotated.translate((rotatedWidth - widthWithMargin) / 2.0, (rotatedHeight - heightWithMargin) / 2.0);
 
-        // Draw the original image onto the rotated graphics context
+        // Draw the original image with margin onto the rotated graphics context
         g2dRotated.drawImage(imageWithMargin, 0, 0, null);
         g2dRotated.dispose();
 
