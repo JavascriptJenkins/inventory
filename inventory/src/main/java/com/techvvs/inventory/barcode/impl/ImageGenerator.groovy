@@ -58,6 +58,55 @@ class ImageGenerator {
         return imageWithMargin;
     }
 
+    static BufferedImage generateSidewaysUPCABarcodeImage(String barcodeData) {
+        UPCABean bean = new UPCABean();
+        bean.setModuleWidth(0.2); // Adjust module width as needed
+        bean.setBarHeight(10f);   // Adjust bar height as needed
+        bean.setQuietZone(5f);    // Adjust quiet zone as needed
+
+        // Set up the canvas provider
+        BitmapCanvasProvider canvas = new BitmapCanvasProvider(260, BufferedImage.TYPE_BYTE_BINARY, false, 0);
+
+        // Generate the barcode
+        bean.generateBarcode(canvas, barcodeData);
+
+        // Get the generated barcode image
+        BufferedImage barcodeImage = canvas.getBufferedImage();
+
+        // Define the bottom margin (1/16th of an inch in points)
+        float bottomMargin = 2.0f / 16 * 72; // 1/16th of an inch in points
+        int marginPixels = (int) (bottomMargin * 260 / 72);
+
+        // Create a new image with the bottom margin
+        int widthWithMargin = barcodeImage.getWidth();
+        int heightWithMargin = barcodeImage.getHeight() + marginPixels;
+        BufferedImage imageWithMargin = new BufferedImage(widthWithMargin, heightWithMargin, BufferedImage.TYPE_BYTE_BINARY);
+
+        // Draw the original barcode image onto the new image with the margin
+        Graphics2D g2d = imageWithMargin.createGraphics();
+        g2d.setColor(Color.WHITE);
+        g2d.fillRect(0, barcodeImage.getHeight(), widthWithMargin, marginPixels);
+        g2d.drawImage(barcodeImage, 0, 0, null);
+        g2d.dispose();
+
+        // Rotate the image with the margin by 90 degrees
+        int rotatedWidth = heightWithMargin;
+        int rotatedHeight = widthWithMargin;
+        BufferedImage rotatedImage = new BufferedImage(rotatedWidth, rotatedHeight, BufferedImage.TYPE_BYTE_BINARY);
+        Graphics2D g2dRotated = rotatedImage.createGraphics();
+
+        // Apply rotation transformation
+        g2dRotated.rotate(Math.toRadians(90), rotatedWidth / 2.0, rotatedWidth / 2.0);
+        g2dRotated.translate((rotatedWidth - widthWithMargin) / 2.0, (rotatedHeight - heightWithMargin) / 2.0);
+
+        // Draw the original image onto the rotated graphics context
+        g2dRotated.drawImage(imageWithMargin, 0, 0, null);
+        g2dRotated.dispose();
+
+        return rotatedImage;
+    }
+
+
 
 
 

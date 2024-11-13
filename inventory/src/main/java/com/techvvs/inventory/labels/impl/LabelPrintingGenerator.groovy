@@ -142,7 +142,7 @@ class LabelPrintingGenerator {
         float barcodeY = qrY + qrCodeSize + margin;
 
         float textXStart = margin;  // Product text at the top
-        float textYStart = pageHeight - largeFontSize - margin;  // Top of the label
+        float textYStart = margin + qrCodeSize + margin + barcodeHeight;  // Top of the label
 
         // Load font
         PDType0Font ttfFont = PDType0Font.load(document, new File("./uploads/font/SEASRN.ttf"));
@@ -152,14 +152,14 @@ class LabelPrintingGenerator {
         contentStream.drawImage(qrPdImage, qrX, qrY, qrCodeSize, qrCodeSize);
 
         // Draw rotated barcode
-        BufferedImage barcodeImage = imageGenerator.generateUPCABarcodeImage(product.barcode);
+        BufferedImage barcodeImage = imageGenerator.generateSidewaysUPCABarcodeImage(product.barcode);
         PDImageXObject barcodePdImage = LosslessFactory.createFromImage(document, barcodeImage);
-        contentStream.saveGraphicsState();  // Save state before rotation
+        //contentStream.saveGraphicsState();  // Save state before rotation
 
         // Apply 90-degree rotation to the barcode and draw it
-        contentStream.transform(Matrix.getRotateInstance((float) Math.PI / 2, barcodeX + (barcodeWidth / 2) as float, barcodeY + (barcodeHeight / 2) as float));
+        //contentStream.transform(Matrix.getRotateInstance((float) Math.PI / 2, barcodeX + (barcodeWidth / 2) as float, barcodeY + (barcodeHeight / 2) as float));
         contentStream.drawImage(barcodePdImage, barcodeX, barcodeY, barcodeHeight, barcodeWidth);  // Swap height and width after rotation
-        contentStream.restoreGraphicsState();  // Restore state after rotation
+        //contentStream.restoreGraphicsState();  // Restore state after rotation
 
         // Draw rotated product name text
         contentStream.saveGraphicsState();
