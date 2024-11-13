@@ -132,6 +132,7 @@ public class FileViewController {
         labelPrintingService.createDyno550TurboLabel28mmx89mm(batchVO)
         // todo: make a seperate button for this
         batchControllerHelper.generateBarcodeManifestForBatch(String.valueOf(batchVO.batchnumber))
+        batchControllerHelper.generateAllBarcodesForBatch(String.valueOf(batchVO.batchnumber))
 
         Page<FileVO> filePage = filePagingService.getFilePage(batchVO, page.get(), size.get(), appConstants.BARCODES_EPSON_64_DIR)
         filePagingService.bindPageAttributesToModel(model, filePage, page, size);
