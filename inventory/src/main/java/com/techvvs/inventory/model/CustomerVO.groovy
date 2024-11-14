@@ -31,6 +31,15 @@ class CustomerVO implements Serializable {
     String address2
 
     @JsonProperty
+    String city;
+
+    @JsonProperty
+    String state;
+
+    @JsonProperty
+    String zipcode;
+
+    @JsonProperty
     String phone
 
     @JsonProperty
