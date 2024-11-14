@@ -107,7 +107,7 @@ class CartDeleteService {
         if(cartVO?.customer?.customerid == null){
             model.addAttribute("errorMessage","Please select a customer")
         }
-        if(cartVO?.barcode == null || cartVO?.barcode?.empty){
+        if(cartVO?.barcode == null || cartVO?.barcode?.empty || cartVO?.barcode?.length() < 11){
             model.addAttribute("errorMessage","Please enter a barcode")
         } else {
             // only run this database check if barcode is not null

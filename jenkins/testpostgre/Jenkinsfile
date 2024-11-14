@@ -12,10 +12,10 @@ pipeline {
 
     // Define a branch parameter to allow selection of the branch at runtime
     parameters {
-        choice(name: 'BRANCH', choices: ['test1', 'prod'], description: 'Branch to build')
-        choice(name: 'HOSTNAME', choices: ['206.189.183.0', '64.227.4.159', '198.199.72.34','157.230.91.190'], description: 'the host to push the build to')
-        choice(name: 'TENANT_ENV', choices: ['inventory|test1', 'highland|prod', 'inventory|prod', 'intake|prod'], description: 'the tenant and environment name to build')
-        choice(name: 'TENANT_NAME', choices: ['test', 'alpha', 'intake'], description: 'The tenant name will be appended to beginning of domain')
+        choice(name: 'BRANCH', choices: ['test1', 'prod', 'joebranch', 'peterbranch'], description: 'Branch to build')
+        choice(name: 'HOSTNAME', choices: ['206.189.183.0', '64.227.4.159', '198.199.72.34','157.230.91.190', '159.223.128.46', '159.203.182.152'], description: 'the host to push the build to')
+        choice(name: 'TENANT_ENV', choices: ['inventory_test', 'highland_prod', 'inventory_prod', 'intake_prod', 'swerve_prod', 'sap_prod'], description: 'the tenant and environment name to build')
+        choice(name: 'TENANT_NAME', choices: ['test', 'alpha', 'intake', 'swerve', 'sap'], description: 'The tenant name will be appended to beginning of domain')
         choice(name: 'BASE_DOMAIN', choices: ['.techvvs.io', '.jenkins.codes'], description: 'domain')
         string(name: 'LOAD_REF_DATA', defaultValue: 'no', description: 'Value for load.ref.data (leave blank to keep default)')
         string(name: 'ENVIRONMENT_NAME', defaultValue: 'prod', description: 'environment name, prod and dev1 are the optional values')
@@ -41,18 +41,22 @@ pipeline {
 
                     // Define a map of tenants to IP addresses
                     TENANT_IP_MAP = [
-                        'inventory|prod': '64.227.4.159',
-                        'highland|prod': '157.230.91.190',
-                        'inventory|test1': '206.189.183.0'
-                        'intake|prod': '64.227.18.215'
+                        'inventory_prod': '64.227.4.159',
+                        'highland_prod': '157.230.91.190',
+                        'inventory_test': '206.189.183.0',
+                        'intake_prod': '64.227.18.215',
+                        'swerve_prod': '159.223.128.46',
+                        'sap_prod': '159.203.182.152'
                     ]
 
                     // Define a map of tenants to IP addresses
                     POSTGRESQL_ENV_MAP = [
-                        'inventory|prod': '',
-                        'highland|prod': 'jdbc:postgresql://private-postgresql-test1-do-user-1326368-0.d.db.ondigitalocean.com:25060',
-                        'inventory|test1': 'jdbc:postgresql://private-postgresql-test1-do-user-1326368-0.d.db.ondigitalocean.com:25060'
-                        'intake|prod': 'private-postgresql-prod1-do-user-1326368-0.d.db.ondigitalocean.com:25060'
+                        'inventory_prod': '',
+                        'highland_prod': 'jdbc:postgresql://private-postgresql-test1-do-user-1326368-0.d.db.ondigitalocean.com:25060',
+                        'inventory_test': 'jdbc:postgresql://private-postgresql-test1-do-user-1326368-0.d.db.ondigitalocean.com:25060',
+                        'swerve_prod': 'jdbc:postgresql://private-postgresql-prod1-do-user-1326368-0.d.db.ondigitalocean.com:25060',
+                        'intake_prod': 'jdbc:postgresql://private-postgresql-prod1-do-user-1326368-0.d.db.ondigitalocean.com:25060',
+                        'sap_prod': 'jdbc:postgresql://private-postgresql-prod1-do-user-1326368-0.d.db.ondigitalocean.com:25060'
                     ]
 
 
@@ -91,6 +95,7 @@ pipeline {
                         string(credentialsId: 'TWILIO_API_PASSWORD', variable: 'TWILIO_API_PASSWORD'),
                         string(credentialsId: 'SENDGRID_API_KEY', variable: 'SENDGRID_API_KEY'),
                          string(credentialsId: 'POSTGRE_TEST_DB_PASSWORD', variable: 'POSTGRE_TEST_DB_PASSWORD'),
+                         string(credentialsId: 'POSTGRE_PROD_DB_PASSWORD', variable: 'POSTGRE_PROD_DB_PASSWORD'),
                          string(credentialsId: 'JWT_SECRET_KEY', variable: 'JWT_SECRET_KEY')
                     ])
                     {
@@ -146,21 +151,24 @@ pipeline {
                             sh "sed -i 's/^sendgrid\\.api\\.key=.*/sendgrid.api.key=${SENDGRID_API_KEY}/' src/main/resources/application.properties"
                             sh "sed -i 's/^security\\.jwt\\.token\\.secret-key=.*/security.jwt.token.secret-key=${JWT_SECRET_KEY}/' src/main/resources/application.properties"
 
-                            switch (env.TENANT_ENV) {
-                                case { it.contains('prod') }:
-                                    echo "Environment contains 'prod'. This is a production environment."
-                                    // Add production-specific steps here
-                                    sh "sed -i 's/^spring\\.datasource\\.password=.*/spring.datasource.password=${POSTGRE_PROD_DB_PASSWORD}/' src/main/resources/application.properties"
-                                    break
-                                case { it.contains('test') }:
-                                    echo "Environment contains 'test'. This is a testing environment."
-                                    sh "sed -i 's/^spring\\.datasource\\.password=.*/spring.datasource.password=${POSTGRE_TEST_DB_PASSWORD}/' src/main/resources/application.properties"
-                                    // Add test-specific steps here
-                                    break
-                                default:
-                                    echo "Environment is unknown or does not contain 'prod' or 'test'."
-                                    // Add default or error handling steps here
+
+                            if (env.TENANT_ENV.contains('prod')) {
+                                echo "Environment contains 'prod'. This is a production environment."
+                                // Update production-specific settings
+                                sh """
+                                    sed -i 's/^spring\\.datasource\\.password=.*/spring.datasource.password=${POSTGRE_PROD_DB_PASSWORD}/' src/main/resources/application.properties
+                                """
+                            } else if (env.TENANT_ENV.contains('test')) {
+                                echo "Environment contains 'test'. This is a testing environment."
+                                // Update test-specific settings
+                                sh """
+                                    sed -i 's/^spring\\.datasource\\.password=.*/spring.datasource.password=${POSTGRE_TEST_DB_PASSWORD}/' src/main/resources/application.properties
+                                """
+                            } else {
+                                echo "Environment is unknown or does not contain 'prod' or 'test'."
+                                // Add default or error handling steps here
                             }
+
 
 
                         }
@@ -247,7 +255,7 @@ EOF
                                 cd /home/techvvs/deployments/inventory
                                 sudo su -c "nohup java -jar inventory-0.0.1-SNAPSHOT.jar > app.log 2>&1 &" -s /bin/sh techvvs
                                 sleep 2  # Give a moment for the app to start and write to the log
-                                sudo timeout 45 tail -f app.log || true
+                                sudo timeout 60 tail -f app.log || true
 EOF
                             """
                         } else {

@@ -193,22 +193,31 @@
 <!--                }-->
 <!--            });-->
 
-            const inputField = document.getElementById('barcodeInput');
-            let inputTimeout;
+        const inputField = document.getElementById('barcodeInput');
+        let inputTimeout;
 
-            // Listen for input event
-            inputField.addEventListener('input', function() {
-                clearTimeout(inputTimeout);
+        // Listen for input event
+        inputField.addEventListener('input', function() {
+            clearTimeout(inputTimeout);
 
-                // Delay processing to ensure the entire scan input is captured
-                inputTimeout = setTimeout(() => {
-                    const scannedValue = inputField.value.trim();
-                    if (scannedValue) {
-                        processBarcode(scannedValue);
-                        //inputField.value = ''; // Clear after processing
-                    }
-                }, 100); // Adjust delay based on scan speed, if needed
-            });
+            // Delay processing to ensure the entire scan input is captured
+            inputTimeout = setTimeout(() => {
+                const scannedValue = inputField.value.trim();
+                const ischecked = $('#quantityModeCheckbox').is(':checked'); // Re-check within the timeout
+
+                if (scannedValue) {
+                    processBarcode(scannedValue, ischecked);
+                    inputField.value = ''; // Clear after processing
+                }
+            }, 200); // Adjust delay based on scan speed, if needed
+        });
+
+        // Optional: Prevent Enter key from submitting the form or adding duplicate inputs
+        inputField.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // Prevent form submission or duplicate entry
+            }
+        });
 
             // Add event listener to the checkbox
             $('#quantityModeCheckbox').on('click', function() {
@@ -217,9 +226,9 @@
             });
 
             // Function to process barcode scanning
-            function processBarcode(scannedValue) {
+            function processBarcode(scannedValue, ischecked) {
                 if (scannedValue.length >= 12) {
-                    if ($('#quantityModeCheckbox').is(':checked')) {
+                    if (ischecked) {
                         // If Quantity Mode is checked, ask for quantity input
                         let quantity = prompt("Please enter the quantity for the scanned product:");
 

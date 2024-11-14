@@ -605,8 +605,7 @@ class BatchControllerHelper {
         row.createCell(2).setCellValue("Ticket")
         sheet.setColumnWidth(3, 10000); // Set width of the first column for barcode
         row.createCell(3).setCellValue("Barcode")
-        sheet.setColumnWidth(4,10000)
-        row.createCell(4).setCellValue("Media")
+
 
 
 
@@ -631,7 +630,6 @@ class BatchControllerHelper {
                 row.createCell(1).setCellValue(productVO.name)
                 row.createCell(2).setCellValue(productVO.price + priceadjustment)
                 row.createCell(3).setCellValue(productVO.barcode)
-                row.createCell(4).setCellValue(qrCodeBuilder.buildMediaQrCodeForProduct(baseqrdomain, productVO))
             }
 
         }

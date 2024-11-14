@@ -14,6 +14,7 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle
 import org.apache.pdfbox.pdmodel.font.PDType0Font
 import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject
+import org.apache.pdfbox.util.Matrix
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
@@ -94,6 +95,99 @@ class LabelPrintingGenerator {
         contentStream.close();
 
     }
+
+
+    void generateDynmo55028mmx98mmLabel(
+            int entitynumber,
+            int pagenumber,
+            BatchVO batchVO,
+            ProductVO productVO,
+            PDDocument document
+    ){
+
+        // create a pdf sheet
+        PDPage page = new PDPage(appConstants.ONE_AND_ONE_EIGHTH_BY_THREE_AND_A_HALF); // 28mm x 89mm dymno label
+        document.addPage(page);
+
+        PDPageContentStream contentStream = new PDPageContentStream(document, page)
+
+
+        // dont need to print a header on the label (only product info)
+        generateDymno55028mmx89mmPage(productVO,document,contentStream, page)
+    }
+
+    void generateDymno55028mmx89mmPage(
+            ProductVO product,
+            PDDocument document,
+            PDPageContentStream contentStream,
+            PDPage page
+    ) throws IOException {
+
+        // Set page dimensions (1.125 inches x 3.5 inches)
+        float pageWidth = 81.0f;   // 1-1/8 inches in points
+        float pageHeight = 252.0f; // 3.5 inches in points
+        float margin = 5f;  // Small margin to keep content visible
+
+        // Define sizes for QR code, barcode, and font
+        float qrCodeSize = 2.0f * 72;  // QR code size of 1 inch
+        float barcodeWidth = 0.8f * 72;  // Barcode width without rotation
+        float barcodeHeight = 1.6f * 72;  // Barcode height without rotation
+        float largeFontSize = 10f;  // Font size for product text
+
+        // Set positions for elements
+        float qrX = margin;  // QR code positioned at bottom left
+        float qrY = margin;
+
+        float barcodeX = qrX;  // Barcode positioned above QR code
+        float barcodeY = qrY + 60f + margin;
+
+        float textXStart = margin = 55f;  //
+        float textYStart = margin + qrCodeSize + -120f;  //
+
+        // Load font
+        PDType0Font ttfFont = PDType0Font.load(document, new File("./uploads/font/SEASRN.ttf"));
+
+        // Draw QR code (no rotation)
+        PDImageXObject qrPdImage = generateQrImageforDymno(product, document);
+        contentStream.drawImage(qrPdImage, qrX, qrY, qrCodeSize, qrCodeSize);
+
+        // Draw rotated barcode
+        BufferedImage barcodeImage = imageGenerator.generateSidewaysUPCABarcodeImage(product.barcode, appConstants.filenameprefix_dymno_28mmx89mm);
+        PDImageXObject barcodePdImage = LosslessFactory.createFromImage(document, barcodeImage);
+        //contentStream.saveGraphicsState();  // Save state before rotation
+
+        // Apply 90-degree rotation to the barcode and draw it
+        //contentStream.transform(Matrix.getRotateInstance((float) Math.PI / 2, barcodeX + (barcodeWidth / 2) as float, barcodeY + (barcodeHeight / 2) as float));
+        contentStream.drawImage(barcodePdImage, barcodeX, barcodeY, barcodeWidth, barcodeHeight);
+        //contentStream.restoreGraphicsState();  // Restore state after rotation
+
+        // Draw rotated product name text
+        contentStream.saveGraphicsState();
+        contentStream.setFont(ttfFont, largeFontSize);
+        contentStream.beginText();
+
+        // Rotate text 90 degrees, position it above the rotated barcode
+        contentStream.setTextMatrix(Matrix.getRotateInstance((float) Math.PI / 2, textXStart + largeFontSize as float, textYStart));
+        List<String> wrappedText = wrapText(product.name, 25);
+        for (String line : wrappedText) {
+            contentStream.showText(line);
+            contentStream.newLineAtOffset(0, -largeFontSize - 2 as float);  // Move down for the next line
+        }
+        contentStream.endText();
+        contentStream.restoreGraphicsState();  // Restore state after text rotation
+
+        contentStream.close();
+    }
+
+
+
+
+
+
+
+
+
+
 
 
     void generateEpson4by6point5Label(
@@ -227,6 +321,31 @@ class LabelPrintingGenerator {
         return lines;
     }
 
+    PDImageXObject generateQrImageforDymno(ProductVO productVO, PDDocument document) throws IOException {
+        String qrcodeData = "";
+        boolean isDev1 = env.getProperty("spring.profiles.active").equals(appConstants.DEV_1);
+        String baseQrDomain = env.getProperty("base.qr.domain");
+
+        if (isDev1) {
+            qrcodeData = appConstants.QR_CODE_PUBLIC_INFO_LINK_DEV1 + productVO.getProduct_id();
+        } else {
+            // todo: this is hack to make it leafly for inventory spooky units
+            boolean isqrmode = env.getProperty("qr.mode.leafly").equals("true") // only do leafly search if this is true
+            if(isqrmode){
+                qrcodeData = appConstants.QR_CODE_URI_LEAFYLY+productVO.name
+            }
+//            boolean isMediaMode = env.getProperty("qr.mode.media").equals("true");
+//            if (isMediaMode) {
+//                qrcodeData = baseQrDomain + "/file/privateqrmediadownload?productid="+productVO.getProduct_id()+"&name="+productVO.name+"&number="+productVO.productnumber;
+//            } else {
+//                qrcodeData = baseQrDomain + appConstants.QR_CODE_URI_EXTENSION + productVO.getProduct_id();
+//            }
+        }
+
+        BufferedImage qrImage = qrImageGenerator.generateQrImageForDynmo(
+                qrcodeData, limitStringTo25Chars(productVO.name), 600, 56);
+        return LosslessFactory.createFromImage(document, qrImage);
+    }
 
 // Generate QR code image for the product
     PDImageXObject generateQrImageforEpson(ProductVO productVO, PDDocument document) throws IOException {

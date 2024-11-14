@@ -108,6 +108,7 @@ class RefDataLoader {
             return // return early to not pollute database with duplicates
         }
 
+        System.out.println("Loading product types for tenant: " + tenant)
         switch (tenant){
             case appConstants.TENANT_HIGHLAND:
                 // Load default product types
@@ -133,13 +134,28 @@ class RefDataLoader {
                 saveProductType("PRODUCT.TERPSAUCE", "terp sauce");
                 break;
 
+            case appConstants.TENANT_TEST:
+                // Load default product types
+                saveProductType("INDOOR", "Indoor Unit");
+                saveProductType("DEP", "light deps");
+                saveProductType("OUTS", "outdoor");
+                saveProductType("LOWS", "move em like its hot");
+                saveProductType("PRODUCT.CART", "cartridges");
+                saveProductType("PRODUCT.JOINTPACK", "joints in packs");
+                saveProductType("PRODUCT.CRUMBLE.BADDER", "crumble badder");
+                saveProductType("PRODUCT.TERPSAUCE", "terp sauce");
+                break;
+
             default:
                 // Load default product types
-                saveProductType("INDOOR.UNIT", "Indoor Unit");
-                saveProductType("CART.2G.DISPO", "2 gram disposable");
-                saveProductType("CART.0.5G.ROSIN", ".5 g rosin cart");
-                saveProductType("CART.1G.RESIN", "1G RESIN CART DISPO");
-                saveProductType("BOOMER.UNIT", "UNIT OF BOOMS");
+                saveProductType("INDOOR", "Indoor Unit");
+                saveProductType("DEP", "light deps");
+                saveProductType("OUTS", "outdoor");
+                saveProductType("LOWS", "move em like its hot");
+                saveProductType("PRODUCT.CART", "cartridges");
+                saveProductType("PRODUCT.JOINTPACK", "joints in packs");
+                saveProductType("PRODUCT.CRUMBLE.BADDER", "crumble badder");
+                saveProductType("PRODUCT.TERPSAUCE", "terp sauce");
         }
 
 
@@ -249,13 +265,21 @@ class RefDataLoader {
 
     // Helper method to create and save product types
     private void saveProductType(String name, String description) {
-        ProductTypeVO productTypeVO = new ProductTypeVO();
-        productTypeVO.name = name;
-        productTypeVO.description = description;
-        productTypeVO.setCreateTimeStamp(LocalDateTime.now());
-        productTypeVO.setUpdateTimeStamp(LocalDateTime.now());
 
-        productTypeRepo.save(productTypeVO);
+
+        if(productTypeRepo.existsByName(name)){
+            System.out.println("SKIPPING: " + name + " already exists")
+
+        } else {
+            ProductTypeVO productTypeVO = new ProductTypeVO();
+            productTypeVO.name = name;
+            productTypeVO.description = description;
+            productTypeVO.setCreateTimeStamp(LocalDateTime.now());
+            productTypeVO.setUpdateTimeStamp(LocalDateTime.now());
+
+            productTypeRepo.save(productTypeVO);
+        }
+
     }
 
 

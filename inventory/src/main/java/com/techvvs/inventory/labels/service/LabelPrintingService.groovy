@@ -29,9 +29,33 @@ class LabelPrintingService {
     ProductHelper productHelper
 
 
-    void createDyno450TurboLabel(String labeltext){
-        String outputpath = "";
-        labelPrintingGenerator.createLabelPDF(labeltext, outputpath)
+    // Dimensions: 1-1/8" x 3-1/2" (28mm x 89mm)
+    void createDyno550TurboLabel28mmx89mm(BatchVO batchVO){
+
+        // gonna feed in lists of 10 products at a time cuz that seems to work best
+        try{
+            PDDocument document = new PDDocument()
+            int pagenumber = 0;
+            batchVO.product_set = batchVO.product_set.sort { it.name?.toLowerCase() }
+            // create a single epson for each product (print multiple times if needed....)
+            for(ProductVO product : batchVO.product_set){
+
+                labelPrintingGenerator.generateDynmo55028mmx98mmLabel(
+                        batchVO.batchid,
+                        pagenumber,
+                        batchVO,
+                        product,
+                        document)
+                pagenumber++
+            }
+
+            saveBarcode28mmx89mmLabelsPdfFile(document, appConstants.BARCODES_DYMNO_28mmx89mm_DIR, batchVO.name,batchVO.batchnumber)
+
+        } catch(Exception ex){
+            System.out.println("Generate epson failed: "+ex.getMessage().toString())
+
+        }
+
     }
 
     void createEpsonC6000AuLabel4by6point5(BatchVO batchVO){
@@ -136,6 +160,23 @@ class LabelPrintingService {
 
     }
 
+
+    void saveBarcode28mmx89mmLabelsPdfFile(PDDocument document,
+                                                 String entitysubdirectory,
+                                                 String entityname,
+                                                 int entitynumber) {
+
+        entityname = chopRightPaddedString(entityname)
+        entityname = entityname.replace(" ", "_")
+        entityname = entityname.replace("|", "_")
+
+        // create a directory with the batchnumber and /barcodes dir if it doesn't exist yet
+        Files.createDirectories(Paths.get(appConstants.PARENT_LEVEL_DIR+String.valueOf(entitynumber)+entitysubdirectory));
+        String filename = entityname+"-"+entitynumber
+        // save the actual file after looping thru all products
+        document.save(appConstants.PARENT_LEVEL_DIR+String.valueOf(entitynumber)+entitysubdirectory+appConstants.filenameprefix_dymno_28mmx89mm+filename+".pdf")
+        document.close();
+    }
 
     void saveBarcodeEpson4by6point5LabelsPdfFile(PDDocument document,
                                     String entitysubdirectory,

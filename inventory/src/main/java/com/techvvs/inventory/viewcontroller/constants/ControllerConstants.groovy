@@ -30,7 +30,8 @@ class ControllerConstants {
                                     appConstants.QR_ALL_DIR,
                                     appConstants.QR_MEDIA_DIR,
                                     appConstants.BARCODES_MANIFEST_DIR,
-                                    appConstants.BARCODES_EPSON_64_DIR
+                                    appConstants.BARCODES_EPSON_64_DIR,
+                                    appConstants.BARCODES_DYMNO_28mmx89mm_DIR
         ]
     }
 
