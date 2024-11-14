@@ -129,9 +129,9 @@ class LabelPrintingGenerator {
         float margin = 5f;  // Small margin to keep content visible
 
         // Define sizes for QR code, barcode, and font
-        float qrCodeSize = 0.6f * 72;  // QR code size of 0.6 inches
-        float barcodeWidth = 0.4f * 72;  // Barcode width without rotation
-        float barcodeHeight = 0.8f * 72;  // Barcode height without rotation
+        float qrCodeSize = 2.0f * 72;  // QR code size of 1 inch
+        float barcodeWidth = 0.8f * 72;  // Barcode width without rotation
+        float barcodeHeight = 1.6f * 72;  // Barcode height without rotation
         float largeFontSize = 10f;  // Font size for product text
 
         // Set positions for elements
@@ -139,20 +139,20 @@ class LabelPrintingGenerator {
         float qrY = margin;
 
         float barcodeX = qrX;  // Barcode positioned above QR code
-        float barcodeY = qrY + qrCodeSize + margin;
+        float barcodeY = qrY + 60f + margin;
 
-        float textXStart = margin;  // Product text at the top
-        float textYStart = margin + qrCodeSize + margin + barcodeHeight;  // Top of the label
+        float textXStart = margin = 55f;  //
+        float textYStart = margin + qrCodeSize + -120f;  //
 
         // Load font
         PDType0Font ttfFont = PDType0Font.load(document, new File("./uploads/font/SEASRN.ttf"));
 
         // Draw QR code (no rotation)
-        PDImageXObject qrPdImage = generateQrImageforEpson(product, document);
+        PDImageXObject qrPdImage = generateQrImageforDymno(product, document);
         contentStream.drawImage(qrPdImage, qrX, qrY, qrCodeSize, qrCodeSize);
 
         // Draw rotated barcode
-        BufferedImage barcodeImage = imageGenerator.generateSidewaysUPCABarcodeImage(product.barcode);
+        BufferedImage barcodeImage = imageGenerator.generateSidewaysUPCABarcodeImage(product.barcode, appConstants.filenameprefix_dymno_28mmx89mm);
         PDImageXObject barcodePdImage = LosslessFactory.createFromImage(document, barcodeImage);
         //contentStream.saveGraphicsState();  // Save state before rotation
 
@@ -168,7 +168,7 @@ class LabelPrintingGenerator {
 
         // Rotate text 90 degrees, position it above the rotated barcode
         contentStream.setTextMatrix(Matrix.getRotateInstance((float) Math.PI / 2, textXStart + largeFontSize as float, textYStart));
-        List<String> wrappedText = wrapText(product.name, 15);
+        List<String> wrappedText = wrapText(product.name, 25);
         for (String line : wrappedText) {
             contentStream.showText(line);
             contentStream.newLineAtOffset(0, -largeFontSize - 2 as float);  // Move down for the next line
@@ -321,6 +321,31 @@ class LabelPrintingGenerator {
         return lines;
     }
 
+    PDImageXObject generateQrImageforDymno(ProductVO productVO, PDDocument document) throws IOException {
+        String qrcodeData = "";
+        boolean isDev1 = env.getProperty("spring.profiles.active").equals(appConstants.DEV_1);
+        String baseQrDomain = env.getProperty("base.qr.domain");
+
+        if (isDev1) {
+            qrcodeData = appConstants.QR_CODE_PUBLIC_INFO_LINK_DEV1 + productVO.getProduct_id();
+        } else {
+            // todo: this is hack to make it leafly for inventory spooky units
+            boolean isqrmode = env.getProperty("qr.mode.leafly").equals("true") // only do leafly search if this is true
+            if(isqrmode){
+                qrcodeData = appConstants.QR_CODE_URI_LEAFYLY+productVO.name
+            }
+//            boolean isMediaMode = env.getProperty("qr.mode.media").equals("true");
+//            if (isMediaMode) {
+//                qrcodeData = baseQrDomain + "/file/privateqrmediadownload?productid="+productVO.getProduct_id()+"&name="+productVO.name+"&number="+productVO.productnumber;
+//            } else {
+//                qrcodeData = baseQrDomain + appConstants.QR_CODE_URI_EXTENSION + productVO.getProduct_id();
+//            }
+        }
+
+        BufferedImage qrImage = qrImageGenerator.generateQrImageForDynmo(
+                qrcodeData, limitStringTo25Chars(productVO.name), 600, 56);
+        return LosslessFactory.createFromImage(document, qrImage);
+    }
 
 // Generate QR code image for the product
     PDImageXObject generateQrImageforEpson(ProductVO productVO, PDDocument document) throws IOException {

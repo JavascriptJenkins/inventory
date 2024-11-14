@@ -5,9 +5,11 @@ import com.google.zxing.WriterException
 import com.google.zxing.client.j2se.MatrixToImageWriter
 import com.google.zxing.common.BitMatrix
 import com.google.zxing.qrcode.QRCodeWriter
+import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.model.ProductVO
 import org.krysalis.barcode4j.impl.upcean.UPCABean
 import org.krysalis.barcode4j.output.bitmap.BitmapCanvasProvider
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
 import javax.imageio.ImageIO
@@ -20,6 +22,9 @@ import java.nio.file.Path
 
 @Component
 class ImageGenerator {
+
+    @Autowired
+    AppConstants appConstants
 
     static BufferedImage generateUPCABarcodeImage(String barcodeData) {
         UPCABean bean = new UPCABean();
@@ -58,11 +63,21 @@ class ImageGenerator {
         return imageWithMargin;
     }
 
-    static BufferedImage generateSidewaysUPCABarcodeImage(String barcodeData) {
+    BufferedImage generateSidewaysUPCABarcodeImage(String barcodeData, String labeltype) {
         UPCABean bean = new UPCABean();
-        bean.setModuleWidth(0.2); // Adjust module width as needed
-        bean.setBarHeight(10f);   // Adjust bar height as needed
-        bean.setQuietZone(5f);    // Adjust quiet zone as needed
+
+        switch (labeltype) {
+            case appConstants.filenameprefix_dymno_28mmx89mm:
+                    bean.setModuleWidth(0.4); // Adjust module width as needed
+                    bean.setBarHeight(15f);   // Adjust bar height as needed
+                    bean.setQuietZone(5f);    // Adjust quiet zone as needed
+                break;
+            default:
+                bean.setModuleWidth(0.2); // Adjust module width as needed
+                bean.setBarHeight(10f);   // Adjust bar height as needed
+                bean.setQuietZone(5f);    // Adjust quiet zone as needed
+        }
+
 
         // Set up the canvas provider
         BitmapCanvasProvider canvas = new BitmapCanvasProvider(260, BufferedImage.TYPE_BYTE_BINARY, false, 0);
@@ -101,7 +116,7 @@ class ImageGenerator {
         g2dRotated.fillRect(0, 0, rotatedWidth, rotatedHeight);
 
         // Apply rotation transformation around the center
-        g2dRotated.rotate(Math.toRadians(90), rotatedWidth / 2.0, rotatedHeight / 2.0);
+        g2dRotated.rotate(Math.toRadians(270), rotatedWidth / 2.0, rotatedHeight / 2.0);
 
         // Translate to align the original image within the rotated canvas
         g2dRotated.translate((rotatedWidth - widthWithMargin) / 2.0, (rotatedHeight - heightWithMargin) / 2.0);
