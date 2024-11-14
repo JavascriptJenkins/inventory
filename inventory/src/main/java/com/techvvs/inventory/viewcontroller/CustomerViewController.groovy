@@ -53,7 +53,7 @@ public class CustomerViewController {
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size
     ){
-        stringSecurityValidator.validateStringValues(customerVO, model)
+
         customerVO = customerHelper.validateCustomer(customerVO, model)
 
         // only proceed if there is no error

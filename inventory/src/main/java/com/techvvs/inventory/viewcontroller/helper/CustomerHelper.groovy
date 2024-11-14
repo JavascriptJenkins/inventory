@@ -2,6 +2,8 @@ package com.techvvs.inventory.viewcontroller.helper
 
 import com.techvvs.inventory.jparepo.CustomerRepo
 import com.techvvs.inventory.model.CustomerVO
+import com.techvvs.inventory.validation.StringSecurityValidator
+import com.techvvs.inventory.validation.generic.ObjectValidator
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -18,12 +20,27 @@ class CustomerHelper {
     @Autowired
     CustomerRepo customerRepo
 
+    @Autowired
+    StringSecurityValidator stringSecurityValidator
+
+    @Autowired
+    ObjectValidator objectValidator
+
 
     void loadBlankCustomer(Model model){
         model.addAttribute("customer", new CustomerVO(customerid: 0))
     }
 
     CustomerVO validateCustomer(CustomerVO customer, Model model){
+
+
+        // first - validate against security issues
+        stringSecurityValidator.validateStringValues(customer, model)
+
+        // second - validate all object fields
+        objectValidator.validateAndAttachErrors(customer, model)
+
+        // third - do any business logic / page specific validation below
 
         // only going to enforce name for now
         if(customer.name == null || customer.name?.empty
