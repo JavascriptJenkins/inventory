@@ -1,31 +1,15 @@
 package com.techvvs.inventory.viewcontroller
 
-import com.techvvs.inventory.constants.AppConstants
-import com.techvvs.inventory.dao.BatchDao
-import com.techvvs.inventory.jparepo.BatchRepo
-import com.techvvs.inventory.jparepo.BatchTypeRepo
-import com.techvvs.inventory.jparepo.ProductRepo
-import com.techvvs.inventory.jparepo.ProductTypeRepo
+import com.techvvs.inventory.constants.MessageConstants
 import com.techvvs.inventory.model.CustomerVO
-import com.techvvs.inventory.printers.PrinterService
 import com.techvvs.inventory.service.auth.TechvvsAuthService
-import com.techvvs.inventory.service.controllers.CartService
-import com.techvvs.inventory.service.controllers.PaymentService
-import com.techvvs.inventory.service.controllers.TransactionService
-import com.techvvs.inventory.util.TechvvsFileHelper
-import com.techvvs.inventory.validation.ValidateBatch
-import com.techvvs.inventory.viewcontroller.helper.BatchControllerHelper
-import com.techvvs.inventory.viewcontroller.helper.CheckoutHelper
+import com.techvvs.inventory.validation.StringSecurityValidator
 import com.techvvs.inventory.viewcontroller.helper.CustomerHelper
-import com.techvvs.inventory.viewcontroller.helper.MenuHelper
-import com.techvvs.inventory.viewcontroller.helper.PaymentHelper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.*
 
-import javax.servlet.http.HttpServletRequest
-import java.security.SecureRandom
 
 @RequestMapping("/customer")
 @Controller
@@ -37,6 +21,9 @@ public class CustomerViewController {
     
     @Autowired
     TechvvsAuthService techvvsAuthService
+
+    @Autowired
+    StringSecurityValidator stringSecurityValidator
 
     //default home mapping
     @GetMapping
@@ -66,15 +53,11 @@ public class CustomerViewController {
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size
     ){
-
-        
-
-
+        stringSecurityValidator.validateStringValues(customerVO, model)
         customerVO = customerHelper.validateCustomer(customerVO, model)
 
         // only proceed if there is no error
-        if(model.getAttribute("errorMessage") == null){
-
+        if(model.getAttribute(MessageConstants.ERROR_MSG) == null){
             // create the customer
             customerVO = customerHelper.createCustomer(customerVO)
             model.addAttribute("successMessage", "Customer created successfully!")
