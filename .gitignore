@@ -1,0 +1,63 @@
+# Ignore Java class files
+*.class
+
+# Package Files
+*.jar
+*.war
+*.ear
+
+# IDE directories and files
+### IntelliJ IDEA ###
+.idea/
+*.iml
+*.ipr
+
+### Eclipse ###
+.project
+.classpath
+.settings/
+
+### NetBeans ###
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# Maven directories
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+
+# Gradle directories
+.gradle/
+build/
+.gradle_cache/
+*.lock
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Logs and temporary files
+*.log
+*.tmp
+*.out
+
+# Exclude sensitive properties and config files
+application.properties
+*.properties
+*.env
+
+# Ignore generated code (if any)
+generated-sources/
+
+# Exclude binary or packaged files
+*.class
+*.jar
+*.war
+*.ear
