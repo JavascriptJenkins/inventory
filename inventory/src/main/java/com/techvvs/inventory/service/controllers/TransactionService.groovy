@@ -2,12 +2,16 @@ package com.techvvs.inventory.service.controllers
 
 import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.jparepo.CartRepo
+import com.techvvs.inventory.jparepo.DiscountRepo
 import com.techvvs.inventory.jparepo.PackageRepo
+import com.techvvs.inventory.jparepo.ProductTypeRepo
 import com.techvvs.inventory.jparepo.TransactionRepo
 import com.techvvs.inventory.model.CartVO
+import com.techvvs.inventory.model.DiscountVO
 import com.techvvs.inventory.model.PackageVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.TransactionVO
+import com.techvvs.inventory.printers.PrinterService
 import com.techvvs.inventory.util.FormattingUtil
 import com.techvvs.inventory.util.TechvvsAppUtil
 import org.springframework.beans.factory.annotation.Autowired
@@ -35,6 +39,15 @@ class TransactionService {
 
     @Autowired
     FormattingUtil formattingUtil
+
+    @Autowired
+    ProductTypeRepo productTypeRepo
+
+    @Autowired
+    DiscountRepo discountRepo
+
+    @Autowired
+    PrinterService printerService
 
     @Autowired
     AppConstants appConstants
@@ -247,6 +260,55 @@ class TransactionService {
     }
 
 
+    // todo: rewrite this so it will apply a whole list of discounts to the transaction
+    TransactionVO applyDiscountToTransaction(TransactionVO transactionVO) {
+
+        // the rules here are we can only have one discount at a time
+        if(transactionVO.discount.discountpercentage != null && transactionVO.discount.discountpercentage > 0){
+            transactionVO.total = formattingUtil.calculateTotalWithDiscountPercentage(transactionVO.total, transactionVO.discount.discountpercentage)
+            transactionVO.total < 0 ? 0 : transactionVO.total // make sure it doesnt go below 0 for some reason...
+        }
+
+        if(transactionVO.discount.discountamount != null && transactionVO.discount.discountamount > 0){
+            transactionVO.total = formattingUtil.calculateTotalWithDiscountAmount(transactionVO.total, transactionVO.discount.discountamount)
+            transactionVO.total < 0 ? 0 : transactionVO.total // make sure it doesnt go below 0 for some reason...
+        }
+
+        return transactionVO
+    }
+
+
+
+    TransactionVO executeApplyDiscountToTransaction(TransactionVO transactionVO, String transactionid, Optional<String> producttypeid){
+        // todo: move this to a service class
+        // grab the discount in scope
+        DiscountVO newdiscount = new DiscountVO()
+        DiscountVO saveddiscount = new DiscountVO()
+        if(transactionVO.discount.discountamount > 0 && producttypeid.isPresent()){
+            newdiscount = transactionVO.discount
+            newdiscount.setProducttype(productTypeRepo.findById(Integer.valueOf(producttypeid.get())).get())
+            newdiscount.name = "Transaction Discount"
+            newdiscount.description = "discount applied based on producttype"
+            newdiscount.transaction = transactionRepo.findById(Integer.valueOf(transactionid)).get()
+            newdiscount.createTimeStamp = LocalDateTime.now()
+            newdiscount.updateTimeStamp = LocalDateTime.now()
+            saveddiscount = discountRepo.save(newdiscount) // save the new discount tied to transaction
+
+
+            // todo: run all the logic on the numbers of the discount on the transaction.
+            // todo: make a method that cycles through all the discounts in the list of transaction and then applies them.
+            saveddiscount.transaction.discount_list.add(saveddiscount) // add the discount to list of discounts on transaction
+
+            // insert method here to apply all discount logic
+            // now that new discount has been added to the list, calculate the new total based on all discounts
+            saveddiscount.transaction = applyDiscountToTransaction(saveddiscount.transaction)
+
+            transactionVO = transactionRepo.save(saveddiscount.transaction) // update the transaction
+        }
+
+        return transactionVO
+
+    }
 
 
 }

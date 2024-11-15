@@ -243,6 +243,23 @@
         });
     </script>
 
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const productTypeSelect = document.getElementById("producttypeselectid");
+            const productTypeDisplay = document.getElementById("producttype-display");
+
+            // Update display with the text of the selected option
+            productTypeSelect.addEventListener("change", function () {
+                const selectedText = productTypeSelect.options[productTypeSelect.selectedIndex]?.textContent || "N/A";
+                productTypeDisplay.textContent = selectedText;
+            });
+
+            // Initialize display on page load
+            const initialText = productTypeSelect.options[productTypeSelect.selectedIndex]?.textContent || "N/A";
+            productTypeDisplay.textContent = initialText;
+        });
+    </script>
+
 
 </head>
 <body>
@@ -260,7 +277,7 @@
     <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
     <div class="alert alert-primary" role="alert" th:if="${primaryMessage}" th:text="${primaryMessage}">Success</div>
 
-    <form id="appyDiscountTransactionForm" th:action="@{/transaction/discount?transactionid=__${transaction.transactionid}__&customerid=__${customer.customerid}__}" th:object="${transaction}" method="post">
+    <form id="appyDiscountTransactionForm" th:action="@{/transaction/discount?transactionid=__${transaction.transactionid}__&customerid=__${customer.customerid}__&producttypeid=__${producttypeid}__}" th:object="${transaction}" method="post">
 
         <div class="row" style="margin-bottom: 5px;">
 
@@ -273,9 +290,13 @@
             </div>
 
 
+<!--            todo: do a check here to make sure you can only apply a discount one time per producttype -->
             <div th:if="${transaction.product_list.size() > 0 && producttypeid.toString() != '0'}">
                 <div class="col-md-4" style="margin-bottom: 5px;">
-                    <label class="form-label required">Discount Amount Per Unit</label>
+                    <label class="form-label required">Discount Amount Per Unit
+                        <span id="producttype-display">N/A</span>
+                    </label>
+
                     <input id="discountamountid" type="number" th:field="*{discount.discountamount}" step="any" min="0" max="10000" class="form-control" placeholder="Discount Amount" aria-label="discount amount">
                 </div>
             </div>

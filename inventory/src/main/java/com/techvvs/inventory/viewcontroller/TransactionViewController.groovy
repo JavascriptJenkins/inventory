@@ -1,8 +1,11 @@
 package com.techvvs.inventory.viewcontroller
 
 import com.techvvs.inventory.constants.AppConstants
+import com.techvvs.inventory.jparepo.DiscountRepo
 import com.techvvs.inventory.jparepo.LocationRepo
 import com.techvvs.inventory.jparepo.ProductTypeRepo
+import com.techvvs.inventory.jparepo.TransactionRepo
+import com.techvvs.inventory.model.DiscountVO
 import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.modelnonpersist.FileVO
@@ -19,6 +22,8 @@ import org.springframework.data.domain.Page
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.*
+
+import java.time.LocalDateTime
 
 
 @RequestMapping("/transaction")
@@ -58,6 +63,12 @@ public class TransactionViewController {
 
     @Autowired
     ProductTypeRepo productTypeRepo
+
+    @Autowired
+    TransactionRepo transactionRepo
+
+    @Autowired
+    DiscountRepo discountRepo
 
     @GetMapping
     String reviewtransaction(
@@ -201,31 +212,28 @@ public class TransactionViewController {
             Model model,
             @ModelAttribute( "transaction" ) TransactionVO transactionVO,
             @RequestParam("transactionid") String transactionid,
-            @RequestParam("barcode") String barcode,
+            @RequestParam("producttypeid") Optional<String> producttypeid,
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size
     ){
 
-      //  transactionid = transactionid == null ? "0" : String.valueOf(transactionid)
 
-        // attach the paymentVO to the model
-     //   TransactionVO transactionVO = paymentHelper.loadTransaction(transactionid, model)
-
-     //   transactionVO = transactionHelper.deleteProductFromTransaction(transactionVO, barcode)
-
-
-
+        // apply the discount based on producttypeid to all products of that type
+        transactionVO = transactionService.executeApplyDiscountToTransaction(transactionVO, transactionid, producttypeid)
 
         transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO)
         printerService.printInvoice(transactionVO, false, true) // print another invoice showing discount...
         model.addAttribute("customer", transactionVO.customervo)
 
 
+        ProductTypeVO productTypeVO = productTypeRepo.findById(Integer.valueOf(producttypeid.orElse("0"))).get()
         model.addAttribute("producttypes", productTypeRepo.findAll()); // for the filter dropdown
         techvvsAuthService.checkuserauth(model)
         model.addAttribute("transactionid", transactionid);
         model.addAttribute("transaction", transactionVO);
-        model.addAttribute("successMessage", "Deleted the item from transaction successfully with barcode: "+barcode);
+        // Get the most recent discount
+        def mostRecentDiscount = transactionVO.discount_list.max { it.createTimeStamp }
+        model.addAttribute("successMessage", "Applied discount of :"+mostRecentDiscount.discountamount+" per unit to product type: "+productTypeVO.name);
 
         return "transaction/discount.html";
     }

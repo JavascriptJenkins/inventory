@@ -30,14 +30,16 @@ class TransactionVO implements Serializable {
     @ElementCollection(fetch = FetchType.LAZY)
     List<PaymentVO> payment_list
 
-    @JsonProperty
-    @OneToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn(name="discountid")
-    DiscountVO discount = new DiscountVO()
+    @Transient
+    DiscountVO discount = new DiscountVO() // tracking the discount in scope here
 
     @JsonProperty
     @ElementCollection(fetch = FetchType.LAZY)
-    List<ReturnVO> return_list
+    List<DiscountVO> discount_list = new ArrayList<DiscountVO>()
+
+    @JsonProperty
+    @ElementCollection(fetch = FetchType.LAZY)
+    List<ReturnVO> return_list = new ArrayList<ReturnVO>()
 
     @JsonProperty
     @ElementCollection(fetch = FetchType.EAGER)
