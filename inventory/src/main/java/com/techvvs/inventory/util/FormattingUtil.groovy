@@ -1,6 +1,8 @@
 package com.techvvs.inventory.util
 
 import com.techvvs.inventory.model.CartVO
+import com.techvvs.inventory.model.ProductTypeVO
+import com.techvvs.inventory.model.ProductVO
 import org.springframework.stereotype.Component
 
 import java.text.DecimalFormat
@@ -24,6 +26,33 @@ class FormattingUtil {
 
     static String formatInvoiceItem(String name, int quantity, Double price) {
         return String.format("%-30s %5d %10.2f\n", name, quantity, price);
+    }
+
+
+
+    //
+    public static double calculateTotalWithTaxBasedOnTotalDiscountAmount(double total, double taxPercentage, double totalDiscountAmount) {
+        // Validate input values
+        if (total < 0 || taxPercentage < 0 || totalDiscountAmount < 0) {
+            throw new IllegalArgumentException("Total, tax percentage, and total discount amount must be non-negative.");
+        }
+
+        // Apply the total discount amount directly
+        double discountedTotal = total - totalDiscountAmount;
+
+        // Ensure the discounted total is not less than zero
+        if (discountedTotal < 0) {
+            discountedTotal = 0;
+        }
+
+        // Calculate the tax amount on the discounted total
+        double taxAmount = discountedTotal * (taxPercentage / 100.0);
+
+        // Calculate the total with tax
+        double totalWithTax = discountedTotal + taxAmount;
+
+        // Round to 2 decimal places for currency precision
+        return Math.round(totalWithTax * 100.0) / 100.0;
     }
 
     /*In most cases, if the total amount of a transaction is discounted to zero, no sales tax is due.
@@ -134,6 +163,51 @@ class FormattingUtil {
         return Math.round(discountedTotal * 100.0) / 100.0;
     }
 
+
+    // calculates total before tax but with discount
+    public static double calculateTotalWithDiscountAmountPerUnitByProductType(
+            double total,
+            double discountAmount,
+            ProductTypeVO productTypeVO,
+            List<ProductVO> product_list
+    ) {
+
+        Double totaldiscounttoapply = 0.00
+        Double perunitdiscount = discountAmount
+
+        for(ProductVO productVO : product_list){
+            // check every product in the list, if it matches the producttype then increment the discount
+            if(productVO.producttypeid.producttypeid == productTypeVO.producttypeid){
+                totaldiscounttoapply += perunitdiscount
+            }
+        }
+
+        return (total - totaldiscounttoapply) // apply the per unit discount to the total
+
+    }
+
+
+    // calculates total before tax but with discount
+    public static double calculateTotalWithTaxWithDiscountAmountPerUnitByProductType(
+            double totalwithtax,
+            double discountAmount,
+            ProductTypeVO productTypeVO,
+            List<ProductVO> product_list
+    ) {
+
+        Double totaldiscounttoapply = 0.00
+        Double perunitdiscount = discountAmount
+
+        for(ProductVO productVO : product_list){
+            // check every product in the list, if it matches the producttype then increment the discount
+            if(productVO.producttypeid.producttypeid == productTypeVO.producttypeid){
+                totaldiscounttoapply += perunitdiscount
+            }
+        }
+
+        return (totalwithtax - totaldiscounttoapply) // apply the per unit discount to the total
+
+    }
 
 
 

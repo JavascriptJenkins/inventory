@@ -260,19 +260,24 @@ class TransactionService {
     }
 
 
-    // todo: rewrite this so it will apply a whole list of discounts to the transaction
-    TransactionVO applyDiscountToTransaction(TransactionVO transactionVO) {
-
-        // the rules here are we can only have one discount at a time
-        if(transactionVO.discount.discountpercentage != null && transactionVO.discount.discountpercentage > 0){
-            transactionVO.total = formattingUtil.calculateTotalWithDiscountPercentage(transactionVO.total, transactionVO.discount.discountpercentage)
-            transactionVO.total < 0 ? 0 : transactionVO.total // make sure it doesnt go below 0 for some reason...
-        }
+    // apply discount to each discount instance
+    TransactionVO applyDiscountToTransaction(TransactionVO transactionVO, int index) {
 
         if(transactionVO.discount.discountamount != null && transactionVO.discount.discountamount > 0){
-            transactionVO.total = formattingUtil.calculateTotalWithDiscountAmount(transactionVO.total, transactionVO.discount.discountamount)
+            transactionVO.total = formattingUtil.calculateTotalWithDiscountAmountPerUnitByProductType(
+                    transactionVO.total,
+                    transactionVO.discount_list[index].discountamount,
+                    transactionVO.discount_list[index].producttype,
+                    transactionVO.product_list
+            )
             transactionVO.total < 0 ? 0 : transactionVO.total // make sure it doesnt go below 0 for some reason...
         }
+
+        // here set the new transaction totalwithtax field based on the new total we just calculated
+        transactionVO.totalwithtax = formattingUtil.calculateTotalWithTaxBasedOnTotalDiscountAmount(
+                transactionVO.total,
+                0.0,
+                0.0)
 
         return transactionVO
     }
@@ -301,7 +306,10 @@ class TransactionService {
 
             // insert method here to apply all discount logic
             // now that new discount has been added to the list, calculate the new total based on all discounts
-            saveddiscount.transaction = applyDiscountToTransaction(saveddiscount.transaction)
+            for(int i =0; i < saveddiscount.transaction.discount_list.size(); i++){
+                saveddiscount.transaction = applyDiscountToTransaction(saveddiscount.transaction, i)
+            }
+
 
             transactionVO = transactionRepo.save(saveddiscount.transaction) // update the transaction
         }
