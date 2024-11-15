@@ -2,6 +2,8 @@ package com.techvvs.inventory.viewcontroller
 
 import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.jparepo.LocationRepo
+import com.techvvs.inventory.jparepo.ProductTypeRepo
+import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.modelnonpersist.FileVO
 import com.techvvs.inventory.printers.PrinterService
@@ -53,6 +55,9 @@ public class TransactionViewController {
 
     @Autowired
     DeliveryService deliveryService
+
+    @Autowired
+    ProductTypeRepo productTypeRepo
 
     @GetMapping
     String reviewtransaction(
@@ -153,6 +158,77 @@ public class TransactionViewController {
         model.addAttribute("successMessage", "Deleted the item from transaction successfully with barcode: "+barcode);
 
         return "transaction/return.html";
+    }
+
+    @GetMapping("/discount")
+    String viewNewFormDiscount(
+            Model model,
+            @RequestParam("transactionid") String transactionid,
+            @RequestParam("producttypeid") Optional<String> producttypeid,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size
+    ){
+
+        transactionid = transactionid == null ? "0" : String.valueOf(transactionid)
+
+        // attach the paymentVO to the model
+        TransactionVO transactionVO = paymentHelper.loadTransaction(transactionid, model)
+
+        if(producttypeid.isPresent()){
+            // if we have a producttype then filter out all products that are not of that producttype
+            transactionVO.product_list = transactionVO.product_list.findAll { product ->
+                product?.producttypeid?.producttypeid == Integer.valueOf(producttypeid.get())
+            }
+            model.addAttribute("producttypeid", producttypeid.get())
+        }
+        transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO)
+
+        model.addAttribute("customer", transactionVO.customervo)
+
+
+        // fetch all producttypes from database and bind them to model
+        model.addAttribute("producttypes", productTypeRepo.findAll()); // for the filter dropdown
+        model.addAttribute("transaction", transactionVO);
+
+        techvvsAuthService.checkuserauth(model)
+        model.addAttribute("transactionid", transactionid);
+        return "transaction/discount.html";
+    }
+
+
+    @PostMapping("/discount")
+    String postDiscount(
+            Model model,
+
+            @RequestParam("transactionid") String transactionid,
+            @RequestParam("barcode") String barcode,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size
+    ){
+
+        transactionid = transactionid == null ? "0" : String.valueOf(transactionid)
+
+        // attach the paymentVO to the model
+        TransactionVO transactionVO = paymentHelper.loadTransaction(transactionid, model)
+
+        transactionVO = transactionHelper.deleteProductFromTransaction(transactionVO, barcode)
+
+        transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO)
+
+        printerService.printInvoice(transactionVO, false, true) // print another invoice showing return...
+
+
+        model.addAttribute("customer", transactionVO.customervo)
+
+
+        // fetch all customers from database and bind them to model
+        checkoutHelper.getAllCustomers(model)
+        techvvsAuthService.checkuserauth(model)
+        model.addAttribute("transactionid", transactionid);
+        model.addAttribute("transaction", transactionVO);
+        model.addAttribute("successMessage", "Deleted the item from transaction successfully with barcode: "+barcode);
+
+        return "transaction/discount.html";
     }
 
 
