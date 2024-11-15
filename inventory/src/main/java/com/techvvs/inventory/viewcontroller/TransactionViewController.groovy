@@ -231,6 +231,7 @@ public class TransactionViewController {
         techvvsAuthService.checkuserauth(model)
         model.addAttribute("transactionid", transactionid);
         model.addAttribute("transaction", transactionVO);
+        model.addAttribute("producttypeid", producttypeid);
         // Get the most recent discount
         def mostRecentDiscount = transactionVO.discount_list.max { it.createTimeStamp }
         model.addAttribute("successMessage", "Applied discount of :"+mostRecentDiscount.discountamount+" per unit to product type: "+productTypeVO.name);

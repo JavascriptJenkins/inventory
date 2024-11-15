@@ -9,6 +9,7 @@ import com.techvvs.inventory.jparepo.TransactionRepo
 import com.techvvs.inventory.model.CartVO
 import com.techvvs.inventory.model.DiscountVO
 import com.techvvs.inventory.model.PackageVO
+import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.printers.PrinterService
@@ -260,32 +261,93 @@ class TransactionService {
     }
 
 
-    // apply discount to each discount instance
-    TransactionVO applyDiscountToTransaction(TransactionVO transactionVO, int index) {
+    // remove discount and credit back to the original total and totalwithtax to each discount instance
+    TransactionVO removeDiscountFromTransactionReCalcTotals(TransactionVO transactionVO, DiscountVO removedDiscount) {
 
-        if(transactionVO.discount.discountamount != null && transactionVO.discount.discountamount > 0){
-            transactionVO.total = formattingUtil.calculateTotalWithDiscountAmountPerUnitByProductType(
-                    transactionVO.total,
-                    transactionVO.discount_list[index].discountamount,
-                    transactionVO.discount_list[index].producttype,
-                    transactionVO.product_list
-            )
-            transactionVO.total < 0 ? 0 : transactionVO.total // make sure it doesnt go below 0 for some reason...
-        }
+        transactionVO.total = formattingUtil.calculateTotalWithRemovedDiscountAmountPerUnitByProductType(
+                transactionVO.total,
+                removedDiscount.discountamount,
+                removedDiscount.producttype,
+                transactionVO.product_list
+        )
+        transactionVO.total < 0 ? 0 : transactionVO.total // make sure it doesnt go below 0 for some reason...
+
+
+        // calculate the totalDiscountAmount based on quantityofunitsofsameproducttype * discountamount
+        double totalDiscountAmount = calculateTotalDiscountAmount(
+                transactionVO.product_list,
+                removedDiscount.producttype,
+                removedDiscount.discountamount
+        )
 
         // here set the new transaction totalwithtax field based on the new total we just calculated
-        transactionVO.totalwithtax = formattingUtil.calculateTotalWithTaxBasedOnTotalDiscountAmount(
+        transactionVO.totalwithtax = formattingUtil.calculateTotalWithTaxBasedOnTotalDiscountAmountForDiscountRemoval(
                 transactionVO.total,
                 0.0,
-                0.0)
+                totalDiscountAmount)
 
         return transactionVO
     }
 
+    // apply discount to each discount instance
+    TransactionVO applyDiscountToTransaction(TransactionVO transactionVO, int index) {
+
+        transactionVO.total = formattingUtil.calculateTotalWithDiscountAmountPerUnitByProductType(
+                transactionVO.total,
+                transactionVO.discount_list[index].discountamount,
+                transactionVO.discount_list[index].producttype,
+                transactionVO.product_list
+        )
+        transactionVO.total < 0 ? 0 : transactionVO.total // make sure it doesnt go below 0 for some reason...
+
+        double originaldiscountedtotal = transactionVO.total
+        // calculate the totalDiscountAmount based on quantityofunitsofsameproducttype * discountamount
+        double totalDiscountAmount = calculateTotalDiscountAmount(
+                transactionVO.product_list,
+                transactionVO.discount_list[index].producttype,
+                transactionVO.discount_list[index].discountamount
+        )
+
+        // here set the new transaction totalwithtax field based on the new total we just calculated
+        transactionVO.totalwithtax = formattingUtil.calculateTotalWithTaxBasedOnTotalDiscountAmount(
+                originaldiscountedtotal, // need to pass this variable in because the total was modified by the calculateTotalWithDiscountAmountPerUnitByProductType method above first
+                0.0,
+                totalDiscountAmount)
+
+        return transactionVO
+    }
+
+    double calculateTotalDiscountAmount(
+            List<ProductVO> product_list,
+            ProductTypeVO productTypeVO,
+            Double perunitdiscount
+    ){
+        // calulcate the total discount to apply
+        Double totaldiscounttoapply = 0.00
+        for(ProductVO productVO : product_list){
+            // check every product in the list, if it matches the producttype then increment the discount
+            if(productVO.producttypeid.producttypeid == productTypeVO.producttypeid){
+                totaldiscounttoapply += perunitdiscount
+            }
+        }
+        return totaldiscounttoapply
+    }
 
 
+
+
+    @Transactional
     TransactionVO executeApplyDiscountToTransaction(TransactionVO transactionVO, String transactionid, Optional<String> producttypeid){
         // todo: move this to a service class
+
+        TransactionVO existingTransaction = transactionRepo.findById(Integer.valueOf(transactionid)).get()
+        //before we do anything, remove any old discounts that match incoming producttypeid
+        existingTransaction = checkForExistingDiscountOfSameProducttypeAndCreditBackToTransactionTotals(
+                existingTransaction,
+                transactionid,
+                Integer.valueOf(producttypeid.get())
+        )
+
         // grab the discount in scope
         DiscountVO newdiscount = new DiscountVO()
         DiscountVO saveddiscount = new DiscountVO()
@@ -294,7 +356,8 @@ class TransactionService {
             newdiscount.setProducttype(productTypeRepo.findById(Integer.valueOf(producttypeid.get())).get())
             newdiscount.name = "Transaction Discount"
             newdiscount.description = "discount applied based on producttype"
-            newdiscount.transaction = transactionRepo.findById(Integer.valueOf(transactionid)).get()
+            newdiscount.isactive = 1 // set incoming new discount to active
+            newdiscount.transaction = existingTransaction
             newdiscount.createTimeStamp = LocalDateTime.now()
             newdiscount.updateTimeStamp = LocalDateTime.now()
             saveddiscount = discountRepo.save(newdiscount) // save the new discount tied to transaction
@@ -310,12 +373,42 @@ class TransactionService {
                 saveddiscount.transaction = applyDiscountToTransaction(saveddiscount.transaction, i)
             }
 
-
+           // saveddiscount = discountRepo.save(newdiscount)
             transactionVO = transactionRepo.save(saveddiscount.transaction) // update the transaction
         }
 
         return transactionVO
 
+    }
+
+    TransactionVO checkForExistingDiscountOfSameProducttypeAndCreditBackToTransactionTotals(
+            TransactionVO transactionVO,
+            String transactionid,
+            Integer producttypeid
+    ){
+        // find and remove any existing discounts for the same producttype that is coming in as a new discount
+        // Only one "activediscount" discount per producttype is allowed, so we set any existing discounts
+        // for the transaction to inactive here before we process the new total.
+        // when setting discount to inactive, we also have to add the removed discount back to the total and totalwithtax
+        // before further processing
+        for(DiscountVO existingolddiscount : transactionVO.discount_list){
+            if(existingolddiscount.producttype.producttypeid == producttypeid && existingolddiscount.isactive == 1){
+                // this means we found a matching discount of same producttype that already exists
+                existingolddiscount.isactive = 0 // set to inactive
+                existingolddiscount.updateTimeStamp = LocalDateTime.now()
+                discountRepo.save(existingolddiscount) // save the discount as inactive
+
+                // update the transaction tied to the new discount (required to do this only if we found an existing discount above)
+                transactionVO = transactionRepo.findById(Integer.valueOf(transactionid)).get()
+
+                //recalculate the total and totalwithtax by adding the credit back from old discount of same producttypeid that is being removed
+                transactionVO = removeDiscountFromTransactionReCalcTotals(transactionVO, existingolddiscount)
+
+                return transactionVO
+            }
+            return transactionVO
+        }
+        return transactionVO
     }
 
 

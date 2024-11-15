@@ -78,11 +78,11 @@ class TransactionVO implements Serializable {
 
     // This will be 0 until the transaction is actually processed
     @JsonProperty
-    Integer isprocessed
+    Integer isprocessed = 0
 
     // if this is 1, we know to display the package_set and we know we are dealing with a package transaction
     @JsonProperty
-    Integer ispackagetype
+    Integer ispackagetype = 0
 
     @JsonProperty
     @OneToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)

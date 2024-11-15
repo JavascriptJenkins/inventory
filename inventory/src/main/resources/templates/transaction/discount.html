@@ -197,6 +197,7 @@
     </script>
 
     <script>
+        // todo: add an existing discount field somewhere and then apply it to this method
         document.addEventListener("DOMContentLoaded", function () {
             const discountInput = document.getElementById("discountamountid");
             const remainingAfterDiscount = document.getElementById("amountremainingafterdiscountid");
@@ -230,17 +231,28 @@
             const discountInput = document.getElementById("discountamountid");
             const applyDiscountButton = document.getElementById("applyDiscountButton");
 
-            discountInput?.addEventListener("input", function () {
-                const discountAmount = parseFloat(discountInput.value) || 0;
+            // Function to enable/disable the button
+            const toggleButtonState = () => {
+                if(discountInput){
+                     const discountAmount = parseFloat(discountInput.value) || 0;
+                     console.log('Discount Amount:', discountAmount);
 
-                // Enable or disable the button based on the discount amount
-                if (discountAmount > 0) {
-                    applyDiscountButton.disabled = false;
+                    applyDiscountButton.disabled = discountAmount <= 0;
                 } else {
                     applyDiscountButton.disabled = true;
                 }
-            });
+            };
+
+            // Initialize button state on page load
+            toggleButtonState();
+
+            // Add event listener to update button state dynamically
+            if(discountInput){
+                discountInput?.addEventListener("input", toggleButtonState);
+            }
+
         });
+
     </script>
 
     <script>
@@ -256,7 +268,11 @@
 
             // Initialize display on page load
             const initialText = productTypeSelect.options[productTypeSelect.selectedIndex]?.textContent || "N/A";
-            productTypeDisplay.textContent = initialText;
+
+            if(productTypeDisplay){
+                productTypeDisplay.textContent = initialText;
+            }
+
         });
     </script>
 
@@ -269,9 +285,18 @@
     </div>
     <div class="sub-header">
         <p>Transaction ID: <span th:text="${transactionid}"></span></p>
+        <p>Original Price: <span th:text="${transaction.originalprice}"></span></p>
         <p>Customer: <span th:text="${customer.name}"></span></p>
         <p>Amount remaining to pay: <span id="amountremainingid" th:text="${transaction.totalwithtax - (transaction.paid == null ? 0.0 : transaction.paid)}"></span></p>
-        <p>Amount remaining to pay after discount: <span id="amountremainingafterdiscountid" th:text="${transaction.totalwithtax - (transaction.paid == null ? 0.0 : transaction.paid)}"></span></p>
+        <p>Amount remaining IF NEW DISCOUNT FROM THIS PAGE IS APPLIED (Hypothetical): <span id="amountremainingafterdiscountid" th:text="${transaction.totalwithtax - (transaction.paid == null ? 0.0 : transaction.paid)}"></span></p>
+        <th:block th:each="discount, i : ${transaction.discount_list}">
+            <input type="hidden"
+                   th:id="discountamounthiddeninput"
+                   th:if="${discount.producttype.producttypeid.toString() == producttypeid.toString()}"
+                   th:name="'transaction.discount_list[' + ${i} + '].discountamount'"
+                   th:value="${discount.discountamount}" />
+        </th:block>
+
     </div>
     <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
     <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>

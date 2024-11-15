@@ -31,7 +31,11 @@ class FormattingUtil {
 
 
     //
-    public static double calculateTotalWithTaxBasedOnTotalDiscountAmount(double total, double taxPercentage, double totalDiscountAmount) {
+    public static double calculateTotalWithTaxBasedOnTotalDiscountAmount(
+            double total,
+            double taxPercentage,
+            double totalDiscountAmount
+    ) {
         // Validate input values
         if (total < 0 || taxPercentage < 0 || totalDiscountAmount < 0) {
             throw new IllegalArgumentException("Total, tax percentage, and total discount amount must be non-negative.");
@@ -39,6 +43,35 @@ class FormattingUtil {
 
         // Apply the total discount amount directly
         double discountedTotal = total - totalDiscountAmount;
+
+        // Ensure the discounted total is not less than zero
+        if (discountedTotal < 0) {
+            discountedTotal = 0;
+        }
+
+        // Calculate the tax amount on the discounted total
+        double taxAmount = discountedTotal * (taxPercentage / 100.0);
+
+        // Calculate the total with tax
+        double totalWithTax = discountedTotal + taxAmount;
+
+        // Round to 2 decimal places for currency precision
+        return Math.round(totalWithTax * 100.0) / 100.0;
+    }
+
+    // re-calc the total with tax field on transaction by applying the per unit discount back to the total
+    public static double calculateTotalWithTaxBasedOnTotalDiscountAmountForDiscountRemoval(
+            double total,
+            double taxPercentage,
+            double totalDiscountAmount
+    ) {
+        // Validate input values
+        if (total < 0 || taxPercentage < 0 || totalDiscountAmount < 0) {
+            throw new IllegalArgumentException("Total, tax percentage, and total discount amount must be non-negative.");
+        }
+
+        // Apply the total discount amount credit back to the total
+        double discountedTotal = total + totalDiscountAmount;
 
         // Ensure the discounted total is not less than zero
         if (discountedTotal < 0) {
@@ -183,7 +216,27 @@ class FormattingUtil {
         }
 
         return (total - totaldiscounttoapply) // apply the per unit discount to the total
+    }
 
+    // This method removes a discount and applies a per unit credit back to transaction.total and transaction.totalwithtax
+    public static double calculateTotalWithRemovedDiscountAmountPerUnitByProductType(
+            double total,
+            double discountAmount,
+            ProductTypeVO productTypeVO,
+            List<ProductVO> product_list
+    ) {
+
+        Double totaldiscountcredittoapply = 0.00
+        Double perunitdiscount = discountAmount
+
+        for(ProductVO productVO : product_list){
+            // check every product in the list, if it matches the producttype then increment the discount
+            if(productVO.producttypeid.producttypeid == productTypeVO.producttypeid){
+                totaldiscountcredittoapply += perunitdiscount
+            }
+        }
+
+        return (total + totaldiscountcredittoapply) // apply the per unit discount credit back to the total
     }
 
 

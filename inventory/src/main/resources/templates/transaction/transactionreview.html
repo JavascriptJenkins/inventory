@@ -453,7 +453,7 @@
     </div>
 
     <div class="d-inline">
-        <a th:href="@{/transaction/discount?transactionid=__${transaction.transactionid}__}" class="btn btn-warning" style="margin-top:5px;margin-right:5px;float: right;">Discount</a>
+        <a th:href="@{/transaction/discount?transactionid=__${transaction.transactionid}__&producttypeid=__${transaction.product_list[0] != null ? transaction.product_list[0].producttypeid.producttypeid : 0}__}" class="btn btn-warning" style="margin-top:5px;margin-right:5px;float: right;">Discount</a>
     </div>
 
     <form id="textoremailInvoiceForm" th:action="@{/checkout/textemailinvoice?size=5&page=1}" th:object="${transaction}" method="post">

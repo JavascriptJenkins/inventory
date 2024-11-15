@@ -23,7 +23,7 @@ class DiscountVO implements Serializable {
 
     // todo: delete this from app
     @JsonProperty
-    Double discountpercentage;
+    Double discountpercentage = 0
 
     @JsonProperty
     String name;
@@ -43,6 +43,9 @@ class DiscountVO implements Serializable {
 
     @JsonProperty
     String notes
+
+    @JsonProperty
+    int isactive // only 1 active discount per producttype
 
     @Transient
     Double discountdisplayamount;
