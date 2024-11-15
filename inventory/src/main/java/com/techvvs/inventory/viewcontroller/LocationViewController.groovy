@@ -1,13 +1,12 @@
 package com.techvvs.inventory.viewcontroller
 
-import com.techvvs.inventory.jparepo.LocationRepo
+import com.techvvs.inventory.constants.MessageConstants
 import com.techvvs.inventory.jparepo.LocationRepo
 import com.techvvs.inventory.jparepo.LocationTypeRepo
-import com.techvvs.inventory.model.LocationTypeVO
 import com.techvvs.inventory.model.LocationVO
 import com.techvvs.inventory.service.auth.TechvvsAuthService
 import com.techvvs.inventory.validation.ValidateLocation
-import com.techvvs.inventory.validation.ValidateLocation
+import com.techvvs.inventory.viewcontroller.helper.LocationHelper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -28,6 +27,7 @@ public class LocationViewController {
 
 //    @Autowired LocationRepo locationRepo
     @Autowired LocationRepo locationRepo
+    @Autowired LocationHelper locationHelper
     @Autowired ValidateLocation validateLocation
     @Autowired TechvvsAuthService techvvsAuthService
     @Autowired LocationTypeRepo locationTypeRepo
@@ -40,9 +40,6 @@ public class LocationViewController {
                        @RequestParam("page") Optional<Integer> page,
                        @RequestParam("size") Optional<Integer> size
     ){
-
-
-
         LocationVO locationVOToBind;
         if(locationVO != null && locationVO.locationid != null){
             locationVOToBind = locationVO;
@@ -58,12 +55,10 @@ public class LocationViewController {
         return "admin/location.html";
     }
 
-
     @PostMapping ("/editLocation")
     String editLocation(@ModelAttribute( "location" ) LocationVO locationVO,
                      Model model,
                      HttpServletResponse response,
-                     
     @RequestParam("page") Optional<Integer> page,
     @RequestParam("size") Optional<Integer> size){
 
@@ -74,19 +69,15 @@ public class LocationViewController {
         System.out.println("authentication.getAuthorities: "+authentication.getAuthorities());
         System.out.println("----------------------- END AUTH INFO ");
 
-        String errorResult = validateLocation.validateNewFormInfo(locationVO);
-
         // Validation
-        if(!errorResult.equals("success")){
-            model.addAttribute("errorMessage",errorResult);
-        } else {
-
+        locationHelper.validateLocation(locationVO, model)
+        if (model.getAttribute(MessageConstants.ERROR_MSG) == null) {
             // when creating a new processData entry, set the last attempt visit to now - this may change in future
             locationVO.setUpdateTimeStamp(LocalDateTime.now());
 
             LocationVO result = locationRepo.save(locationVO);
 
-            model.addAttribute("successMessage","Record Successfully Saved.");
+            model.addAttribute  ("successMessage","Record Successfully Saved.");
             model.addAttribute("package", result);
         }
 
@@ -112,24 +103,19 @@ public class LocationViewController {
         System.out.println("authentication.getAuthorities: "+authentication.getAuthorities());
         System.out.println("----------------------- END AUTH INFO ");
 
-        String errorResult = validateLocation.validateNewFormInfo(locationVO);
-
-        // Validation
-        if(!errorResult.equals("success")){
-            model.addAttribute("disableupload","true"); // if there is an error submitting the new form we keep this disabled
-            model.addAttribute("errorMessage",errorResult);
-        } else {
-
+        locationHelper.validateLocation(locationVO, model)
+        if (model.getAttribute(MessageConstants.ERROR_MSG) == null) {
             // when creating a new processData entry, set the last attempt visit to now - this may change in future
             locationVO.setCreateTimeStamp(LocalDateTime.now());
             locationVO.setUpdateTimeStamp(LocalDateTime.now());
-
 
             //todo: add support for package types on the ui so we can save this package object
             LocationVO result = locationRepo.save(locationVO);
 
             model.addAttribute("successMessage","Record Successfully Saved. ");
             model.addAttribute("location", result);
+        } else {
+            model.addAttribute("disableupload","true"); // if there is an error submitting the new form we keep this disabled
         }
 
         model.addAttribute("locationtypes", locationTypeRepo.findAll());

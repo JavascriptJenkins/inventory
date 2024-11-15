@@ -33,7 +33,6 @@ class CustomerHelper {
 
     CustomerVO validateCustomer(CustomerVO customer, Model model){
 
-
         // first - validate against security issues
         stringSecurityValidator.validateStringValues(customer, model)
 
@@ -42,16 +41,7 @@ class CustomerHelper {
 
         // third - do any business logic / page specific validation below
 
-        // only going to enforce name for now
-        if(customer.name == null || customer.name?.empty
-        || customer.name.contains("==") || customer.name.contains("+")
-        ){
-            model.addAttribute("errorMessage","Please enter a valid name")
-            return customer
-        }
-
         return customer
-
     }
 
     // only enforcing the name for now...

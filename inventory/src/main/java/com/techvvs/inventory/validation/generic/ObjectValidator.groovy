@@ -1,11 +1,16 @@
 package com.techvvs.inventory.validation.generic
 
+import com.techvvs.inventory.constants.MessageConstants
+import com.techvvs.inventory.util.ModelMessageUtil
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import org.springframework.ui.Model
 
 @Component
 class ObjectValidator {
+
+    @Autowired
+    ModelMessageUtil modelMessageUtil
 
 
     // Validates the fields of the object and attaches an error message to the model if there are errors
@@ -15,7 +20,7 @@ class ObjectValidator {
         // If there are errors, concatenate them into a single message and add to the model
         if (!errors.isEmpty()) {
             String errorMessage = errors.values().join(' | ')
-            model.addAttribute("errorMessage", errorMessage)
+            modelMessageUtil.addMessage(model, MessageConstants.ERROR_MSG, errorMessage)
         }
     }
 
