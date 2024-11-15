@@ -179,8 +179,8 @@ public class TransactionViewController {
             transactionVO.product_list = transactionVO.product_list.findAll { product ->
                 product?.producttypeid?.producttypeid == Integer.valueOf(producttypeid.get())
             }
-            model.addAttribute("producttypeid", producttypeid.get())
         }
+        model.addAttribute("producttypeid", producttypeid.orElse("0"));
         transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO)
 
         model.addAttribute("customer", transactionVO.customervo)
@@ -199,30 +199,29 @@ public class TransactionViewController {
     @PostMapping("/discount")
     String postDiscount(
             Model model,
-
+            @ModelAttribute( "transaction" ) TransactionVO transactionVO,
             @RequestParam("transactionid") String transactionid,
             @RequestParam("barcode") String barcode,
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size
     ){
 
-        transactionid = transactionid == null ? "0" : String.valueOf(transactionid)
+      //  transactionid = transactionid == null ? "0" : String.valueOf(transactionid)
 
         // attach the paymentVO to the model
-        TransactionVO transactionVO = paymentHelper.loadTransaction(transactionid, model)
+     //   TransactionVO transactionVO = paymentHelper.loadTransaction(transactionid, model)
 
-        transactionVO = transactionHelper.deleteProductFromTransaction(transactionVO, barcode)
+     //   transactionVO = transactionHelper.deleteProductFromTransaction(transactionVO, barcode)
+
+
+
 
         transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO)
-
-        printerService.printInvoice(transactionVO, false, true) // print another invoice showing return...
-
-
+        printerService.printInvoice(transactionVO, false, true) // print another invoice showing discount...
         model.addAttribute("customer", transactionVO.customervo)
 
 
-        // fetch all customers from database and bind them to model
-        checkoutHelper.getAllCustomers(model)
+        model.addAttribute("producttypes", productTypeRepo.findAll()); // for the filter dropdown
         techvvsAuthService.checkuserauth(model)
         model.addAttribute("transactionid", transactionid);
         model.addAttribute("transaction", transactionVO);

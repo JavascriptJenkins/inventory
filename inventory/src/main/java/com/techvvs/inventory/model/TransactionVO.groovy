@@ -33,7 +33,7 @@ class TransactionVO implements Serializable {
     @JsonProperty
     @OneToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name="discountid")
-    DiscountVO discount
+    DiscountVO discount = new DiscountVO()
 
     @JsonProperty
     @ElementCollection(fetch = FetchType.LAZY)
