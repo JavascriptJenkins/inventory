@@ -119,11 +119,15 @@
         function processTableItems() {
             const seenBarcodes = new Set();
 
+            const tableRows = document.querySelectorAll("#appyDiscountTransactionForm tbody tr");
+            console.log("Total rows found:", tableRows.length);
+
+
             $('#appyDiscountTransactionForm tbody tr').each(function() {
                 const itemBarcode = $(this).data('barcode');
 
                 if (seenBarcodes.has(itemBarcode)) {
-                    $(this).remove(); // Delete the row if the barcode is already seen
+                    $(this).hide(); // Delete the row if the barcode is already seen
                 } else {
                     seenBarcodes.add(itemBarcode);
                     $(this).show(); // Ensure the row is visible (in case it was hidden previously)
