@@ -412,27 +412,27 @@ class TransactionService {
             TransactionVO transactionVO,
             String transactionid,
             Integer producttypeid
-    ){
-        // find and remove any existing discounts for the same producttype that is coming in as a new discount
-        // Only one "activediscount" discount per producttype is allowed, so we set any existing discounts
-        // for the transaction to inactive here before we process the new total.
-        // when setting discount to inactive, we also have to add the removed discount back to the total and totalwithtax
-        // before further processing
-        for(DiscountVO existingolddiscount : transactionVO.discount_list){
-            if(existingolddiscount.producttype.producttypeid == producttypeid && existingolddiscount.isactive == 1){
-                // this means we found a matching discount of same producttype that already exists
-                existingolddiscount.isactive = 0 // set to inactive
-                existingolddiscount.updateTimeStamp = LocalDateTime.now()
-                discountRepo.save(existingolddiscount) // save the discount as inactive
+    ) {
+        List<DiscountVO> discountsCopy = new ArrayList<>(transactionVO.getDiscount_list());
 
-                // update the transaction tied to the new discount (required to do this only if we found an existing discount above)
-                transactionVO = transactionRepo.findById(Integer.valueOf(transactionid)).get()
+        for (DiscountVO existingOldDiscount : discountsCopy) {
+            if (existingOldDiscount.getProducttype().getProducttypeid().equals(producttypeid)
+                    && existingOldDiscount.getIsactive() == 1) {
 
-                //recalculate the total and totalwithtax by adding the credit back from old discount of same producttypeid that is being removed
-                transactionVO = removeDiscountFromTransactionReCalcTotals(transactionVO, existingolddiscount)
+                // Deactivate the matching discount
+                existingOldDiscount.setIsactive(0);
+                existingOldDiscount.setUpdateTimeStamp(LocalDateTime.now());
+                discountRepo.save(existingOldDiscount);
+
+                // Re-fetch the transaction to ensure the latest state is loaded
+                transactionVO = transactionRepo.findById(Integer.valueOf(transactionid)).orElseThrow({ new EntityNotFoundException("Transaction not found: " + transactionid) });
+
+                // Recalculate totals by crediting back the removed discount
+                transactionVO = removeDiscountFromTransactionReCalcTotals(transactionVO, existingOldDiscount);
             }
         }
-        return transactionVO
+
+        return transactionVO;
     }
 
 
