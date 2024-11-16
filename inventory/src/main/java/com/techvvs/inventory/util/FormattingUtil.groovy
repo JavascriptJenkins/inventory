@@ -236,7 +236,23 @@ class FormattingUtil {
             }
         }
 
-        return Math.max(0, total + totaldiscountcredittoapply) // apply the per unit discount credit back to the total
+        double newtotal = Math.max(0, total - totaldiscountcredittoapply)
+
+        double totalpriceofthisgroupofproducts = 0.0
+
+        for(ProductVO productVO : product_list){
+            // check every product in the list, if it matches the producttype then increment the discount
+            if(productVO.producttypeid.producttypeid == productTypeVO.producttypeid){
+                Math.max(0, totalpriceofthisgroupofproducts += productVO.price)
+            }
+        }
+
+        // this ensures that the maximum credit they can get back is the price of this group of products
+        if(totalpriceofthisgroupofproducts > newtotal){
+            newtotal = totalpriceofthisgroupofproducts
+        }
+
+        return newtotal // apply the per unit discount credit back to the total
     }
 
 
