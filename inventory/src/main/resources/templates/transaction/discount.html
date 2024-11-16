@@ -340,15 +340,17 @@
                     <th>Item</th>
                     <th>Price</th>
                     <th>Quantity</th>
+                    <th>Discounted Price</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr th:each="item : ${transaction.product_list}" th:data-barcode="${item.barcode}">
                     <td th:text="${item.name}" data-barcode="${item.barcode}">Item Name</td>
-                    <td th:text="${mostRecentMatchingDiscount != null && mostRecentMatchingDiscount.discountid > 0 ? item.price - mostRecentMatchingDiscount.discountamount : item.price}">
-                        Price
-                    </td>
+                    <td th:text="${item.price}" data-barcode="${item.barcode}">Price</td>
                     <td th:text="${item.displayquantity}">Quantity</td>
+                    <td th:text="${mostRecentMatchingDiscount != null && mostRecentMatchingDiscount.discountid > 0 ? item.price - mostRecentMatchingDiscount.discountamount : item.price}">
+                        Discounted Price
+                    </td>
 <!--                    <td>-->
 <!--                        <a id="deleteItemID" href="#" onclick="deleteItemFromTransaction(this)">X</a>-->
 <!--                    </td>-->
