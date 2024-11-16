@@ -403,9 +403,19 @@
             <h6>
                 <span th:text="${transaction.createTimeStamp.toLocalDate()}"></span>
             </h6>
-            <h6 th:if="${transaction.discount}">
-                <p>Discount: <span th:text="${transaction.discount.name}"></span></p>
+            <h6 th:if="${transaction.discount_list}">
+                <ul>
+                    <li th:each="discount : ${transaction.discount_list}" th:if="${discount.isactive != 0}">
+                        Discounts:
+                        <p>
+                            <span th:text="${discount.name}"></span> |
+                            Amount: <span th:text="${discount.discountamount}"></span>
+                        </p>
+                    </li>
+                </ul>
             </h6>
+
+
         </div>
         <div class="col-md-4">
             <h3><a class="btn btn-secondary headerbutton btn-lg" th:href="@{/transaction/delivery?size=5&page=1&transactionid=__${transaction.transactionid}__&popup=1}">Delivery</a></h3>
@@ -424,6 +434,9 @@
                     <th>Item</th>
                     <th>Price</th>
                     <th>Quantity</th>
+                    <th th:if="${transaction.discount_list.?[isactive == 1]?.size() > 0}">
+                        Discounted Price
+                    </th>
                 </tr>
                 </thead>
                 <tbody>
@@ -431,6 +444,12 @@
                     <td th:text="${item.name}">Item Name</td>
                     <td th:text="${item.price}">Price</td>
                     <td th:text="${item.displayquantity}">Quantity</td>
+                    <td th:if="${transaction.discount_list.?[isactive == 1]?.size() > 0}">
+                        <span th:each="discount : ${transaction.discount_list}"
+                              th:if="${discount.producttype?.producttypeid == item.producttypeid?.producttypeid && discount.isactive == 1}"
+                              th:text="${item.price - discount.discountamount}">
+                        </span>
+                    </td>
                 </tr>
                 </tbody>
             </table>

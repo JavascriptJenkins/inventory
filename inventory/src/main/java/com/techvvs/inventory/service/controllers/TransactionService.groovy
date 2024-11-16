@@ -391,7 +391,7 @@ class TransactionService {
         DiscountVO newDiscount = new DiscountVO();
         newDiscount.setDiscountamount(incomingDiscount.getDiscountamount());
         newDiscount.setProducttype(producttypevo);
-        newDiscount.setName("Transaction Discount");
+        newDiscount.setName("ProductType: " + producttypevo.name)
         newDiscount.setDescription("Discount applied based on product type");
         newDiscount.setIsactive(1);
         newDiscount.setTransaction(transaction);
