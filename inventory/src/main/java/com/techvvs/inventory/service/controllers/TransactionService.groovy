@@ -265,27 +265,29 @@ class TransactionService {
     @Transactional
     TransactionVO removeDiscountFromTransactionReCalcTotals(TransactionVO transactionVO, DiscountVO removedDiscount) {
         double originaldiscountedtotal = transactionVO.total
-        transactionVO.total = formattingUtil.calculateTotalWithRemovedDiscountAmountPerUnitByProductType(
+        transactionVO.total = Math.max(0, formattingUtil.calculateTotalWithRemovedDiscountAmountPerUnitByProductType(
                 transactionVO.total,
                 removedDiscount.discountamount,
                 removedDiscount.producttype,
                 transactionVO.product_list
-        )
+        ));
         transactionVO.total < 0 ? 0 : transactionVO.total // make sure it doesnt go below 0 for some reason...
 
 
         // calculate the totalDiscountAmount based on quantityofunitsofsameproducttype * discountamount
-        double totalDiscountAmount = calculateTotalDiscountAmount(
+        double totalDiscountAmount = Math.max(0, calculateTotalDiscountAmount(
                 transactionVO.product_list,
                 removedDiscount.producttype,
                 removedDiscount.discountamount
-        )
+        ));
 
         // here set the new transaction totalwithtax field based on the new total we just calculated
-        transactionVO.totalwithtax = formattingUtil.calculateTotalWithTaxBasedOnTotalDiscountAmountForDiscountRemoval(
+        transactionVO.totalwithtax = Math.max(0, formattingUtil.calculateTotalWithTaxBasedOnTotalDiscountAmountForDiscountRemoval(
                 originaldiscountedtotal,
                 0.0,
-                totalDiscountAmount)
+                totalDiscountAmount
+        ));
+
 
         return transactionVO
     }
@@ -295,27 +297,28 @@ class TransactionService {
     TransactionVO applyDiscountToTransaction(TransactionVO transactionVO, int index) {
 
         double originaldiscountedtotal = transactionVO.total
-        transactionVO.total = formattingUtil.calculateTotalWithDiscountAmountPerUnitByProductType(
+        transactionVO.total = Math.max(0, formattingUtil.calculateTotalWithDiscountAmountPerUnitByProductType(
                 transactionVO.total,
                 transactionVO.discount_list[index].discountamount,
                 transactionVO.discount_list[index].producttype,
                 transactionVO.product_list
-        )
+        ));
         transactionVO.total < 0 ? 0 : transactionVO.total // make sure it doesnt go below 0 for some reason...
 
 
         // calculate the totalDiscountAmount based on quantityofunitsofsameproducttype * discountamount
-        double totalDiscountAmount = calculateTotalDiscountAmount(
+        double totalDiscountAmount = Math.max(0, calculateTotalDiscountAmount(
                 transactionVO.product_list,
                 transactionVO.discount_list[index].producttype,
                 transactionVO.discount_list[index].discountamount
-        )
+        ));
 
         // here set the new transaction totalwithtax field based on the new total we just calculated
-        transactionVO.totalwithtax = formattingUtil.calculateTotalWithTaxBasedOnTotalDiscountAmount(
-                originaldiscountedtotal, // need to pass this variable in because the total was modified by the calculateTotalWithDiscountAmountPerUnitByProductType method above first
+        transactionVO.totalwithtax = Math.max(0, formattingUtil.calculateTotalWithTaxBasedOnTotalDiscountAmount(
+                originaldiscountedtotal, // Passing original discounted total since total was modified earlier
                 0.0,
-                totalDiscountAmount)
+                totalDiscountAmount
+        ));
 
         return transactionVO
     }
@@ -331,7 +334,7 @@ class TransactionService {
         for(ProductVO productVO : product_list){
             // check every product in the list, if it matches the producttype then increment the discount
             if(productVO.producttypeid.producttypeid == productTypeVO.producttypeid){
-                totaldiscounttoapply += perunitdiscount
+                Math.max(0,totaldiscounttoapply += perunitdiscount)
             }
         }
         return totaldiscounttoapply

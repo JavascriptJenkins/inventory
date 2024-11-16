@@ -21,7 +21,7 @@ class DiscountVO implements Serializable {
     @JsonProperty
     Double discountamount = 0
 
-    // todo: delete this from app
+    // todo: delete this from app0.0
     @JsonProperty
     Double discountpercentage = 0
 

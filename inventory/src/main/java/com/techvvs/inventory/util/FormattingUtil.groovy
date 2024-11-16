@@ -42,7 +42,7 @@ class FormattingUtil {
         }
 
         // Apply the total discount amount directly
-        double discountedTotal = total - totalDiscountAmount;
+        double discountedTotal = Math.max(0,total - totalDiscountAmount);
 
         // Ensure the discounted total is not less than zero
         if (discountedTotal < 0) {
@@ -50,10 +50,10 @@ class FormattingUtil {
         }
 
         // Calculate the tax amount on the discounted total
-        double taxAmount = discountedTotal * (taxPercentage / 100.0);
+        double taxAmount = Math.max(0,discountedTotal * (taxPercentage / 100.0));
 
         // Calculate the total with tax
-        double totalWithTax = discountedTotal + taxAmount;
+        double totalWithTax = Math.max(0,discountedTotal + taxAmount);
 
         // Round to 2 decimal places for currency precision
         return Math.round(totalWithTax * 100.0) / 100.0;
@@ -71,7 +71,7 @@ class FormattingUtil {
         }
 
         // Apply the total discount amount credit back to the total
-        double discountedTotal = total + totalDiscountAmount;
+        double discountedTotal = Math.max(0,total + totalDiscountAmount);
 
         // Ensure the discounted total is not less than zero
         if (discountedTotal < 0) {
@@ -79,10 +79,10 @@ class FormattingUtil {
         }
 
         // Calculate the tax amount on the discounted total
-        double taxAmount = discountedTotal * (taxPercentage / 100.0);
+        double taxAmount = Math.max(0,discountedTotal * (taxPercentage / 100.0));
 
         // Calculate the total with tax
-        double totalWithTax = discountedTotal + taxAmount;
+        double totalWithTax = Math.max(0,discountedTotal + taxAmount);
 
         // Round to 2 decimal places for currency precision
         return Math.round(totalWithTax * 100.0) / 100.0;
@@ -185,7 +185,7 @@ class FormattingUtil {
         }
 
         // Apply the discount to the total
-        double discountedTotal = total - discountAmount;
+        double discountedTotal = Math.max(0,total - discountAmount)
 
         // Ensure the discounted total is not less than zero
         if (discountedTotal < 0) {
@@ -211,11 +211,11 @@ class FormattingUtil {
         for(ProductVO productVO : product_list){
             // check every product in the list, if it matches the producttype then increment the discount
             if(productVO.producttypeid.producttypeid == productTypeVO.producttypeid){
-                totaldiscounttoapply += perunitdiscount
+                Math.max(0,totaldiscounttoapply += perunitdiscount)
             }
         }
 
-        return (total - totaldiscounttoapply) // apply the per unit discount to the total
+        return Math.max(0, total - totaldiscounttoapply) // apply the per unit discount to the total
     }
 
     // This method removes a discount and applies a per unit credit back to transaction.total and transaction.totalwithtax
@@ -232,11 +232,11 @@ class FormattingUtil {
         for(ProductVO productVO : product_list){
             // check every product in the list, if it matches the producttype then increment the discount
             if(productVO.producttypeid.producttypeid == productTypeVO.producttypeid){
-                totaldiscountcredittoapply += perunitdiscount
+                Math.max(0, totaldiscountcredittoapply += perunitdiscount)
             }
         }
 
-        return (total + totaldiscountcredittoapply) // apply the per unit discount credit back to the total
+        return Math.max(0, total + totaldiscountcredittoapply) // apply the per unit discount credit back to the total
     }
 
 
@@ -254,11 +254,11 @@ class FormattingUtil {
         for(ProductVO productVO : product_list){
             // check every product in the list, if it matches the producttype then increment the discount
             if(productVO.producttypeid.producttypeid == productTypeVO.producttypeid){
-                totaldiscounttoapply += perunitdiscount
+                Math.max(0, totaldiscounttoapply += perunitdiscount)
             }
         }
 
-        return (totalwithtax - totaldiscounttoapply) // apply the per unit discount to the total
+        return Math.max(0,totalwithtax - totaldiscounttoapply) // apply the per unit discount to the total
 
     }
 
@@ -275,7 +275,7 @@ class FormattingUtil {
         }
 
         // Apply the discount to the total
-        double discountedTotal = total - discount;
+        double discountedTotal = Math.max(0,total - discount);
 
         // Ensure the discounted total is not less than zero
         if (discountedTotal < 0) {
@@ -283,7 +283,7 @@ class FormattingUtil {
         }
 
         // Calculate the tax amount on the discounted total
-        double taxAmount = discountedTotal * (taxPercentage / 100.0);
+        double taxAmount = Math.max(0,discountedTotal * (taxPercentage / 100.0));
 
         // Round to 2 decimal places
         return Math.round(taxAmount * 100.0) / 100.0;
