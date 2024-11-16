@@ -295,10 +295,10 @@ class TransactionService {
 
     // apply discount to each discount instance
     @Transactional
-    TransactionVO applyDiscountToTransaction(TransactionVO transactionVO, int index) {
+    TransactionVO applyDiscountToTransaction(TransactionVO transactionVO, int index, double originaltransactiontotal) {
 
         // Store the original discounted total
-        double originalDiscountedTotal = transactionVO.total;
+        double originalDiscountedTotal = originaltransactiontotal;
 
         // Update the transaction total with the applied discount, clamping the value to 0
         transactionVO.total = Math.max(0, formattingUtil.calculateTotalWithDiscountAmountPerUnitByProductType(
@@ -402,9 +402,12 @@ class TransactionService {
     }
 
     private TransactionVO applyAllDiscountsToTransaction(TransactionVO transaction) {
+
+        double originaltransactiontotal = transaction.total
+
         for (int i = 0; i < transaction.getDiscount_list().size(); i++) {
             if (transaction.getDiscount_list().get(i).getIsactive() == 1) {
-                transaction = applyDiscountToTransaction(transaction, i);
+                transaction = applyDiscountToTransaction(transaction, i, originaltransactiontotal);
             }
         }
         return transaction;
