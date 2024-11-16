@@ -349,7 +349,7 @@ class TransactionService {
 
 
     @Transactional
-    public TransactionVO executeApplyDiscountToTransaction(TransactionVO transactionVO, String transactionid, Optional<String> producttypeid) {
+    public TransactionVO executeApplyDiscountToTransaction(TransactionVO transactionVO, String transactionid, ProductTypeVO producttypevo) {
         // Move business logic to service layer
         TransactionVO existingTransaction = transactionRepo.findById(Integer.valueOf(transactionid)).orElseThrow({ new EntityNotFoundException("Transaction not found: " + transactionid) });
 
@@ -357,12 +357,13 @@ class TransactionService {
         existingTransaction = checkForExistingDiscountOfSameProducttypeAndCreditBackToTransactionTotals(
                 existingTransaction,
                 transactionid,
-                Integer.valueOf(producttypeid.orElseThrow({ new IllegalArgumentException("Product Type ID is required") }))
+                Integer.valueOf(producttypevo.producttypeid)
         );
 
-        if (transactionVO.getDiscount().getDiscountamount() > 0 && producttypeid.isPresent()) {
+        if (transactionVO.getDiscount().getDiscountamount() > 0) {
+
             // Prepare new discount
-            DiscountVO newDiscount = createDiscount(transactionVO.getDiscount(), existingTransaction, Integer.valueOf(producttypeid.get()));
+            DiscountVO newDiscount = createDiscount(transactionVO.getDiscount(), existingTransaction, producttypevo);
 
             // Save the new discount
             DiscountVO savedDiscount = discountRepo.save(newDiscount);
@@ -380,13 +381,16 @@ class TransactionService {
         return transactionVO;
     }
 
-    private DiscountVO createDiscount(DiscountVO incomingDiscount, TransactionVO transaction, Integer productTypeId) {
-        ProductTypeVO productType = productTypeRepo.findById(productTypeId).orElseThrow({ new EntityNotFoundException("Product Type not found: " + productTypeId) });
+    private DiscountVO createDiscount(
+            DiscountVO incomingDiscount,
+            TransactionVO transaction,
+            ProductTypeVO producttypevo
+    ) {
 
 
         DiscountVO newDiscount = new DiscountVO();
         newDiscount.setDiscountamount(incomingDiscount.getDiscountamount());
-        newDiscount.setProducttype(productType);
+        newDiscount.setProducttype(producttypevo);
         newDiscount.setName("Transaction Discount");
         newDiscount.setDescription("Discount applied based on product type");
         newDiscount.setIsactive(1);

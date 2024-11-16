@@ -201,6 +201,11 @@ public class TransactionViewController {
         model.addAttribute("producttypes", productTypeRepo.findAll()); // for the filter dropdown
         model.addAttribute("transaction", transactionVO);
 
+        if(producttypeid.isPresent()){
+            DiscountVO mostRecentMatchingDiscount = findMostRecentDiscountByProductType(transactionVO, Integer.valueOf(producttypeid.get()))
+            model.addAttribute("mostRecentMatchingDiscount", mostRecentMatchingDiscount != null ? mostRecentMatchingDiscount : new DiscountVO(discountid: 0));
+        }
+
         techvvsAuthService.checkuserauth(model)
         model.addAttribute("transactionid", transactionid);
         return "transaction/discount.html";
@@ -217,26 +222,43 @@ public class TransactionViewController {
             @RequestParam("size") Optional<Integer> size
     ){
 
-
+        ProductTypeVO productTypeVO = productTypeRepo.findById(Integer.valueOf(producttypeid.orElse("0"))).get()
         // apply the discount based on producttypeid to all products of that type
-        transactionVO = transactionService.executeApplyDiscountToTransaction(transactionVO, transactionid, producttypeid)
+        transactionVO = transactionService.executeApplyDiscountToTransaction(transactionVO, transactionid, productTypeVO)
 
         transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO)
         printerService.printInvoice(transactionVO, false, true) // print another invoice showing discount...
         model.addAttribute("customer", transactionVO.customervo)
 
 
-        ProductTypeVO productTypeVO = productTypeRepo.findById(Integer.valueOf(producttypeid.orElse("0"))).get()
         model.addAttribute("producttypes", productTypeRepo.findAll()); // for the filter dropdown
         techvvsAuthService.checkuserauth(model)
         model.addAttribute("transactionid", transactionid);
         model.addAttribute("transaction", transactionVO);
         model.addAttribute("producttypeid", producttypeid.orElse("0"));
         // Get the most recent discount
+
+        if(producttypeid.isPresent()){
+            DiscountVO mostRecentMatchingDiscount = findMostRecentDiscountByProductType(transactionVO, Integer.valueOf(producttypeid.get()))
+            model.addAttribute("mostRecentMatchingDiscount", mostRecentMatchingDiscount != null ? mostRecentMatchingDiscount : new DiscountVO(discountid: 0));
+        }
+
         def mostRecentDiscount = transactionVO.discount_list.max { it.createTimeStamp }
         model.addAttribute("successMessage", "Applied discount of: "+mostRecentDiscount.discountamount+" per unit to product type: "+productTypeVO.name);
 
         return "transaction/discount.html";
+    }
+
+
+    DiscountVO findMostRecentDiscountByProductType(TransactionVO transactionVO, int producttypeid) {
+        if (!transactionVO?.discount_list) {
+            return null // Return null if discount_list is null or empty
+        }
+
+        // Filter discounts by producttypeid and isactive == 1, then find the most recent one
+        return transactionVO.discount_list.findAll {
+            it.producttype?.producttypeid == producttypeid && it.isactive == 1
+        }?.max { it.createTimeStamp }
     }
 
 
