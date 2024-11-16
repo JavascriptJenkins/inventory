@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
 
+import javax.persistence.EntityNotFoundException
 import javax.transaction.Transactional
 import java.time.LocalDateTime
 
@@ -296,31 +297,35 @@ class TransactionService {
     @Transactional
     TransactionVO applyDiscountToTransaction(TransactionVO transactionVO, int index) {
 
-        double originaldiscountedtotal = transactionVO.total
+        // Store the original discounted total
+        double originalDiscountedTotal = transactionVO.total;
+
+        // Update the transaction total with the applied discount, clamping the value to 0
         transactionVO.total = Math.max(0, formattingUtil.calculateTotalWithDiscountAmountPerUnitByProductType(
                 transactionVO.total,
                 transactionVO.discount_list[index].discountamount,
                 transactionVO.discount_list[index].producttype,
                 transactionVO.product_list
         ));
-        transactionVO.total < 0 ? 0 : transactionVO.total // make sure it doesnt go below 0 for some reason...
 
+        // Redundant line removed: transactionVO.total < 0 ? 0 : transactionVO.total
+        // Math.max already ensures it doesn't go below 0.
 
-        // calculate the totalDiscountAmount based on quantityofunitsofsameproducttype * discountamount
+        // Calculate the total discount amount based on the product list and discount parameters
         double totalDiscountAmount = Math.max(0, calculateTotalDiscountAmount(
                 transactionVO.product_list,
                 transactionVO.discount_list[index].producttype,
                 transactionVO.discount_list[index].discountamount
         ));
 
-        // here set the new transaction totalwithtax field based on the new total we just calculated
+        // Update the totalWithTax field based on the recalculated totals, clamping it to 0
         transactionVO.totalwithtax = Math.max(0, formattingUtil.calculateTotalWithTaxBasedOnTotalDiscountAmount(
-                originaldiscountedtotal, // Passing original discounted total since total was modified earlier
+                originalDiscountedTotal,
                 0.0,
                 totalDiscountAmount
         ));
 
-        return transactionVO
+        return transactionVO;
     }
 
     @Transactional
@@ -344,51 +349,63 @@ class TransactionService {
 
 
     @Transactional
-    TransactionVO executeApplyDiscountToTransaction(TransactionVO transactionVO, String transactionid, Optional<String> producttypeid){
-        // todo: move this to a service class
+    public TransactionVO executeApplyDiscountToTransaction(TransactionVO transactionVO, String transactionid, Optional<String> producttypeid) {
+        // Move business logic to service layer
+        TransactionVO existingTransaction = transactionRepo.findById(Integer.valueOf(transactionid)).orElseThrow({ new EntityNotFoundException("Transaction not found: " + transactionid) });
 
-        TransactionVO existingTransaction = transactionRepo.findById(Integer.valueOf(transactionid)).get()
-        //before we do anything, remove any old discounts that match incoming producttypeid
+        // Remove existing discounts of the same product type
         existingTransaction = checkForExistingDiscountOfSameProducttypeAndCreditBackToTransactionTotals(
                 existingTransaction,
                 transactionid,
-                Integer.valueOf(producttypeid.get())
-        )
+                Integer.valueOf(producttypeid.orElseThrow({ new IllegalArgumentException("Product Type ID is required") }))
+        );
 
-        // grab the discount in scope
-        DiscountVO newdiscount = new DiscountVO()
-        DiscountVO saveddiscount = new DiscountVO()
-        if(transactionVO.discount.discountamount > 0 && producttypeid.isPresent()){
-            newdiscount = transactionVO.discount
-            newdiscount.setProducttype(productTypeRepo.findById(Integer.valueOf(producttypeid.get())).get())
-            newdiscount.name = "Transaction Discount"
-            newdiscount.description = "discount applied based on producttype"
-            newdiscount.isactive = 1 // set incoming new discount to active
-            newdiscount.transaction = existingTransaction
-            newdiscount.createTimeStamp = LocalDateTime.now()
-            newdiscount.updateTimeStamp = LocalDateTime.now()
-            saveddiscount = discountRepo.save(newdiscount) // save the new discount tied to transaction
+        if (transactionVO.getDiscount().getDiscountamount() > 0 && producttypeid.isPresent()) {
+            // Prepare new discount
+            DiscountVO newDiscount = createDiscount(transactionVO.getDiscount(), existingTransaction, Integer.valueOf(producttypeid.get()));
 
+            // Save the new discount
+            DiscountVO savedDiscount = discountRepo.save(newDiscount);
 
-            // todo: run all the logic on the numbers of the discount on the transaction.
-            // todo: make a method that cycles through all the discounts in the list of transaction and then applies them.
-            saveddiscount.transaction.discount_list.add(saveddiscount) // add the discount to list of discounts on transaction
+            // Add the new discount to the transaction's discount list
+            savedDiscount.getTransaction().getDiscount_list().add(savedDiscount);
 
-            // insert method here to apply all discount logic
-            // now that new discount has been added to the list, calculate the new total based on all discounts
-            for(int i =0; i < saveddiscount.transaction.discount_list.size(); i++){
-                if(saveddiscount.transaction.discount_list[i].isactive == 1){
-                    saveddiscount.transaction = applyDiscountToTransaction(saveddiscount.transaction, i)
-                }
-            }
+            // Apply discounts to the transaction
+            savedDiscount.setTransaction(applyAllDiscountsToTransaction(savedDiscount.getTransaction()));
 
-           // saveddiscount = discountRepo.save(newdiscount)
-            transactionVO = transactionRepo.save(saveddiscount.transaction) // update the transaction
+            // Save the updated transaction
+            transactionVO = transactionRepo.save(savedDiscount.getTransaction());
         }
 
-        return transactionVO
-
+        return transactionVO;
     }
+
+    private DiscountVO createDiscount(DiscountVO incomingDiscount, TransactionVO transaction, Integer productTypeId) {
+        ProductTypeVO productType = productTypeRepo.findById(productTypeId).orElseThrow({ new EntityNotFoundException("Product Type not found: " + productTypeId) });
+
+
+        DiscountVO newDiscount = new DiscountVO();
+        newDiscount.setDiscountamount(incomingDiscount.getDiscountamount());
+        newDiscount.setProducttype(productType);
+        newDiscount.setName("Transaction Discount");
+        newDiscount.setDescription("Discount applied based on product type");
+        newDiscount.setIsactive(1);
+        newDiscount.setTransaction(transaction);
+        newDiscount.setCreateTimeStamp(LocalDateTime.now());
+        newDiscount.setUpdateTimeStamp(LocalDateTime.now());
+
+        return newDiscount;
+    }
+
+    private TransactionVO applyAllDiscountsToTransaction(TransactionVO transaction) {
+        for (int i = 0; i < transaction.getDiscount_list().size(); i++) {
+            if (transaction.getDiscount_list().get(i).getIsactive() == 1) {
+                transaction = applyDiscountToTransaction(transaction, i);
+            }
+        }
+        return transaction;
+    }
+
 
     @Transactional
     TransactionVO checkForExistingDiscountOfSameProducttypeAndCreditBackToTransactionTotals(
