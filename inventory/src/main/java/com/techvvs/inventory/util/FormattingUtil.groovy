@@ -42,7 +42,7 @@ class FormattingUtil {
         }
 
         // Apply the total discount amount directly
-        double discountedTotal = Math.max(0,total - totalDiscountAmount);
+        double discountedTotal = Math.max(0, totalDiscountAmount);
 
         // Ensure the discounted total is not less than zero
         if (discountedTotal < 0) {
@@ -215,19 +215,19 @@ class FormattingUtil {
             }
         }
 
-        return Math.max(0, total - totaldiscounttoapply) // apply the per unit discount to the total
+        //return Math.max(0, total - totaldiscounttoapply) // apply the per unit discount to the total
+        return Math.max(0, totaldiscounttoapply) // apply the per unit discount to the total
     }
 
     // This method removes a discount and applies a per unit credit back to transaction.total and transaction.totalwithtax
     public static double calculateTotalWithRemovedDiscountAmountPerUnitByProductType(
             double total,
-            double discountAmount,
+            double perunitdiscount,
             ProductTypeVO productTypeVO,
             List<ProductVO> product_list
     ) {
 
         Double totaldiscountcredittoapply = 0.00
-        Double perunitdiscount = discountAmount
 
         for(ProductVO productVO : product_list){
             // check every product in the list, if it matches the producttype then increment the discount
@@ -236,7 +236,7 @@ class FormattingUtil {
             }
         }
 
-        double newtotal = Math.max(0, total - totaldiscountcredittoapply)
+        double newtotal = Math.max(0, total + totaldiscountcredittoapply)
 
         double totalpriceofthisgroupofproducts = 0.0
 

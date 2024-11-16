@@ -12,6 +12,7 @@ import com.techvvs.inventory.model.PackageVO
 import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.TransactionVO
+import com.techvvs.inventory.model.nonpersist.Totals
 import com.techvvs.inventory.printers.PrinterService
 import com.techvvs.inventory.util.FormattingUtil
 import com.techvvs.inventory.util.TechvvsAppUtil
@@ -264,10 +265,16 @@ class TransactionService {
 
     // remove discount and credit back to the original total and totalwithtax to each discount instance
     @Transactional
-    TransactionVO removeDiscountFromTransactionReCalcTotals(TransactionVO transactionVO, DiscountVO removedDiscount) {
-        double originaldiscountedtotal = transactionVO.total
+    TransactionVO removeDiscountFromTransactionReCalcTotals(
+            TransactionVO transactionVO,
+            DiscountVO removedDiscount,
+            double originaltransactionamount,
+            double currenttransactionamount
+
+    ) {
+
         transactionVO.total = Math.max(0, formattingUtil.calculateTotalWithRemovedDiscountAmountPerUnitByProductType(
-                transactionVO.total,
+                currenttransactionamount,
                 removedDiscount.discountamount,
                 removedDiscount.producttype,
                 transactionVO.product_list
@@ -284,7 +291,7 @@ class TransactionService {
 
         // here set the new transaction totalwithtax field based on the new total we just calculated
         transactionVO.totalwithtax = Math.max(0, formattingUtil.calculateTotalWithTaxBasedOnTotalDiscountAmountForDiscountRemoval(
-                originaldiscountedtotal,
+                currenttransactionamount,
                 0.0,
                 totalDiscountAmount
         ));
@@ -295,18 +302,27 @@ class TransactionService {
 
     // apply discount to each discount instance
     @Transactional
-    TransactionVO applyDiscountToTransaction(TransactionVO transactionVO, int index, double originaltransactiontotal) {
+    TransactionVO applyDiscountToTransaction(
+            TransactionVO transactionVO,
+            int index,
+            double originaltransactiontotal,
+            double currenttotal,
+            Totals totals
+    ) {
 
-        // Store the original discounted total
-        double originalDiscountedTotal = originaltransactiontotal;
 
+        // todo: this needs to keep a running tally of all the discounts that are applied as they go thru the loop
         // Update the transaction total with the applied discount, clamping the value to 0
-        transactionVO.total = Math.max(0, formattingUtil.calculateTotalWithDiscountAmountPerUnitByProductType(
-                transactionVO.total,
+        //transactionVO.total = Math.max(0, formattingUtil.calculateTotalWithDiscountAmountPerUnitByProductType(
+        double total = Math.max(0, formattingUtil.calculateTotalWithDiscountAmountPerUnitByProductType(
+                originaltransactiontotal, // not using this delete it
                 transactionVO.discount_list[index].discountamount,
                 transactionVO.discount_list[index].producttype,
                 transactionVO.product_list
         ));
+
+        // add the discount for this producttype for subtraction from the originaltotal after this loop processes
+        totals.listOfDiscountsToApplyToTotal.add(total)
 
         // Redundant line removed: transactionVO.total < 0 ? 0 : transactionVO.total
         // Math.max already ensures it doesn't go below 0.
@@ -319,11 +335,18 @@ class TransactionService {
         ));
 
         // Update the totalWithTax field based on the recalculated totals, clamping it to 0
-        transactionVO.totalwithtax = Math.max(0, formattingUtil.calculateTotalWithTaxBasedOnTotalDiscountAmount(
-                originalDiscountedTotal,
+        double totalWithTax = Math.max(0, formattingUtil.calculateTotalWithTaxBasedOnTotalDiscountAmount(
+                currenttotal,
                 0.0,
                 totalDiscountAmount
         ));
+
+        // add the discount for this producttype for subtraction from the originaltotal after this loop processes
+        totals.listOfDiscountsToApplyToTotalWithTax.add(totalWithTax)
+
+
+        // add the discount for this producttype for subtraction from the originaltotal after this loop processes
+        //totals.listOfDiscountsToApplyToTotal.add(total)
 
         return transactionVO;
     }
@@ -372,7 +395,7 @@ class TransactionService {
             savedDiscount.getTransaction().getDiscount_list().add(savedDiscount);
 
             // Apply discounts to the transaction
-            savedDiscount.setTransaction(applyAllDiscountsToTransaction(savedDiscount.getTransaction()));
+            savedDiscount.setTransaction(applyAllDiscountsToTransaction(savedDiscount.getTransaction(), savedDiscount.getTransaction().originalprice, savedDiscount.getTransaction().total));
 
             // Save the updated transaction
             transactionVO = transactionRepo.save(savedDiscount.getTransaction());
@@ -401,15 +424,36 @@ class TransactionService {
         return newDiscount;
     }
 
-    private TransactionVO applyAllDiscountsToTransaction(TransactionVO transaction) {
+    private TransactionVO applyAllDiscountsToTransaction(
+            TransactionVO transaction,
+                                                         double originaltransactionamount,
+                                                         double currenttotal
+    ) {
 
-        double originaltransactiontotal = transaction.total
 
+        Totals totals = new Totals()
         for (int i = 0; i < transaction.getDiscount_list().size(); i++) {
             if (transaction.getDiscount_list().get(i).getIsactive() == 1) {
-                transaction = applyDiscountToTransaction(transaction, i, originaltransactiontotal);
+                transaction = applyDiscountToTransaction(transaction, i, originaltransactionamount, currenttotal, totals);
             }
         }
+
+        double totaldiscounttosubstractfromtotal = 0.00
+        double totaldiscounttosubstractfromtotalwithtax = 0.00
+        // we should be updating the total and total withtax here, after whole loop runs
+        for(double discountamount: totals.listOfDiscountsToApplyToTotal){
+            totaldiscounttosubstractfromtotal += discountamount
+        }
+
+        for(double discountamount: totals.listOfDiscountsToApplyToTotalWithTax){
+            totaldiscounttosubstractfromtotalwithtax += discountamount
+        }
+
+
+        transaction.total = transaction.originalprice - totaldiscounttosubstractfromtotal
+        transaction.totalwithtax = transaction.originalprice - totaldiscounttosubstractfromtotalwithtax
+
+
         return transaction;
     }
 
@@ -435,7 +479,7 @@ class TransactionService {
                 transactionVO = transactionRepo.findById(Integer.valueOf(transactionid)).orElseThrow({ new EntityNotFoundException("Transaction not found: " + transactionid) });
 
                 // Recalculate totals by crediting back the removed discount
-                transactionVO = removeDiscountFromTransactionReCalcTotals(transactionVO, existingOldDiscount);
+                transactionVO = removeDiscountFromTransactionReCalcTotals(transactionVO, existingOldDiscount, transactionVO.originalprice, transactionVO.total);
             }
         }
 
