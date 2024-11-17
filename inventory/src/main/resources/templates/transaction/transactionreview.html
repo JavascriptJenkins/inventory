@@ -407,26 +407,34 @@
                 <ul>
                     Discounts:
                     <li th:each="discount : ${transaction.discount_list}" th:if="${discount.isactive != 0}">
-                        <p>
                             <span th:text="${discount.name}"></span> |
                             Amount: <span th:text="${discount.discountamount}"></span>
-                        </p>
                     </li>
                 </ul>
             </h6>
+            <h6 th:if="${groupedReturns}">
+                <ul>
+                    Returns:
+                    <li th:each="entry : ${groupedReturns}">
+                        <span th:text="${entry.key.name}"></span> |
+                        x<span th:text="${entry.value}"></span> |
+                        <span th:text="${entry.key.createTimeStamp.toLocalDate()}"></span>
+                    </li>
+                </ul>
+            </h6>
+
             <h6 th:if="${transaction.payment_list}">
                 <ul>
                     Payments:
                     <li th:each="payment : ${transaction.payment_list}">
-                        <p>
                             <span th:text="${payment.paymenttype}"></span> |
                             <span th:text="${payment.amountpaid}"></span> |
                             <span th:text="${payment.createTimeStamp.toLocalDate()}"></span> |
                             ID: <span th:text="${payment.paymentid}"></span>
-                        </p>
                     </li>
                 </ul>
             </h6>
+
 
 
         </div>

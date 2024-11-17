@@ -146,7 +146,7 @@ class CheckoutHelper {
 
 
 
-    TransactionVO hydrateTransientQuantitiesForTransactionDisplay(TransactionVO transactionVO) {
+    TransactionVO hydrateTransientQuantitiesForTransactionDisplay(TransactionVO transactionVO, Model model) {
         int totalDisplayQuantity = 0
 
         // run a sort on the product list right here
@@ -183,7 +183,18 @@ class CheckoutHelper {
 
         transactionVO.displayquantitytotal = totalDisplayQuantity
 
+        // now group the returns
+        transactionVO =sortAndGroupReturns(transactionVO, model)
+
         return transactionVO;
+    }
+
+    TransactionVO sortAndGroupReturns(TransactionVO transactionVO, Model model){
+        // Group and count returns by product
+        def groupedReturns = transactionVO.return_list.groupBy { it.product.product_id }
+                .collectEntries { key, value -> [(value[0].product): value.size()] }
+        model.addAttribute("groupedReturns", groupedReturns);
+        return transactionVO
     }
 
     TransactionVO bindtransients(TransactionVO transactionVO, String phone, String email, String action){

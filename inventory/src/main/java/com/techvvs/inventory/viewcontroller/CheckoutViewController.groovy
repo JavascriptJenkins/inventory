@@ -359,7 +359,7 @@ public class CheckoutViewController {
             filePagingService.bindPageAttributesToModel(model, filePage, page, size);
             // end file paging
 
-            transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO)
+            transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO, model)
 
             printerService.printInvoice(transactionVO, false, true)
 
@@ -390,7 +390,7 @@ public class CheckoutViewController {
 
             transactionVO = transactionService.getExistingTransaction(transactionVO.transactionid)
 
-            transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO)
+            transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO, model)
 
             printerService.printReceipt(transactionVO)
 
@@ -438,7 +438,7 @@ public class CheckoutViewController {
 
             transactionVO = transactionService.getExistingTransaction(transactionVO.transactionid)
 
-            transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO)
+            transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO, model)
 
             printerService.printInvoice(transactionVO, true, false)
 
@@ -484,7 +484,7 @@ public class CheckoutViewController {
 
         transactionVO = transactionService.getExistingTransaction(transactionVO.transactionid)
 
-        transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO)
+        transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO, model)
 
         checkoutHelper.bindtransients(transactionVO, transientphonunumber, transientemail, transientaction)
 
@@ -592,7 +592,7 @@ public class CheckoutViewController {
 
         transactionVO = transactionService.getExistingTransaction(transactionVO.transactionid)
 
-        transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO)
+        transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO, model)
 
         checkoutHelper.bindtransients(transactionVO, transientphonunumber, transientemail, transientaction)
         printerService.printInvoice(transactionVO, false, false)

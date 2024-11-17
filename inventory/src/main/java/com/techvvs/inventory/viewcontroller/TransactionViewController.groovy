@@ -90,7 +90,7 @@ public class TransactionViewController {
         transactionVO = transactionService.getExistingTransaction(Integer.valueOf(transactionid))
 
         // this will set the display quantities
-        transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO)
+        transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO, model)
 
 
         // start file paging
@@ -123,7 +123,7 @@ public class TransactionViewController {
 
         // attach the paymentVO to the model
         TransactionVO transactionVO = paymentHelper.loadTransaction(transactionid, model)
-        transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO)
+        transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO, model)
 
         model.addAttribute("customer", transactionVO.customervo)
 
@@ -154,7 +154,7 @@ public class TransactionViewController {
         // todo: this needs to account for any discounts that are active and same product type
         transactionVO = transactionHelper.deleteProductFromTransaction(transactionVO, barcode)
 
-        transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO)
+        transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO, model)
 
         printerService.printInvoice(transactionVO, false, true) // print another invoice showing return...
 
@@ -193,7 +193,7 @@ public class TransactionViewController {
             }
         }
         model.addAttribute("producttypeid", producttypeid.orElse("0"));
-        transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO)
+        transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO, model)
 
         model.addAttribute("customer", transactionVO.customervo)
 
@@ -228,7 +228,7 @@ public class TransactionViewController {
         // apply the discount based on producttypeid to all products of that type
         transactionVO = transactionService.executeApplyDiscountToTransaction(transactionVO, transactionid, productTypeVO)
 
-        transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO)
+        transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO, model)
         printerService.printInvoice(transactionVO, false, true) // print another invoice showing discount...
         model.addAttribute("customer", transactionVO.customervo)
 
@@ -406,7 +406,7 @@ public class TransactionViewController {
         transactionVO = transactionService.getExistingTransaction(Integer.valueOf(transactionid))
 
         // this will set the display quantities
-        transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO)
+        transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO, model)
 
         // start file paging
         String dir = appConstants.PARENT_LEVEL_DIR+appConstants.TRANSACTION_INVOICE_DIR+String.valueOf(transactionVO.transactionid)+"/"
