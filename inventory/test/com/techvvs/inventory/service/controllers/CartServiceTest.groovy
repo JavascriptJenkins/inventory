@@ -33,136 +33,84 @@ class CartServiceTest extends Specification {
     }
 
 
-    def "ApplyAdhocDiscount"() {
 
-        setup:
-
-        List<ProductVO> product_cart_list = new ArrayList<>()
-        LocalDateTime dateTime = LocalDateTime.of(2024, 10, 21, 10, 15, 30);
-
-        DiscountVO discountVO = new DiscountVO(
-                discountid: 232,
-                discountamount: 100,
-                discountpercentage: 0.0,
-                name: "100 off discount",
-                description: "oh we love discount",
-                updateTimeStamp: dateTime,
-                createTimeStamp:dateTime
-
-        )
-
-        CustomerVO customerVO = new CustomerVO(
-                customerid: 343,
-                name: "billy"
-        )
-
-        CartVO cartVO = new CartVO(
-                discount: discountVO,
-                barcode:"048739801017",
-                product_cart_list: product_cart_list,
-                customer: customerVO,
-                cartid: 45,
-                total: 1000
-        )
-
-
-        Optional<CartVO> existingcartoptional = Optional.of(cartVO)
-        CartVO existingcart = existingcartoptional.get()
-
-
-
-        when:
-        cartService.applyAdhocDiscount(cartVO)
-
-        then:
-        1 * cartRepo.findById(45) >> existingcartoptional
-        1 * discountService.createAdhocDiscount(cartVO.discount) >> discountVO
-        1 * discountService.applyDiscountToCart(cartVO) >> existingcart
-        1 * cartRepo.save(existingcart)
-
-        0*_._
-
-
-    }
-
-
-    def "removeDiscount"() {
-
-        setup:
-        LocalDateTime dateTime = LocalDateTime.of(2024, 10, 21, 10, 15, 30);
-
-
-        ProductVO productVO = new ProductVO(
-                product_id: 34,
-                name:"Gelato 41",
-                price: 550.00,
-                quantity: 50,
-                quantityremaining: 40,
-                vendor: "Lily Farms,",
-                vendorquantity: 50,
-                createTimeStamp: dateTime,
-                updateTimeStamp: dateTime
-
-        )
-        ProductVO productVO2 = new ProductVO(
-                product_id: 68,
-                name:"Sour Donkey",
-                price: 1827.32,
-                quantity: 50,
-                quantityremaining: 40,
-                vendor: "Lily Farms,",
-                vendorquantity: 50,
-                createTimeStamp: dateTime,
-                updateTimeStamp: dateTime
-        )
-        List<ProductVO> product_cart_list = new ArrayList<>()
-        product_cart_list.add(productVO)
-        product_cart_list.add(productVO2)
-
-
-
-        DiscountVO discountVO = new DiscountVO(
-                discountid: 232,
-                discountamount: 100,
-                discountpercentage: 0.0,
-                name: "100 off discount",
-                description: "oh we love discount",
-                updateTimeStamp: dateTime,
-                createTimeStamp:dateTime
-
-        )
-
-        CustomerVO customerVO = new CustomerVO(
-                customerid: 343,
-                name: "billy"
-        )
-
-        CartVO cartVO = new CartVO(
-                discount: discountVO,
-                barcode:"048739801017",
-                product_cart_list: product_cart_list,
-                customer: customerVO,
-                cartid: 45,
-                total: 1000
-        )
-
-
-        Optional<CartVO> existingcartoptional = Optional.of(cartVO)
-        CartVO existingcart = existingcartoptional.get()
-
-
-
-        when:
-        cartService.removeDiscount(cartVO)
-
-        then:
-        1 * cartRepo.findById(45) >> existingcartoptional
-        1 * cartRepo.save(existingcart)
-
-        0*_._
-
-
-    }
+//    def "removeDiscount"() {
+//
+//        setup:
+//        LocalDateTime dateTime = LocalDateTime.of(2024, 10, 21, 10, 15, 30);
+//
+//
+//        ProductVO productVO = new ProductVO(
+//                product_id: 34,
+//                name:"Gelato 41",
+//                price: 550.00,
+//                quantity: 50,
+//                quantityremaining: 40,
+//                vendor: "Lily Farms,",
+//                vendorquantity: 50,
+//                createTimeStamp: dateTime,
+//                updateTimeStamp: dateTime
+//
+//        )
+//        ProductVO productVO2 = new ProductVO(
+//                product_id: 68,
+//                name:"Sour Donkey",
+//                price: 1827.32,
+//                quantity: 50,
+//                quantityremaining: 40,
+//                vendor: "Lily Farms,",
+//                vendorquantity: 50,
+//                createTimeStamp: dateTime,
+//                updateTimeStamp: dateTime
+//        )
+//        List<ProductVO> product_cart_list = new ArrayList<>()
+//        product_cart_list.add(productVO)
+//        product_cart_list.add(productVO2)
+//
+//
+//
+//        DiscountVO discountVO = new DiscountVO(
+//                discountid: 232,
+//                discountamount: 100,
+//                discountpercentage: 0.0,
+//                name: "100 off discount",
+//                description: "oh we love discount",
+//                updateTimeStamp: dateTime,
+//                createTimeStamp:dateTime
+//
+//        )
+//
+//        CustomerVO customerVO = new CustomerVO(
+//                customerid: 343,
+//                name: "billy"
+//        )
+//
+//        CartVO cartVO = new CartVO(
+//                discount: discountVO,
+//                barcode:"048739801017",
+//                product_cart_list: product_cart_list,
+//                customer: customerVO,
+//                cartid: 45,
+//                total: 1000
+//        )
+//
+//
+//        Optional<CartVO> existingcartoptional = Optional.of(cartVO)
+//        CartVO existingcart = existingcartoptional.get()
+//
+//
+//
+//        when:
+//        cartService.removeDiscount(cartVO)
+//
+//        then:
+//        1 * cartRepo.findById(45) >> existingcartoptional
+//        1 * cartRepo.save(existingcart)
+//
+//        0*_._
+//
+//
+//    }
 
     def "searchForProductByBarcode"() {
 

@@ -251,14 +251,6 @@ public class CheckoutViewController {
         // only proceed if there is no error
         if(model.getAttribute("errorMessage") == null){
 
-            // adhoc discount
-            if(cartVO.discount != null
-                    & cartVO.discount.discountamount != null
-                    & cartVO.discount.discountamount > 0){
-                // go apply the discount to the cart
-                cartVO = cartService.applyAdhocDiscount(cartVO) // apply discount to cart
-            }
-
             // before applying discount, get the existing cart (to handle conversion of displayed quantity back to actual list of producsts)
             cartVO = checkoutHelper.getExistingCart(String.valueOf(cartVO.cartid))
 
@@ -278,41 +270,41 @@ public class CheckoutViewController {
         return "checkout/reviewcart.html";
     }
 
-    @PostMapping("/removediscount")
-    String removediscount(@ModelAttribute( "cart" ) CartVO cartVO,
-                         Model model,
-                         @RequestParam("page") Optional<Integer> page,
-                         @RequestParam("size") Optional<Integer> size){
-
-
-
-        cartVO = checkoutHelper.validateCartReviewVO(cartVO, model)
-
-        // only proceed if there is no error
-        if(model.getAttribute("errorMessage") == null){
-
-            // remove the existing discount
-            cartVO = cartService.removeDiscount(cartVO) // apply discount to cart
-            model.addAttribute("warningMessage", "Discount has been removed. ")
-
-            // before applying discount, get the existing cart (to handle conversion of displayed quantity back to actual list of producsts)
-            cartVO = checkoutHelper.getExistingCart(String.valueOf(cartVO.cartid))
-
-            cartVO = checkoutHelper.hydrateTransientQuantitiesForDisplay(cartVO)
-
-        }
-
-        cartVO.barcode = "" // reset barcode to empty
-
-        techvvsAuthService.checkuserauth(model)
-        model.addAttribute("cart", cartVO);
-        model.addAttribute("successMessage", "Review the cart")
-        discountService.bindAllDiscounts(model)
-        // fetch all customers from database and bind them to model
-        checkoutHelper.getAllCustomers(model)
-
-        return "checkout/reviewcart.html";
-    }
+//    @PostMapping("/removediscount")
+//    String removediscount(@ModelAttribute( "cart" ) CartVO cartVO,
+//                         Model model,
+//                         @RequestParam("page") Optional<Integer> page,
+//                         @RequestParam("size") Optional<Integer> size){
+//
+//
+//
+//        cartVO = checkoutHelper.validateCartReviewVO(cartVO, model)
+//
+//        // only proceed if there is no error
+//        if(model.getAttribute("errorMessage") == null){
+//
+//            // remove the existing discount
+//            cartVO = cartService.removeDiscount(cartVO) // apply discount to cart
+//            model.addAttribute("warningMessage", "Discount has been removed. ")
+//
+//            // before applying discount, get the existing cart (to handle conversion of displayed quantity back to actual list of producsts)
+//            cartVO = checkoutHelper.getExistingCart(String.valueOf(cartVO.cartid))
+//
+//            cartVO = checkoutHelper.hydrateTransientQuantitiesForDisplay(cartVO)
+//
+//        }
+//
+//        cartVO.barcode = "" // reset barcode to empty
+//
+//        techvvsAuthService.checkuserauth(model)
+//        model.addAttribute("cart", cartVO);
+//        model.addAttribute("successMessage", "Review the cart")
+//        discountService.bindAllDiscounts(model)
+//        // fetch all customers from database and bind them to model
+//        checkoutHelper.getAllCustomers(model)
+//
+//        return "checkout/reviewcart.html";
+//    }
     // this will process the cart and create transaction records
     @PostMapping("/transaction")
     String transaction(@ModelAttribute( "cart" ) CartVO cartVO,
