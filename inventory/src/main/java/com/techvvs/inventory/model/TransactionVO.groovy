@@ -55,6 +55,10 @@ class TransactionVO implements Serializable {
     @JoinColumn(name="deliveryid")
     DeliveryVO delivery; // delivery contains the list of packages and crates
 
+    // if someone returns a product when the transaction is already paid for/processed, it needs to be accounted for in customer credit
+    @JsonProperty
+    Double customercredit = 0.00 // this field allows us to track customer credit.  this could be for many reasons.
+
     @JsonProperty
     Double total;
 

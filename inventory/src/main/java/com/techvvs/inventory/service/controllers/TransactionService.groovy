@@ -11,6 +11,7 @@ import com.techvvs.inventory.model.DiscountVO
 import com.techvvs.inventory.model.PackageVO
 import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.ProductVO
+import com.techvvs.inventory.model.ReturnVO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.model.nonpersist.Totals
 import com.techvvs.inventory.printers.PrinterService
@@ -376,6 +377,10 @@ class TransactionService {
         // Move business logic to service layer
         TransactionVO existingTransaction = transactionRepo.findById(Integer.valueOf(transactionid)).orElseThrow({ new EntityNotFoundException("Transaction not found: " + transactionid) });
 
+        // todo: when crediting back the existing discounts, we do not need to check the product return table.
+        // todo:  the product returns have already been subtracted from the total and totalwithtax fields
+        // todo:  when crediting back the existing discounts, we are not touching the originalprice field.
+        // todo: we only touch the originalprice field when applying the new existing discounts (after this step in applyAllDiscountsToTransaction)
         // Remove existing discounts of the same product type
         existingTransaction = checkForExistingDiscountOfSameProducttypeAndCreditBackToTransactionTotals(
                 existingTransaction,
@@ -425,9 +430,9 @@ class TransactionService {
     }
 
     private TransactionVO applyAllDiscountsToTransaction(
-            TransactionVO transaction,
-                                                         double originaltransactionamount,
-                                                         double currenttotal
+             TransactionVO transaction,
+             double originaltransactionamount,
+             double currenttotal
     ) {
 
 
@@ -440,6 +445,7 @@ class TransactionService {
 
         double totaldiscounttosubstractfromtotal = 0.00
         double totaldiscounttosubstractfromtotalwithtax = 0.00
+        double totalreturnedproductvalue = 0.00
         // we should be updating the total and total withtax here, after whole loop runs
         for(double discountamount: totals.listOfDiscountsToApplyToTotal){
             totaldiscounttosubstractfromtotal += discountamount
@@ -453,8 +459,28 @@ class TransactionService {
         transaction.total = transaction.originalprice - totaldiscounttosubstractfromtotal
         transaction.totalwithtax = transaction.originalprice - totaldiscounttosubstractfromtotalwithtax
 
-
+        transaction = applyReturnProductValuesToTotals(transaction, totals, totalreturnedproductvalue) // account for the returned products
         return transaction;
+    }
+
+    TransactionVO applyReturnProductValuesToTotals(TransactionVO transaction, Totals totals, double totalreturnedproductvalue) {
+        // now, we need to update these 2 totals again if we have any discounts to apply
+        // check if there are any objects in the return table and subtract from original price
+        // if we don't do this, discounts will be applied incorrectly on transactions with returns
+        if(transaction.return_list.size() > 0){
+            for(ReturnVO returnVO : transaction.return_list){
+                totals.listOfReturnProductValuesToApply.add(returnVO?.product?.price)
+            }
+        }
+
+        for(double returnedproductvalue: totals.listOfReturnProductValuesToApply){
+            totalreturnedproductvalue += returnedproductvalue
+        }
+
+        transaction.total = Math.max(0.00, transaction.total - totalreturnedproductvalue)
+        transaction.totalwithtax = Math.max(0.00, transaction.totalwithtax - totalreturnedproductvalue)
+
+        return transaction
     }
 
 
