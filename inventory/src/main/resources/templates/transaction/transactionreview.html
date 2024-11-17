@@ -403,7 +403,7 @@
             <h6>
                 <span th:text="${transaction.createTimeStamp.toLocalDate()}"></span>
             </h6>
-            <h6 th:if="${transaction.discount_list}">
+            <h6 th:if="${transaction.discount_list.size() > 0}">
                 <ul>
                     Discounts:
                     <li th:each="discount : ${transaction.discount_list}" th:if="${discount.isactive != 0}">
@@ -412,7 +412,7 @@
                     </li>
                 </ul>
             </h6>
-            <h6 th:if="${groupedReturns}">
+            <h6 th:if="${groupedReturns.size() > 0}">
                 <ul>
                     Returns:
                     <li th:each="entry : ${groupedReturns}">
@@ -423,7 +423,7 @@
                 </ul>
             </h6>
 
-            <h6 th:if="${transaction.payment_list}">
+            <h6 th:if="${transaction.payment_list != null && transaction.payment_list.size() > 0}">
                 <ul>
                     Payments:
                     <li th:each="payment : ${transaction.payment_list}">

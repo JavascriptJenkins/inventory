@@ -28,7 +28,7 @@ class TransactionVO implements Serializable {
 
     @JsonProperty
     @ElementCollection(fetch = FetchType.LAZY)
-    List<PaymentVO> payment_list
+    List<PaymentVO> payment_list = new ArrayList<PaymentVO>()
 
     @Transient
     DiscountVO discount = new DiscountVO() // tracking the discount in scope here
