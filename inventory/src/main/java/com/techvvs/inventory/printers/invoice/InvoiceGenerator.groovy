@@ -112,20 +112,20 @@ class InvoiceGenerator {
 
         // todo: recalc this
 
-        boolean hasdiscount = transaction.discount
+//        boolean hasdiscount = transaction.discount
 
 // todo: conversion problem here
         // Summary section (Subtotal, Tax, Total, etc.)
         invoice.append(String.format("%-30s \$%-10.2f\n", "Subtotal", transaction.originalprice))
 
-        if(hasdiscount && transaction.discount.discountpercentage > 0){
-            invoice.append(String.format("Discount %%:                 \$%.2f%%\n", transaction.discount.discountpercentage));
-        }
-        if(hasdiscount && transaction.discount.discountamount > 0){
-            invoice.append(String.format("Discount Amount:                 \$%-10f\n", transaction.discount.discountamount))
-        }
-
-        double discountpercentage = hasdiscount ? transaction.discount.discountpercentage : 0
+//        if(hasdiscount && transaction.discount.discountpercentage > 0){
+//            invoice.append(String.format("Discount %%:                 \$%.2f%%\n", transaction.discount.discountpercentage));
+//        }
+//        if(hasdiscount && transaction.discount.discountamount > 0){
+//            invoice.append(String.format("Discount Amount:                 \$%-10f\n", transaction.discount.discountamount))
+//        }
+//
+//        double discountpercentage = hasdiscount ? transaction.discount.discountpercentage : 0
 
         invoice.append(String.format("Total (with tax)          \$%-10.2f\n", formattingUtil.calculateTotalWithTax(transaction.total, transaction.taxpercentage, 0.00))) // passing 0.00 in here cuz discount was already applied to the total
         invoice.append(String.format("Paid:                     \$%-10s\n", transaction.paid == null ? '0' : transaction.paid))
