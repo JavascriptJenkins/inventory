@@ -444,7 +444,7 @@ class CheckoutViewControllerTest extends Specification {
         1 * model.addAttribute("successMessage", "Successfully completed transaction! Thanks "+customerVO.name+"!")
         1 * filePagingService.getFilePageFromDirectory(1, 5, './topdir//transaction/invoice/4532/')  >> filePage
         1 * filePagingService.bindPageAttributesToModel(model, filePage, page, size)
-        1 * checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO) >> transactionVO
+        1 * checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO, model) >> transactionVO
         1 * printerService.printInvoice(transactionVO, false, true)
         1 * model.addAttribute("transaction", transactionVO)
         1 * techvvsAuthService.checkuserauth(model)

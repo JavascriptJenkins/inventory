@@ -1,7 +1,12 @@
 package com.techvvs.inventory.viewcontroller
 
 import com.techvvs.inventory.constants.AppConstants
+import com.techvvs.inventory.jparepo.DiscountRepo
 import com.techvvs.inventory.jparepo.LocationRepo
+import com.techvvs.inventory.jparepo.ProductTypeRepo
+import com.techvvs.inventory.jparepo.TransactionRepo
+import com.techvvs.inventory.model.DiscountVO
+import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.modelnonpersist.FileVO
 import com.techvvs.inventory.printers.PrinterService
@@ -17,6 +22,8 @@ import org.springframework.data.domain.Page
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.*
+
+import java.time.LocalDateTime
 
 
 @RequestMapping("/transaction")
@@ -54,6 +61,15 @@ public class TransactionViewController {
     @Autowired
     DeliveryService deliveryService
 
+    @Autowired
+    ProductTypeRepo productTypeRepo
+
+    @Autowired
+    TransactionRepo transactionRepo
+
+    @Autowired
+    DiscountRepo discountRepo
+
     @GetMapping
     String reviewtransaction(
             @RequestParam(
@@ -74,7 +90,7 @@ public class TransactionViewController {
         transactionVO = transactionService.getExistingTransaction(Integer.valueOf(transactionid))
 
         // this will set the display quantities
-        transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO)
+        transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO, model)
 
 
         // start file paging
@@ -107,7 +123,7 @@ public class TransactionViewController {
 
         // attach the paymentVO to the model
         TransactionVO transactionVO = paymentHelper.loadTransaction(transactionid, model)
-        transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO)
+        transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO, model)
 
         model.addAttribute("customer", transactionVO.customervo)
 
@@ -135,9 +151,10 @@ public class TransactionViewController {
         // attach the paymentVO to the model
         TransactionVO transactionVO = paymentHelper.loadTransaction(transactionid, model)
 
+        // todo: this needs to account for any discounts that are active and same product type
         transactionVO = transactionHelper.deleteProductFromTransaction(transactionVO, barcode)
 
-        transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO)
+        transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO, model)
 
         printerService.printInvoice(transactionVO, false, true) // print another invoice showing return...
 
@@ -153,6 +170,97 @@ public class TransactionViewController {
         model.addAttribute("successMessage", "Deleted the item from transaction successfully with barcode: "+barcode);
 
         return "transaction/return.html";
+    }
+
+    @GetMapping("/discount")
+    String viewNewFormDiscount(
+            Model model,
+            @RequestParam("transactionid") String transactionid,
+            @RequestParam("producttypeid") Optional<String> producttypeid,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size
+    ){
+
+        transactionid = transactionid == null ? "0" : String.valueOf(transactionid)
+
+        // attach the paymentVO to the model
+        TransactionVO transactionVO = paymentHelper.loadTransaction(transactionid, model)
+
+        if(producttypeid.isPresent()){
+            // if we have a producttype then filter out all products that are not of that producttype
+            transactionVO.product_list = transactionVO.product_list.findAll { product ->
+                product?.producttypeid?.producttypeid == Integer.valueOf(producttypeid.get())
+            }
+        }
+        model.addAttribute("producttypeid", producttypeid.orElse("0"));
+        transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO, model)
+
+        model.addAttribute("customer", transactionVO.customervo)
+
+
+        // fetch all producttypes from database and bind them to model
+        model.addAttribute("producttypes", productTypeRepo.findAll()); // for the filter dropdown
+        model.addAttribute("transaction", transactionVO);
+
+        if(producttypeid.isPresent()){
+            DiscountVO mostRecentMatchingDiscount = findMostRecentDiscountByProductType(transactionVO, Integer.valueOf(producttypeid.get()))
+            model.addAttribute("mostRecentMatchingDiscount", mostRecentMatchingDiscount != null ? mostRecentMatchingDiscount : new DiscountVO(discountid: 0));
+        }
+
+        techvvsAuthService.checkuserauth(model)
+        model.addAttribute("transactionid", transactionid);
+        return "transaction/discount.html";
+    }
+
+
+    // todo: when it does the second discount, it is calculating it from the original total
+    @PostMapping("/discount")
+    String postDiscount(
+            Model model,
+            @ModelAttribute( "transaction" ) TransactionVO transactionVO,
+            @RequestParam("transactionid") String transactionid,
+            @RequestParam("producttypeid") Optional<String> producttypeid,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size
+    ){
+
+        ProductTypeVO productTypeVO = productTypeRepo.findById(Integer.valueOf(producttypeid.orElse("0"))).get()
+        // apply the discount based on producttypeid to all products of that type
+        transactionVO = transactionService.executeApplyDiscountToTransaction(transactionVO, transactionid, productTypeVO)
+
+        transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO, model)
+        printerService.printInvoice(transactionVO, false, true) // print another invoice showing discount...
+        model.addAttribute("customer", transactionVO.customervo)
+
+
+        model.addAttribute("producttypes", productTypeRepo.findAll()); // for the filter dropdown
+        techvvsAuthService.checkuserauth(model)
+        model.addAttribute("transactionid", transactionid);
+        model.addAttribute("transaction", transactionVO);
+        model.addAttribute("producttypeid", producttypeid.orElse("0"));
+        // Get the most recent discount
+
+        if(producttypeid.isPresent()){
+            DiscountVO mostRecentMatchingDiscount = findMostRecentDiscountByProductType(transactionVO, Integer.valueOf(producttypeid.get()))
+            model.addAttribute("mostRecentMatchingDiscount", mostRecentMatchingDiscount != null ? mostRecentMatchingDiscount : new DiscountVO(discountid: 0));
+        }
+
+        def mostRecentDiscount = transactionVO.discount_list.max { it.createTimeStamp }
+        model.addAttribute("successMessage", "Applied discount of: "+mostRecentDiscount.discountamount+" per unit to product type: "+productTypeVO.name);
+
+        return "transaction/discount.html";
+    }
+
+
+    DiscountVO findMostRecentDiscountByProductType(TransactionVO transactionVO, int producttypeid) {
+        if (!transactionVO?.discount_list) {
+            return null // Return null if discount_list is null or empty
+        }
+
+        // Filter discounts by producttypeid and isactive == 1, then find the most recent one
+        return transactionVO.discount_list.findAll {
+            it.producttype?.producttypeid == producttypeid && it.isactive == 1
+        }?.max { it.createTimeStamp }
     }
 
 
@@ -298,7 +406,7 @@ public class TransactionViewController {
         transactionVO = transactionService.getExistingTransaction(Integer.valueOf(transactionid))
 
         // this will set the display quantities
-        transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO)
+        transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO, model)
 
         // start file paging
         String dir = appConstants.PARENT_LEVEL_DIR+appConstants.TRANSACTION_INVOICE_DIR+String.valueOf(transactionVO.transactionid)+"/"

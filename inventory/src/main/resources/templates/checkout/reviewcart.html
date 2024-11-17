@@ -214,24 +214,24 @@
                 </div>
             </div>
         </div>
-        <div class="row" style="margin-bottom: 5px;">
-            <div class="col-md-6" style="margin-bottom: 5px;">
-                <b><label class="form-label">Discount</label></b>
-                <div th:if="${cart.cartid != null && cart.discount != null}">
-                    <p th:each="discount : ${discounts}" th:if="${discount.discountid == cart.discount.discountid}" th:text="${discount.name}">Discount Name</p>
-                </div>
-                <div th:if="${cart.discount == null}" style="margin-top:10px;">
-                    <b><label class="form-label">Enter Discount Amount</label></b>
-                    <input id="discountAdhocInputId" name="adhocdisount" type="number">
-                </div>
-            </div>
-            <div th:if="${cart.discount == null}" class="col-md-6" style="margin-bottom: 5px;">
-                <button id="applyDiscountButton" class="btn btn-primary" type="button" onclick="applyDiscount()">Apply Discount</button>
-            </div>
-            <div th:if="${cart.discount != null}" class="col-md-6" style="margin-bottom: 5px;">
-                <button class="btn btn-warning" type="button" onclick="removeDiscount()">Remove Discount</button>
-            </div>
-        </div>
+<!--        <div class="row" style="margin-bottom: 5px;">-->
+<!--            <div class="col-md-6" style="margin-bottom: 5px;">-->
+<!--                <b><label class="form-label">Discount</label></b>-->
+<!--                <div th:if="${cart.cartid != null && cart.discount != null}">-->
+<!--                    <p th:each="discount : ${discounts}" th:if="${discount.discountid == cart.discount.discountid}" th:text="${discount.name}">Discount Name</p>-->
+<!--                </div>-->
+<!--                <div th:if="${cart.discount == null}" style="margin-top:10px;">-->
+<!--                    <b><label class="form-label">Enter Discount Amount</label></b>-->
+<!--                    <input id="discountAdhocInputId" name="adhocdisount" type="number">-->
+<!--                </div>-->
+<!--            </div>-->
+<!--            <div th:if="${cart.discount == null}" class="col-md-6" style="margin-bottom: 5px;">-->
+<!--                <button id="applyDiscountButton" class="btn btn-primary" type="button" onclick="applyDiscount()">Apply Discount</button>-->
+<!--            </div>-->
+<!--            <div th:if="${cart.discount != null}" class="col-md-6" style="margin-bottom: 5px;">-->
+<!--                <button class="btn btn-warning" type="button" onclick="removeDiscount()">Remove Discount</button>-->
+<!--            </div>-->
+<!--        </div>-->
 
 
         <div th:if="${cart.discount != null && cart.discount.name != null}" class="row" style="margin-bottom: 5px;">

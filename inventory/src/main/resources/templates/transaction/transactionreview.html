@@ -403,9 +403,40 @@
             <h6>
                 <span th:text="${transaction.createTimeStamp.toLocalDate()}"></span>
             </h6>
-            <h6 th:if="${transaction.discount}">
-                <p>Discount: <span th:text="${transaction.discount.name}"></span></p>
+            <h6 th:if="${transaction.discount_list.size() > 0}">
+                <ul>
+                    Discounts:
+                    <li th:each="discount : ${transaction.discount_list}" th:if="${discount.isactive != 0}">
+                            <span th:text="${discount.name}"></span> |
+                            Amount: <span th:text="${discount.discountamount}"></span>
+                    </li>
+                </ul>
             </h6>
+            <h6 th:if="${groupedReturns.size() > 0}">
+                <ul>
+                    Returns:
+                    <li th:each="entry : ${groupedReturns}">
+                        <span th:text="${entry.key.name}"></span> |
+                        x<span th:text="${entry.value}"></span> |
+                        <span th:text="${entry.key.createTimeStamp.toLocalDate()}"></span>
+                    </li>
+                </ul>
+            </h6>
+
+            <h6 th:if="${transaction.payment_list != null && transaction.payment_list.size() > 0}">
+                <ul>
+                    Payments:
+                    <li th:each="payment : ${transaction.payment_list}">
+                            <span th:text="${payment.paymenttype}"></span> |
+                            <span th:text="${payment.amountpaid}"></span> |
+                            <span th:text="${payment.createTimeStamp.toLocalDate()}"></span> |
+                            ID: <span th:text="${payment.paymentid}"></span>
+                    </li>
+                </ul>
+            </h6>
+
+
+
         </div>
         <div class="col-md-4">
             <h3><a class="btn btn-secondary headerbutton btn-lg" th:href="@{/transaction/delivery?size=5&page=1&transactionid=__${transaction.transactionid}__&popup=1}">Delivery</a></h3>
@@ -424,6 +455,9 @@
                     <th>Item</th>
                     <th>Price</th>
                     <th>Quantity</th>
+                    <th th:if="${transaction.discount_list.?[isactive == 1]?.size() > 0}">
+                        Discounted Price
+                    </th>
                 </tr>
                 </thead>
                 <tbody>
@@ -431,6 +465,12 @@
                     <td th:text="${item.name}">Item Name</td>
                     <td th:text="${item.price}">Price</td>
                     <td th:text="${item.displayquantity}">Quantity</td>
+                    <td th:if="${transaction.discount_list.?[isactive == 1]?.size() > 0}">
+                        <span th:each="discount : ${transaction.discount_list}"
+                              th:if="${discount.producttype?.producttypeid == item.producttypeid?.producttypeid && discount.isactive == 1}"
+                              th:text="${item.price - discount.discountamount}">
+                        </span>
+                    </td>
                 </tr>
                 </tbody>
             </table>
@@ -450,6 +490,10 @@
 
     <div class="d-inline">
         <a th:href="@{/transaction/return?transactionid=__${transaction.transactionid}__}" class="btn btn-warning" style="margin-top:5px;float: right;">Return Product</a>
+    </div>
+
+    <div class="d-inline">
+        <a th:href="@{/transaction/discount?transactionid=__${transaction.transactionid}__&producttypeid=__${transaction.product_list[0] != null ? transaction.product_list[0].producttypeid.producttypeid : 0}__}" class="btn btn-warning" style="margin-top:5px;margin-right:5px;float: right;">Discount</a>
     </div>
 
     <form id="textoremailInvoiceForm" th:action="@{/checkout/textemailinvoice?size=5&page=1}" th:object="${transaction}" method="post">
