@@ -10,6 +10,7 @@ import com.techvvs.inventory.model.ReturnVO
 import com.techvvs.inventory.model.SystemUserDAO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.service.email.EmailService
+import com.techvvs.inventory.service.transactional.CheckoutService
 import com.techvvs.inventory.util.SendgridEmailUtil
 import com.techvvs.inventory.util.TwilioTextUtil
 import org.springframework.beans.factory.annotation.Autowired
@@ -53,6 +54,10 @@ class TransactionHelper {
 
     @Autowired
     EmailService emailService
+
+    @Autowired
+    CheckoutService checkoutService
+
 
     @Transactional
     void findAllTransactions(Model model,
@@ -152,19 +157,27 @@ class TransactionHelper {
     TransactionVO deleteProductFromTransaction(TransactionVO transactionVO, String barcode){
 
         Double amountToSubtract = 0.00
-
+        double amountofdiscount = 0.00
         TransactionVO transactiontoremove = new TransactionVO(transactionid: 0)
         // we are only removing one product at a time
         for(ProductVO productVO : transactionVO.product_list){
             if(productVO.barcode == barcode){
+
+
+                // before doing anything, check to see if there is a discount active on this transaction that needs to be
+                // applied back to the total and totalwithtax fields
+                amountofdiscount = checkoutService.calculateTotalsForRemovingExistingProductFromTransaction(transactionVO, productVO)
+
                 transactionVO.product_list.remove(productVO)
 
 
                 addProductToReturnList(transactionVO, productVO)
-
+                // set the values back to original price before applying the product return math
+//                transactionVO.totalwithtax = Math.max(0,transactionVO.originalprice - amountofdiscount)
+//                transactionVO.total = Math.max(0,transactionVO.originalprice - amountofdiscount)
 
                 productVO.quantityremaining = productVO.quantityremaining + 1
-                amountToSubtract = Math.max(0.00, amountToSubtract + productVO.price)
+                amountToSubtract = Math.max(0.00, productVO.price - amountofdiscount)
                 // remove the transaction association from the product
                 for(TransactionVO existingTransaction : productVO.transaction_list){
                     if(existingTransaction.transactionid == transactionVO.transactionid){

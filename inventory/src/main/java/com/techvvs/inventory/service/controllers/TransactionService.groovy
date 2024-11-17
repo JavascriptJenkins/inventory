@@ -15,6 +15,7 @@ import com.techvvs.inventory.model.ReturnVO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.model.nonpersist.Totals
 import com.techvvs.inventory.printers.PrinterService
+import com.techvvs.inventory.service.transactional.CheckoutService
 import com.techvvs.inventory.util.FormattingUtil
 import com.techvvs.inventory.util.TechvvsAppUtil
 import org.springframework.beans.factory.annotation.Autowired
@@ -43,6 +44,9 @@ class TransactionService {
 
     @Autowired
     FormattingUtil formattingUtil
+
+    @Autowired
+    CheckoutService checkoutService
 
     @Autowired
     ProductTypeRepo productTypeRepo
@@ -273,30 +277,7 @@ class TransactionService {
             double currenttransactionamount
 
     ) {
-
-        transactionVO.total = Math.max(0, formattingUtil.calculateTotalWithRemovedDiscountAmountPerUnitByProductType(
-                currenttransactionamount,
-                removedDiscount.discountamount,
-                removedDiscount.producttype,
-                transactionVO.product_list
-        ));
-        transactionVO.total < 0 ? 0 : transactionVO.total // make sure it doesnt go below 0 for some reason...
-
-
-        // calculate the totalDiscountAmount based on quantityofunitsofsameproducttype * discountamount
-        double totalDiscountAmount = Math.max(0, calculateTotalDiscountAmount(
-                transactionVO.product_list,
-                removedDiscount.producttype,
-                removedDiscount.discountamount
-        ));
-
-        // here set the new transaction totalwithtax field based on the new total we just calculated
-        transactionVO.totalwithtax = Math.max(0, formattingUtil.calculateTotalWithTaxBasedOnTotalDiscountAmountForDiscountRemoval(
-                currenttransactionamount,
-                0.0,
-                totalDiscountAmount
-        ));
-
+        transactionVO = checkoutService.calculateTotalsForRemovingExistingDiscount(transactionVO, currenttransactionamount, removedDiscount)
 
         return transactionVO
     }
@@ -312,61 +293,12 @@ class TransactionService {
     ) {
 
 
-        // todo: this needs to keep a running tally of all the discounts that are applied as they go thru the loop
-        // Update the transaction total with the applied discount, clamping the value to 0
-        //transactionVO.total = Math.max(0, formattingUtil.calculateTotalWithDiscountAmountPerUnitByProductType(
-        double total = Math.max(0, formattingUtil.calculateTotalWithDiscountAmountPerUnitByProductType(
-                originaltransactiontotal, // not using this delete it
-                transactionVO.discount_list[index].discountamount,
-                transactionVO.discount_list[index].producttype,
-                transactionVO.product_list
-        ));
-
-        // add the discount for this producttype for subtraction from the originaltotal after this loop processes
-        totals.listOfDiscountsToApplyToTotal.add(total)
-
-        // Redundant line removed: transactionVO.total < 0 ? 0 : transactionVO.total
-        // Math.max already ensures it doesn't go below 0.
-
-        // Calculate the total discount amount based on the product list and discount parameters
-        double totalDiscountAmount = Math.max(0, calculateTotalDiscountAmount(
-                transactionVO.product_list,
-                transactionVO.discount_list[index].producttype,
-                transactionVO.discount_list[index].discountamount
-        ));
-
-        // Update the totalWithTax field based on the recalculated totals, clamping it to 0
-        double totalWithTax = Math.max(0, formattingUtil.calculateTotalWithTaxBasedOnTotalDiscountAmount(
-                currenttotal,
-                0.0,
-                totalDiscountAmount
-        ));
-
-        // add the discount for this producttype for subtraction from the originaltotal after this loop processes
-        totals.listOfDiscountsToApplyToTotalWithTax.add(totalWithTax)
-
+        transactionVO = checkoutService.calculateTotalsForAddingNewDiscount(transactionVO, originaltransactiontotal, currenttotal, index, totals)
 
         // add the discount for this producttype for subtraction from the originaltotal after this loop processes
         //totals.listOfDiscountsToApplyToTotal.add(total)
 
         return transactionVO;
-    }
-
-    @Transactional
-    double calculateTotalDiscountAmount(
-            List<ProductVO> product_list,
-            ProductTypeVO productTypeVO,
-            Double perunitdiscount
-    ){
-        // calulcate the total discount to apply
-        Double totaldiscounttoapply = 0.00
-        for(ProductVO productVO : product_list){
-            // check every product in the list, if it matches the producttype then increment the discount
-            if(productVO.producttypeid.producttypeid == productTypeVO.producttypeid){
-                Math.max(0,totaldiscounttoapply += perunitdiscount)
-            }
-        }
-        return totaldiscounttoapply
     }
 
 

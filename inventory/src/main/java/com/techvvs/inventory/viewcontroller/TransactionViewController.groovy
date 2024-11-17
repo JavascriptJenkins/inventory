@@ -151,6 +151,7 @@ public class TransactionViewController {
         // attach the paymentVO to the model
         TransactionVO transactionVO = paymentHelper.loadTransaction(transactionid, model)
 
+        // todo: this needs to account for any discounts that are active and same product type
         transactionVO = transactionHelper.deleteProductFromTransaction(transactionVO, barcode)
 
         transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO)
