@@ -94,7 +94,6 @@ class TransactionService {
                 updateTimeStamp: LocalDateTime.now(),
                 createTimeStamp: LocalDateTime.now(),
                 customervo: cartVO.customer,
-                discount: cartVO.discount,
                 total: cartVO.total,
                 originalprice: originalprice,
                 totalwithtax: totalwithtax,
