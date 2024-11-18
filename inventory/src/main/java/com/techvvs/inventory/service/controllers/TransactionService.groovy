@@ -84,13 +84,8 @@ class TransactionService {
         double originalprice = cartService.calculateTotalPriceOfProductList(cartVO.product_cart_list)
 
         double totalwithtax = 0.00
-        if(discountPercentage == 0 && cartVO.discount != null){
-            totalwithtax = formattingUtil.calculateTotalWithTaxUsingDiscountAmount(originalprice, taxpercentage, cartVO.discount.discountamount)
-        } else if(discountPercentage > 0){
-            totalwithtax = formattingUtil.calculateTotalWithTax(originalprice, taxpercentage, discountPercentage)
-        } else if(cartVO.discount == null){
-            totalwithtax = formattingUtil.calculateTotalWithTax(originalprice, taxpercentage, 0.00)
-        }
+
+        totalwithtax = formattingUtil.calculateTotalWithTax(originalprice, taxpercentage, 0.00)
 
         ArrayList<ProductVO> newlist = cartVO.product_cart_list
 
