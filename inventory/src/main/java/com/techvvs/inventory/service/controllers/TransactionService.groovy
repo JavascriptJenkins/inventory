@@ -371,6 +371,11 @@ class TransactionService {
         double totaldiscounttosubstractfromtotalwithtax = 0.00
         double totalreturnedproductvalue = 0.00
         double totalamountofexistingpayments = 0.00
+
+        totals = applyReturnProductValuesToTotals(transaction, totals) // account for the returned products
+        totals = applyExistingPaymentsToTotals(transaction, totals) // account for the existing payments
+
+
         // we should be updating the total and total withtax here, after whole loop runs
         for(double discountamount: totals.listOfDiscountsToApplyToTotal){
             totaldiscounttosubstractfromtotal += discountamount
@@ -380,16 +385,22 @@ class TransactionService {
             totaldiscounttosubstractfromtotalwithtax += discountamount
         }
 
+        for(double returnedproductvalue: totals.listOfReturnProductValuesToApply){
+            totalreturnedproductvalue += returnedproductvalue
+        }
 
-        transaction.total = transaction.originalprice - totaldiscounttosubstractfromtotal
-        transaction.totalwithtax = transaction.originalprice - totaldiscounttosubstractfromtotalwithtax
+        for(double existingpaymentvalue: totals.listOfExistingPaymentsToApply){
+            totalamountofexistingpayments += existingpaymentvalue
+        }
 
-        transaction = applyReturnProductValuesToTotals(transaction, totals, totalreturnedproductvalue) // account for the returned products
-        transaction = applyExistingPaymentsToTotals(transaction, totals, totalamountofexistingpayments) // account for the existing payments
+
+        transaction.total = transaction.originalprice - (totaldiscounttosubstractfromtotal + totalreturnedproductvalue  + totalamountofexistingpayments)
+        transaction.totalwithtax = transaction.originalprice - (totaldiscounttosubstractfromtotal + totalreturnedproductvalue  + totalamountofexistingpayments)
+
         return transaction;
     }
 
-    TransactionVO applyReturnProductValuesToTotals(TransactionVO transaction, Totals totals, double totalreturnedproductvalue) {
+    Totals applyReturnProductValuesToTotals(TransactionVO transaction, Totals totals) {
         // now, we need to update these 2 totals again if we have any discounts to apply
         // check if there are any objects in the return table and subtract from original price
         // if we don't do this, discounts will be applied incorrectly on transactions with returns
@@ -399,17 +410,10 @@ class TransactionService {
             }
         }
 
-        for(double returnedproductvalue: totals.listOfReturnProductValuesToApply){
-            totalreturnedproductvalue += returnedproductvalue
-        }
-
-        transaction.total = Math.max(0.00, transaction.total - totalreturnedproductvalue)
-        transaction.totalwithtax = Math.max(0.00, transaction.totalwithtax - totalreturnedproductvalue)
-
-        return transaction
+        return totals
     }
 
-    TransactionVO applyExistingPaymentsToTotals(TransactionVO transaction, Totals totals, double totalamountofexistingpayments) {
+    Totals applyExistingPaymentsToTotals(TransactionVO transaction, Totals totals) {
         // now, we need to update these 2 totals again if we have any discounts to apply
         // check if there are any objects in the return table and subtract from original price
         // if we don't do this, discounts will be applied incorrectly on transactions with returns
@@ -418,15 +422,7 @@ class TransactionService {
                 totals.listOfExistingPaymentsToApply.add(payment.amountpaid)
             }
         }
-
-        for(double existingpaymentvalue: totals.listOfExistingPaymentsToApply){
-            totalamountofexistingpayments += existingpaymentvalue
-        }
-
-        transaction.total = Math.max(0.00, transaction.total - totalamountofexistingpayments)
-        transaction.totalwithtax = Math.max(0.00, transaction.totalwithtax - totalamountofexistingpayments)
-
-        return transaction
+        return totals
     }
 
 
