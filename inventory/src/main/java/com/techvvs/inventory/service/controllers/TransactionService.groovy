@@ -78,9 +78,6 @@ class TransactionService {
 
         Double taxpercentage = environment.getProperty("tax.percentage", Double.class)
 
-        // calculate a percentage discount amount
-        double discountPercentage = formattingUtil.calculateTotalDiscountPercentage(cartVO)
-
         double originalprice = cartService.calculateTotalPriceOfProductList(cartVO.product_cart_list)
 
         double totalwithtax = 0.00
