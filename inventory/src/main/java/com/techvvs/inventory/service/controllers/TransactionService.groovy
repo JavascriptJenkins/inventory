@@ -9,6 +9,7 @@ import com.techvvs.inventory.jparepo.TransactionRepo
 import com.techvvs.inventory.model.CartVO
 import com.techvvs.inventory.model.DiscountVO
 import com.techvvs.inventory.model.PackageVO
+import com.techvvs.inventory.model.PaymentVO
 import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.ReturnVO
@@ -370,6 +371,7 @@ class TransactionService {
         double totaldiscounttosubstractfromtotal = 0.00
         double totaldiscounttosubstractfromtotalwithtax = 0.00
         double totalreturnedproductvalue = 0.00
+        double totalamountofexistingpayments = 0.00
         // we should be updating the total and total withtax here, after whole loop runs
         for(double discountamount: totals.listOfDiscountsToApplyToTotal){
             totaldiscounttosubstractfromtotal += discountamount
@@ -384,6 +386,7 @@ class TransactionService {
         transaction.totalwithtax = transaction.originalprice - totaldiscounttosubstractfromtotalwithtax
 
         transaction = applyReturnProductValuesToTotals(transaction, totals, totalreturnedproductvalue) // account for the returned products
+        transaction = applyExistingPaymentsToTotals(transaction, totals, totalamountofexistingpayments) // account for the existing payments
         return transaction;
     }
 
@@ -403,6 +406,26 @@ class TransactionService {
 
         transaction.total = Math.max(0.00, transaction.total - totalreturnedproductvalue)
         transaction.totalwithtax = Math.max(0.00, transaction.totalwithtax - totalreturnedproductvalue)
+
+        return transaction
+    }
+
+    TransactionVO applyExistingPaymentsToTotals(TransactionVO transaction, Totals totals, double totalamountofexistingpayments) {
+        // now, we need to update these 2 totals again if we have any discounts to apply
+        // check if there are any objects in the return table and subtract from original price
+        // if we don't do this, discounts will be applied incorrectly on transactions with returns
+        if(transaction.payment_list.size() > 0){
+            for(PaymentVO payment : transaction.payment_list){
+                totals.listOfExistingPaymentsToApply.add(payment.amountpaid)
+            }
+        }
+
+        for(double existingpaymentvalue: totals.listOfExistingPaymentsToApply){
+            totalamountofexistingpayments += existingpaymentvalue
+        }
+
+        transaction.total = Math.max(0.00, transaction.total - totalamountofexistingpayments)
+        transaction.totalwithtax = Math.max(0.00, transaction.totalwithtax - totalamountofexistingpayments)
 
         return transaction
     }
