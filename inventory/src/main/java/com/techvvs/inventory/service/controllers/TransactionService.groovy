@@ -296,15 +296,16 @@ class TransactionService {
 
 
     @Transactional
-    public TransactionVO executeApplyDiscountToTransaction(TransactionVO transactionVO, String transactionid, ProductTypeVO producttypevo) {
-        // Move business logic to service layer
+    public TransactionVO executeApplyDiscountToTransaction(
+            TransactionVO transactionVO,
+            String transactionid,
+            ProductTypeVO producttypevo
+    ) {
+
         TransactionVO existingTransaction = transactionRepo.findById(Integer.valueOf(transactionid)).orElseThrow({ new EntityNotFoundException("Transaction not found: " + transactionid) });
 
-        // todo: when crediting back the existing discounts, we do not need to check the product return table.
-        // todo:  the product returns have already been subtracted from the total and totalwithtax fields
-        // todo:  when crediting back the existing discounts, we are not touching the originalprice field.
-        // todo: we only touch the originalprice field when applying the new existing discounts (after this step in applyAllDiscountsToTransaction)
-        // Remove existing discounts of the same product type
+        // Remove existing discounts of the same product type and credit back the discount to original total
+        // before continueing with applying the new discount
         existingTransaction = checkForExistingDiscountOfSameProducttypeAndCreditBackToTransactionTotals(
                 existingTransaction,
                 transactionid,
