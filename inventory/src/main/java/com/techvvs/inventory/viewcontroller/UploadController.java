@@ -500,11 +500,12 @@ public class UploadController {
     }
 
 
-    // TODO: make getting a download link popup so people click a link in a popup box
-    // note: must return null otherwise file download sucks
+
+    // This file download is for links that are in the application being used by a logged in user
     @RequestMapping(value="/smsdownload", method=RequestMethod.GET)
     public void smsdownload(@RequestParam("filename") String filename,
-                             HttpServletResponse response
+                             HttpServletResponse response,
+                            Model model
     ) {
         File file;
 
@@ -534,6 +535,7 @@ public class UploadController {
             System.out.println("Error writing file to output stream. exception: " +ex.getMessage());
             throw new RuntimeException("IOError writing file to output stream");
         }
+        techvvsAuthService.checkuserauth(model);
 
 
 //        return "redirect: /newform/viewNewForm";
@@ -643,6 +645,51 @@ public class UploadController {
         try {
 
             filename = fileViewHelper.buildFileNameForPublicDownload(appConstants.COA_DIR, filename);
+
+            // todo: set filetype based on file extension here
+            if(filename.contains(".pdf")){
+                response.setContentType("application/pdf");
+            } else if(filename.contains(".xlsx")){
+                response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            }
+
+            response.setHeader("Content-Disposition","attachment; filename="+basefilename);
+
+            file = new File(filename);
+
+            byte[] fileContent = Files.readAllBytes(file.toPath());
+
+            // get your file as InputStream
+            InputStream is = new ByteArrayInputStream(fileContent);
+
+            // copy it to response's OutputStream
+            org.apache.commons.io.IOUtils.copy(is, response.getOutputStream());
+            response.flushBuffer();
+
+        } catch (IOException ex) {
+            System.out.println("Error writing file to output stream. Filename was: " +filename);
+            System.out.println("Error writing file to output stream. exception: " +ex.getMessage());
+            throw new RuntimeException("IOError writing file to output stream");
+        }
+
+
+//        return "redirect: /newform/viewNewForm";
+    }
+
+
+    // this should be used for static files that need to be served to logged in users of the app
+    // this means they are logged with a valid cookie
+    @RequestMapping(value="/inappdownload", method=RequestMethod.GET)
+    public void inappdownload(@RequestParam("filename") String filename,
+                               HttpServletResponse response
+    ) {
+        File file;
+
+        String basefilename = filename;
+
+        try {
+
+            filename = fileViewHelper.buildFileNameForPublicDownload(appConstants.FILES_FOR_GLOBAL_USER_DOWNLOAD_DIR, filename);
 
             // todo: set filetype based on file extension here
             if(filename.contains(".pdf")){

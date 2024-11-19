@@ -83,6 +83,27 @@
             display: flex;
             align-items: center;
         }
+            /* Download button dark theme styling */
+        .download-button {
+            display: inline-block;
+            color: #fff;
+            background-color: #212529;
+            border: 2px solid #fff;
+            border-radius: 5px;
+            padding: 10px 20px;
+            text-decoration: none;
+            font-weight: 500;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        /* Hover effect for the download button */
+        .download-button:hover {
+            background-color: #343a40;
+            color: #c0c0c0;
+            border-color: #c0c0c0;
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+        }
     </style>
 </head>
 <body>
@@ -98,15 +119,38 @@
         </div>
     </div>
 
-    <div class="alert alert-custom" role="alert">
-        <i class="bi bi-info-circle" style="margin-right: 10px;"></i>
+<!--    <div>-->
+<!--        <a href="http://localhost:8080/file/smsdownload2?customJwtParameter="+cellphonetoken+"&filename="+filename.replace(" ", "_")" class="btn btn-primary">Download Template File</a>-->
+<!--    </div>-->
 
-        Upload an xlsx price sheet to make a batch
+    <div class="row">
+        <div class="col-md-4">
+            <a href="http://localhost:8080/file/inappdownload?filename=techvvs_inventory_template.xlsx" class="download-button">
+                Download Template File
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a href="http://localhost:8080/file/inappdownload?filename=sample_inventory_template.xlsx" class="download-button">
+                Download Sample Batch File
+            </a>
+        </div>
+
     </div>
+
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="alert alert-custom" style="margin-top: 20px;" role="alert">
+                <i class="bi bi-info-circle" style="margin-right: 10px;"></i>
+
+                Upload an xlsx price sheet to make a batch
+            </div>
+        </div>
+    </div>
+
     <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
     <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
 
-    <div class="alert alert-custom" role="alert">Upload a file</div>
     <form method="post" th:action="@{/file/xlsx/upload}" enctype="multipart/form-data">
         <div class="form-group">
             <input type="file" name="file" class="form-control-file">

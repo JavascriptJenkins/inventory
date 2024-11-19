@@ -150,7 +150,7 @@ public class TwilioTextUtil {
 
 
             List<Role> roles = new ArrayList<>(1);
-            roles.add(Role.ROLE_CLIENT);
+            roles.add(Role.ROLE_DOWNLOAD_LINK);
             cellphonetoken = jwtTokenProvider.createTokenForSmsDownloadLinks(systemUserDAO.getEmail(), roles);
 
 
