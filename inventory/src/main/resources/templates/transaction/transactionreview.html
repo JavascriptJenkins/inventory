@@ -394,7 +394,7 @@
             <p>Reviewing Transaction ID: <span th:text="${transaction.transactionid}"></span></p>
             <p>Customer: <span th:text="${transaction.customervo.name}"></span></p>
             <p>Original Price: <span th:text="${transaction.originalprice}"></span></p>
-            <p>Amount remaining to pay: <span th:text="${transaction.totalwithtax}"></span></p>
+            <p>Amount remaining to pay: <span th:text="${transaction.totalwithtax - (transaction.paid == null ? 0.0 : transaction.paid)}"></span></p>
         </div>
         <div class="col-md-4">
             <h3>Total Units:
