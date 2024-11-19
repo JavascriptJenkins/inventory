@@ -32,12 +32,11 @@ class FormattingUtil {
 
     //
     public static double calculateTotalWithTaxBasedOnTotalDiscountAmount(
-            double total,
             double taxPercentage,
             double totalDiscountAmount
     ) {
         // Validate input values
-        if (total < 0 || taxPercentage < 0 || totalDiscountAmount < 0) {
+        if (taxPercentage < 0 || totalDiscountAmount < 0) {
             throw new IllegalArgumentException("Total, tax percentage, and total discount amount must be non-negative.");
         }
 

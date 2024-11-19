@@ -27,7 +27,6 @@ class CheckoutService {
     TransactionVO calculateTotalsForAddingNewDiscount(
             TransactionVO transactionVO,
             double originaltransactiontotal,
-            double currenttotal,
             int index,
             Totals totals
 
@@ -58,7 +57,6 @@ class CheckoutService {
 
         // Update the totalWithTax field based on the recalculated totals, clamping it to 0
         double totalWithTax = Math.max(0, formattingUtil.calculateTotalWithTaxBasedOnTotalDiscountAmount(
-                currenttotal, // not using this, get rid of it
                 0.0,
                 totalDiscountAmount
         ));
