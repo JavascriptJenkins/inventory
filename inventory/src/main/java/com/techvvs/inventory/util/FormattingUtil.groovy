@@ -198,7 +198,6 @@ class FormattingUtil {
 
     // calculates total before tax but with discount
     public static double calculateTotalWithDiscountAmountPerUnitByProductType(
-            double total,
             double discountAmount,
             ProductTypeVO productTypeVO,
             List<ProductVO> product_list
@@ -214,8 +213,7 @@ class FormattingUtil {
             }
         }
 
-        //return Math.max(0, total - totaldiscounttoapply) // apply the per unit discount to the total
-        return Math.max(0, totaldiscounttoapply) // apply the per unit discount to the total
+        return Math.max(0, totaldiscounttoapply)
     }
 
     // This method removes a discount and applies a per unit credit back to transaction.total and transaction.totalwithtax

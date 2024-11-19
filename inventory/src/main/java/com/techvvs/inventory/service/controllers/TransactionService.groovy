@@ -279,15 +279,10 @@ class TransactionService {
     TransactionVO applyDiscountToTransaction(
             TransactionVO transactionVO,
             int index,
-            double originaltransactiontotal,
             Totals totals
     ) {
 
-
-        transactionVO = checkoutService.calculateTotalsForAddingNewDiscount(transactionVO, originaltransactiontotal, index, totals)
-
-        // add the discount for this producttype for subtraction from the originaltotal after this loop processes
-        //totals.listOfDiscountsToApplyToTotal.add(total)
+        transactionVO = checkoutService.calculateTotalsForAddingNewDiscount(transactionVO,  index, totals)
 
         return transactionVO;
     }
@@ -324,7 +319,7 @@ class TransactionService {
             savedDiscount.getTransaction().getDiscount_list().add(savedDiscount);
 
             // Apply discounts to the transaction
-            savedDiscount.setTransaction(applyAllDiscountsToTransaction(savedDiscount.getTransaction(), savedDiscount.getTransaction().originalprice));
+            savedDiscount.setTransaction(applyAllDiscountsToTransaction(savedDiscount.getTransaction()));
 
             // Save the updated transaction
             transactionVO = transactionRepo.save(savedDiscount.getTransaction());
@@ -354,15 +349,14 @@ class TransactionService {
     }
 
     private TransactionVO applyAllDiscountsToTransaction(
-             TransactionVO transaction,
-             double originaltransactionamount
+             TransactionVO transaction
     ) {
 
 
         Totals totals = new Totals()
         for (int i = 0; i < transaction.getDiscount_list().size(); i++) {
             if (transaction.getDiscount_list().get(i).getIsactive() == 1) {
-                transaction = applyDiscountToTransaction(transaction, i, originaltransactionamount, totals);
+                transaction = applyDiscountToTransaction(transaction, i, totals);
             }
         }
 

@@ -26,17 +26,13 @@ class CheckoutService {
     @Transactional
     TransactionVO calculateTotalsForAddingNewDiscount(
             TransactionVO transactionVO,
-            double originaltransactiontotal,
             int index,
             Totals totals
 
     ) {
 
-        // todo: this needs to keep a running tally of all the discounts that are applied as they go thru the loop
-        // Update the transaction total with the applied discount, clamping the value to 0
-        //transactionVO.total = Math.max(0, formattingUtil.calculateTotalWithDiscountAmountPerUnitByProductType(
+        // Update the transaction total with the applied discount
         double total = Math.max(0, formattingUtil.calculateTotalWithDiscountAmountPerUnitByProductType(
-                originaltransactiontotal, // not using this delete it
                 transactionVO.discount_list[index].discountamount,
                 transactionVO.discount_list[index].producttype,
                 transactionVO.product_list
@@ -44,9 +40,6 @@ class CheckoutService {
 
         // add the discount for this producttype for subtraction from the originaltotal after this loop processes
         totals.listOfDiscountsToApplyToTotal.add(total)
-
-        // Redundant line removed: transactionVO.total < 0 ? 0 : transactionVO.total
-        // Math.max already ensures it doesn't go below 0.
 
         // Calculate the total discount amount based on the product list and discount parameters
         double totalDiscountAmount = Math.max(0, calculateTotalDiscountAmount(
@@ -64,10 +57,7 @@ class CheckoutService {
         // add the discount for this producttype for subtraction from the originaltotal after this loop processes
         totals.listOfDiscountsToApplyToTotalWithTax.add(totalWithTax)
 
-
         return transactionVO
-
-
     }
 
 
