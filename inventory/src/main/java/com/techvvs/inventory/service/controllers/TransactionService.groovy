@@ -389,13 +389,14 @@ class TransactionService {
             totalreturnedproductvalue += returnedproductvalue
         }
 
+        // todo: delete this - we are not applying payments to modify the total AT ANY POINT IN TIME!!!!!@!!
         for(double existingpaymentvalue: totals.listOfExistingPaymentsToApply){
             totalamountofexistingpayments += existingpaymentvalue
         }
 
 
-        transaction.total = transaction.originalprice - (totaldiscounttosubstractfromtotal + totalreturnedproductvalue  + totalamountofexistingpayments)
-        transaction.totalwithtax = transaction.originalprice - (totaldiscounttosubstractfromtotal + totalreturnedproductvalue  + totalamountofexistingpayments)
+        transaction.total = transaction.originalprice - (totaldiscounttosubstractfromtotal + totalreturnedproductvalue)
+        transaction.totalwithtax = transaction.originalprice - (totaldiscounttosubstractfromtotal + totalreturnedproductvalue)
 
         return transaction;
     }
