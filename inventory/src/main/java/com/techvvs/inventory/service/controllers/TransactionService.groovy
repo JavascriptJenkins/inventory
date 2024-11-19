@@ -368,7 +368,6 @@ class TransactionService {
         double totaldiscounttosubstractfromtotal = 0.00
         double totaldiscounttosubstractfromtotalwithtax = 0.00
         double totalreturnedproductvalue = 0.00
-        double totalamountofexistingpayments = 0.00
 
         totals = applyReturnProductValuesToTotals(transaction, totals) // account for the returned products
         totals = applyExistingPaymentsToTotals(transaction, totals) // account for the existing payments
@@ -385,11 +384,6 @@ class TransactionService {
 
         for(double returnedproductvalue: totals.listOfReturnProductValuesToApply){
             totalreturnedproductvalue += returnedproductvalue
-        }
-
-        // todo: delete this - we are not applying payments to modify the total AT ANY POINT IN TIME!!!!!@!!
-        for(double existingpaymentvalue: totals.listOfExistingPaymentsToApply){
-            totalamountofexistingpayments += existingpaymentvalue
         }
 
 
