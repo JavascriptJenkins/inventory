@@ -213,7 +213,6 @@ public class TransactionViewController {
     }
 
 
-    // todo: when it does the second discount, it is calculating it from the original total
     @PostMapping("/discount")
     String postDiscount(
             Model model,
