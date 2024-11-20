@@ -251,7 +251,7 @@
                     th:alt-title="${iStat.even}? 'even' : 'odd'">
                     <td th:text="${product.product_id}"></td>
                     <td>
-                        <a th:href="@{/product/editform?productnumber=__${product.productnumber}__&editmode=no}"
+                        <a th:href="@{/product/editform?productnumber=__${product.productnumber}__&editmode=no&batchnumber=__${batch.batchnumber}__}"
                            th:text="${product.barcode}"
                            th:data-barcode="${product.barcode}"
                            id="barcode-${product.productnumber}"

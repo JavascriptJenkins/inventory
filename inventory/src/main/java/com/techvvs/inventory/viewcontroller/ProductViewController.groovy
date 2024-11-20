@@ -183,13 +183,17 @@ public class ProductViewController {
     String viewEditForm(
                     Model model,
 
+                    @RequestParam("batchnumber") Optional<String> batchnumber,
                     @RequestParam("editmode") String editmode,
                     @RequestParam("productnumber") String productnumber,
                     @RequestParam("successMessage") Optional<String> successMessage
 
+
     ){
 
-
+        if(batchnumber.isPresent()){
+            model.addAttribute("batchnumber", batchnumber.get());
+        }
 
         List<ProductVO> results = new ArrayList<ProductVO>();
         if(productnumber != null){

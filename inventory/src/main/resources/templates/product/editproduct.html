@@ -16,7 +16,40 @@
         body {
             color: #fff;
             font-family: 'Roboto', sans-serif;
-            background-color: #343a40; /* Applying dark background to body */
+        }
+        .table-hover tbody tr:hover {
+            background-color: #e0f7fa;
+        }
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: #f1f8fa;
+        }
+        .table-dark thead {
+            background-color: #343a40;
+            color: #fff;
+        }
+        .btn-secondary, .btn-primary {
+            color: #fff;
+            background-color: #343a40;
+            border-color: #343a40;
+        }
+        .btn-secondary:hover, .btn-primary:hover {
+            background-color: #23272b;
+            border-color: #1d2124;
+        }
+        .form-control, .form-select {
+        background-color: #343a40;
+        color: #fff;
+        border: 1px solid #343a40;
+        }
+        .form-control[readonly], .form-select[readonly] {
+        background-color: #343a40; /* Keep the background the same */
+        color: #808080; /* Set text color to grey */
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: #343a40;
+            color: #fff;
+            border-color: #1d2124;
+            box-shadow: none;
         }
         .header-dark {
             background-color: #343a40;
@@ -30,70 +63,77 @@
             border-image-slice: 1;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             display: flex;
-            flex-direction: column;
             align-items: center;
-            text-align: center;
         }
-        .btn-submit-dark {
-            font-size: 1.2rem;
-            background-color: #444;
+        .header-small {
+            background-color: #343a40;
             color: #fff;
-            padding: 10px 20px;
+            padding: 10px;
             border-radius: 5px;
-            border: 2px solid #343a40;
-            display: inline-block;
+            margin-bottom: 15px;
+            font-family: 'Roboto', sans-serif;
+            border: 1px solid transparent;
+            border-image: linear-gradient(to right, #c0c0c0, #ffffff);
+            border-image-slice: 1;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: fit-content;
+            max-width: 400px;
+            margin: 0 auto 15px auto;
             text-align: center;
-            text-decoration: none;
-            transition: background-color 0.3s ease;
-            margin-top: 10px;
-            width: 100%;
         }
-        .btn-submit-dark:hover {
-            background-color: #333;
+        .back-button {
+            margin-right: 20px;
+            font-size: 2rem;
+        }
+        .back-button a {
+            color: #343a40;
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 50%;
+            border: 2px solid #343a40;
+        }
+        .back-button a:hover {
+            background-color: #23272b;
+            color: #fff;
             border-color: #23272b;
         }
-        .form-control, .form-select {
-            background-color: #23272b; /* Darker background for input fields */
-            color: #fff;
-            border: 1px solid #343a40;
-        }
-        .form-control::placeholder {
-            color: #c0c0c0; /* Placeholder text color */
-        }
-        .form-control:focus, .form-select:focus {
-            background-color: #23272b;
-            color: #fff;
-            border-color: #1d2124;
-            box-shadow: none;
-        }
-        .alert-primary {
-            background-color: #23272b;
+        .alert {
+            background-color: #343a40;
             color: #fff;
             border: 1px solid #343a40;
         }
         .alert-danger {
             background-color: #dc3545;
-            color: #fff;
-            border: 1px solid #343a40;
+            border-color: #dc3545;
         }
         .alert-success {
             background-color: #28a745;
-            color: #fff;
+            border-color: #28a745;
+        }
+        .alert-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .pagination .page-link {
+            color: #fff;  /* Changed to white */
+            background-color: #343a40;
             border: 1px solid #343a40;
         }
-        .alert-info {
-            background-color: #17a2b8;
-            color: #fff;
-            border: 1px solid #343a40;
+        .pagination .page-link:hover {
+            background-color: #23272b;
+            border-color: #1d2124;
         }
-        .alert-warning {
-            background-color: #ffc107;
-            color: #343a40;
-            border: 1px solid #343a40;
+        .pagination .active .page-link {
+            color: #fff;
+            background-color: #007bff;
+            border-color: #007bff;
         }
         .required:after {
             content: " *";
             color: red;
+        }
+        .form-label {
+            color: #000;  /* Changed to black */
         }
     </style>
 
@@ -118,10 +158,15 @@
 
 <div class="container">
     <div class="header-dark">
-        <h1>Edit Product</h1>
+        <div class="back-button">
+            <a th:href="@{/batch(batchnumber=${batchnumber}, editmode='no', page=1, size=100)}"><i class="bi bi-arrow-left-circle"></i></a>
+<!--            <a th:href="@{/admin}"><i class="bi bi-arrow-left-circle"></i></a>-->
+        </div>
+        <div>
+            <h1>Edit Product</h1>
+            <p>View or Edit Products</p>
+        </div>
     </div>
-
-    <div class="alert alert-primary" role="alert">Create a new Product Data Form entry in the database</div>
     <br>
 
     <div th:if="${editmode == 'no'}">
