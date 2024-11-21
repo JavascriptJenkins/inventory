@@ -200,6 +200,7 @@ class TransactionHelper {
             // this means that someone is returning a product from an already paid transaction
             // This means we need to capture the credit somewhere so the customer can get credit.
             System.out.println("line 202: transactionVO.customercredit: "+transactionVO.customercredit)
+            transactionVO.customercredit == null ? transactionVO.customercredit = 0.00 : transactionVO.customercredit
             transactionVO.customercredit = Math.max(0,transactionVO.customercredit + amountToSubtract)
 
         } else {
