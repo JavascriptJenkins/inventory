@@ -60,19 +60,19 @@ class TransactionVO implements Serializable {
     Double customercredit = 0.00 // this field allows us to track customer credit.  this could be for many reasons.
 
     @JsonProperty
-    Double total;
+    Double total  = 0.00
 
     @JsonProperty
-    Double originalprice;
+    Double originalprice  = 0.00
 
     @JsonProperty
-    Double totalwithtax;
+    Double totalwithtax  = 0.00
 
     @JsonProperty
-    Double paid;
+    Double paid = 0.00
 
     @JsonProperty
-    Double taxpercentage;
+    Double taxpercentage  = 0.00
 
     @JsonProperty
     String notes

@@ -199,6 +199,7 @@ class TransactionHelper {
         ){
             // this means that someone is returning a product from an already paid transaction
             // This means we need to capture the credit somewhere so the customer can get credit.
+            System.out.println("line 202: transactionVO.customercredit: "+transactionVO.customercredit)
             transactionVO.customercredit = Math.max(0,transactionVO.customercredit + amountToSubtract)
 
         } else {
@@ -232,21 +233,26 @@ class TransactionHelper {
 
     }
 
-    // i don't think this will ever be needed, but coding it for protection
     @Transactional
-    TransactionVO checkPotentialForPartialProductCustomerCredit(TransactionVO transactionVO){
-        // todo: we should also account for the possibility that transaction.total - amountToSubtract could end up negative here.
-        // todo: if that is the case, then we need to credit back the customer
-        // the total and the totalwithtax could be different than the original price
-        // if someone has paid some money on the transaction
-        double amounttosubtractInScope = transactionVO.total - transactionVO.paid
+    TransactionVO checkPotentialForPartialProductCustomerCredit(TransactionVO transactionVO) {
+        // Calculate the amount left to subtract
+        double amountToSubtractInScope = transactionVO.total - transactionVO.paid;
 
-        // Check if the value is negative
-        if (amounttosubtractInScope < 0) {
-            // Take the absolute value and apply it back to customer credit
-            transactionVO.customercredit += Math.abs(amounttosubtractInScope)
+        // Log the calculation for debugging purposes
+        System.out.println("Calculated amount to subtract: " + amountToSubtractInScope);
+
+        // Check if the resulting value is negative
+        if (amountToSubtractInScope < 0) {
+            // Credit back the customer for the overpayment
+            double creditToApply = Math.abs(amountToSubtractInScope);
+            transactionVO.customercredit += creditToApply;
+
+            // Log the adjustment for auditing
+            System.out.println("Negative balance detected. Crediting customer: " + creditToApply);
         }
-        return transactionVO
+
+        // Return the updated TransactionVO
+        return transactionVO;
     }
 
     // to keep this simple we are only returning one product at a time ....
