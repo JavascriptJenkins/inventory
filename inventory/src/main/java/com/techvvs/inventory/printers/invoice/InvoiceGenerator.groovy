@@ -76,15 +76,18 @@ class InvoiceGenerator {
         }
         invoice.append("--------------------------------------------------\n\n")
 
+
         // Payment details
-        invoice.append("Payments:\n")
-        invoice.append("-----------------\n")
-        invoice.append(String.format("%-15s %-10s %-10s %-20s\n", "Payment ID", "Amount", "Method", "Date"))
-        invoice.append("--------------------------------------------------\n")
-        transaction.payment_list.each { payment ->
-            invoice.append(String.format("%-15s \$%-10.2f %-10s %s\n", payment.paymentid, payment.amountpaid, payment.paymenttype, payment.createTimeStamp))
+        if (transaction.payment_list.size() > 0) {
+            invoice.append("Payments:\n")
+            invoice.append("-----------------\n")
+            invoice.append(String.format("%-15s %-10s %-10s %-20s\n", "Payment ID", "Amount", "Method", "Date"))
+            invoice.append("--------------------------------------------------\n")
+            transaction.payment_list.each { payment ->
+                invoice.append(String.format("%-15s \$%-10.2f %-10s %s\n", payment.paymentid, payment.amountpaid, payment.paymenttype, payment.createTimeStamp))
+            }
+            invoice.append("--------------------------------------------------\n\n")
         }
-        invoice.append("--------------------------------------------------\n\n")
 
         // Return details (if any)
         if (transaction.return_list != null && transaction.return_list.size() > 0) {
@@ -98,34 +101,21 @@ class InvoiceGenerator {
             invoice.append("--------------------------------------------------\n\n")
         }
 
-        // Discount details (if any)
-//        if (transaction.discount_list != null && transaction.discount_list.size() > 0) {
-//            invoice.append("Discounts:\n")
-//            invoice.append("-----------------\n")
-//            invoice.append(String.format("%-30s %-10s %-20s\n", "Discount Name", "Price", "Date"))
-//            invoice.append("--------------------------------------------------\n")
-//            transaction.discount_list.each { discountvo ->
-//                invoice.append(String.format("%-30s \$%-10.2f %s\n", discountvo.name, discountvo.discountamount, discountvo.createTimeStamp))
-//            }
-//            invoice.append("--------------------------------------------------\n\n")
-//        }
 
-        // todo: recalc this
+        if(transaction.discount_list.size()>0){
+            invoice.append("Discounts:\n")
+            invoice.append("-----------------\n")
+            transaction.discount_list.each { discountvo ->
+                invoice.append(String.format("Discount: %-20s \$%-10.2f\n", discountvo.name, discountvo.discountamount))
+            }
+        }
 
-//        boolean hasdiscount = transaction.discount
 
-// todo: conversion problem here
-        // Summary section (Subtotal, Tax, Total, etc.)
+        invoice.append("-----------------\n")
+        if (transaction.customercredit > 0) {
+            invoice.append(String.format("%-30s \$%-10.2f\n", "Customer Credit", transaction.customercredit))
+        }
         invoice.append(String.format("%-30s \$%-10.2f\n", "Subtotal", transaction.originalprice))
-
-//        if(hasdiscount && transaction.discount.discountpercentage > 0){
-//            invoice.append(String.format("Discount %%:                 \$%.2f%%\n", transaction.discount.discountpercentage));
-//        }
-//        if(hasdiscount && transaction.discount.discountamount > 0){
-//            invoice.append(String.format("Discount Amount:                 \$%-10f\n", transaction.discount.discountamount))
-//        }
-//
-//        double discountpercentage = hasdiscount ? transaction.discount.discountpercentage : 0
 
         invoice.append(String.format("Total (with tax)          \$%-10.2f\n", formattingUtil.calculateTotalWithTax(transaction.total, transaction.taxpercentage, 0.00))) // passing 0.00 in here cuz discount was already applied to the total
         invoice.append(String.format("Paid:                     \$%-10s\n", transaction.paid == null ? '0' : transaction.paid))
