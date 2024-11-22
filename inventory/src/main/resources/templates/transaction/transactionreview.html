@@ -439,7 +439,11 @@
 
         </div>
         <div class="col-md-4">
-            <h3><a class="btn btn-secondary headerbutton btn-lg" th:href="@{/transaction/delivery?size=5&page=1&transactionid=__${transaction.transactionid}__&popup=1}">Delivery</a></h3>
+            <h3><a class="btn btn-secondary headerbutton btn-lg" th::href="@{/transaction/delivery?size=5&page=1&transactionid=__${transaction.transactionid}__&popup=1}">Delivery</a></h3>
+            <h6 style="margin-top: 80px" th:if="${transaction.customercredit > 0}">
+                    Customer Credit:
+                <span th:text="${transaction.customercredit}"></span>
+            </h6>
         </div>
     </div>
     <br>
@@ -493,7 +497,11 @@
     </div>
 
     <div class="d-inline">
-        <a th:href="@{/transaction/discount?transactionid=__${transaction.transactionid}__&producttypeid=__${transaction.product_list[0] != null ? transaction.product_list[0].producttypeid.producttypeid : 0}__}" class="btn btn-warning" style="margin-top:5px;margin-right:5px;float: right;">Discount</a>
+        <a th:href="@{/transaction/discount(transactionid=${transaction.transactionid}, producttypeid=${transaction.product_list?.size() > 0 && transaction.product_list[0]?.producttypeid?.producttypeid != null ? transaction.product_list[0].producttypeid.producttypeid : 0})}"
+           class="btn btn-warning"
+           style="margin-top:5px;margin-right:5px;float: right;">
+            Discount
+        </a>
     </div>
 
     <form id="textoremailInvoiceForm" th:action="@{/checkout/textemailinvoice?size=5&page=1}" th:object="${transaction}" method="post">

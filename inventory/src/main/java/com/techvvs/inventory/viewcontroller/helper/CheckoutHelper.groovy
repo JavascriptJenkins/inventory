@@ -152,10 +152,6 @@ class CheckoutHelper {
         // run a sort on the product list right here
         transactionVO.product_list.sort { a, b -> a.price <=> b.price }
 
-        // Ensure product_list is not null or empty before processing
-        if (transactionVO == null || transactionVO.product_list == null || transactionVO.product_list.isEmpty()) {
-            return transactionVO; // Return early if no products to process
-        }
 
         // Map to track product quantities by barcode
         Map<String, ProductVO> barcodeMap = new HashMap<>();
@@ -188,6 +184,7 @@ class CheckoutHelper {
 
         return transactionVO;
     }
+
 
     TransactionVO sortAndGroupReturns(TransactionVO transactionVO, Model model){
         // Group and count returns by product
