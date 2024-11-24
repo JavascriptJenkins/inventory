@@ -133,7 +133,7 @@ pipeline {
                     dir('inventory') {
                         sshagent(credentials: ['inventory-root-sshkey']) {
                             sh """
-                                scp -o StrictHostKeyChecking=no -r uploads/font/ techvvs@${params.HOSTNAME}:~/deployments/inventory/uploads
+                                scp -o StrictHostKeyChecking=no -r uploads/font/ ${params.SSHUSER}@${params.HOSTNAME}:~/deployments/inventory/uploads
                             """
                         }
                     }
@@ -153,7 +153,7 @@ pipeline {
 
                             // Copy the files
                             sh """
-                                scp -o StrictHostKeyChecking=no -r uploads/globaluserfiles techvvs@${params.HOSTNAME}:~/deployments/inventory/uploads
+                                scp -o StrictHostKeyChecking=no -r uploads/globaluserfiles ${params.SSHUSER}@${params.HOSTNAME}:~/deployments/inventory/uploads
                             """
                         }
                     }
