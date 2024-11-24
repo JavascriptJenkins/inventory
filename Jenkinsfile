@@ -148,7 +148,7 @@ pipeline {
                         sshagent(credentials: ['inventory-root-sshkey']) {
                             // Ensure the target directory exists
                             sh """
-                                ssh -o StrictHostKeyChecking=no techvvs@${params.HOSTNAME} "mkdir -p ~/deployments/inventory/uploads/globaluserfiles"
+                                ssh -o StrictHostKeyChecking=no ${params.SSHUSER}@${params.HOSTNAME} "mkdir -p ~/deployments/inventory/uploads/globaluserfiles"
                             """
 
                             // Copy the files
