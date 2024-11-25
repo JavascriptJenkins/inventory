@@ -32,6 +32,7 @@ class AppConstants {
     public String ADHOC_DIR = "/adhoc/"
     public String BATCH_PRICE_SHEETS_DIR = "/pricesheets/"
     public String COA_DIR = "/coa/"
+    public String FILES_FOR_GLOBAL_USER_DOWNLOAD_DIR = "/globaluserfiles/"
     public String BARCODES_MENU_DIR = "/barcodes/menu/"
     String BARCODES_TRANSFER_DIR = "/adhoc/transfers/"
     String filenameprefix = "upca_"

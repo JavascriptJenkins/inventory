@@ -47,15 +47,13 @@ class ImportBatch {
 
     String IMPORT_DIR_XLSX = "inventory/uploads/xlsx/";
 
-    BatchVO importBatchFromExistingXlsxFile(String filename){
+    BatchVO importBatchFromExistingXlsxFile(String filename) {
 
-        String excelFilePath = IMPORT_DIR_XLSX+filename;
+        String excelFilePath = IMPORT_DIR_XLSX + filename;
 
         try {
-
-
             InputStream inputStream = new FileInputStream(excelFilePath);
-            Workbook workbook = new XSSFWorkbook(inputStream)
+            Workbook workbook = new XSSFWorkbook(inputStream);
 
             // create a batch record in the database
             BatchVO batchVO = importHelper.createBatchRecord(filename);
@@ -67,14 +65,12 @@ class ImportBatch {
             for (Row row : sheet) {
 
                 // skip the first row because it contains the column names
-                if(row.getRowNum() == 0
-                ){
+                if (row.getRowNum() == 0) {
                     continue;
                 }
 
-
                 // now take each row and create a product entry
-                ProductVO productVO = new ProductVO()
+                ProductVO productVO = new ProductVO();
 
                 // set quantity and quantity remaining on the product record in db
                 productVO.setQuantity((int) row?.getCell(0)?.getNumericCellValue());
@@ -82,56 +78,53 @@ class ImportBatch {
                 productVO.setVendorquantity((int) row?.getCell(0)?.getNumericCellValue());
 
                 // set name on the product record in db
-                productVO.setName(row.getCell(1).getStringCellValue().trim());
+                productVO.setName(row.getCell(1) != null ? row.getCell(1).getStringCellValue().trim() : "");
 
                 // set price on the product record in db
-                Double price = Double.valueOf(row?.getCell(2)?.getNumericCellValue());
-                productVO.setPrice(price)
+                Double price = row.getCell(2) != null && row.getCell(2).getCellType() == CellType.NUMERIC
+                        ? Double.valueOf(row?.getCell(2)?.getNumericCellValue())
+                        : null;
+                productVO.setPrice(price);
 
                 // only set barcode if the value is not empty
-                // also, we need to check if length is 11.  If it is, it's because spreadsheets
-                // don't allow leading 0's unless it's explicitly a string type cell
-                // todo: this code doesn't work the way i want it to.... debug this at some point
-                if(11 == row?.getCell(3)?.getStringCellValue()?.trim()?.length()){
-                    productVO.barcode = row?.getCell(3)?.getStringCellValue()?.trim() ? "" : "0"+productVO.barcode
+                String barcodeValue = row?.getCell(3) != null ? row?.getCell(3)?.getStringCellValue()?.trim() : null;
+                if (barcodeValue != null && barcodeValue.length() == 11) {
+                    productVO.barcode = "0" + barcodeValue;
                 } else {
-                    productVO.barcode = row?.getCell(3)?.getStringCellValue()?.trim() ? "" : productVO.barcode
+                    productVO.barcode = barcodeValue != null ? barcodeValue : "";
                 }
 
                 // set the cost from row 4
-                Double cost = row.getCell(4) != null && row.getCell(4).getCellType() == CellType.NUMERIC ? Double.valueOf(row?.getCell(4)?.getNumericCellValue()) : null
-                productVO.cost = cost ?: 0 // if cost is null, set it to 0, otherwise take the value from above
+                Double cost = row.getCell(4) != null && row.getCell(4).getCellType() == CellType.NUMERIC
+                        ? Double.valueOf(row?.getCell(4)?.getNumericCellValue())
+                        : null;
+                productVO.cost = cost != null ? cost : 0;
 
                 // set the value of vendor
-                productVO.setVendor(row.getCell(5).getStringCellValue().trim());
-                productVO.setBagcolor(row.getCell(6).getStringCellValue().trim());
+                productVO.setVendor(row.getCell(5) != null ? row.getCell(5).getStringCellValue().trim() : "");
+                productVO.setBagcolor(row.getCell(6) != null ? row.getCell(6).getStringCellValue().trim() : "");
 
-                productVO.setProductnumber(Integer.valueOf(productHelper.generateProductNumber())); // we are doing a check here to make sure productnumber is unique
+                productVO.setProductnumber(Integer.valueOf(productHelper.generateProductNumber())); // ensure productnumber is unique
 
-                String producttype = row.getCell(7).getStringCellValue().trim().toUpperCase()
+                String producttype = row.getCell(7) != null ? row.getCell(7).getStringCellValue().trim().toUpperCase() : "";
 
-
-                if(row.getCell(8).getStringCellValue() == null || row.getCell(8).getStringCellValue().trim() == ""){
-                    //System.out.println("SKIPPING cell 8 | CRATE POSITION")
-                } else {
+                if (row.getCell(8) != null && !row.getCell(8).getStringCellValue().trim().isEmpty()) {
                     productVO.setCrateposition(row.getCell(8).getStringCellValue().trim()); // crate position
                 }
 
-                if(row.getCell(9) == null){
-                    //System.out.println("SKIPPING cell 9 | CRATE NUMBER")
-                } else {
-                    productVO.setCrate((int) row.getCell(9).getNumericCellValue()) // crate #
+                if (row.getCell(9) != null) {
+                    productVO.setCrate((int) row.getCell(9).getNumericCellValue()); // crate #
                 }
-                // todo: reference this in a constants class
 
+                // Reference this in a constants class
                 boolean exists = productTypeRepo.existsByName(producttype);
-                if(!exists){
+                if (!exists) {
                     productTypeRepo.save(new ProductTypeVO(
                             name: producttype,
                             description: producttype + " description",
                             updateTimeStamp: LocalDateTime.now(),
                             createTimeStamp: LocalDateTime.now()
-                    ))
+                    ));
                 }
                 Optional<ProductTypeVO> productTypeVO = productTypeRepo.findByName(producttype);
 
@@ -143,33 +136,31 @@ class ImportBatch {
                 // add the product to the database
                 ProductVO result = importHelper.saveNewProduct(productVO);
 
-                result.setProducttypeid(productTypeVO.get());
+                if (productTypeVO.isPresent()) {
+                    result.setProducttypeid(productTypeVO.get());
+                }
                 result = productRepo.save(result);
 
-
-                if(batchVO.getProduct_set() != null){
+                if (batchVO.getProduct_set() != null) {
                     batchVO.getProduct_set().add(productVO);
                 } else {
                     batchVO.setProduct_set(new HashSet<>());
                     batchVO.getProduct_set().add(productVO);
                 }
 
-
                 // add the product to the batch
-                batchVO = importHelper.addProductToBatch(batchVO,result);
-
+                batchVO = importHelper.addProductToBatch(batchVO, result);
 
                 batchvotoreturn = batchRepo.save(batchVO);
-
             }
         } catch (Exception e) {
-            System.out.println("Problem with processing the uploaded xlsx file. " +e.getMessage());
+            System.out.println("Problem with processing the uploaded xlsx file. " + e.getMessage());
             e.printStackTrace();
         }
 
-        return batchvotoreturn
-
+        return batchvotoreturn;
     }
+
 
 
 

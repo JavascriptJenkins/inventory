@@ -1,5 +1,6 @@
 package com.techvvs.inventory.printers
 
+import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.printers.service.BrotherHLL2300DSeriesSevice
 import com.techvvs.inventory.printers.service.MunbynITPP905Service
@@ -36,7 +37,9 @@ class PrinterService {
 
     void printInvoice(TransactionVO transactionVO, boolean printinvoice, boolean onlysavetofilesystem) {
 
+        List<ProductVO> unmodifiedlist = transactionVO.product_list
         brotherHLL2300DSeriesSevice.printInvoiceApachePDFBOX(transactionVO, printinvoice, onlysavetofilesystem)
+        transactionVO.product_list = unmodifiedlist
     }
 
 

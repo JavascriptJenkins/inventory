@@ -75,6 +75,10 @@ class ProductVO implements Serializable, Comparable<ProductVO> {
     @Transient
     Integer displayquantity
 
+    // for display purposes only
+    @Transient
+    Integer displayquantityReturned
+
     // generic fields below
     @JsonProperty
     LocalDateTime updateTimeStamp;

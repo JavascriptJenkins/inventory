@@ -127,6 +127,40 @@ pipeline {
             }
         }
 
+        stage('Copy Font Files') {
+            steps {
+                script {
+                    dir('inventory') {
+                        sshagent(credentials: ['inventory-root-sshkey']) {
+                            sh """
+                                scp -o StrictHostKeyChecking=no -r uploads/font/ ${params.SSHUSER}@${params.HOSTNAME}:~/deployments/inventory/uploads
+                            """
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Copy Global User Files') {
+            steps {
+                script {
+                    dir('inventory') {
+                        sshagent(credentials: ['inventory-root-sshkey']) {
+                            // Ensure the target directory exists
+                            sh """
+                                ssh -o StrictHostKeyChecking=no ${params.SSHUSER}@${params.HOSTNAME} "mkdir -p ~/deployments/inventory/uploads/globaluserfiles"
+                            """
+
+                            // Copy the files
+                            sh """
+                                scp -o StrictHostKeyChecking=no -r uploads/globaluserfiles ${params.SSHUSER}@${params.HOSTNAME}:~/deployments/inventory/uploads
+                            """
+                        }
+                    }
+                }
+            }
+        }
+
         stage('Build') {
             steps {
                 script {

@@ -123,61 +123,6 @@
             console.log(Array.from(seenBarcodes)); // This will log the unique barcodes
         }
     </script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            var adhocDiscount = document.getElementById("discountAdhocInputId");
-            var hiddenAdhocDiscountId = document.getElementById("hiddenAdhocDiscountId");
-            var applyDiscountButton = document.getElementById("applyDiscountButton");
-            var totalPriceInput = document.getElementById("totalPriceInput");
-
-            // Create a message element for invalid inputs
-            var messageElement = document.createElement("span");
-            messageElement.id = "discountMessage";
-            messageElement.style.color = "red";
-            adhocDiscount.parentNode.insertBefore(messageElement, adhocDiscount.nextSibling);
-
-            // Helper function to check if a value is numerical
-            function isNumeric(value) {
-                return !isNaN(value) && value.trim() !== "";
-            }
-
-            // Bind the keyup event to discountAdhocInputId
-            adhocDiscount.addEventListener("keyup", function () {
-                var discountValue = adhocDiscount.value;
-                var totalPriceValue = parseFloat(totalPriceInput.value);
-
-                // Clear previous message and reset button
-                messageElement.textContent = "";
-                applyDiscountButton.disabled = false;
-
-                if (!isNumeric(discountValue) || parseFloat(discountValue) > totalPriceValue) {
-                    // Show error message and disable the button
-                    if (!isNumeric(discountValue)) {
-                        messageElement.textContent = "Please enter a numerical value.";
-                    } else if (parseFloat(discountValue) > totalPriceValue) {
-                        messageElement.textContent = "Discount cannot exceed the total price.";
-                    }
-                    applyDiscountButton.disabled = true;
-                    hiddenAdhocDiscountId.value = "";
-                } else {
-                    // If valid, update the hidden input
-                    hiddenAdhocDiscountId.value = discountValue;
-                }
-            });
-        });
-
-        function applyDiscount() {
-            document.getElementById("applyDiscountCartForm").submit();
-        }
-    </script>
-
-
-    <script>
-        function removeDiscount() {
-            // Submit the form
-            document.getElementById("removeDiscountCartForm").submit();
-        }
-    </script>
 
 
 
@@ -214,50 +159,8 @@
                 </div>
             </div>
         </div>
-        <div class="row" style="margin-bottom: 5px;">
-            <div class="col-md-6" style="margin-bottom: 5px;">
-                <b><label class="form-label">Discount</label></b>
-                <div th:if="${cart.cartid != null && cart.discount != null}">
-                    <p th:each="discount : ${discounts}" th:if="${discount.discountid == cart.discount.discountid}" th:text="${discount.name}">Discount Name</p>
-                </div>
-                <div th:if="${cart.discount == null}" style="margin-top:10px;">
-                    <b><label class="form-label">Enter Discount Amount</label></b>
-                    <input id="discountAdhocInputId" name="adhocdisount" type="number">
-                </div>
-            </div>
-            <div th:if="${cart.discount == null}" class="col-md-6" style="margin-bottom: 5px;">
-                <button id="applyDiscountButton" class="btn btn-primary" type="button" onclick="applyDiscount()">Apply Discount</button>
-            </div>
-            <div th:if="${cart.discount != null}" class="col-md-6" style="margin-bottom: 5px;">
-                <button class="btn btn-warning" type="button" onclick="removeDiscount()">Remove Discount</button>
-            </div>
-        </div>
 
 
-        <div th:if="${cart.discount != null && cart.discount.name != null}" class="row" style="margin-bottom: 5px;">
-            <div class="col-md-6" style="margin-bottom: 5px;">
-                <label class="form-label"><b>Original Price</b></label>
-                <input type="hidden" class="form-control" placeholder="total" aria-label="total" readonly>
-
-                <!-- If discount percentage is applied -->
-                <p th:if="${cart.discount != null && cart.discount.discountpercentage > 0}"
-                   th:text="${#numbers.formatDecimal(cart.total / (1 - (cart.discount.discountpercentage / 100.0)), 1, 'COMMA', 2, 'POINT')}">
-                </p>
-
-                <!-- If discount amount is applied -->
-                <p th:if="${cart.discount != null && cart.discount.discountamount > 0}"
-                   th:text="${#numbers.formatDecimal(cart.originalprice, 1, 'COMMA', 2, 'POINT')}">
-                </p>
-            </div>
-            <div class="col-md-6" style="margin-bottom: 5px;">
-                <label class="form-label"><b>Discount Amount</b></label>
-                <input type="hidden" class="form-control" placeholder="total" aria-label="total" readonly>
-                <p th:if="${cart.discount != null && cart.discount.discountpercentage > 0}" th:text="${#numbers.formatDecimal((cart.total / (1 - (cart.discount.discountpercentage / 100.0)) - cart.total), 1, 'COMMA', 2, 'POINT')}"></p>
-
-
-                <p th:if="${cart.discount != null && cart.discount.discountamount > 0}" th:text="${cart.originalprice - cart.discount.discountamount < 0 ? cart.discount.discountamount : cart.discount.discountamount}"></p>
-            </div>
-        </div>
 
         <div class="row" style="margin-bottom: 5px;">
             <div class="col-md-6" style="margin-bottom: 5px;">
@@ -292,31 +195,12 @@
                 </tr>
                 </tbody>
             </table>
-<!--            <input id="hiddenDiscountId" type="hidden" th:field="*{discount.discountid}">-->
             <input type="hidden" th:field="*{product_cart_list}">
         </div>
 
         <button type="submit" class="btn-submit-dark">Submit</button>
     </form>
-    <form id="applyDiscountCartForm" th:action="@{/checkout/applydiscount?page=1&size=5}" th:object="${cart}" method="post">
-        <input type="hidden" th:field="*{product_cart_list}">
-        <input type="hidden" th:field="*{isprocessed}">
-        <input type="hidden" th:field="*{updateTimeStamp}">
-        <input type="hidden" th:field="*{createTimeStamp}">
-        <input type="hidden" th:field="*{total}" class="form-control" placeholder="total" aria-label="total" readonly>
-        <input type="hidden" th:field="*{cartid}">
-        <input type="hidden" th:field="*{customer.customerid}">
-        <input id="hiddenAdhocDiscountId" type="hidden" th:field="*{discount.discountamount}">
-    </form>
-    <form id="removeDiscountCartForm" th:action="@{/checkout/removediscount?page=1&size=5}" th:object="${cart}" method="post">
-        <input type="hidden" th:field="*{product_cart_list}">
-        <input type="hidden" th:field="*{isprocessed}">
-        <input type="hidden" th:field="*{updateTimeStamp}">
-        <input type="hidden" th:field="*{createTimeStamp}">
-        <input type="hidden" th:field="*{total}" class="form-control" placeholder="total" aria-label="total" readonly>
-        <input type="hidden" th:field="*{cartid}">
-        <input type="hidden" th:field="*{customer.customerid}">
-    </form>
+
 </div>
 
 </body>

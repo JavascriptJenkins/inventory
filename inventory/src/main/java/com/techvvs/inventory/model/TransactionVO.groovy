@@ -28,16 +28,18 @@ class TransactionVO implements Serializable {
 
     @JsonProperty
     @ElementCollection(fetch = FetchType.LAZY)
-    List<PaymentVO> payment_list
+    List<PaymentVO> payment_list = new ArrayList<PaymentVO>()
 
-    @JsonProperty
-    @OneToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn(name="discountid")
-    DiscountVO discount
+    @Transient
+    DiscountVO discount = new DiscountVO() // tracking the discount in scope here
 
     @JsonProperty
     @ElementCollection(fetch = FetchType.LAZY)
-    List<ReturnVO> return_list
+    List<DiscountVO> discount_list = new ArrayList<DiscountVO>()
+
+    @JsonProperty
+    @ElementCollection(fetch = FetchType.LAZY)
+    List<ReturnVO> return_list = new ArrayList<ReturnVO>()
 
     @JsonProperty
     @ElementCollection(fetch = FetchType.EAGER)
@@ -53,20 +55,24 @@ class TransactionVO implements Serializable {
     @JoinColumn(name="deliveryid")
     DeliveryVO delivery; // delivery contains the list of packages and crates
 
+    // if someone returns a product when the transaction is already paid for/processed, it needs to be accounted for in customer credit
     @JsonProperty
-    Double total;
+    Double customercredit = 0.00 // this field allows us to track customer credit.  this could be for many reasons.
 
     @JsonProperty
-    Double originalprice;
+    Double total  = 0.00
 
     @JsonProperty
-    Double totalwithtax;
+    Double originalprice  = 0.00
 
     @JsonProperty
-    Double paid;
+    Double totalwithtax  = 0.00
 
     @JsonProperty
-    Double taxpercentage;
+    Double paid = 0.00
+
+    @JsonProperty
+    Double taxpercentage  = 0.00
 
     @JsonProperty
     String notes
@@ -76,11 +82,11 @@ class TransactionVO implements Serializable {
 
     // This will be 0 until the transaction is actually processed
     @JsonProperty
-    Integer isprocessed
+    Integer isprocessed = 0
 
     // if this is 1, we know to display the package_set and we know we are dealing with a package transaction
     @JsonProperty
-    Integer ispackagetype
+    Integer ispackagetype = 0
 
     @JsonProperty
     @OneToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)

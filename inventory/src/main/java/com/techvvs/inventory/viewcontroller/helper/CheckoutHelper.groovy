@@ -146,16 +146,12 @@ class CheckoutHelper {
 
 
 
-    TransactionVO hydrateTransientQuantitiesForTransactionDisplay(TransactionVO transactionVO) {
+    TransactionVO hydrateTransientQuantitiesForTransactionDisplay(TransactionVO transactionVO, Model model) {
         int totalDisplayQuantity = 0
 
         // run a sort on the product list right here
         transactionVO.product_list.sort { a, b -> a.price <=> b.price }
 
-        // Ensure product_list is not null or empty before processing
-        if (transactionVO == null || transactionVO.product_list == null || transactionVO.product_list.isEmpty()) {
-            return transactionVO; // Return early if no products to process
-        }
 
         // Map to track product quantities by barcode
         Map<String, ProductVO> barcodeMap = new HashMap<>();
@@ -183,7 +179,19 @@ class CheckoutHelper {
 
         transactionVO.displayquantitytotal = totalDisplayQuantity
 
+        // now group the returns
+        transactionVO =sortAndGroupReturns(transactionVO, model)
+
         return transactionVO;
+    }
+
+
+    TransactionVO sortAndGroupReturns(TransactionVO transactionVO, Model model){
+        // Group and count returns by product
+        def groupedReturns = transactionVO.return_list.groupBy { it.product.product_id }
+                .collectEntries { key, value -> [(value[0].product): value.size()] }
+        model.addAttribute("groupedReturns", groupedReturns);
+        return transactionVO
     }
 
     TransactionVO bindtransients(TransactionVO transactionVO, String phone, String email, String action){

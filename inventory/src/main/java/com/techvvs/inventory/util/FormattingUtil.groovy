@@ -1,6 +1,8 @@
 package com.techvvs.inventory.util
 
 import com.techvvs.inventory.model.CartVO
+import com.techvvs.inventory.model.ProductTypeVO
+import com.techvvs.inventory.model.ProductVO
 import org.springframework.stereotype.Component
 
 import java.text.DecimalFormat
@@ -24,6 +26,65 @@ class FormattingUtil {
 
     static String formatInvoiceItem(String name, int quantity, Double price) {
         return String.format("%-30s %5d %10.2f\n", name, quantity, price);
+    }
+
+
+
+    //
+    public static double calculateTotalWithTaxBasedOnTotalDiscountAmount(
+            double taxPercentage,
+            double totalDiscountAmount
+    ) {
+        // Validate input values
+        if (taxPercentage < 0 || totalDiscountAmount < 0) {
+            throw new IllegalArgumentException("Total, tax percentage, and total discount amount must be non-negative.");
+        }
+
+        // Apply the total discount amount directly
+        double discountedTotal = Math.max(0, totalDiscountAmount);
+
+        // Ensure the discounted total is not less than zero
+        if (discountedTotal < 0) {
+            discountedTotal = 0;
+        }
+
+        // Calculate the tax amount on the discounted total
+        double taxAmount = Math.max(0,discountedTotal * (taxPercentage / 100.0));
+
+        // Calculate the total with tax
+        double totalWithTax = Math.max(0,discountedTotal + taxAmount);
+
+        // Round to 2 decimal places for currency precision
+        return Math.round(totalWithTax * 100.0) / 100.0;
+    }
+
+    // re-calc the total with tax field on transaction by applying the per unit discount back to the total
+    public static double calculateTotalWithTaxBasedOnTotalDiscountAmountForDiscountRemoval(
+            double total,
+            double taxPercentage,
+            double totalDiscountAmount
+    ) {
+        // Validate input values
+        if (total < 0 || taxPercentage < 0 || totalDiscountAmount < 0) {
+            throw new IllegalArgumentException("Total, tax percentage, and total discount amount must be non-negative.");
+        }
+
+        // Apply the total discount amount credit back to the total
+        double discountedTotal = Math.max(0,total + totalDiscountAmount);
+
+        // Ensure the discounted total is not less than zero
+        if (discountedTotal < 0) {
+            discountedTotal = 0;
+        }
+
+        // Calculate the tax amount on the discounted total
+        double taxAmount = Math.max(0,discountedTotal * (taxPercentage / 100.0));
+
+        // Calculate the total with tax
+        double totalWithTax = Math.max(0,discountedTotal + taxAmount);
+
+        // Round to 2 decimal places for currency precision
+        return Math.round(totalWithTax * 100.0) / 100.0;
     }
 
     /*In most cases, if the total amount of a transaction is discounted to zero, no sales tax is due.
@@ -123,7 +184,7 @@ class FormattingUtil {
         }
 
         // Apply the discount to the total
-        double discountedTotal = total - discountAmount;
+        double discountedTotal = Math.max(0,total - discountAmount)
 
         // Ensure the discounted total is not less than zero
         if (discountedTotal < 0) {
@@ -134,6 +195,85 @@ class FormattingUtil {
         return Math.round(discountedTotal * 100.0) / 100.0;
     }
 
+
+    // calculates total before tax but with discount
+    public static double calculateTotalWithDiscountAmountPerUnitByProductType(
+            double discountAmount,
+            ProductTypeVO productTypeVO,
+            List<ProductVO> product_list
+    ) {
+
+        Double totaldiscounttoapply = 0.00
+        Double perunitdiscount = discountAmount
+
+        for(ProductVO productVO : product_list){
+            // check every product in the list, if it matches the producttype then increment the discount
+            if(productVO.producttypeid.producttypeid == productTypeVO.producttypeid){
+                Math.max(0,totaldiscounttoapply += perunitdiscount)
+            }
+        }
+
+        return Math.max(0, totaldiscounttoapply)
+    }
+
+    // This method removes a discount and applies a per unit credit back to transaction.total and transaction.totalwithtax
+    public static double calculateTotalWithRemovedDiscountAmountPerUnitByProductType(
+            double total,
+            double perunitdiscount,
+            ProductTypeVO productTypeVO,
+            List<ProductVO> product_list
+    ) {
+
+        Double totaldiscountcredittoapply = 0.00
+
+        for(ProductVO productVO : product_list){
+            // check every product in the list, if it matches the producttype then increment the discount
+            if(productVO.producttypeid.producttypeid == productTypeVO.producttypeid){
+                Math.max(0, totaldiscountcredittoapply += perunitdiscount)
+            }
+        }
+
+        double newtotal = Math.max(0, total + totaldiscountcredittoapply)
+
+        double totalpriceofthisgroupofproducts = 0.0
+
+        for(ProductVO productVO : product_list){
+            // check every product in the list, if it matches the producttype then increment the discount
+            if(productVO.producttypeid.producttypeid == productTypeVO.producttypeid){
+                Math.max(0, totalpriceofthisgroupofproducts += productVO.price)
+            }
+        }
+
+        // this ensures that the maximum credit they can get back is the price of this group of products
+        if(totalpriceofthisgroupofproducts > newtotal){
+            newtotal = totalpriceofthisgroupofproducts
+        }
+
+        return newtotal // apply the per unit discount credit back to the total
+    }
+
+
+    // calculates total before tax but with discount
+    public static double calculateTotalWithTaxWithDiscountAmountPerUnitByProductType(
+            double totalwithtax,
+            double discountAmount,
+            ProductTypeVO productTypeVO,
+            List<ProductVO> product_list
+    ) {
+
+        Double totaldiscounttoapply = 0.00
+        Double perunitdiscount = discountAmount
+
+        for(ProductVO productVO : product_list){
+            // check every product in the list, if it matches the producttype then increment the discount
+            if(productVO.producttypeid.producttypeid == productTypeVO.producttypeid){
+                Math.max(0, totaldiscounttoapply += perunitdiscount)
+            }
+        }
+
+        return Math.max(0,totalwithtax - totaldiscounttoapply) // apply the per unit discount to the total
+
+    }
 
 
 
@@ -148,7 +288,7 @@ class FormattingUtil {
         }
 
         // Apply the discount to the total
-        double discountedTotal = total - discount;
+        double discountedTotal = Math.max(0,total - discount);
 
         // Ensure the discounted total is not less than zero
         if (discountedTotal < 0) {
@@ -156,7 +296,7 @@ class FormattingUtil {
         }
 
         // Calculate the tax amount on the discounted total
-        double taxAmount = discountedTotal * (taxPercentage / 100.0);
+        double taxAmount = Math.max(0,discountedTotal * (taxPercentage / 100.0));
 
         // Round to 2 decimal places
         return Math.round(taxAmount * 100.0) / 100.0;

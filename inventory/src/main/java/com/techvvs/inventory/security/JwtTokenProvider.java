@@ -1,10 +1,7 @@
 package com.techvvs.inventory.security;
 
 import com.techvvs.inventory.exception.CustomException;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -88,7 +85,6 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-  // this should probably be signed with a different key than regular user tokens
   public String createTokenForSmsDownloadLinks(String email, List<Role> roles) {
 
     Claims claims = Jwts.claims().setSubject(email);
@@ -254,7 +250,8 @@ public class JwtTokenProvider {
 
   public boolean validateTokenForSmsPhoneDownload(String token) {
     try {
-      Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
+      // todo: parse the claims and make sure it has the role of "DOWNLOAD_LINK"
+      Jws<Claims> claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
       return true;
     } catch (JwtException | IllegalArgumentException e) {
       throw new CustomException("Expired or invalid JWT token", HttpStatus.FORBIDDEN);

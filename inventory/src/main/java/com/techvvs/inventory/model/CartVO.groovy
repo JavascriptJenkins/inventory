@@ -38,9 +38,9 @@ class CartVO implements Serializable{
     )
     List<ProductVO> product_cart_list
 
-    @OneToOne
-    @JoinColumn(name = "discountid")
-    DiscountVO discount
+//    @OneToOne
+//    @JoinColumn(name = "discountid")
+//    DiscountVO discount
 
     @OneToOne
     @JoinColumn(name = "customerid")

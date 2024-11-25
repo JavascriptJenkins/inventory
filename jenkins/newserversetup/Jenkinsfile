@@ -215,7 +215,7 @@ EOF
                             done
 
                             # Check and create the subdirectories inside 'uploads'
-                            for subdir in coa font xlsx; do
+                            for subdir in coa font xlsx globaluserfiles; do
                                 if [ ! -d ~/deployments/inventory/uploads/\$subdir ]; then
                                     mkdir ~/deployments/inventory/uploads/\$subdir
                                 fi

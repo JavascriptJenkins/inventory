@@ -123,13 +123,29 @@ class CartDeleteService {
                 }
             } else {
 
-                int cartcount = getCountOfProductInCartByBarcode(cartVO) + cartVO.quantityselected
-                // check here if the quantity we are trying to add will exceed the quantity in stock
+//                if(cartVO.quantityselected == 1){
+                    // this will check against the total quantity in stock
+                    if(cartVO.quantityselected <= productVO.get().quantityremaining){
+                        return cartVO// return early here, no need to do below check for quantityselected of 1
+                    } else {
+                        model.addAttribute("errorMessage","Quantity exceeds quantity in stock")
+                        // here we have to rebind the cart
+                        if(cartVO.cartid == null || cartVO.cartid == 0){
+                            // do nothing
+                        } else {
+                            cartVO = cartRepo.findById(cartVO.cartid).get()
+                            model.addAttribute("cart", cartVO);
+                        }
+                    }
+//                }
 
-                // this will check against the total quantity in stock
-                if(cartcount > productVO.get().quantity || cartcount > productVO.get().quantityremaining){
-                    model.addAttribute("errorMessage","Quantity exceeds quantity in stock")
-                }
+//                int cartcount = getCountOfProductInCartByBarcode(cartVO) + cartVO.quantityselected
+//                // check here if the quantity we are trying to add will exceed the quantity in stock
+//
+//                // this will check against the total quantity in stock
+//                if(cartcount > productVO.get().quantity || cartcount > productVO.get().quantityremaining){
+//                    model.addAttribute("errorMessage","Quantity exceeds quantity in stock")
+//                }
 
             }
 

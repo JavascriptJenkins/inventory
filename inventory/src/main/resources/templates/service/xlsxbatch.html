@@ -4,76 +4,160 @@
     <meta charset="UTF-8">
     <title>Upload Xlsx Batch</title>
 
-
-    <script
-            src="https://code.jquery.com/jquery-3.6.0.js"
-            integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="
-            crossorigin="anonymous"></script>
-
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    <!-- JavaScript Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-kQtW33rZJAHjgefvhyyzcGF3C5TFyBQBA13V1RKPf4uH+bwyzQxZ6CmMZHmNBEfJ" crossorigin="anonymous"></script>
-
-
-    <link rel="stylesheet" type="text/css" media="all" href="/css/table.css" th:href="@{/css/table.css}" />
-    <!-- Bootstrap Font Icon CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" media="all" href="/css/table.css" th:href="@{/css/table.css}" />
 
     <style>
-      .required:after {
-        content:" *";
-        color: red;
-      }
-    </style>
+        body {
+            color: #fff;
+            font-family: 'Roboto', sans-serif;
+            background-color: #343a40;
+        }
+        .header-dark {
+            background-color: #343a40;
+            color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-family: 'Roboto', sans-serif;
+            border: 1px solid transparent;
+            border-image: linear-gradient(to right, #c0c0c0, #ffffff);
+            border-image-slice: 1;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+        }
+        .back-button {
+            margin-right: 20px;
+            font-size: 2rem;
+        }
+        .back-button a {
+            color: #343a40;
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 50%;
+            border: 2px solid #343a40;
+        }
+        .back-button a:hover {
+            background-color: #23272b;
+            color: #fff;
+            border-color: #23272b;
+        }
+        .alert {
+            display: flex;
+            align-items: center;
+            color: #fff;
+            background-color: #000;
+            border: 1px solid #fff;
+        }
+        .alert-info {
+            color: #fff;
+            background-color: #000;
+            border: 1px solid #fff;
+        }
+        .alert-info .bi-info-circle {
+            margin-right: 10px;
+            padding-right: 10px;
+            font-size: 1.2rem;
+            color: #007bff;
+        }
+        .btn-primary {
+            color: #fff;
+            background-color: #000;
+            border: 1px solid #fff;
+        }
+        .btn-primary:hover {
+            background-color: #343a40;
+            border-color: #fff;
+        }
+        .alert-custom {
+            background-color: #000;
+            color: #fff;
+            border: 1px solid #fff;
+            padding: 10px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+        }
+            /* Download button dark theme styling */
+        .download-button {
+            display: inline-block;
+            color: #fff;
+            background-color: #212529;
+            border: 2px solid #fff;
+            border-radius: 5px;
+            padding: 10px 20px;
+            text-decoration: none;
+            font-weight: 500;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
 
+        /* Hover effect for the download button */
+        .download-button:hover {
+            background-color: #343a40;
+            color: #c0c0c0;
+            border-color: #c0c0c0;
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+        }
+    </style>
 </head>
 <body>
-
-
-
 <div th:insert="fragments/adminnavbar.html :: adminnavbarfragment"> </div>
-
-
 <div class="container">
+    <div class="header-dark">
+        <div class="back-button">
+            <a href="/admin"><i class="bi bi-arrow-left-circle"></i></a>
+        </div>
+        <div>
+            <h1>Upload Xlsx Batch</h1>
+            <p>Upload an xlsx file to create a batch.</p>
+        </div>
+    </div>
+
+<!--    <div>-->
+<!--        <a href="http://localhost:8080/file/smsdownload2?customJwtParameter="+cellphonetoken+"&filename="+filename.replace(" ", "_")" class="btn btn-primary">Download Template File</a>-->
+<!--    </div>-->
+
+    <div class="row">
+        <div class="col-md-4">
+            <a href="http://localhost:8080/file/inappdownload?filename=techvvs_inventory_template.xlsx" class="download-button">
+                Download Template File
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a href="http://localhost:8080/file/inappdownload?filename=sample_inventory_template.xlsx" class="download-button">
+                Download Sample Batch File
+            </a>
+        </div>
+
+    </div>
 
 
-    <div class="alert alert-primary" role="alert" >Upload an xlslx price sheet to make a batch</div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="alert alert-custom" style="margin-top: 20px;" role="alert">
+                <i class="bi bi-info-circle" style="margin-right: 10px;"></i>
+
+                Upload an xlsx price sheet to make a batch
+            </div>
+        </div>
+    </div>
 
     <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
     <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
 
-    <br>
-
-
-            <br>
-            <br>
-
-
-            <div style="margin-bottom: 5px;" class="mx-auto">
-
-                <div class="alert alert-info" role="alert" >Upload a file</div>
-                <!-- pass the batch object to the upload file controller to get the correct ID to save it under -->
-                <form method="post" th:action="@{/file/xlsx/upload}" enctype="multipart/form-data">
-                    <div class="form-group">
-                            <input type="file" name="file" class="form-control-file">
-                    </div>
-                    <br>
-                    <button type="submit" class="btn btn-primary">Upload File</button>
-
-                </form>
-            </div>
-
-
+    <form method="post" th:action="@{/file/xlsx/upload}" enctype="multipart/form-data">
+        <div class="form-group">
+            <input type="file" name="file" class="form-control-file">
         </div>
-
-
-
-
-
-
-
+        <br>
+        <button type="submit" class="btn btn-primary">Upload File</button>
+    </form>
 </div>
-
-
 </body>
 </html>

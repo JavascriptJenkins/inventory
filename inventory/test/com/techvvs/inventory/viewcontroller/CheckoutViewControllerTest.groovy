@@ -309,7 +309,7 @@ class CheckoutViewControllerTest extends Specification {
         then:
         1 * checkoutHelper.validateCartReviewVO(cartVO, model) >> cartVO
         1 * model.getAttribute('errorMessage') >> null
-        1 * cartService.applyAdhocDiscount(cartVO) >> cartVO
+        //1 * cartService.applyAdhocDiscount(cartVO) >> cartVO
         1 * checkoutHelper.getExistingCart(cartid) >> cartVO
         1 * checkoutHelper.hydrateTransientQuantitiesForDisplay(cartVO) >> cartVO
         1 * model.addAttribute("cart", cartVO)
@@ -365,7 +365,7 @@ class CheckoutViewControllerTest extends Specification {
         then:
         1 * checkoutHelper.validateCartReviewVO(cartVO, model) >> cartVO
         1 * model.getAttribute('errorMessage') >> null
-        1 * cartService.removeDiscount(cartVO) >> cartVO
+        //1 * cartService.removeDiscount(cartVO) >> cartVO
         1 * checkoutHelper.getExistingCart(cartid) >> cartVO
         1 * checkoutHelper.hydrateTransientQuantitiesForDisplay(cartVO) >> cartVO
         1 * model.addAttribute("cart", cartVO)
@@ -444,7 +444,7 @@ class CheckoutViewControllerTest extends Specification {
         1 * model.addAttribute("successMessage", "Successfully completed transaction! Thanks "+customerVO.name+"!")
         1 * filePagingService.getFilePageFromDirectory(1, 5, './topdir//transaction/invoice/4532/')  >> filePage
         1 * filePagingService.bindPageAttributesToModel(model, filePage, page, size)
-        1 * checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO) >> transactionVO
+        1 * checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO, model) >> transactionVO
         1 * printerService.printInvoice(transactionVO, false, true)
         1 * model.addAttribute("transaction", transactionVO)
         1 * techvvsAuthService.checkuserauth(model)

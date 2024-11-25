@@ -10,6 +10,7 @@ import com.techvvs.inventory.model.ReturnVO
 import com.techvvs.inventory.model.SystemUserDAO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.service.email.EmailService
+import com.techvvs.inventory.service.transactional.CheckoutService
 import com.techvvs.inventory.util.SendgridEmailUtil
 import com.techvvs.inventory.util.TwilioTextUtil
 import org.springframework.beans.factory.annotation.Autowired
@@ -21,11 +22,13 @@ import org.springframework.data.domain.Sort
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component
+import org.springframework.stereotype.Service
 import org.springframework.ui.Model
 
+import javax.transaction.Transactional
 import java.time.LocalDateTime
 
-@Component
+@Service
 class TransactionHelper {
 
     @Autowired
@@ -52,6 +55,11 @@ class TransactionHelper {
     @Autowired
     EmailService emailService
 
+    @Autowired
+    CheckoutService checkoutService
+
+
+    @Transactional
     void findAllTransactions(Model model,
                              Optional<Integer> page,
                              Optional<Integer> size,
@@ -106,6 +114,7 @@ class TransactionHelper {
 
     }
 
+    @Transactional
     Page<TransactionVO> runPageRequest(Pageable pageable, Optional<Integer> customerid) {
         Page<TransactionVO> pageOfTransaction
                 // this means someone selected a value on the ui and we need to run a filtered query
@@ -118,6 +127,7 @@ class TransactionHelper {
     }
 
 
+    @Transactional
     void sendTextMessageWithDownloadLink(String phonenumber, String filename){
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -143,22 +153,31 @@ class TransactionHelper {
 
 
     // we are only deleting it from the transaction - the original cart association is not removed.
+    @Transactional
     TransactionVO deleteProductFromTransaction(TransactionVO transactionVO, String barcode){
 
         Double amountToSubtract = 0.00
-
+        double amountofdiscount = 0.00
         TransactionVO transactiontoremove = new TransactionVO(transactionid: 0)
         // we are only removing one product at a time
         for(ProductVO productVO : transactionVO.product_list){
             if(productVO.barcode == barcode){
+
+
+                // before doing anything, check to see if there is a discount active on this transaction that needs to be
+                // applied back to the total and totalwithtax fields
+                amountofdiscount = checkoutService.calculateTotalsForRemovingExistingProductFromTransaction(transactionVO, productVO)
+
                 transactionVO.product_list.remove(productVO)
 
 
                 addProductToReturnList(transactionVO, productVO)
-
+                // set the values back to original price before applying the product return math
+//                transactionVO.totalwithtax = Math.max(0,transactionVO.originalprice - amountofdiscount)
+//                transactionVO.total = Math.max(0,transactionVO.originalprice - amountofdiscount)
 
                 productVO.quantityremaining = productVO.quantityremaining + 1
-                amountToSubtract = amountToSubtract + productVO.price
+                amountToSubtract = Math.max(0.00, productVO.price - amountofdiscount)
                 // remove the transaction association from the product
                 for(TransactionVO existingTransaction : productVO.transaction_list){
                     if(existingTransaction.transactionid == transactionVO.transactionid){
@@ -173,14 +192,38 @@ class TransactionHelper {
         }
 
         // check to see if the transaction is fully paid, if so then we don't subtract from the total or totalwithtax
+        // todo: could there be a scenario here where the transactionVO.totalwithtax - transactionVO.paid
         if(
-                transactionVO.totalwithtax - transactionVO.paid == 0 ||
+                Math.max(0, transactionVO.totalwithtax - transactionVO.paid) == 0 ||
                 transactionVO.isprocessed == 1 // if we are returning something from an already paid transaction
         ){
+            // this means that someone is returning a product from an already paid transaction
+            // This means we need to capture the credit somewhere so the customer can get credit.
+            System.out.println("line 202: transactionVO.customercredit: "+transactionVO.customercredit)
+            transactionVO.customercredit == null ? transactionVO.customercredit = 0.00 : transactionVO.customercredit
+            transactionVO.customercredit = Math.max(0,transactionVO.customercredit + amountToSubtract)
 
         } else {
-            transactionVO.total = transactionVO.total - amountToSubtract
-            transactionVO.totalwithtax = transactionVO.totalwithtax - amountToSubtract
+
+
+            // here we check to make sure that there is no potential remainder credit for customer that wasn't caught by the
+            // if statement above.  i dont even know if this scenario is possible/valid, but it might be.
+            transactionVO = checkPotentialForPartialProductCustomerCredit(transactionVO)
+
+            transactionVO.total = Math.max(0,transactionVO.total - amountToSubtract)
+            transactionVO.totalwithtax = Math.max(0,transactionVO.totalwithtax - amountToSubtract)
+
+
+            //. todo:  test this with the discount functionality and figure out if we need to modify the original price here
+            // todo: i am thinking that we want to keep it reflected here as origal price.
+            // todo:  even if someone returns a product on a partially paid transaction, the orginal price should be reflected
+            // todo: after that product is returned.  If we are applying a discount on on a partially paid transaction,
+            //. todo: then the discount should only apply to the products in the current product list.
+
+            // todo:  the discount when applied should take into account any returns in the Returns table
+            // todo: and subtract the price of the returns from the original price at time of applying discount based on the original price
+            //transactionVO.originalprice = Math.max(0,transactionVO.originalprice - amountToSubtract)
+
         }
 
         transactionVO.updateTimeStamp = LocalDateTime.now()
@@ -191,7 +234,30 @@ class TransactionHelper {
 
     }
 
+    @Transactional
+    TransactionVO checkPotentialForPartialProductCustomerCredit(TransactionVO transactionVO) {
+        // Calculate the amount left to subtract
+        double amountToSubtractInScope = transactionVO.total - transactionVO.paid;
+
+        // Log the calculation for debugging purposes
+        System.out.println("Calculated amount to subtract: " + amountToSubtractInScope);
+
+        // Check if the resulting value is negative
+        if (amountToSubtractInScope < 0) {
+            // Credit back the customer for the overpayment
+            double creditToApply = Math.abs(amountToSubtractInScope);
+            transactionVO.customercredit += creditToApply;
+
+            // Log the adjustment for auditing
+            System.out.println("Negative balance detected. Crediting customer: " + creditToApply);
+        }
+
+        // Return the updated TransactionVO
+        return transactionVO;
+    }
+
     // to keep this simple we are only returning one product at a time ....
+    @Transactional
     void addProductToReturnList(TransactionVO transactionVO, ProductVO productVO){
 
         List<ReturnVO> existingreturnlist = returnRepo.findAllByTransaction(transactionVO) // need to explicitly query for this list because it's lazy loaded
@@ -220,6 +286,7 @@ class TransactionHelper {
 
 
 
+    @Transactional
     void findAllUnpaidProductsInTransactionsByBatchId(Model model,
                              Optional<Integer> page,
                              Optional<Integer> size,
@@ -276,6 +343,7 @@ class TransactionHelper {
 
 
     // do not copy this method
+    @Transactional
     Page<ProductVO> runPageRequestForUnPaidProducts(Pageable pageable, Optional<Integer> batchid) {
         Page<ProductVO> pageOfProduct
         // this means someone selected a value on the ui and we need to run a filtered query
@@ -292,6 +360,7 @@ class TransactionHelper {
 
 
 
+    @Transactional
     void findAllUnpaidTransactionsByBatchIdAndProduct_id(Model model,
                                                       Optional<Integer> page,
                                                       Optional<Integer> size,
@@ -349,6 +418,7 @@ class TransactionHelper {
     }
 
 
+    @Transactional
     Page<TransactionVO> runPageRequestForUnPaidTransactions(
             Pageable pageable,
             Optional<Integer> batchid,

@@ -102,54 +102,54 @@ class CartService {
         return existingcart.get()
     }
 
-    @Transactional
-    CartVO applyDiscount(CartVO cartVO){
-        // get existing cart
-        CartVO existingCart = getExistingCart(cartVO)
+//    @Transactional
+//    CartVO applyDiscount(CartVO cartVO){
+//        // get existing cart
+//        CartVO existingCart = getExistingCart(cartVO)
+//
+//        // get existing discount in db to apply
+//        DiscountVO discountVO = discountService.getDiscountById(Integer.valueOf(cartVO.discount.discountid))
+//
+//        // add the discount to the cart
+//        existingCart.discount = discountVO
+//
+//        // now that new discount has been added to the list, calculate the new total based on all discounts
+//        existingCart = discountService.applyDiscountToCart(existingCart)
+//
+//        return cartRepo.save(existingCart) // save the discount after its applied so total will reflect in the database
+//    }
 
-        // get existing discount in db to apply
-        DiscountVO discountVO = discountService.getDiscountById(Integer.valueOf(cartVO.discount.discountid))
-
-        // add the discount to the cart
-        existingCart.discount = discountVO
-
-        // now that new discount has been added to the list, calculate the new total based on all discounts
-        existingCart = discountService.applyDiscountToCart(existingCart)
-
-        return cartRepo.save(existingCart) // save the discount after its applied so total will reflect in the database
-    }
-
-    @Transactional
-    CartVO applyAdhocDiscount(CartVO cartVO){
-        // get existing cart
-        CartVO existingCart = getExistingCart(cartVO)
-
-        // create a discount record in the DB
-        DiscountVO discountVO = discountService.createAdhocDiscount(cartVO.discount)
-
-        // add the discount to the cart
-        existingCart.discount = discountVO
-
-        // now that new discount has been added to the list, calculate the new total based on all discounts
-        existingCart = discountService.applyDiscountToCart(existingCart)
-
-        return cartRepo.save(existingCart) // save the discount after its applied so total will reflect in the database
-    }
+//    @Transactional
+//    CartVO applyAdhocDiscount(CartVO cartVO){
+//        // get existing cart
+//        CartVO existingCart = getExistingCart(cartVO)
+//
+//        // create a discount record in the DB
+//        DiscountVO discountVO = discountService.createAdhocDiscount(cartVO.discount)
+//
+//        // add the discount to the cart
+//        existingCart.discount = discountVO
+//
+//        // now that new discount has been added to the list, calculate the new total based on all discounts
+//        existingCart = discountService.applyDiscountToCart(existingCart)
+//
+//        return cartRepo.save(existingCart) // save the discount after its applied so total will reflect in the database
+//    }
 
 
-    @Transactional
-    CartVO removeDiscount(CartVO cartVO){
-        // get existing cart
-        CartVO existingCart = getExistingCart(cartVO)
-
-        // remove the discount
-        existingCart.discount = null
-
-        // recalculate the total price based on all products in the product_cart_list
-        existingCart.total = calculateTotalPriceOfProductList(existingCart.product_cart_list)
-
-        return cartRepo.save(existingCart) // save the cart with the discount removed and new total price
-    }
+//    @Transactional
+//    CartVO removeDiscount(CartVO cartVO){
+//        // get existing cart
+//        CartVO existingCart = getExistingCart(cartVO)
+//
+//        // remove the discount
+//        existingCart.discount = null
+//
+//        // recalculate the total price based on all products in the product_cart_list
+//        existingCart.total = calculateTotalPriceOfProductList(existingCart.product_cart_list)
+//
+//        return cartRepo.save(existingCart) // save the cart with the discount removed and new total price
+//    }
 
     double calculateTotalPriceOfProductList(List<ProductVO> productlist){
         double total = 0.0

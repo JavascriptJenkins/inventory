@@ -19,10 +19,11 @@ class DiscountVO implements Serializable {
     Integer discountid
 
     @JsonProperty
-    Double discountamount;
+    Double discountamount = 0
 
+    // todo: delete this from app0.0
     @JsonProperty
-    Double discountpercentage;
+    Double discountpercentage = 0
 
     @JsonProperty
     String name;
@@ -33,10 +34,18 @@ class DiscountVO implements Serializable {
     @JsonProperty
     @ManyToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name="transactionid")
-    TransactionVO transaction;
+    TransactionVO transaction
+
+    @JsonProperty
+    @ManyToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name="producttypeid")
+    ProductTypeVO producttype
 
     @JsonProperty
     String notes
+
+    @JsonProperty
+    int isactive // only 1 active discount per producttype
 
     @Transient
     Double discountdisplayamount;
