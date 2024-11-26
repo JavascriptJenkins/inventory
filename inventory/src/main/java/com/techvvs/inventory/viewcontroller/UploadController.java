@@ -2,6 +2,7 @@ package com.techvvs.inventory.viewcontroller;
 
 import com.techvvs.inventory.constants.AppConstants;
 import com.techvvs.inventory.jparepo.BatchTypeRepo;
+import com.techvvs.inventory.jparepo.ProductRepo;
 import com.techvvs.inventory.jparepo.ProductTypeRepo;
 import com.techvvs.inventory.model.*;
 import com.techvvs.inventory.modelnonpersist.FileVO;
@@ -80,6 +81,9 @@ public class UploadController {
 
     @Autowired
     AppConstants appConstants;
+
+    @Autowired
+    ProductRepo productRepo;
 
     @Autowired
     HeaderUtil headerUtil;
@@ -659,8 +663,10 @@ public class UploadController {
 
         System.out.println("Zipping folder: " + directoryPath);
 
+        ProductVO productVO = productRepo.getById(Integer.valueOf(productid));
+
         response.setContentType("application/zip");
-        response.setHeader("Content-Disposition", "attachment; filename=" + productid + ".zip");
+        response.setHeader("Content-Disposition", "attachment; filename=" + productVO.getName()+"_media_"+productid + ".zip");
 
         try (ZipOutputStream zipOut = new ZipOutputStream(new BufferedOutputStream(response.getOutputStream(), 64 * 1024))) {
             Files.walk(directoryPath, 10).filter(Files::isRegularFile).forEach(file -> {
