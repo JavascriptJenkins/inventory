@@ -632,66 +632,58 @@ public class UploadController {
     }
 
 
-    // this method is built to handle serving large zip folders of media to the client
     @RequestMapping(value = "/qrzipmediadownload", method = RequestMethod.GET)
     public void qrzipmediadownload(
             @RequestParam("productid") String productid,
             HttpServletResponse response
     ) {
-        // Rate limiter map: Stores the username and last access timestamp
         ConcurrentHashMap<String, Long> rateLimiter = new ConcurrentHashMap<>();
-
-        // Fetch the authenticated user
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
         String username = authentication.getName();
-        System.out.println("Username: " + username+"requested to download a zip file for product: " + productid);
 
-        // Rate limiting logic
         long currentTime = System.currentTimeMillis();
         long lastAccessTime = rateLimiter.getOrDefault(username, 0L);
 
         if ((currentTime - lastAccessTime) < TimeUnit.SECONDS.toMillis(5)) {
             throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "You can only request this endpoint once every 5 seconds.");
         }
-
-        // Update the last access time for the user
         rateLimiter.put(username, currentTime);
 
-        // Construct the directory path
         Path directoryPath = Paths.get(appConstants.UPLOAD_DIR_MEDIA, appConstants.UPLOAD_DIR_PRODUCT, productid);
+        if (!Files.exists(directoryPath)) {
+            throw new RuntimeException("Directory does not exist: " + directoryPath);
+        }
+
         System.out.println("Zipping folder: " + directoryPath);
 
-        // Set response headers
         response.setContentType("application/zip");
         response.setHeader("Content-Disposition", "attachment; filename=" + productid + ".zip");
 
         try (ZipOutputStream zipOut = new ZipOutputStream(new BufferedOutputStream(response.getOutputStream(), 64 * 1024))) {
-            // Walk through files in the directory
-            Files.walk(directoryPath,10).filter(Files::isRegularFile).forEach(file -> {
+            Files.walk(directoryPath, 10).filter(Files::isRegularFile).forEach(file -> {
                 try (InputStream fileInputStream = new BufferedInputStream(Files.newInputStream(file, StandardOpenOption.READ), 64 * 1024)) {
-                    // Create a new zip entry
+                    System.out.println("Adding file to ZIP: " + file);
                     ZipEntry zipEntry = new ZipEntry(directoryPath.relativize(file).toString());
                     zipOut.putNextEntry(zipEntry);
 
-                    // Write file content in chunks
-                    byte[] buffer = new byte[64 * 1024]; // 64 KB buffer
+                    byte[] buffer = new byte[64 * 1024];
                     int bytesRead;
                     while ((bytesRead = fileInputStream.read(buffer)) != -1) {
                         zipOut.write(buffer, 0, bytesRead);
                     }
                     zipOut.closeEntry();
                 } catch (IOException e) {
-                    System.err.println("Error processing file: " + file);
-                    e.printStackTrace();
+                    System.err.println("Error processing file: " + file + ". Skipping file.");
                 }
             });
             zipOut.flush();
+            zipOut.finish();
         } catch (IOException ex) {
             System.err.println("Error creating zip file: " + ex.getMessage());
             throw new RuntimeException("IOError creating zip file", ex);
         }
     }
+
 
 
 
