@@ -3,7 +3,6 @@ package com.techvvs.inventory.viewcontroller
 import com.techvvs.inventory.constants.MessageConstants
 import com.techvvs.inventory.model.CustomerVO
 import com.techvvs.inventory.service.auth.TechvvsAuthService
-import com.techvvs.inventory.validation.StringSecurityValidator
 import com.techvvs.inventory.viewcontroller.helper.CustomerHelper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Controller
@@ -22,9 +21,6 @@ public class CustomerViewController {
     @Autowired
     TechvvsAuthService techvvsAuthService
 
-    @Autowired
-    StringSecurityValidator stringSecurityValidator
-
     //default home mapping
     @GetMapping
     String viewNewForm(
@@ -34,7 +30,6 @@ public class CustomerViewController {
             @RequestParam("size") Optional<Integer> size
 
     ){
-
         // attach a blank customer object to the model
         customerHelper.loadBlankCustomer(model)
 
@@ -70,8 +65,39 @@ public class CustomerViewController {
         return "customer/customer.html";
     }
 
+    @PostMapping("/edit")
+    String editCustomer(
+            @ModelAttribute( "customer" ) CustomerVO customerVO,
+            Model model,
+            @RequestParam("page") Optional<Integer> page
+    ) {
+        customerHelper.updateCustomer(customerVO, model)
+        customerHelper.addPaginatedData(model, page)
+        techvvsAuthService.checkuserauth(model)
+        return "customer/customer.html"
+    }
 
+    @GetMapping("/get")
+    String getCustomer(
+            @RequestParam("customerid") Integer customerid,
+            Model model,
+            @RequestParam("page") Optional<Integer> page
+    ) {
+        customerHelper.getCustomer(customerid, model)
+        customerHelper.addPaginatedData(model, page)
+        techvvsAuthService.checkuserauth(model)
+        return "customer/customer.html"
+    }
 
-
-
+    @PostMapping("/delete")
+    String deleteCustomer(
+            @RequestParam("customerid") Integer customerid,
+            Model model,
+            @RequestParam("page") Optional<Integer> page
+    ) {
+        customerHelper.deleteCustomer(customerid, model)
+        customerHelper.addPaginatedData(model, page)
+        techvvsAuthService.checkuserauth(model)
+        return "customer/customer.html"
+    }
 }

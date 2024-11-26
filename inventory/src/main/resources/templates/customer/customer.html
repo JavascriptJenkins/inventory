@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Customer</title>
-
+    <title>Customer Management</title>
+    <!-- Bootstrap CSS or your existing CSS -->
     <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-kQtW33rZJAHjgefvhyyzcGF3C5TFyBQBA13V1RKPf4uH+bwyzQxZ6CmMZHmNBEfJ" crossorigin="anonymous"></script>
@@ -128,10 +128,9 @@
             color: red;
         }
         .form-label {
-            color: #000;  /* Changed to black */
+            color: black;  /* Changed to black */
         }
     </style>
-
     <script>
         function validateInput(data) {
             const namePattern = /^[A-Za-z\s]+$/;
@@ -252,81 +251,131 @@
 <body>
 <div th:insert="fragments/adminnavbar.html :: adminnavbarfragment"> </div>
 <div class="container">
+    <!-- Header -->
     <div class="header-dark">
         <div class="back-button">
             <a th:href="@{/admin}"><i class="bi bi-arrow-left-circle"></i></a>
         </div>
+
         <div>
             <h1>Customer</h1>
             <p>Create and manage customers.</p>
         </div>
     </div>
 
-    <form id="customerForm" th:action="@{/customer/create}" th:object="${customer}" method="post">
-        <div class="alert alert-danger" role="alert" style="display: none;"></div>
-        <div id="successDiv" class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
-        <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
+    <!-- Alert Messages -->
+    <div class="alert alert-danger" role="alert" style="display: none;"></div>
+
+    <div id="successDiv" class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">
+        Success
+    </div>
+
+    <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">
+        Error
+    </div>
+
+    <!-- Customer Form -->
+    <form th:action="@{${customer != null && customer.customerid > 0 ? '/customer/edit' : '/customer/create'}}" method="post" th:object="${customer}">
+        <!-- Hidden ID field -->
+        <input type="hidden" th:field="*{customerid}">
+
         <div class="row" style="margin-bottom: 5px;">
+            <!-- Name Field -->
             <div class="col-md-4" style="margin-bottom: 5px;">
-                <label class="form-label required">Name</label>
-                <input type="text" name="name" th:field="*{name}" class="form-control" placeholder="name" aria-label="name">
+                <label class="form-label">Name</label>
+                <input type="text" class="form-control" th:field="*{name}" required>
             </div>
+
+            <!-- Email Field -->
             <div class="col-md-4" style="margin-bottom: 5px;">
                 <label class="form-label">Email</label>
-                <input type="text" name="email" th:field="*{email}" class="form-control" placeholder="email" aria-label="email">
+                <input type="email" class="form-control" th:field="*{email}">
             </div>
+
+            <!-- Phone Field -->
             <div class="col-md-4" style="margin-bottom: 5px;">
                 <label class="form-label">Phone</label>
-                <input type="text" name="phone" th:field="*{phone}" class="form-control" placeholder="phone" aria-label="phone">
+                <input type="tel" class="form-control" th:field="*{phone}">
             </div>
+
+            <!-- Address Field -->
             <div class="col-md-4" style="margin-bottom: 5px;">
                 <label class="form-label">Address</label>
-                <input type="text" name="address" th:field="*{address}" class="form-control" placeholder="address" aria-label="address">
+                <input type="text" class="form-control" th:field="*{address}">
             </div>
+
+            <!-- Address2 Field -->
             <div class="col-md-4" style="margin-bottom: 5px;">
-                <label class="form-label">Address2</label>
-                <input type="text" name="address2" th:field="*{address2}" class="form-control" placeholder="address2" aria-label="address2">
+                <label class="form-label">Address 2</label>
+                <input type="text" class="form-control" th:field="*{address2}">
             </div>
+
+            <!-- City Field -->
             <div class="col-md-4" style="margin-bottom: 5px;">
                 <label class="form-label">City</label>
-                <input type="text" name="city" th:field="*{city}" class="form-control" placeholder="city" aria-label="city">
+                <input type="text" class="form-control" th:field="*{city}">
             </div>
+
+            <!-- State Field -->
             <div class="col-md-4" style="margin-bottom: 5px;">
                 <label class="form-label">State</label>
-                <input type="text" name="state" th:field="*{state}" class="form-control" placeholder="state" aria-label="state">
+                <input type="text" class="form-control" th:field="*{state}">
             </div>
+
+            <!-- Zip Code Field -->
             <div class="col-md-4" style="margin-bottom: 5px;">
                 <label class="form-label">Zip Code</label>
-                <input type="text" name="zipcode" th:field="*{zipcode}" class="form-control" placeholder="zipcode" aria-label="zipcode">
+                <input type="text" class="form-control" th:field="*{zipcode}">
             </div>
+
+            <!-- Notes Field -->
             <div class="col-md-4" style="margin-bottom: 5px;">
                 <label class="form-label">Notes</label>
-                <input type="text" name="notes" th:field="*{notes}" class="form-control" placeholder="description" aria-label="description">
+                <textarea class="form-control" th:field="*{notes}"></textarea>
             </div>
         </div>
-        <br>
-        <br>
-        <button id="customerSubmitButton" style="margin-top:5px;" type="submit" class="btn btn-primary">Submit</button>
-        <button id="createAnotherButton" style="margin-top:5px; display: none;" type="button" class="btn btn-secondary">Create Another Customer</button>
+
+        <!-- Form Action Buttons -->
+        <div class="form-actions">
+            <!-- Submit Button (Dynamic Text) -->
+            <button type="submit" class="btn btn-primary">
+                <span th:text="${customer.customerid > 0 ? 'Update Customer' : 'Create Customer'}"></span>
+            </button>
+
+            <!-- Create Another Button -->
+            <button type="button" onclick="window.location.href='/customer'" class="btn btn-secondary">
+                Create Another Customer
+            </button>
+        </div>
     </form>
-    <br>
-    <br>
-    <div class="header-small">
-        <p>Customers</p>
-    </div>
-    <table class="table table-hover table-striped table-dark">
+
+    <!-- Customers List Section -->
+    <div class="header-small mt-4">Customers</div>
+    <table class="table">
         <thead>
         <tr>
-            <th scope="col">Name</th>
-            <th scope="col">Notes</th>
+            <th>Name</th>
+            <th>Notes</th>
+            <th>Actions</th>
         </tr>
         </thead>
         <tbody>
-        <tr th:each="customer, iStat : ${customerPage.content}"
-            th:style="${iStat.odd}? 'font-weight: bold;'"
-            th:alt-title="${iStat.even}? 'even' : 'odd'">
-            <td th:text="${customer.name}"></td>
+        <tr th:each="customer : ${customerPage.content}" th:unless="${customer.deleted == 1}">
+            <td>
+                <a th:href="@{/customer/get(customerid=${customer.customerid}, page=${customerPage.number + 1})}"
+                   th:text="${customer.name}">
+                </a>
+            </td>
             <td th:text="${customer.notes}"></td>
+            <td>
+                <form th:action="@{/customer/delete}" method="post" style="display:inline;">
+                    <input type="hidden" name="customerid" th:value="${customer.customerid}">
+                    <button type="submit" class="btn btn-sm btn-danger"
+                            onclick="return confirm('Are you sure you want to delete this customer?')">
+                        Delete
+                    </button>
+                </form>
+            </td>
         </tr>
         </tbody>
     </table>

@@ -48,7 +48,7 @@ class CustomerVO implements Serializable {
     @JsonProperty
     @OneToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name="deliveryid")
-    DeliveryVO delivery;
+    DeliveryVO delivery = new DeliveryVO(deliveryid: 0)
 
     // generic fields below
     @JsonProperty
@@ -57,4 +57,6 @@ class CustomerVO implements Serializable {
     @JsonProperty
     LocalDateTime createTimeStamp
 
+    @JsonProperty
+    Integer deleted = 0
 }

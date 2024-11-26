@@ -1,5 +1,6 @@
 package com.techvvs.inventory.viewcontroller.helper
 
+import com.techvvs.inventory.constants.MessageConstants
 import com.techvvs.inventory.jparepo.CustomerRepo
 import com.techvvs.inventory.model.CustomerVO
 import com.techvvs.inventory.validation.StringSecurityValidator
@@ -27,11 +28,11 @@ class CustomerHelper {
     ObjectValidator objectValidator
 
 
-    void loadBlankCustomer(Model model){
+    void loadBlankCustomer(Model model) {
         model.addAttribute("customer", new CustomerVO(customerid: 0))
     }
 
-    CustomerVO validateCustomer(CustomerVO customer, Model model){
+    CustomerVO validateCustomer(CustomerVO customer, Model model) {
 
         // first - validate against security issues
         stringSecurityValidator.validateStringValues(customer, model)
@@ -45,7 +46,7 @@ class CustomerHelper {
     }
 
     // only enforcing the name for now...
-    CustomerVO createCustomer(CustomerVO customer){
+    CustomerVO createCustomer(CustomerVO customer) {
 
         // enter some values here if they are null to avoid null pointers when printing invoices etc
         customer.email == null || customer.email.isEmpty() ? customer.email = "johndoe@gmail.com" : customer.email
@@ -60,26 +61,29 @@ class CustomerHelper {
     }
 
 
-    void addPaginatedData(Model model, Optional<Integer> page){
+    void addPaginatedData(Model model, Optional<Integer> page) {
 
         // https://www.baeldung.com/spring-data-jpa-pagination-sorting
         //pagination
         int currentPage = page.orElse(0);
         int pageSize = 5;
         Pageable pageable;
-        if(currentPage == 0){
-            pageable = PageRequest.of(0 , pageSize);
+        if (currentPage == 0) {
+            pageable = PageRequest.of(0, pageSize);
         } else {
             pageable = PageRequest.of(currentPage - 1, pageSize);
         }
 
-        Page<CustomerVO> pageOfCustomer = customerRepo.findAll(pageable);
+        Page<CustomerVO> pageOfCustomer = customerRepo.findAll(pageable)
+
+        //filter out soft deleted customer records
+        pageOfCustomer.filter { it.deleted == 0 }
 
         int totalPages = pageOfCustomer.getTotalPages();
 
         List<Integer> pageNumbers = new ArrayList<>();
 
-        while(totalPages > 0){
+        while (totalPages > 0) {
             pageNumbers.add(totalPages);
             totalPages = totalPages - 1;
         }
@@ -90,5 +94,54 @@ class CustomerHelper {
         model.addAttribute("customerPage", pageOfCustomer);
     }
 
+    CustomerVO findCustomerById(Integer customerid) {
+        Optional<CustomerVO> customerVO = customerRepo.findById(customerid)
+        if (customerVO.isPresent() && customerVO.get().deleted == 0) {
+            return customerVO.get()
+        }
+        return null
+    }
+
+    void deleteCustomer(Integer customerid, Model model) {
+        CustomerVO customerVO = findCustomerById(customerid)
+        if (customerVO != null) {
+            customerVO.deleted = 1
+            updateCustomer(customerVO, model)
+            model.addAttribute(MessageConstants.SUCCESS_MSG, "Customer deleted successfully!")
+        } else {
+            model.addAttribute(MessageConstants.ERROR_MSG, "Customer failed to delete.")
+        }
+        loadBlankCustomer(model)
+    }
+
+    void getCustomer(Integer customerid, Model model) {
+        CustomerVO customerVO = findCustomerById(customerid)
+        if (customerVO != null) {
+            model.addAttribute("customer", customerVO)
+        } else {
+            loadBlankCustomer(model)
+            model.addAttribute(MessageConstants.ERROR_MSG, "Customer not found.")
+        }
+    }
+
+    void updateCustomer(CustomerVO customerVO, Model model) {
+        validateCustomer(customerVO, model)
+        if (model.getAttribute(MessageConstants.ERROR_MSG) == null) {
+            if (customerVO.customerid > 0) {
+                customerVO.updateTimeStamp = LocalDateTime.now()
+                try {
+                    customerRepo.save(customerVO)
+                    model.addAttribute(MessageConstants.SUCCESS_MSG, "Customer updated successfully!")
+                } catch (Exception ex) {
+                    model.addAttribute(MessageConstants.ERROR_MSG, "Update failed")
+                }
+            } else {
+                // If it's a new customer, use create method
+                customerVO = createCustomer(customerVO)
+                model.addAttribute(MessageConstants.SUCCESS_MSG, "Customer created successfully!")
+            }
+        }
+        model.addAttribute("customer", customerVO)
+    }
 
 }
