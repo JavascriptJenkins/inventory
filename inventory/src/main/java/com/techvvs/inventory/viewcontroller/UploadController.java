@@ -667,6 +667,8 @@ public class UploadController {
 
         response.setContentType("application/zip");
         response.setHeader("Content-Disposition", "attachment; filename=" + productVO.getName()+"_media_"+productid + ".zip");
+        response.setStatus(HttpServletResponse.SC_OK); // Explicitly set a 200 status
+
 
         try (ZipOutputStream zipOut = new ZipOutputStream(new BufferedOutputStream(response.getOutputStream(), 64 * 1024))) {
             Files.walk(directoryPath, 10).filter(Files::isRegularFile).forEach(file -> {
