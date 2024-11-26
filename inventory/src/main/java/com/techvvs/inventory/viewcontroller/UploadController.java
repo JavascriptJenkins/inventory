@@ -635,7 +635,7 @@ public class UploadController {
     // this method is built to handle serving large zip folders of media to the client
     @RequestMapping(value = "/qrzipmediadownload", method = RequestMethod.GET)
     public void qrzipmediadownload(
-            @RequestParam("product_id") String productid,
+            @RequestParam("productid") String productid,
             HttpServletResponse response
     ) {
         // Rate limiter map: Stores the username and last access timestamp
