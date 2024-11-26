@@ -8,9 +8,12 @@ import com.techvvs.inventory.model.BatchVO
 import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.modelnonpersist.FileVO
+import com.techvvs.inventory.modelnonpersist.MenuOptionVO
 import com.techvvs.inventory.service.auth.TechvvsAuthService
+import com.techvvs.inventory.service.paging.FilePagingService
 import com.techvvs.inventory.util.TechvvsFileHelper
 import com.techvvs.inventory.validation.ValidateProduct
+import com.techvvs.inventory.viewcontroller.constants.ControllerConstants
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -30,11 +33,17 @@ import java.time.LocalDateTime
 @Controller
 public class ProductViewController {
 
-    private final String UPLOAD_DIR = "inventory/uploads/";
+    private final String UPLOAD_DIR = "./uploads/";
     
 
     @Autowired
     TechvvsFileHelper techvvsFileHelper;
+
+    @Autowired
+    FilePagingService filePagingService
+
+    @Autowired
+    ControllerConstants controllerConstants
 
     @Autowired
     ProductRepo productRepo;
@@ -186,8 +195,10 @@ public class ProductViewController {
                     @RequestParam("batchnumber") Optional<String> batchnumber,
                     @RequestParam("editmode") String editmode,
                     @RequestParam("productnumber") String productnumber,
-                    @RequestParam("successMessage") Optional<String> successMessage
-
+                    @RequestParam("successMessage") Optional<String> successMessage,
+                    @RequestParam("page") Optional<String> page,
+                    @RequestParam("size") Optional<String> size,
+                    @ModelAttribute( "menuoption" ) MenuOptionVO menuoption
 
     ){
 
@@ -201,10 +212,12 @@ public class ProductViewController {
             results = productRepo.findAllByProductnumber(Integer.valueOf(productnumber));
         }
 
+        // todo: rewrite this to get files by id
         // check to see if there are files uploaded related to this productnumber
-        List<FileVO> filelist = techvvsFileHelper.getFilesByFileNumber(Integer.valueOf(productnumber), UPLOAD_DIR);
+        //List<FileVO> filelist = techvvsFileHelper.getFilesByFileNumber(Integer.valueOf(productnumber), UPLOAD_DIR);
+        Page<FileVO> filePage = filePagingService.getFilePage(results.get(0), page.get(), size.get(), '/'+menuoption.selected+'/')
 
-        if(filelist.size() > 0){
+        if(filePage.size() > 0){
             model.addAttribute("filelist", filelist);
         } else {
             model.addAttribute("filelist", null);
@@ -218,6 +231,8 @@ public class ProductViewController {
         model.addAttribute("editmode", editmode);
         bindProductTypes(model)
         bindBatches(model, results.get(0).batch)
+        model.addAttribute(controllerConstants.MENU_OPTIONS_DIRECTORIES, controllerConstants.DIRECTORIES_FOR_BATCH_UI);
+        model.addAttribute("menuoption", new MenuOptionVO(selected: '/'+menuoption.selected+'/'));
         return "product/editproduct.html";
     }
 

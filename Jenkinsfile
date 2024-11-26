@@ -99,6 +99,11 @@ pipeline {
                                 sh "sed -i 's/^spring\\.h2\\.console\\.settings\\.web-allow-others=.*/spring.h2.console.settings.web-allow-others=${params.DB_H2_WEB_ALLOWOTHERS}/' src/main/resources/application.properties"
                             }
 
+                            // Replace the qr ddomain if provided
+                            if (params.BASE_QR_DOMAIN) {
+                                sh "sed -i 's|^base\\.qr\\.domain=.*|base.qr.domain=${env.BASE_QR_DOMAIN}|' src/main/resources/application.properties"
+                            }
+
                             sh "sed -i 's/^twilio\\.api\\.username=.*/twilio.api.username=${TWILIO_API_USER}/' src/main/resources/application.properties"
                             sh "sed -i 's/^twilio\\.api\\.password=.*/twilio.api.password=${TWILIO_API_PASSWORD}/' src/main/resources/application.properties"
                             sh "sed -i 's/^sendgrid\\.api\\.key=.*/sendgrid.api.key=${SENDGRID_API_KEY}/' src/main/resources/application.properties"

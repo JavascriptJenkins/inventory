@@ -30,6 +30,7 @@ pipeline {
         string(name: 'SPRING_DATABASE_ACTION', defaultValue: 'update', description: 'this value will control create-drop, update, etc')
         string(name: 'MAX_FILE_SIZE', defaultValue: '500MB', description: 'key for signing tokens')
         string(name: 'MAX_REQ_SIZE', defaultValue: '500MB', description: 'key for signing tokens')
+        string(name: 'BASE_QR_DOMAIN', defaultValue: '', description: 'this will get set to the hostname... ')
 
     }
 
@@ -70,6 +71,7 @@ pipeline {
 
                     // Set the IP address as an environment variable for use in later stages
                     env.HOSTNAME = hostname
+                    env.BASE_QR_DOMAIN = hostname
                     env.DB_URI = postgresql_db_uri
                 }
             }
@@ -144,6 +146,13 @@ pipeline {
                             // Replace spring.h2.console.settings.web-allow-others if provided
                             if (params.DB_H2_WEB_ALLOWOTHERS) {
                                 sh "sed -i 's/^spring\\.h2\\.console\\.settings\\.web-allow-others=.*/spring.h2.console.settings.web-allow-others=${params.DB_H2_WEB_ALLOWOTHERS}/' src/main/resources/application.properties"
+                            }
+
+                            // Replace the qr ddomain if provided
+                            if (params.BASE_QR_DOMAIN) {
+                                env.BASE_QR_DOMAIN="https://${env.TENANT_NAME}${env.BASE_DOMAIN}"
+                                echo "Updated BASE_QR_DOMAIN: ${env.BASE_QR_DOMAIN}"
+                                sh "sed -i 's|^base\\.qr\\.domain=.*|base.qr.domain=${env.BASE_QR_DOMAIN}|' src/main/resources/application.properties"
                             }
 
                             sh "sed -i 's/^twilio\\.api\\.username=.*/twilio.api.username=${TWILIO_API_USER}/' src/main/resources/application.properties"

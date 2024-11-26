@@ -26,7 +26,7 @@ import java.time.LocalDateTime
 @Controller
 public class TaskViewController {
 
-    private final String UPLOAD_DIR = "inventory/uploads/";
+    private final String UPLOAD_DIR = "./uploads/";
 
     @Autowired
     TechvvsFileHelper techvvsFileHelper;

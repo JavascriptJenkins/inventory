@@ -48,7 +48,7 @@ class LabelPrintingGenerator {
     @Autowired
     QrImageGenerator qrImageGenerator
 
-    String STATIC_LABEL_BATCH_DIR = "inventory/uploads/staticlabels/"
+    String STATIC_LABEL_BATCH_DIR = "./uploads/staticlabels/"
 
     int amountoflabels = 50
 
@@ -76,7 +76,7 @@ class LabelPrintingGenerator {
 
 
         // Example of using a TrueType font
-        PDType0Font ttfFont = PDType0Font.load(document, new File("inventory/uploads/font/Oswald-VariableFont_wght.ttf"));
+        PDType0Font ttfFont = PDType0Font.load(document, new File("./uploads/font/Oswald-VariableFont_wght.ttf"));
 
         // Write text on the top of page - Batchnumber, date, page number, etc
         writeMetadataOnTopOfPage(contentStream, ttfFont, leftMargin, topMargin, pagenumber, entitynumber, menuvo.adhoc_label1, entity)
@@ -244,7 +244,7 @@ class LabelPrintingGenerator {
         float textYStart = barcodeY - largeFontSize - 20f;  // Product name below barcode with padding
 
         // Load font
-        PDType0Font ttfFont = PDType0Font.load(document, new File("inventory/uploads/font/SEASRN.ttf"));
+        PDType0Font ttfFont = PDType0Font.load(document, new File("./uploads/font/SEASRN.ttf"));
 
         // Draw QR code (centered horizontally)
         PDImageXObject qrPdImage = generateQrImageforEpson(product, document);
@@ -406,7 +406,7 @@ class LabelPrintingGenerator {
 
 
         // Example of using a TrueType font
-        PDType0Font ttfFont = PDType0Font.load(document, new File("inventory/uploads/font/Oswald-VariableFont_wght.ttf"));
+        PDType0Font ttfFont = PDType0Font.load(document, new File("./uploads/font/Oswald-VariableFont_wght.ttf"));
 
         // Write text on the top of page - Batchnumber, date, page number, etc
         writeMetadataOnTopOfPage(contentStream, ttfFont, leftMargin, topMargin, pagenumber, entitynumber, batchVO.name, "Productlist")
@@ -436,7 +436,7 @@ class LabelPrintingGenerator {
         float startY = page.getMediaBox().getHeight() - margin
 
         // Example of using a TrueType font
-        PDType0Font ttfFont = PDType0Font.load(document, new File("inventory/uploads/font/Oswald-VariableFont_wght.ttf"));
+        PDType0Font ttfFont = PDType0Font.load(document, new File("./uploads/font/Oswald-VariableFont_wght.ttf"));
         contentStream.setFont(ttfFont, nameFontSize)
 
         // Draw 5 labels on the left and 5 on the right side

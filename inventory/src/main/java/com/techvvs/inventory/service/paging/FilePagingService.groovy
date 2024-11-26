@@ -2,6 +2,7 @@ package com.techvvs.inventory.service.paging
 
 import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.model.BatchVO
+import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.modelnonpersist.FileVO
 import com.techvvs.inventory.util.TechvvsFileHelper
 import org.springframework.beans.factory.annotation.Autowired
@@ -17,6 +18,16 @@ class FilePagingService {
 
     @Autowired
     AppConstants appConstants
+
+    Page<FileVO> getFilePage(ProductVO productVO, Integer page, Integer size, String selected) {
+        Page<FileVO> filePage = techvvsFileHelper.getPagedFilesByDirectory(
+                appConstants.PARENT_LEVEL_DIR+productVO.productnumber+selected,
+                page,
+                size
+        );
+        return filePage;
+    }
+
 
     Page<FileVO> getFilePage(BatchVO batchVO, Integer page, Integer size, String selected) {
         Page<FileVO> filePage = techvvsFileHelper.getPagedFilesByDirectory(

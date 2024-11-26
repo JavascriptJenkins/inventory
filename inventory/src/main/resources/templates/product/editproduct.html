@@ -348,21 +348,57 @@
     <br>
     <br>
 
+    <div class="col-sm-2" style="margin-bottom: 5px;">
+        <form th:action="@{/viewfiles/viewdirfiles(batchid=${batch.batchid}, size=5, page=1)}" th:object="${menuoption}" method="post">
+            <label class="form-label required">View files in dir</label>
+            <select id="dirselectionid" class="form-select" th:field="*{selected}">
+                <option th:each="option : ${directoryoptions}" th:value="${option}" th:text="${option}"></option>
+            </select>
+            <button style="margin-top:5px;" type="submit" class="btn btn-primary">Select Directory</button>
+        </form>
+    </div>
+
     <!-- Show list of uploaded files -->
-    <div th:if="${filelist != null}">
+    <div th:if="${filepage != null}">
         <div class="alert alert-primary" role="alert">Files Previously Uploaded</div>
-        <table class="table">
+        <table class="table table-hover table-striped table-dark">
             <thead>
             <tr>
                 <th scope="col">File Name</th>
             </tr>
             </thead>
             <tbody>
-            <tr th:each="file : ${filelist}">
-                <td th:text="${file.filename}"></td>
+            <tr th:each="file, iStat : ${filePage.content}"
+                th:style="${iStat.odd}? 'font-weight: bold;'"
+                th:alt-title="${iStat.even}? 'even' : 'odd'">
+                <td><span id="filenamespanid" th:text="${file.filename}" th:data-filename="${file.filename}"></span>
+                    <input type="hidden" id="action" name="action" value="">
+                    <input type="hidden" id="email" name="email" value="">
+                    <input type="hidden" id="phonenumber" name="phonenumber" value="">
+                    <input type="hidden" id="filenametosend" name="filenametosend" value="">
+                    <input type="hidden" id="selected" name="selected" value="">
+                    <div class="text-end">
+                        <button onclick="setTextInvoice(event)" type="submit" class="btn btn-primary">Text</button>
+                        <button onclick="setEmailInvoice(event)" type="submit" class="btn btn-primary">Email</button>
+                        <!-- New View Invoice button -->
+                        <button onclick="viewInvoice(event)" type="submit" class="btn btn-primary">View File</button>
+                    </div>
+                </td>
             </tr>
             </tbody>
         </table>
+        <nav th:if="${filePage.totalPages > 0}">
+            <ul class="pagination justify-content-center">
+                <li class="page-item" th:each="pageNumber : ${pageNumbers}">
+                    <a class="page-link btn btn-secondary btn-sm mx-1"
+                       th:href="@{/viewfiles?batchid=__${batch.batchid}__&size=5&page=__${page}__}"
+                       th:text="${pageNumber}"
+                       th:classappend="${pageNumber == filePage.number + 1} ? 'active'">
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
     </div>
 
     <div style="margin-bottom: 5px;" class="mx-auto">

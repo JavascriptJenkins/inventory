@@ -38,7 +38,7 @@ class ImportHelper {
     @Autowired
     BatchRepo batchRepo;
 
-    String IMPORT_DIR = "inventory/uploads/import/";
+    String IMPORT_DIR = "./uploads/import/";
 
     // todo: do a lookup to make sure batchnumber is unique
     BatchVO createBatchRecord(String nameOfBatch){

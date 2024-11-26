@@ -22,6 +22,7 @@ class ControllerConstants {
     public final String MENU_OPTIONS_TEXT_XLSX = "menuoptions" //  the selected menu option coming in on a post
     public final String MENU_OPTIONS_DIRECTORIES = "directoryoptions" //  the selected menu option coming in on a post
     public String[] DIRECTORIES_FOR_BATCH_UI = ""
+    public String[] DIRECTORIES_FOR_EDIT_PRODUCT_UI = ""
 
     @PostConstruct
     void load(){
@@ -32,6 +33,10 @@ class ControllerConstants {
                                     appConstants.BARCODES_MANIFEST_DIR,
                                     appConstants.BARCODES_EPSON_64_DIR,
                                     appConstants.BARCODES_DYMNO_28mmx89mm_DIR
+        ]
+        DIRECTORIES_FOR_EDIT_PRODUCT_UI = [
+                                           appConstants.QR_MEDIA_DIR
+
         ]
     }
 
