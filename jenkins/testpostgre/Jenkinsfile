@@ -149,11 +149,10 @@ pipeline {
                             }
 
                             // Replace the qr ddomain if provided
-                            if (params.BASE_QR_DOMAIN) {
-                                env.BASE_QR_DOMAIN="https://${env.TENANT_NAME}${env.BASE_DOMAIN}"
-                                echo "Updated BASE_QR_DOMAIN: ${env.BASE_QR_DOMAIN}"
-                                sh "sed -i 's|^base\\.qr\\.domain=.*|base.qr.domain=${env.BASE_QR_DOMAIN}|' src/main/resources/application.properties"
-                            }
+                            env.BASE_QR_DOMAIN="https://${env.TENANT_NAME}${env.BASE_DOMAIN}"
+                            echo "Updated BASE_QR_DOMAIN: ${env.BASE_QR_DOMAIN}"
+                            sh "sed -i 's|^base\\.qr\\.domain=.*|base.qr.domain=${env.BASE_QR_DOMAIN}|' src/main/resources/application.properties"
+
 
                             sh "sed -i 's/^twilio\\.api\\.username=.*/twilio.api.username=${TWILIO_API_USER}/' src/main/resources/application.properties"
                             sh "sed -i 's/^twilio\\.api\\.password=.*/twilio.api.password=${TWILIO_API_PASSWORD}/' src/main/resources/application.properties"
