@@ -1,0 +1,78 @@
+pipeline {
+    agent any
+
+    tools {
+        maven 'maven3' // Use the name specified in Global Tool Configuration
+    }
+
+    parameters {
+        string(name: 'SYSTEM_USER_TO_ACTIVATE', defaultValue: 'myuser@techvvs.io', description: 'enter in the username to activate')
+        choice(name: 'BRANCH', choices: ['test1', 'prod', 'joebranch', 'peterbranch'], description: 'Branch to build')
+        choice(name: 'HOSTNAME', choices: ['206.189.183.0', '64.227.4.159', '198.199.72.34','157.230.91.190', '159.223.128.46', '159.203.182.152'], description: 'the host to push the build to')
+        choice(name: 'TENANT_ENV', choices: ['inventory_test', 'highland_prod', 'inventory_prod', 'intake_prod', 'swerve_prod', 'sap_prod'], description: 'the tenant and environment name to build')
+        choice(name: 'TENANT_NAME', choices: ['test', 'alpha', 'intake', 'swerve', 'sap'], description: 'The tenant name will be appended to beginning of domain')
+        choice(name: 'BASE_DOMAIN', choices: ['.techvvs.io', '.jenkins.codes'], description: 'domain')
+    }
+
+
+    stages {
+
+
+        stage('Select Hostname') {
+            steps {
+                script {
+
+                    // Define a map of tenants to IP addresses
+                    TENANT_IP_MAP = [
+                        'inventory_prod': '64.227.4.159',
+                        'highland_prod': '157.230.91.190',
+                        'inventory_test': '206.189.183.0',
+                        'intake_prod': '64.227.18.215',
+                        'swerve_prod': '159.223.128.46',
+                        'sap_prod': '159.203.182.152'
+                    ]
+
+                    // Define a map of tenants to IP addresses
+                    // NOTE: this map has no ports/jdbc attached, unlike the maps in the build jobs
+                    POSTGRESQL_ENV_MAP_NO_PORT_NOJDBC = [
+                        'inventory_prod': '',
+                        'highland_prod': 'private-postgresql-test1-do-user-1326368-0.d.db.ondigitalocean.com',
+                        'inventory_test': 'private-postgresql-test1-do-user-1326368-0.d.db.ondigitalocean.com',
+                        'intake_prod': 'private-postgresql-prod1-do-user-1326368-0.d.db.ondigitalocean.com',
+                        'swerve_prod': 'private-postgresql-prod1-do-user-1326368-0.d.db.ondigitalocean.com',
+                        'sap_prod': 'private-postgresql-prod1-do-user-1326368-0.d.db.ondigitalocean.com'
+                    ]
+
+
+                    // Get the IP address for the selected tenant
+                    def hostname = TENANT_IP_MAP[params.TENANT_ENV]
+                    echo "Selected Tenant: ${params.TENANT_ENV}, IP Address: ${hostname}"
+
+                    // Get the IP address for the selected tenant
+                    def postgresql_db_uri = POSTGRESQL_ENV_MAP_NO_PORT_NOJDBC[params.TENANT_ENV]
+                    echo "Selected postgresql_db_uri: ${params.TENANT_ENV}, POSTGRE SQL DB URI: ${postgresql_db_uri}"
+
+                    // Set the IP address as an environment variable for use in later stages
+                    env.HOSTNAME = hostname
+                    env.DB_URI = postgresql_db_uri
+                }
+            }
+        }
+
+        stage('Log in and download the logs') {
+            steps {
+                script {
+
+
+
+                    }
+                }
+            }
+        }
+
+
+
+
+
+    }
+}

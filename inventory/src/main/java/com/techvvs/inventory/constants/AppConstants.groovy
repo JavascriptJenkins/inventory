@@ -24,6 +24,8 @@ class AppConstants {
     String LABEL_DIR = "/label/"
     public String DELIVERY_DIR = "/delivery/"
     String QR_ALL_DIR = "/qrcodes/all/"
+    public String QR_MEDIA_TYPE = "media"
+    public String QR_LEAFLY_TYPE = "leafy"
     public String QR_MEDIA_DIR = "/qrcodes/media/"
     public String BARCODES_ALL_DIR = "/barcodes/all/"
     public String BARCODES_MANIFEST_DIR = "/barcodes/manifest/"

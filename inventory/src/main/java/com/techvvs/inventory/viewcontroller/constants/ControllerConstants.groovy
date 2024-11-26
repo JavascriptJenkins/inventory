@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
 import javax.annotation.PostConstruct
+import java.nio.file.Paths
 
 @Component
 class ControllerConstants {
@@ -35,8 +36,7 @@ class ControllerConstants {
                                     appConstants.BARCODES_DYMNO_28mmx89mm_DIR
         ]
         DIRECTORIES_FOR_EDIT_PRODUCT_UI = [
-                                           appConstants.QR_MEDIA_DIR
-
+                appConstants.UPLOAD_DIR_PRODUCT
         ]
     }
 

@@ -10,6 +10,8 @@ import org.springframework.data.domain.Page
 import org.springframework.stereotype.Component
 import org.springframework.ui.Model
 
+import java.nio.file.Paths
+
 @Component
 class FilePagingService {
 
@@ -21,7 +23,7 @@ class FilePagingService {
 
     Page<FileVO> getFilePage(ProductVO productVO, Integer page, Integer size, String selected) {
         Page<FileVO> filePage = techvvsFileHelper.getPagedFilesByDirectory(
-                appConstants.PARENT_LEVEL_DIR+productVO.productnumber+selected,
+                Paths.get(selected, String.valueOf(productVO.getProduct_id())).toString(),
                 page,
                 size
         );

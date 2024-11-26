@@ -1,5 +1,6 @@
 package com.techvvs.inventory.viewcontroller
 
+import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.dao.ProductDao
 import com.techvvs.inventory.jparepo.BatchRepo
 import com.techvvs.inventory.jparepo.ProductRepo
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.*
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
+import java.nio.file.Paths
 import java.security.SecureRandom
 import java.time.LocalDateTime
 
@@ -62,6 +64,9 @@ public class ProductViewController {
     
     @Autowired
     TechvvsAuthService techvvsAuthService
+
+    @Autowired
+    AppConstants appConstants
 
 
     SecureRandom secureRandom = new SecureRandom();
@@ -188,6 +193,7 @@ public class ProductViewController {
         return "product/searchproduct.html";
     }
 
+    //                        th:href="@{/product/editform?productid=__${product.productid}__&size=5&page=__${page}__&editmode=no&batchnumber=__${batchnumber}__&productnumber=__${productnumber}__}"
     @GetMapping("/editform")
     String viewEditForm(
                     Model model,
@@ -198,7 +204,7 @@ public class ProductViewController {
                     @RequestParam("successMessage") Optional<String> successMessage,
                     @RequestParam("page") Optional<String> page,
                     @RequestParam("size") Optional<String> size,
-                    @ModelAttribute( "menuoption" ) MenuOptionVO menuoption
+                    @RequestParam("size") Optional<String> productid
 
     ){
 
@@ -215,12 +221,12 @@ public class ProductViewController {
         // todo: rewrite this to get files by id
         // check to see if there are files uploaded related to this productnumber
         //List<FileVO> filelist = techvvsFileHelper.getFilesByFileNumber(Integer.valueOf(productnumber), UPLOAD_DIR);
-        Page<FileVO> filePage = filePagingService.getFilePage(results.get(0), page.get(), size.get(), '/'+menuoption.selected+'/')
+        Page<FileVO> filePage = filePagingService.getFilePage(results.get(0), Integer.valueOf(page.orElse("0")), Integer.valueOf(size.orElse("5")), Paths.get(appConstants.UPLOAD_DIR_MEDIA+appConstants.UPLOAD_DIR_PRODUCT).toString())
 
         if(filePage.size() > 0){
-            model.addAttribute("filelist", filelist);
+            model.addAttribute("filePage", filePage);
         } else {
-            model.addAttribute("filelist", null);
+            model.addAttribute("filePage", null);
         }
 
         if(successMessage.isPresent()){
@@ -231,8 +237,6 @@ public class ProductViewController {
         model.addAttribute("editmode", editmode);
         bindProductTypes(model)
         bindBatches(model, results.get(0).batch)
-        model.addAttribute(controllerConstants.MENU_OPTIONS_DIRECTORIES, controllerConstants.DIRECTORIES_FOR_BATCH_UI);
-        model.addAttribute("menuoption", new MenuOptionVO(selected: '/'+menuoption.selected+'/'));
         return "product/editproduct.html";
     }
 

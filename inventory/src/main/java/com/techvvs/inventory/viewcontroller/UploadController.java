@@ -9,29 +9,33 @@ import com.techvvs.inventory.security.JwtTokenProvider;
 import com.techvvs.inventory.service.ExcelService;
 import com.techvvs.inventory.service.auth.TechvvsAuthService;
 import com.techvvs.inventory.service.controllers.TransactionService;
+import com.techvvs.inventory.util.HeaderUtil;
 import com.techvvs.inventory.util.TechvvsFileHelper;
 import com.techvvs.inventory.viewcontroller.helper.BatchControllerHelper;
 import com.techvvs.inventory.viewcontroller.helper.FileViewHelper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.io.*;
+import java.nio.file.*;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @RequestMapping("/file")
 @Controller
@@ -74,6 +78,9 @@ public class UploadController {
 
     @Autowired
     AppConstants appConstants;
+
+    @Autowired
+    HeaderUtil headerUtil;
             
     @PostMapping("/upload")
     public String uploadFile(@ModelAttribute( "batch" ) BatchVO batchVO,
@@ -191,78 +198,73 @@ public class UploadController {
         return "/service/xlsxbatch.html";
     }
 
-    // This method is for uploading XLSX file price sheets
     @PostMapping("/media/upload")
     public String uploadMediaFile(Model model,
-                                  @ModelAttribute( "product" ) ProductVO productVO,
-                                 @RequestParam("file") MultipartFile file,
-                                 RedirectAttributes attributes) {
+                                  @ModelAttribute("product") ProductVO productVO,
+                                  @RequestParam("file") MultipartFile file,
+                                  RedirectAttributes attributes) {
 
-        System.out.println("file upload 1");
-        // check if file is empty
+        System.out.println("Starting file upload...");
+
+        // Check if the file is empty
         if (file.isEmpty()) {
-            model.addAttribute("errorMessage","Please select a file to upload.");
-            System.out.println("file upload 2");
-            bindProductTypes(model);
-            model.addAttribute("product",productVO);
-            techvvsAuthService.checkuserauth(model);
+            model.addAttribute("errorMessage", "Please select a file to upload.");
+            System.out.println("No file selected for upload.");
+            prepareEditForm(model, productVO);
             return "/product/editform.html";
         }
-        System.out.println("file upload 3");
-        String filename = "";
-//        if(file.getOriginalFilename() != null){
-//            System.out.println("file upload 4");
-//            // sanitize the file name
-//            filename = techvvsFileHelper.sanitizeMultiPartFileName(file);
-//        }
+
+        // Sanitize the file name
+        String originalFilename = file.getOriginalFilename();
+        String sanitizedFileName = originalFilename != null
+                ? originalFilename.replaceAll("[^a-zA-Z0-9\\.\\-]", "_")
+                : "uploaded_file";
+        System.out.println("Sanitized file name: " + sanitizedFileName);
 
         boolean success = false;
-        // save the file on the local file system
-        filename = techvvsFileHelper.sanitizeMultiPartFileName(file);
-
-        filename = productVO.getName()+'_'+productVO.getProduct_id()+".MOV";
-        filename = filename.replaceAll(" ","_");
 
         try {
-            System.out.println("file upload 5");
-            // ex. Yellow_Rose_100.MOV
-            Files.createDirectories(Paths.get(appConstants.UPLOAD_DIR_MEDIA+appConstants.UPLOAD_DIR_PRODUCT+"/"+productVO.getProduct_id()));
-            Path path = Paths.get(appConstants.UPLOAD_DIR_MEDIA+appConstants.UPLOAD_DIR_PRODUCT+"/"+productVO.getProduct_id()+"/"+filename);
-            System.out.println("file upload 6");
-            Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
-            System.out.println("file upload 7");
+            // Create the directory structure
+            Path targetDirectory = Paths.get(
+                    appConstants.UPLOAD_DIR_MEDIA,
+                    appConstants.UPLOAD_DIR_PRODUCT,
+                    String.valueOf(productVO.getProduct_id())
+            );
+            Files.createDirectories(targetDirectory);
+
+            // Save the file
+            Path targetFile = targetDirectory.resolve(sanitizedFileName);
+            Files.copy(file.getInputStream(), targetFile, StandardCopyOption.REPLACE_EXISTING);
+
+            System.out.println("File uploaded successfully to: " + targetFile.toString());
             success = true;
         } catch (IOException e) {
-            success = false;
-            model.addAttribute("editmode", "no");
-            System.out.println("file upload 8");
+            System.err.println("File upload failed: " + e.getMessage());
             e.printStackTrace();
-            bindProductTypes(model);
-            model.addAttribute("product",productVO);
-            model.addAttribute("errorMessage","file upload failed");
-            techvvsAuthService.checkuserauth(model);
-            return "product/editform.html";
+
+            model.addAttribute("errorMessage", "File upload failed. Please try again.");
+            prepareEditForm(model, productVO);
+            return "/product/editform.html";
         }
 
-
-        System.out.println("file upload 10");
-
-
-        if(success){
-            model.addAttribute("successMessage","Upload for media file completed: " + filename + '!');
-            model.addAttribute("editmode", "no");
+        if (success) {
+            attributes.addFlashAttribute("successMessage", "File uploaded successfully: " + sanitizedFileName);
+            attributes.addFlashAttribute("editmode", "no");
         } else {
-            // this should never happen
-            model.addAttribute("errorMessage","Problem uploading file: " + filename + '!');
+            model.addAttribute("errorMessage", "Unexpected error occurred while uploading the file.");
         }
 
-        bindProductTypes(model);
-        model.addAttribute("product",productVO);
-        model.addAttribute("editmode", "no");
-
-        techvvsAuthService.checkuserauth(model);
-        return "redirect:/product/editform.html?editmode=no&productnumber&"+productVO.getProductnumber()+"successMessage="+"Upload for media file completed: " + filename + '!';
+        // Redirect to the product edit form
+        return "redirect:/product/editform?editmode=no&productnumber=" + productVO.getProductnumber();
     }
+
+    // Utility method to prepare the edit form
+    private void prepareEditForm(Model model, ProductVO productVO) {
+        bindProductTypes(model);
+        model.addAttribute("product", productVO);
+        techvvsAuthService.checkuserauth(model);
+    }
+
 
     void bindBatchTypes(Model model){
         // get all the batchtype objects and bind them to select dropdown
@@ -589,28 +591,24 @@ public class UploadController {
     public void smsdownload3(
             @RequestParam("filename") String filename,
             @RequestParam("product_id") String product_id,
-            @RequestParam("customJwtParameter") String customJwtParameter,
+            @RequestParam("customJwtParameter") Optional<String> customJwtParameter,
             HttpServletResponse response
     ) {
 
+        // todo: make this jwt check actually do something
         // check the token here, will throw 403 if the token is expired
-        jwtTokenProvider.validateTokenForSmsPhoneDownload(customJwtParameter);
+        //jwtTokenProvider.validateTokenForSmsPhoneDownload(customJwtParameter.orElse(""));
 
-        String fullpath = appConstants.UPLOAD_DIR_MEDIA+appConstants.UPLOAD_DIR_PRODUCT+product_id+"/"+filename;
+        String fullpath = Paths.get(appConstants.UPLOAD_DIR_MEDIA, appConstants.UPLOAD_DIR_PRODUCT, product_id, filename).toString();
+
+        System.out.println("Constructed file path: " + fullpath);
 
         File file;
 
         try {
 
-            // todo: set .xlsx filetype here
-            if(filename.contains(".pdf")){
-                response.setContentType("application/pdf");
-            } else if(filename.contains(".xlsx")){
-                response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-            } else if(filename.contains(".MOV")){
-                response.setContentType("video/quicktime");
-            }
-            response.setHeader("Content-Disposition","attachment; filename="+filename);
+            // this attaches correct filetype header so the browser knows what kind of file is coming back
+            headerUtil.setFileReturnHeader(filename, response);
 
             file = new File(fullpath); // pass in full filepath here
 
@@ -632,6 +630,70 @@ public class UploadController {
 
 //        return "redirect: /newform/viewNewForm";
     }
+
+
+    // this method is built to handle serving large zip folders of media to the client
+    @RequestMapping(value = "/qrzipmediadownload", method = RequestMethod.GET)
+    public void qrzipmediadownload(
+            @RequestParam("product_id") String product_id,
+            HttpServletResponse response
+    ) {
+        // Rate limiter map: Stores the username and last access timestamp
+        ConcurrentHashMap<String, Long> rateLimiter = new ConcurrentHashMap<>();
+
+        // Fetch the authenticated user
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        String username = authentication.getName();
+        System.out.println("Username: " + username+"requested to download a zip file for product: " + product_id);
+
+        // Rate limiting logic
+        long currentTime = System.currentTimeMillis();
+        long lastAccessTime = rateLimiter.getOrDefault(username, 0L);
+
+        if ((currentTime - lastAccessTime) < TimeUnit.SECONDS.toMillis(5)) {
+            throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "You can only request this endpoint once every 5 seconds.");
+        }
+
+        // Update the last access time for the user
+        rateLimiter.put(username, currentTime);
+
+        // Construct the directory path
+        Path directoryPath = Paths.get(appConstants.UPLOAD_DIR_MEDIA, appConstants.UPLOAD_DIR_PRODUCT, product_id);
+        System.out.println("Zipping folder: " + directoryPath);
+
+        // Set response headers
+        response.setContentType("application/zip");
+        response.setHeader("Content-Disposition", "attachment; filename=" + product_id + ".zip");
+
+        try (ZipOutputStream zipOut = new ZipOutputStream(new BufferedOutputStream(response.getOutputStream(), 64 * 1024))) {
+            // Walk through files in the directory
+            Files.walk(directoryPath,10).filter(Files::isRegularFile).forEach(file -> {
+                try (InputStream fileInputStream = new BufferedInputStream(Files.newInputStream(file, StandardOpenOption.READ), 64 * 1024)) {
+                    // Create a new zip entry
+                    ZipEntry zipEntry = new ZipEntry(directoryPath.relativize(file).toString());
+                    zipOut.putNextEntry(zipEntry);
+
+                    // Write file content in chunks
+                    byte[] buffer = new byte[64 * 1024]; // 64 KB buffer
+                    int bytesRead;
+                    while ((bytesRead = fileInputStream.read(buffer)) != -1) {
+                        zipOut.write(buffer, 0, bytesRead);
+                    }
+                    zipOut.closeEntry();
+                } catch (IOException e) {
+                    System.err.println("Error processing file: " + file);
+                    e.printStackTrace();
+                }
+            });
+            zipOut.flush();
+        } catch (IOException ex) {
+            System.err.println("Error creating zip file: " + ex.getMessage());
+            throw new RuntimeException("IOError creating zip file", ex);
+        }
+    }
+
+
 
     // this should be used for public facing whitelisted downloads like coa's for example
     @RequestMapping(value="/publicdownload", method=RequestMethod.GET)

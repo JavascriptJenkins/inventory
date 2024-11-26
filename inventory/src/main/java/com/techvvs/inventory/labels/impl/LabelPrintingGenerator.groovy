@@ -147,9 +147,14 @@ class LabelPrintingGenerator {
         // Load font
         PDType0Font ttfFont = PDType0Font.load(document, new File("./uploads/font/SEASRN.ttf"));
 
-        // Draw QR code (no rotation)
-        PDImageXObject qrPdImage = generateQrImageforDymno(product, document);
-        contentStream.drawImage(qrPdImage, qrX, qrY, qrCodeSize, qrCodeSize);
+
+        // Draw the first big QR code (no rotation)
+        contentStream.drawImage(generateMediaQrImageforDymno(product, document), qrX, qrY, qrCodeSize, qrCodeSize);
+
+        // Draw the second Media QR code (no rotation)
+        qrY += 200f
+        qrCodeSize -=50f
+        contentStream.drawImage(generateLeaflyQrImageforDymno(product, document), qrX, qrY, qrCodeSize, qrCodeSize);
 
         // Draw rotated barcode
         BufferedImage barcodeImage = imageGenerator.generateSidewaysUPCABarcodeImage(product.barcode, appConstants.filenameprefix_dymno_28mmx89mm);
@@ -247,9 +252,8 @@ class LabelPrintingGenerator {
         PDType0Font ttfFont = PDType0Font.load(document, new File("./uploads/font/SEASRN.ttf"));
 
         // Draw QR code (centered horizontally)
-        PDImageXObject qrPdImage = generateQrImageforEpson(product, document);
         float qrX = (pageWidth - qrCodeSize) / 2;  // Center horizontally
-        contentStream.drawImage(qrPdImage, qrX, qrY, qrCodeSize, qrCodeSize);
+        contentStream.drawImage(generateLeaflyQrImageforEpson(product, document), qrX, qrY, qrCodeSize, qrCodeSize);
 
         // Draw barcode (centered horizontally)
         BufferedImage barcodeImage = imageGenerator.generateUPCABarcodeImage(product.barcode);
@@ -321,26 +325,22 @@ class LabelPrintingGenerator {
         return lines;
     }
 
-    PDImageXObject generateQrImageforDymno(ProductVO productVO, PDDocument document) throws IOException {
+    PDImageXObject generateMediaQrImageforDymno(ProductVO productVO, PDDocument document) throws IOException {
         String qrcodeData = "";
         boolean isDev1 = env.getProperty("spring.profiles.active").equals(appConstants.DEV_1);
-        String baseQrDomain = env.getProperty("base.qr.domain");
 
-        if (isDev1) {
-            qrcodeData = appConstants.QR_CODE_PUBLIC_INFO_LINK_DEV1 + productVO.getProduct_id();
-        } else {
-            // todo: this is hack to make it leafly for inventory spooky units
-            boolean isqrmode = env.getProperty("qr.mode.leafly").equals("true") // only do leafly search if this is true
-            if(isqrmode){
-                qrcodeData = appConstants.QR_CODE_URI_LEAFYLY+productVO.name
-            }
-//            boolean isMediaMode = env.getProperty("qr.mode.media").equals("true");
-//            if (isMediaMode) {
-//                qrcodeData = baseQrDomain + "/file/privateqrmediadownload?productid="+productVO.getProduct_id()+"&name="+productVO.name+"&number="+productVO.productnumber;
-//            } else {
-//                qrcodeData = baseQrDomain + appConstants.QR_CODE_URI_EXTENSION + productVO.getProduct_id();
-//            }
-        }
+        qrcodeData = getQrCodeData(qrcodeData, productVO, appConstants.QR_MEDIA_TYPE)
+
+        BufferedImage qrImage = qrImageGenerator.generateQrImageForDynmo(
+                qrcodeData, limitStringTo25Chars(productVO.name), 600, 56);
+        return LosslessFactory.createFromImage(document, qrImage);
+    }
+
+    PDImageXObject generateLeaflyQrImageforDymno(ProductVO productVO, PDDocument document) throws IOException {
+        String qrcodeData = "";
+        boolean isDev1 = env.getProperty("spring.profiles.active").equals(appConstants.DEV_1);
+
+        qrcodeData = getQrCodeData(qrcodeData, productVO, appConstants.QR_LEAFLY_TYPE)
 
         BufferedImage qrImage = qrImageGenerator.generateQrImageForDynmo(
                 qrcodeData, limitStringTo25Chars(productVO.name), 600, 56);
@@ -348,30 +348,51 @@ class LabelPrintingGenerator {
     }
 
 // Generate QR code image for the product
-    PDImageXObject generateQrImageforEpson(ProductVO productVO, PDDocument document) throws IOException {
+    PDImageXObject generateLeaflyQrImageforEpson(ProductVO productVO, PDDocument document) throws IOException {
         String qrcodeData = "";
         boolean isDev1 = env.getProperty("spring.profiles.active").equals(appConstants.DEV_1);
-        String baseQrDomain = env.getProperty("base.qr.domain");
 
-        if (isDev1) {
-            qrcodeData = appConstants.QR_CODE_PUBLIC_INFO_LINK_DEV1 + productVO.getProduct_id();
-        } else {
-            // todo: this is hack to make it leafly for inventory spooky units
-            boolean isqrmode = env.getProperty("qr.mode.leafly").equals("true") // only do leafly search if this is true
-            if(isqrmode){
-                qrcodeData = appConstants.QR_CODE_URI_LEAFYLY+productVO.name
-            }
-//            boolean isMediaMode = env.getProperty("qr.mode.media").equals("true");
-//            if (isMediaMode) {
-//                qrcodeData = baseQrDomain + "/file/privateqrmediadownload?productid="+productVO.getProduct_id()+"&name="+productVO.name+"&number="+productVO.productnumber;
-//            } else {
-//                qrcodeData = baseQrDomain + appConstants.QR_CODE_URI_EXTENSION + productVO.getProduct_id();
-//            }
-        }
+        qrcodeData = getQrCodeData(qrcodeData, productVO, appConstants.QR_LEAFLY_TYPE)
 
         BufferedImage qrImage = qrImageGenerator.generateQrImageWithCustomSizes(
                 qrcodeData, limitStringTo25Chars(productVO.name), 200, 56);
         return LosslessFactory.createFromImage(document, qrImage);
+    }
+
+    // todo: placeholder for adding another qr code to epson labels
+    PDImageXObject generateMediaQrImageforEpson(ProductVO productVO, PDDocument document) throws IOException {
+        String qrcodeData = "";
+        boolean isDev1 = env.getProperty("spring.profiles.active").equals(appConstants.DEV_1);
+
+        qrcodeData = getQrCodeData(qrcodeData, productVO, appConstants.QR_MEDIA_TYPE)
+
+        BufferedImage qrImage = qrImageGenerator.generateQrImageWithCustomSizes(
+                qrcodeData, limitStringTo25Chars(productVO.name), 200, 56);
+        return LosslessFactory.createFromImage(document, qrImage);
+    }
+
+    String getQrCodeData(String qrCodeData, ProductVO productVO, String type) {
+        String baseQrDomain = env.getProperty("base.qr.domain");
+
+
+        switch (type?.toLowerCase()) {
+            case appConstants.QR_LEAFLY_TYPE:
+                // Generate QR code data for Leafly mode
+                qrCodeData = appConstants.QR_CODE_URI_LEAFYLY + productVO.name
+
+                break
+            case appConstants.QR_MEDIA_TYPE:
+                // Generate QR code data for Media mode
+                qrCodeData = baseQrDomain + "/file/qrzipmediadownload?productid=" +
+                        productVO.getProduct_id()
+                break
+
+            default:
+                // Default case for other modes or when no mode is specified
+                qrCodeData = baseQrDomain + appConstants.QR_CODE_URI_EXTENSION + productVO.getProduct_id()
+                break
+        }
+        return qrCodeData
     }
 
 // Helper function to limit a string to 25 characters

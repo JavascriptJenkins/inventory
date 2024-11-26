@@ -30,6 +30,8 @@ class WhiteListUriConstants {
     public static final String FILE_SMS_DOWNLOAD_33 = "/file/smsdownload3";
     public static final String FILE_PUBLIC_DOWNLOAD = "/file/publicdownload/**";
     public static final String FILE_PUBLIC_DOWNLOAD_2 = "/file/publicdownload";
+    public static final String FILE_QR_MEDIA_ZIP_DOWNLOAD = "/file/qrzipmediadownload/**";
+    public static final String FILE_QR_MEDIA_ZIP_DOWNLOAD_33 = "/file/qrzipmediadownload";
 
 
 
