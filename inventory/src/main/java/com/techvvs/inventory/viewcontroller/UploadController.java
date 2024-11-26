@@ -27,6 +27,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.List;
 import java.util.Optional;
@@ -254,8 +256,9 @@ public class UploadController {
             model.addAttribute("errorMessage", "Unexpected error occurred while uploading the file.");
         }
 
-        // Redirect to the product edit form
-        return "redirect:/product/editform?editmode=no&productnumber=" + productVO.getProductnumber();
+// Redirect to the product edit form
+        String encodedProductNumber = URLEncoder.encode(String.valueOf(productVO.getProductnumber()), StandardCharsets.UTF_8);
+        return "redirect:/product/editform?editmode=no&productnumber=" + encodedProductNumber;
     }
 
     // Utility method to prepare the edit form
