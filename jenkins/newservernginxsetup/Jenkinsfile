@@ -72,6 +72,8 @@ EOF
                                 index index.html index.htm index.nginx-debian.html;
                                 server_name ${params.TENANT_NAME}${params.BASE_DOMAIN}; # managed by Certbot
 
+                                client_max_body_size 200M;
+
                                 location / {
                                     proxy_pass http://localhost:8081/;
                                 }
