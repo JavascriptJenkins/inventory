@@ -635,7 +635,7 @@ public class UploadController {
     // this method is built to handle serving large zip folders of media to the client
     @RequestMapping(value = "/qrzipmediadownload", method = RequestMethod.GET)
     public void qrzipmediadownload(
-            @RequestParam("product_id") String product_id,
+            @RequestParam("product_id") String productid,
             HttpServletResponse response
     ) {
         // Rate limiter map: Stores the username and last access timestamp
@@ -645,7 +645,7 @@ public class UploadController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         String username = authentication.getName();
-        System.out.println("Username: " + username+"requested to download a zip file for product: " + product_id);
+        System.out.println("Username: " + username+"requested to download a zip file for product: " + productid);
 
         // Rate limiting logic
         long currentTime = System.currentTimeMillis();
@@ -659,12 +659,12 @@ public class UploadController {
         rateLimiter.put(username, currentTime);
 
         // Construct the directory path
-        Path directoryPath = Paths.get(appConstants.UPLOAD_DIR_MEDIA, appConstants.UPLOAD_DIR_PRODUCT, product_id);
+        Path directoryPath = Paths.get(appConstants.UPLOAD_DIR_MEDIA, appConstants.UPLOAD_DIR_PRODUCT, productid);
         System.out.println("Zipping folder: " + directoryPath);
 
         // Set response headers
         response.setContentType("application/zip");
-        response.setHeader("Content-Disposition", "attachment; filename=" + product_id + ".zip");
+        response.setHeader("Content-Disposition", "attachment; filename=" + productid + ".zip");
 
         try (ZipOutputStream zipOut = new ZipOutputStream(new BufferedOutputStream(response.getOutputStream(), 64 * 1024))) {
             // Walk through files in the directory
