@@ -78,13 +78,19 @@ pipeline {
 
                             echo "Searching for server block containing tenant name: \${TENANT_NAME}"
 
+                            # Check if the NGINX_DIR exists
+                            if [ ! -d "\${NGINX_DIR}" ]; then
+                                echo "Error: Directory \${NGINX_DIR} does not exist."
+                                exit 1
+                            fi
+
                             # Search for the server block file containing the tenant name
-                            SERVER_BLOCK=\$(grep -l "server_name .*\\\${TENANT_NAME}" \\\${NGINX_DIR}/*)
+                            SERVER_BLOCK=\$(grep -l "server_name .*\\\${TENANT_NAME}" \${NGINX_DIR}/*)
 
                             # Fallback if pattern mismatch occurs
                             if [ -z "\${SERVER_BLOCK}" ]; then
                                 echo "No exact match found. Trying to find partial matches..."
-                                SERVER_BLOCK=\$(grep -l "server_name .*" \\\${NGINX_DIR}/* | xargs grep -l "\${TENANT_NAME}")
+                                SERVER_BLOCK=\$(grep -l "server_name .*" \${NGINX_DIR}/* | xargs grep -l "\${TENANT_NAME}")
                             fi
 
                             # Check if the server block was found
@@ -121,12 +127,13 @@ pipeline {
 
                             echo "Nginx restarted successfully."
 
-        EOF
+EOF
                         """
                     }
                 }
             }
         }
+
 
 
 
