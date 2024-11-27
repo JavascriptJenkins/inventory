@@ -76,14 +76,32 @@ pipeline {
                             NGINX_DIR="/etc/nginx/sites-enabled"
                             CLIENT_MAX_BODY_SIZE="client_max_body_size 200M;"
 
-                            echo "Searching for server block containing tenant name: \$TENANT_NAME"
+                            echo "Searching for server block containing tenant name: $TENANT_NAME"
 
-                            # Find the server block file containing the tenant name
-                            SERVER_BLOCK=\$(grep -rl "server_name .*\\\$TENANT_NAME" \$NGINX_DIR)
-                            if [ -z "\$SERVER_BLOCK" ]; then
-                                echo "No server block found for tenant: \$TENANT_NAME"
+                            # Search for the server block file containing the tenant name
+                            SERVER_BLOCK=$(grep -l "server_name .*${TENANT_NAME}" ${NGINX_DIR}/*)
+
+                            # Fallback if pattern mismatch occurs
+                            if [ -z "$SERVER_BLOCK" ]; then
+                                echo "No exact match found. Trying to find partial matches..."
+                                SERVER_BLOCK=$(grep -l "server_name .*" ${NGINX_DIR}/* | xargs grep -l "$TENANT_NAME")
+                            fi
+
+                            # Check if the server block was found
+                            if [ -z "$SERVER_BLOCK" ]; then
+                                echo "No server block found for tenant: $TENANT_NAME"
                                 exit 1
                             fi
+
+                            echo "Found server block: $SERVER_BLOCK"
+
+                            # Update the server block with client_max_body_size
+                            if grep -q "client_max_body_size" $SERVER_BLOCK; then
+                                sed -i "s|client_max_body_size .*;|$CLIENT_MAX_BODY_SIZE|" $SERVER_BLOCK
+                            else
+                                sed -i "/server_name.*$TENANT_NAME/a \\    $CLIENT_MAX_BODY_SIZE" $SERVER_BLOCK
+                            fi
+
 
                             echo "Modifying server block: \$SERVER_BLOCK"
 
