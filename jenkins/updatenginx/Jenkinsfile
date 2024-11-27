@@ -65,10 +65,11 @@ pipeline {
                 script {
                     // Choose SSH credentials based on TENANT_ENV
                     def sshCredentials = (env.TENANT_ENV == 'inventory_prod') ? 'inventory-root-sshkey' : 'id_ed2_techvvs'
+                    def sshuser = (env.TENANT_ENV == 'inventory_prod') ? 'root' : 'techvvs'
 
                     sshagent(credentials: [sshCredentials]) {
                         sh """
-                            ssh -o StrictHostKeyChecking=no techvvs@${params.HOSTNAME} << 'EOF'
+                            ssh -o StrictHostKeyChecking=no ${sshuser}@${params.HOSTNAME} << 'EOF'
 
                             # Define variables
                             TENANT_NAME="${env.TENANT_NAME}"
