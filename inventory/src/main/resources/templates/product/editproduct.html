@@ -397,6 +397,7 @@
                         <input type="file" name="file" class="form-control-file">
                     </div>
 
+                    <!-- NOTE: this is not nessesary on other pages.  this page is just coded like crap -->
                     <!-- pass all these hidden attributes so the data stays on page after uploading the file -->
                     <input type="hidden" th:field="*{productnumber}">
                     <input type="hidden" th:field="*{name}">
@@ -409,6 +410,15 @@
                     <input type="hidden" th:field="*{updateTimeStamp}">
                     <input type="hidden" th:field="*{createTimeStamp}">
                     <input type="hidden" th:field="*{cost}">
+                    <input type="hidden" th:field="*{salePrice}">
+                    <input type="hidden" th:field="*{vendor}">
+                    <input type="hidden" th:field="*{vendorquantity}">
+                    <input type="hidden" th:field="*{weight}">
+                    <input type="hidden" th:field="*{marginPercent}">
+                    <input type="hidden" th:field="*{laborCostPricePerUnit}">
+                    <input type="hidden" th:field="*{crate}">
+                    <input type="hidden" th:field="*{crateposition}">
+                    <input type="hidden" th:field="*{bagcolor}">
                 </div>
                 <br>
 
