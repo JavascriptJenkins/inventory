@@ -10,7 +10,7 @@ pipeline {
         choice(name: 'BRANCH', choices: ['test1', 'prod', 'joebranch', 'peterbranch'], description: 'Branch to build')
         choice(name: 'HOSTNAME', choices: ['206.189.183.0', '64.227.4.159', '198.199.72.34','157.230.91.190', '159.223.128.46', '159.203.182.152'], description: 'the host to push the build to')
         choice(name: 'TENANT_ENV', choices: ['inventory_test', 'highland_prod', 'inventory_prod', 'intake_prod', 'swerve_prod', 'sap_prod'], description: 'the tenant and environment name to build')
-        choice(name: 'TENANT_NAME', choices: ['test', 'alpha', 'intake', 'swerve', 'sap'], description: 'The tenant name will be appended to beginning of domain')
+        choice(name: 'TENANT_NAME', choices: ['test', 'alpha', 'intake', 'swerve', 'sap'. "inventory"], description: 'The tenant name will be appended to beginning of domain')
         choice(name: 'BASE_DOMAIN', choices: ['.techvvs.io', '.jenkins.codes'], description: 'domain')
     }
 
