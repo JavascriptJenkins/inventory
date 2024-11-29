@@ -77,7 +77,7 @@ EOF
                             fi
 
                             if [ ! -f /var/www/html/wordpress/wp-config.php ]; then
-                                sudo bash -c 'cat > /var/www/html/wordpress/wp-config.php' << CONFIG
+                                sudo bash -c 'cat > /var/www/html/wordpress/wp-config.php' << EOL
 <?php
 define('DB_NAME', '${params.MYSQL_DB}');
 define('DB_USER', '${params.MYSQL_USER}');
@@ -89,7 +89,7 @@ define('DB_COLLATE', '');
 define('WP_DEBUG', false);
 if ( !defined('ABSPATH') ) define('ABSPATH', __DIR__ . '/');
 require_once ABSPATH . 'wp-settings.php';
-CONFIG
+EOL
                                 echo "Configured wp-config.php for WordPress."
                             else
                                 echo "wp-config.php already exists. Skipping."
@@ -100,6 +100,7 @@ EOF
                 }
             }
         }
+
 
         stage('Configure Nginx Reverse Proxy') {
             steps {
@@ -130,13 +131,8 @@ server {
 }
 CONFIG
                                 sudo nginx -t
-                                if [ $? -eq 0 ]; then
-                                    sudo systemctl restart nginx
-                                    echo "Nginx configuration applied."
-                                else
-                                    echo "Nginx configuration test failed. Exiting."
-                                    exit 1
-                                fi
+                                sudo systemctl restart nginx
+                                echo "Configured Nginx for WordPress reverse proxy."
                             else
                                 echo "Nginx configuration already exists. Skipping."
                             fi
