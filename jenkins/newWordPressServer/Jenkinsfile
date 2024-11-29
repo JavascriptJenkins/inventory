@@ -100,9 +100,9 @@ EOF
                             if [ ! -f /var/www/html/wordpress/wp-config.php ]; then
                                 sudo bash -c 'cat > /var/www/html/wordpress/wp-config.php' << EOL
                                 <?php
-                                define('DB_NAME', '${params.MYSQL_DB}');
-                                define('DB_USER', '${params.MYSQL_USER}');
-                                define('DB_PASSWORD', '${params.MYSQL_PASSWORD}');
+                                define('DB_NAME', '\${params.MYSQL_DB}');
+                                define('DB_USER', '\${params.MYSQL_USER}');
+                                define('DB_PASSWORD', '\${params.MYSQL_PASSWORD}');
                                 define('DB_HOST', '\${params.MYSQL_HOST}:\${params.MYSQL_PORT}');
                                 define('DB_CHARSET', 'utf8mb4');
                                 define('DB_COLLATE', '');
