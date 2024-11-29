@@ -102,14 +102,14 @@ EOF
         }
 
 
-        stage('Configure Nginx Reverse Proxy') {
-            steps {
-                script {
-                    sshagent(credentials: ['id_ed2_techvvs']) {
-                        sh """
-                            ssh -o StrictHostKeyChecking=no techvvs@${params.HOSTNAME} << 'EOF'
-                            if ! grep -q "${params.TENANT_NAME}${params.BASE_DOMAIN}" /etc/nginx/sites-available/default; then
-                                sudo bash -c 'cat > /etc/nginx/sites-available/default' << CONFIG
+stage('Configure Nginx Reverse Proxy') {
+    steps {
+        script {
+            sshagent(credentials: ['id_ed2_techvvs']) {
+                sh """
+                    ssh -o StrictHostKeyChecking=no techvvs@${params.HOSTNAME} << 'EOF'
+                    if ! grep -q "${params.TENANT_NAME}${params.BASE_DOMAIN}" /etc/nginx/sites-available/default; then
+                        sudo bash -c 'cat > /etc/nginx/sites-available/default' << CONFIG
 server {
     listen 80;
     server_name ${params.TENANT_NAME}${params.BASE_DOMAIN};
@@ -128,20 +128,33 @@ server {
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         include fastcgi_params;
     }
+
+    location ~ /\.ht {
+        deny all;
+    }
 }
 CONFIG
-                                sudo nginx -t
-                                sudo systemctl restart nginx
-                                echo "Configured Nginx for WordPress reverse proxy."
-                            else
-                                echo "Nginx configuration already exists. Skipping."
-                            fi
+
+                        # Validate Nginx configuration
+                        if sudo nginx -t; then
+                            sudo systemctl restart nginx
+                            echo "Nginx configuration validated and reloaded."
+                        else
+                            echo "Nginx configuration test failed. Rolling back changes."
+                            sudo mv /etc/nginx/sites-available/default.bak /etc/nginx/sites-available/default
+                            sudo nginx -t
+                            exit 1
+                        fi
+                    else
+                        echo "Nginx configuration already exists for ${params.TENANT_NAME}${params.BASE_DOMAIN}. Skipping."
+                    fi
 EOF
-                        """
-                    }
-                }
+                """
             }
         }
+    }
+}
+
 
         stage('Install Certbot and Configure SSL') {
             steps {
