@@ -63,11 +63,11 @@ EOF
                     def mysqlInfoFileExists = fileExists(env.MYSQL_INFO_FILE)
                     if (!mysqlInfoFileExists) {
                         def mysqlInfo = """
-                            MYSQL_HOST=${params.MYSQL_HOST}
-                            MYSQL_PORT=${params.MYSQL_PORT}
-                            MYSQL_DB=${params.MYSQL_DB}
-                            MYSQL_USER=${params.MYSQL_USER}
-                            MYSQL_PASSWORD=${params.MYSQL_PASSWORD}
+                            MYSQL_HOST=\${params.MYSQL_HOST}
+                            MYSQL_PORT=\${params.MYSQL_PORT}
+                            MYSQL_DB=\${params.MYSQL_DB}
+                            MYSQL_USER=\${params.MYSQL_USER}
+                            MYSQL_PASSWORD=\${params.MYSQL_PASSWORD}
                         """.stripIndent()
                         writeFile file: env.MYSQL_INFO_FILE, text: mysqlInfo
                         echo "MySQL connection info saved to ${env.MYSQL_INFO_FILE}"
