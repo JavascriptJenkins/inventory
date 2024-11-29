@@ -162,9 +162,9 @@ stage('Install Certbot and Configure SSL') {
             sshagent(credentials: ['id_ed2_techvvs']) {
                 sh """
                     ssh -o StrictHostKeyChecking=no techvvs@${params.HOSTNAME} << 'EOF'
-                    sudo apt-get install -y certbot python3-certbot-nginx
                     if ! sudo certbot certificates | grep -q "${params.TENANT_NAME}${params.BASE_DOMAIN}"; then
-                        sudo certbot --nginx -d ${params.TENANT_NAME}${params.BASE_DOMAIN} --non-interactive --agree-tos --email admin@techvvs.io
+                        sudo apt-get install -y certbot python3-certbot-nginx
+                        sudo certbot --nginx -d \${params.TENANT_NAME}\${params.BASE_DOMAIN} --non-interactive --agree-tos --email admin@techvvs.io
                         if [ $? -eq 0 ]; then
                             echo "Certbot successfully configured SSL."
                         else
@@ -180,6 +180,7 @@ EOF
         }
     }
 }
+
 
 
 stage('Verify Nginx Setup') {
