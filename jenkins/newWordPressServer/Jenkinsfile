@@ -23,7 +23,7 @@ pipeline {
                 script {
                     sshagent(credentials: ['id_ed2_techvvs']) {
                         sh """
-                            ssh -o StrictHostKeyChecking=no techvvs@\${params.HOSTNAME} << 'EOF'
+                            ssh -o StrictHostKeyChecking=no techvvs@${params.HOSTNAME} << 'EOF'
                             if ! command -v nginx &> /dev/null; then
                                 sudo apt-get update -y
                                 sudo apt-get install -y nginx php-fpm php-mysql curl unzip ufw
@@ -42,9 +42,8 @@ EOF
         stage('Generate WordPress Keys and Save Artifacts') {
             steps {
                 script {
-                    def keysFileExists = fileExists(env.GENERATED_KEYS_FILE)
-                    if (!keysFileExists) {
-                        def keys = [:]
+                    def keys = [:]
+                    if (!fileExists(env.GENERATED_KEYS_FILE)) {
                         keys.AUTH_KEY = UUID.randomUUID().toString()
                         keys.SECURE_AUTH_KEY = UUID.randomUUID().toString()
                         keys.LOGGED_IN_KEY = UUID.randomUUID().toString()
@@ -53,29 +52,9 @@ EOF
                         keys.SECURE_AUTH_SALT = UUID.randomUUID().toString()
                         keys.LOGGED_IN_SALT = UUID.randomUUID().toString()
                         keys.NONCE_SALT = UUID.randomUUID().toString()
-
-                        writeFile file: env.GENERATED_KEYS_FILE, text: keys.collect { k, v -> "\${k}=\${v}" }.join("\n")
-                        echo "Generated WordPress keys saved to \${env.GENERATED_KEYS_FILE}"
-                    } else {
-                        echo "Keys already generated. Skipping."
+                        writeFile file: env.GENERATED_KEYS_FILE, text: keys.collect { k, v -> "${k}=${v}" }.join("\n")
                     }
-
-                    def mysqlInfoFileExists = fileExists(env.MYSQL_INFO_FILE)
-                    if (!mysqlInfoFileExists) {
-                        def mysqlInfo = """
-                            MYSQL_HOST=\${params.MYSQL_HOST}
-                            MYSQL_PORT=\${params.MYSQL_PORT}
-                            MYSQL_DB=\${params.MYSQL_DB}
-                            MYSQL_USER=\${params.MYSQL_USER}
-                            MYSQL_PASSWORD=\${params.MYSQL_PASSWORD}
-                        """.stripIndent()
-                        writeFile file: env.MYSQL_INFO_FILE, text: mysqlInfo
-                        echo "MySQL connection info saved to ${env.MYSQL_INFO_FILE}"
-                    } else {
-                        echo "MySQL info already saved. Skipping."
-                    }
-
-                    archiveArtifacts artifacts: "${env.GENERATED_KEYS_FILE}, ${env.MYSQL_INFO_FILE}", fingerprint: true
+                    archiveArtifacts artifacts: "${env.GENERATED_KEYS_FILE}", fingerprint: true
                 }
             }
         }
@@ -85,7 +64,7 @@ EOF
                 script {
                     sshagent(credentials: ['id_ed2_techvvs']) {
                         sh """
-                            ssh -o StrictHostKeyChecking=no techvvs@\${params.HOSTNAME} << 'EOF'
+                            ssh -o StrictHostKeyChecking=no techvvs@${params.HOSTNAME} << 'EOF'
                             if [ ! -d /var/www/html/wordpress ]; then
                                 curl -O https://wordpress.org/latest.zip
                                 unzip latest.zip
@@ -98,20 +77,20 @@ EOF
                             fi
 
                             if [ ! -f /var/www/html/wordpress/wp-config.php ]; then
-                                sudo bash -c 'cat > /var/www/html/wordpress/wp-config.php' << EOL
-                                <?php
-                                define('DB_NAME', '\${params.MYSQL_DB}');
-                                define('DB_USER', '\${params.MYSQL_USER}');
-                                define('DB_PASSWORD', '\${params.MYSQL_PASSWORD}');
-                                define('DB_HOST', '\${params.MYSQL_HOST}:\${params.MYSQL_PORT}');
-                                define('DB_CHARSET', 'utf8mb4');
-                                define('DB_COLLATE', '');
-                                $(cat ${env.WORKSPACE}/${env.GENERATED_KEYS_FILE} | awk -F "=" '{ print "define(\\\""$1"\\\", \\\""$2"\\\");"}')
-                                \$table_prefix = 'wp_';
-                                define('WP_DEBUG', false);
-                                if ( !defined('ABSPATH') ) define('ABSPATH', __DIR__ . '/');
-                                require_once ABSPATH . 'wp-settings.php';
-                                EOL
+                                sudo bash -c 'cat > /var/www/html/wordpress/wp-config.php' << CONFIG
+<?php
+define('DB_NAME', '${params.MYSQL_DB}');
+define('DB_USER', '${params.MYSQL_USER}');
+define('DB_PASSWORD', '${params.MYSQL_PASSWORD}');
+define('DB_HOST', '${params.MYSQL_HOST}:${params.MYSQL_PORT}');
+define('DB_CHARSET', 'utf8mb4');
+define('DB_COLLATE', '');
+$(cat ${env.WORKSPACE}/${env.GENERATED_KEYS_FILE} | awk -F "=" '{ print "define(\\\""$1"\\\", \\\""$2"\\\");"}')
+\$table_prefix = 'wp_';
+define('WP_DEBUG', false);
+if ( !defined('ABSPATH') ) define('ABSPATH', __DIR__ . '/');
+require_once ABSPATH . 'wp-settings.php';
+CONFIG
                                 echo "Configured wp-config.php for WordPress."
                             else
                                 echo "wp-config.php already exists. Skipping."
@@ -123,35 +102,34 @@ EOF
             }
         }
 
-
         stage('Configure Nginx Reverse Proxy') {
             steps {
                 script {
                     sshagent(credentials: ['id_ed2_techvvs']) {
                         sh """
-                            ssh -o StrictHostKeyChecking=no techvvs@\${params.HOSTNAME} << 'EOF'
-                            if ! grep -q "\${params.TENANT_NAME}\${params.BASE_DOMAIN}" /etc/nginx/sites-available/default; then
-                                sudo bash -c 'cat > /etc/nginx/sites-available/default' << EOL
-                                server {
-                                    listen 80;
-                                    server_name \${params.TENANT_NAME}\${params.BASE_DOMAIN};
+                            ssh -o StrictHostKeyChecking=no techvvs@${params.HOSTNAME} << 'EOF'
+                            if ! grep -q "${params.TENANT_NAME}${params.BASE_DOMAIN}" /etc/nginx/sites-available/default; then
+                                sudo bash -c 'cat > /etc/nginx/sites-available/default' << CONFIG
+server {
+    listen 80;
+    server_name ${params.TENANT_NAME}${params.BASE_DOMAIN};
 
-                                    root /var/www/html/wordpress;
+    root /var/www/html/wordpress;
 
-                                    index index.php index.html index.htm;
+    index index.php index.html index.htm;
 
-                                    location / {
-                                        try_files \$uri \$uri/ /index.php;
-                                    }
+    location / {
+        try_files \$uri \$uri/ /index.php;
+    }
 
-                                    location ~ \\.php\$ {
-                                        include snippets/fastcgi-php.conf;
-                                        fastcgi_pass unix:/var/run/php/php-fpm.sock;
-                                        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
-                                        include fastcgi_params;
-                                    }
-                                }
-                                EOL
+    location ~ \\.php\$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/var/run/php/php-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        include fastcgi_params;
+    }
+}
+CONFIG
                                 sudo nginx -t
                                 sudo systemctl restart nginx
                                 echo "Configured Nginx for WordPress reverse proxy."
@@ -170,10 +148,10 @@ EOF
                 script {
                     sshagent(credentials: ['id_ed2_techvvs']) {
                         sh """
-                            ssh -o StrictHostKeyChecking=no techvvs@\${params.HOSTNAME} << 'EOF'
-                            if ! certbot certificates | grep -q "\${params.TENANT_NAME}\${params.BASE_DOMAIN}"; then
+                            ssh -o StrictHostKeyChecking=no techvvs@${params.HOSTNAME} << 'EOF'
+                            if ! certbot certificates | grep -q "${params.TENANT_NAME}${params.BASE_DOMAIN}"; then
                                 sudo apt-get install -y certbot python3-certbot-nginx
-                                sudo certbot --nginx -d \${params.TENANT_NAME}\${params.BASE_DOMAIN} --non-interactive --agree-tos --email admin@techvvs.io
+                                sudo certbot --nginx -d ${params.TENANT_NAME}${params.BASE_DOMAIN} --non-interactive --agree-tos --email admin@techvvs.io
                                 echo "Installed Certbot and configured SSL."
                             else
                                 echo "SSL certificate already exists. Skipping."
@@ -188,7 +166,7 @@ EOF
         stage('Verify Nginx Setup') {
             steps {
                 script {
-                    def url = "https://${params.TENANT_NAME}\${params.BASE_DOMAIN}"
+                    def url = "https://${params.TENANT_NAME}${params.BASE_DOMAIN}"
                     def response = httpRequest(url: url, validResponseCodes: '200')
 
                     if (!response.content.contains("WordPress")) {
