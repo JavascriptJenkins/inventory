@@ -102,13 +102,11 @@ EOF
         }
 
 
-stage('Configure Nginx Reverse Proxy') {
+stage('Upload Nginx Configuration') {
     steps {
         script {
-            sshagent(credentials: ['id_ed2_techvvs']) {
-                sh """
-                    ssh -o StrictHostKeyChecking=no techvvs@${params.HOSTNAME} << 'EOF'
-                    sudo bash -c 'cat > /etc/nginx/sites-available/default' << CONFIG
+            // Define the Nginx configuration content
+            def nginxConfig = """
 server {
     listen 80;
     server_name ${params.TENANT_NAME}${params.BASE_DOMAIN};
@@ -128,17 +126,31 @@ server {
         include fastcgi_params;
     }
 
-    location ~ /\\\\.ht {
+    location ~ /\\.ht {
         deny all;
     }
 }
-CONFIG
+"""
+
+            // Save the configuration as a temporary file
+            writeFile file: 'nginx_default.conf', text: nginxConfig
+
+            sshagent(credentials: ['id_ed2_techvvs']) {
+                sh """
+                    # Upload the configuration file to the server
+                    scp -o StrictHostKeyChecking=no nginx_default.conf techvvs@${params.HOSTNAME}:/tmp/nginx_default.conf
+
+                    # Apply the configuration on the server
+                    ssh -o StrictHostKeyChecking=no techvvs@${params.HOSTNAME} << 'EOF'
+                    sudo mv /tmp/nginx_default.conf /etc/nginx/sites-available/default
+
+                    # Test the Nginx configuration
                     sudo nginx -t
-                    if [ $? -eq 0 ]; then
+                    if [ \$? -eq 0 ]; then
                         sudo systemctl reload nginx
-                        echo "Nginx configuration validated and reloaded."
+                        echo "Nginx configuration validated and applied successfully."
                     else
-                        echo "Nginx configuration test failed. Exiting."
+                        echo "Nginx configuration test failed. Check syntax and try again."
                         exit 1
                     fi
 EOF
@@ -147,6 +159,7 @@ EOF
         }
     }
 }
+
 
 
 
