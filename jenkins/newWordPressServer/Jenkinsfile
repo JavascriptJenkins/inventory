@@ -5,10 +5,10 @@ pipeline {
         choice(name: 'HOSTNAME', choices: ['206.189.183.0', '64.227.4.159', '198.199.72.34', '157.230.91.190', '159.223.128.46', '159.203.182.152', '24.199.88.215'], description: 'The host to push the build to')
         choice(name: 'TENANT_NAME', choices: ['test', 'alpha', 'intake', 'swerve', 'sap'], description: 'The tenant name will be appended to the beginning of the domain')
         choice(name: 'BASE_DOMAIN', choices: ['.techvvs.io', '.jenkins.codes', '.northstarcopack.com'], description: 'Domain')
-        string(name: 'MYSQL_HOST', defaultValue: 'your-mysql-host', description: 'MySQL Host (e.g., mysql-cluster.digitalocean.com)')
-        string(name: 'MYSQL_PORT', defaultValue: '3306', description: 'MySQL Port (default: 3306)')
-        string(name: 'MYSQL_DB', defaultValue: 'wordpress', description: 'MySQL Database Name')
-        string(name: 'MYSQL_USER', defaultValue: 'wordpress_user', description: 'MySQL Username')
+        string(name: 'MYSQL_HOST', defaultValue: 'testdb-do-user-1326368-0.d.db.ondigitalocean.com', description: 'MySQL Host (e.g., mysql-cluster.digitalocean.com)')
+        string(name: 'MYSQL_PORT', defaultValue: '25060', description: 'MySQL Port (default: 3306)')
+        string(name: 'MYSQL_DB', defaultValue: 'test', description: 'MySQL Database Name')
+        string(name: 'MYSQL_USER', defaultValue: 'test', description: 'MySQL Username')
         password(name: 'MYSQL_PASSWORD', description: 'MySQL Password')
     }
 
