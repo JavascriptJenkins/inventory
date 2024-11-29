@@ -23,7 +23,7 @@ pipeline {
                 script {
                     sshagent(credentials: ['id_ed2_techvvs']) {
                         sh """
-                            ssh -o StrictHostKeyChecking=no techvvs@${params.HOSTNAME} << 'EOF'
+                            ssh -o StrictHostKeyChecking=no techvvs@\${params.HOSTNAME} << 'EOF'
                             if ! command -v nginx &> /dev/null; then
                                 sudo apt-get update -y
                                 sudo apt-get install -y nginx php-fpm php-mysql curl unzip ufw
@@ -54,8 +54,8 @@ EOF
                         keys.LOGGED_IN_SALT = UUID.randomUUID().toString()
                         keys.NONCE_SALT = UUID.randomUUID().toString()
 
-                        writeFile file: env.GENERATED_KEYS_FILE, text: keys.collect { k, v -> "${k}=${v}" }.join("\n")
-                        echo "Generated WordPress keys saved to ${env.GENERATED_KEYS_FILE}"
+                        writeFile file: env.GENERATED_KEYS_FILE, text: keys.collect { k, v -> "\${k}=\${v}" }.join("\n")
+                        echo "Generated WordPress keys saved to \${env.GENERATED_KEYS_FILE}"
                     } else {
                         echo "Keys already generated. Skipping."
                     }
@@ -85,7 +85,7 @@ EOF
                 script {
                     sshagent(credentials: ['id_ed2_techvvs']) {
                         sh """
-                            ssh -o StrictHostKeyChecking=no techvvs@${params.HOSTNAME} << 'EOF'
+                            ssh -o StrictHostKeyChecking=no techvvs@\${params.HOSTNAME} << 'EOF'
                             if [ ! -d /var/www/html/wordpress ]; then
                                 curl -O https://wordpress.org/latest.zip
                                 unzip latest.zip
@@ -129,12 +129,12 @@ EOF
                 script {
                     sshagent(credentials: ['id_ed2_techvvs']) {
                         sh """
-                            ssh -o StrictHostKeyChecking=no techvvs@${params.HOSTNAME} << 'EOF'
-                            if ! grep -q "${params.TENANT_NAME}${params.BASE_DOMAIN}" /etc/nginx/sites-available/default; then
+                            ssh -o StrictHostKeyChecking=no techvvs@\${params.HOSTNAME} << 'EOF'
+                            if ! grep -q "\${params.TENANT_NAME}\${params.BASE_DOMAIN}" /etc/nginx/sites-available/default; then
                                 sudo bash -c 'cat > /etc/nginx/sites-available/default' << EOL
                                 server {
                                     listen 80;
-                                    server_name ${params.TENANT_NAME}${params.BASE_DOMAIN};
+                                    server_name \${params.TENANT_NAME}\${params.BASE_DOMAIN};
 
                                     root /var/www/html/wordpress;
 
@@ -170,10 +170,10 @@ EOF
                 script {
                     sshagent(credentials: ['id_ed2_techvvs']) {
                         sh """
-                            ssh -o StrictHostKeyChecking=no techvvs@${params.HOSTNAME} << 'EOF'
-                            if ! certbot certificates | grep -q "${params.TENANT_NAME}${params.BASE_DOMAIN}"; then
+                            ssh -o StrictHostKeyChecking=no techvvs@\${params.HOSTNAME} << 'EOF'
+                            if ! certbot certificates | grep -q "\${params.TENANT_NAME}\${params.BASE_DOMAIN}"; then
                                 sudo apt-get install -y certbot python3-certbot-nginx
-                                sudo certbot --nginx -d ${params.TENANT_NAME}${params.BASE_DOMAIN} --non-interactive --agree-tos --email admin@techvvs.io
+                                sudo certbot --nginx -d \${params.TENANT_NAME}\${params.BASE_DOMAIN} --non-interactive --agree-tos --email admin@techvvs.io
                                 echo "Installed Certbot and configured SSL."
                             else
                                 echo "SSL certificate already exists. Skipping."
@@ -188,7 +188,7 @@ EOF
         stage('Verify Nginx Setup') {
             steps {
                 script {
-                    def url = "https://${params.TENANT_NAME}${params.BASE_DOMAIN}"
+                    def url = "https://${params.TENANT_NAME}\${params.BASE_DOMAIN}"
                     def response = httpRequest(url: url, validResponseCodes: '200')
 
                     if (!response.content.contains("WordPress")) {
