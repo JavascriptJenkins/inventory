@@ -7,8 +7,6 @@ pipeline {
 
     parameters {
         choice(name: 'HOSTNAME', choices: ['206.189.183.0', '64.227.4.159', '198.199.72.34','157.230.91.190', '159.223.128.46', '159.203.182.152', '24.199.88.215'], description: 'the host to push the build to')
-        string(name: 'BRANCH', defaultValue: 'prod', description: 'The Git branch to check out')
-
     }
 
     stages {
