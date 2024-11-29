@@ -122,14 +122,14 @@ server {
         try_files \$uri \$uri/ /index.php;
     }
 
-    location ~ \\.php\$ {
+    location ~ \\\\.php\\\$ {
         include snippets/fastcgi-php.conf;
         fastcgi_pass unix:/var/run/php/php-fpm.sock;
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         include fastcgi_params;
     }
 
-    location ~ /\.ht {
+    location ~ /\\\\.ht {
         deny all;
     }
 }
@@ -141,8 +141,6 @@ CONFIG
                             echo "Nginx configuration validated and reloaded."
                         else
                             echo "Nginx configuration test failed. Rolling back changes."
-                            sudo mv /etc/nginx/sites-available/default.bak /etc/nginx/sites-available/default
-                            sudo nginx -t
                             exit 1
                         fi
                     else
