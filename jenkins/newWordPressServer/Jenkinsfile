@@ -111,7 +111,7 @@ stage('Configure Nginx Reverse Proxy') {
                     sudo bash -c 'cat > /etc/nginx/sites-available/default' << "CONFIG"
 server {
     listen 80;
-    server_name ${params.TENANT_NAME}${params.BASE_DOMAIN};
+    server_name \${params.TENANT_NAME}\${params.BASE_DOMAIN};
 
     root /var/www/html/wordpress;
 
