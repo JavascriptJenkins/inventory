@@ -128,7 +128,7 @@ server {
         include fastcgi_params;
     }
 
-    location ~ /\.ht {
+    location ~ /\\\\.ht {
         deny all;
     }
 }
