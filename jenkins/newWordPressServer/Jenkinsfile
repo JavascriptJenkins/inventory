@@ -106,6 +106,9 @@ stage('Configure Nginx Reverse Proxy') {
     steps {
         script {
             sshagent(credentials: ['id_ed2_techvvs']) {
+            def document_root = 'document_root'
+            def astcgi_script_name = 'astcgi_script_name'
+
                 sh """
                     ssh -o StrictHostKeyChecking=no techvvs@${params.HOSTNAME} << 'EOF'
                     if ! grep -q "${params.TENANT_NAME}${params.BASE_DOMAIN}" /etc/nginx/sites-available/default; then
@@ -125,7 +128,7 @@ server {
     location ~ \\\\.php\\\$ {
         include snippets/fastcgi-php.conf;
         fastcgi_pass unix:/var/run/php/php-fpm.sock;
-        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
         include fastcgi_params;
     }
 
