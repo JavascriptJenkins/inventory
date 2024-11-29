@@ -122,20 +122,21 @@ server {
         try_files \$uri \$uri/ /index.php;
     }
 
-    location ~ \\.php\$ {
+    location ~ \\\\.php\\\$ {
         include snippets/fastcgi-php.conf;
         fastcgi_pass unix:/var/run/php/php-fpm.sock;
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         include fastcgi_params;
     }
 
-    location ~ /\.ht {
+    location ~ /\\\\.ht {
         deny all;
     }
 }
 CONFIG
-                        sudo nginx -t
-                        if [ $? -eq 0 ]; then
+
+                        # Validate Nginx configuration
+                        if sudo nginx -t; then
                             sudo systemctl reload nginx
                             echo "Nginx configuration validated and reloaded."
                         else
@@ -143,7 +144,7 @@ CONFIG
                             exit 1
                         fi
                     else
-                        echo "Nginx configuration already exists. Skipping."
+                        echo "Nginx configuration already exists for ${params.TENANT_NAME}${params.BASE_DOMAIN}. Skipping."
                     fi
 EOF
                 """
@@ -151,6 +152,7 @@ EOF
         }
     }
 }
+
 
 
 
