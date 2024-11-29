@@ -103,11 +103,11 @@ EOF
                                 define('DB_NAME', '${params.MYSQL_DB}');
                                 define('DB_USER', '${params.MYSQL_USER}');
                                 define('DB_PASSWORD', '${params.MYSQL_PASSWORD}');
-                                define('DB_HOST', '${params.MYSQL_HOST}:\\${params.MYSQL_PORT}'); // Escaping PHP dollar sign
+                                define('DB_HOST', '${params.MYSQL_HOST}:${params.MYSQL_PORT}');
                                 define('DB_CHARSET', 'utf8mb4');
                                 define('DB_COLLATE', '');
-                                $(cat ${env.WORKSPACE}/${env.GENERATED_KEYS_FILE} | awk -F "=" '{ print "define(\\\""$1"\\\", \\\""$2"\\\");"}')
-                                \$table_prefix = 'wp_';
+                                $(cat ${env.WORKSPACE}/${env.GENERATED_KEYS_FILE} | awk -F "=" '{ print "define(\\\\\\\""$1"\\\\\\\", \\\\\\\""$2"\\\\\\\");"}')
+                                \\\$table_prefix = 'wp_';
                                 define('WP_DEBUG', false);
                                 if ( !defined('ABSPATH') ) define('ABSPATH', __DIR__ . '/');
                                 require_once ABSPATH . 'wp-settings.php';
@@ -122,6 +122,7 @@ EOF
                 }
             }
         }
+
 
         stage('Configure Nginx Reverse Proxy') {
             steps {
