@@ -63,15 +63,20 @@ pipeline {
         stage('Log in and download the logs') {
             steps {
                 script {
-                    sshagent(credentials: ['id_ed2_techvvs']) {
+                    // Define SSH credentials and user based on HOSTNAME
+                    def sshCredentials = (params.HOSTNAME == '64.227.4.159') ? 'inventory-root-sshkey' : 'id_ed2_techvvs'
+                    def sshUser = (params.HOSTNAME == '64.227.4.159') ? 'root' : 'techvvs'
+
+                    sshagent(credentials: [sshCredentials]) {
                         sh """
                             mkdir -p ${WORKSPACE}/logs
-                            scp -o StrictHostKeyChecking=no techvvs@${params.HOSTNAME}:~/deployments/inventory/app.log ${WORKSPACE}/logs/app.log
+                            scp -o StrictHostKeyChecking=no ${sshUser}@${params.HOSTNAME}:~/deployments/inventory/app.log ${WORKSPACE}/logs/app.log
                         """
                     }
                 }
             }
         }
+
     }
     post {
         always {
