@@ -1,0 +1,214 @@
+pipeline {
+    agent any
+
+    parameters {
+        choice(name: 'HOSTNAME', choices: ['206.189.183.0', '64.227.4.159', '198.199.72.34', '157.230.91.190', '159.223.128.46', '159.203.182.152', '24.199.88.215'], description: 'The host to push the build to')
+        choice(name: 'TENANT_NAME', choices: ['test', 'alpha', 'intake', 'swerve', 'sap'], description: 'The tenant name will be appended to the beginning of the domain')
+        choice(name: 'BASE_DOMAIN', choices: ['.techvvs.io', '.jenkins.codes', '.northstarcopack.com'], description: 'Domain')
+        string(name: 'MYSQL_HOST', defaultValue: 'testdb-do-user-1326368-0.d.db.ondigitalocean.com', description: 'MySQL Host (e.g., mysql-cluster.digitalocean.com)')
+        string(name: 'MYSQL_PORT', defaultValue: '25060', description: 'MySQL Port (default: 3306)')
+        string(name: 'MYSQL_DB', defaultValue: 'test', description: 'MySQL Database Name')
+        string(name: 'MYSQL_USER', defaultValue: 'test', description: 'MySQL Username')
+        password(name: 'MYSQL_PASSWORD', description: 'MySQL Password')
+    }
+
+    environment {
+        GENERATED_KEYS_FILE = "generated_keys.txt"
+        MYSQL_INFO_FILE = "mysql_info.txt"
+    }
+
+    stages {
+        stage('Install Required Packages') {
+            steps {
+                script {
+                    sshagent(credentials: ['id_ed2_techvvs']) {
+                        sh """
+                            ssh -o StrictHostKeyChecking=no techvvs@${params.HOSTNAME} << 'EOF'
+                            if ! command -v nginx &> /dev/null; then
+                                sudo apt-get update -y
+                                sudo apt-get install -y nginx php-fpm php-mysql curl unzip ufw
+                                sudo systemctl enable nginx
+                                echo "Installed required packages."
+                            else
+                                echo "Required packages already installed. Skipping."
+                            fi
+EOF
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Generate WordPress Keys and Save Artifacts') {
+            steps {
+                script {
+                    def keys = [:]
+                    if (!fileExists(env.GENERATED_KEYS_FILE)) {
+                        keys.AUTH_KEY = UUID.randomUUID().toString()
+                        keys.SECURE_AUTH_KEY = UUID.randomUUID().toString()
+                        keys.LOGGED_IN_KEY = UUID.randomUUID().toString()
+                        keys.NONCE_KEY = UUID.randomUUID().toString()
+                        keys.AUTH_SALT = UUID.randomUUID().toString()
+                        keys.SECURE_AUTH_SALT = UUID.randomUUID().toString()
+                        keys.LOGGED_IN_SALT = UUID.randomUUID().toString()
+                        keys.NONCE_SALT = UUID.randomUUID().toString()
+                        writeFile file: env.GENERATED_KEYS_FILE, text: keys.collect { k, v -> "${k}=${v}" }.join("\n")
+                    }
+                    archiveArtifacts artifacts: "${env.GENERATED_KEYS_FILE}", fingerprint: true
+                }
+            }
+        }
+
+        stage('Download and Configure WordPress') {
+            steps {
+                script {
+                    sshagent(credentials: ['id_ed2_techvvs']) {
+                        sh """
+                            ssh -o StrictHostKeyChecking=no techvvs@${params.HOSTNAME} << 'EOF'
+                            if [ ! -d /var/www/html/wordpress ]; then
+                                curl -O https://wordpress.org/latest.zip
+                                unzip latest.zip
+                                sudo mv wordpress /var/www/html/
+                                sudo chown -R www-data:www-data /var/www/html/wordpress
+                                sudo chmod -R 755 /var/www/html/wordpress
+                                echo "WordPress files downloaded and permissions set."
+                            else
+                                echo "WordPress files already exist. Skipping."
+                            fi
+
+                            if [ ! -f /var/www/html/wordpress/wp-config.php ]; then
+                                sudo bash -c 'cat > /var/www/html/wordpress/wp-config.php' << EOL
+<?php
+define('DB_NAME', '${params.MYSQL_DB}');
+define('DB_USER', '${params.MYSQL_USER}');
+define('DB_PASSWORD', '${params.MYSQL_PASSWORD}');
+define('DB_HOST', '${params.MYSQL_HOST}:${params.MYSQL_PORT}');
+define('DB_CHARSET', 'utf8mb4');
+define('DB_COLLATE', '');
+\$table_prefix = 'wp_';
+define('WP_DEBUG', false);
+if ( !defined('ABSPATH') ) define('ABSPATH', __DIR__ . '/');
+require_once ABSPATH . 'wp-settings.php';
+EOL
+                                echo "Configured wp-config.php for WordPress."
+                            else
+                                echo "wp-config.php already exists. Skipping."
+                            fi
+EOF
+                        """
+                    }
+                }
+            }
+        }
+
+
+stage('Upload Nginx Configuration') {
+    steps {
+        script {
+            // Define the Nginx configuration content
+            def nginxConfig = """
+server {
+    listen 80;
+    server_name ${params.TENANT_NAME}${params.BASE_DOMAIN};
+
+    root /var/www/html/wordpress;
+
+    index index.php index.html index.htm;
+
+    location / {
+        try_files \$uri \$uri/ /index.php;
+    }
+
+    location ~ \\.php\$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/var/run/php/php-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+    location ~ /\\.ht {
+        deny all;
+    }
+}
+"""
+
+            // Save the configuration as a temporary file
+            writeFile file: 'nginx_default.conf', text: nginxConfig
+
+            sshagent(credentials: ['id_ed2_techvvs']) {
+                sh """
+                    # Upload the configuration file to the server
+                    scp -o StrictHostKeyChecking=no nginx_default.conf techvvs@${params.HOSTNAME}:/tmp/nginx_default.conf
+
+                    # Apply the configuration on the server
+                    ssh -o StrictHostKeyChecking=no techvvs@${params.HOSTNAME} << 'EOF'
+                    sudo mv /tmp/nginx_default.conf /etc/nginx/sites-available/default
+
+                    # Test the Nginx configuration
+                    sudo nginx -t
+                    if [ \$? -eq 0 ]; then
+                        sudo systemctl reload nginx
+                        echo "Nginx configuration validated and applied successfully."
+                    else
+                        echo "Nginx configuration test failed. Check syntax and try again."
+                        exit 1
+                    fi
+EOF
+                """
+            }
+        }
+    }
+}
+
+
+
+
+
+
+
+stage('Install Certbot and Configure SSL') {
+    steps {
+        script {
+            sshagent(credentials: ['id_ed2_techvvs']) {
+                sh """
+                    ssh -o StrictHostKeyChecking=no techvvs@${params.HOSTNAME} << 'EOF'
+                    sudo apt-get install -y certbot python3-certbot-nginx
+                    if ! sudo certbot certificates | grep -q "${params.TENANT_NAME}${params.BASE_DOMAIN}"; then
+                        sudo certbot --nginx \
+                            -d ${params.TENANT_NAME}${params.BASE_DOMAIN} \
+                            --non-interactive --agree-tos --email admin@techvvs.io \
+                            --config-dir /etc/letsencrypt --work-dir /var/lib/letsencrypt --logs-dir /var/log/letsencrypt
+                        if [ \$? -eq 0 ]; then
+                            echo "Certbot successfully configured SSL."
+                        else
+                            echo "Certbot failed to configure SSL."
+                            exit 1
+                        fi
+                    else
+                        echo "SSL certificate already exists. Skipping Certbot."
+                    fi
+EOF
+                """
+            }
+        }
+    }
+}
+
+
+
+
+stage('Verify Nginx Setup') {
+    steps {
+        script {
+            def url = "https://${params.TENANT_NAME}${params.BASE_DOMAIN}"
+            try {
+                def response = httpRequest(url: url, validResponseCodes: '200')
+                echo "Verification successful: ${url} is accessible."
+            } catch (Exception e) {
+                error "Verification failed: Unable to access ${url}. Check DNS or server configuration."
+            }
+        }
+    }
+}
+    }
+}
