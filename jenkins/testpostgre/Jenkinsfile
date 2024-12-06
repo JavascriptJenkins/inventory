@@ -160,13 +160,13 @@ pipeline {
                             sh "sed -i 's/^security\\.jwt\\.token\\.secret-key=.*/security.jwt.token.secret-key=${JWT_SECRET_KEY}/' src/main/resources/application.properties"
 
 
-                            if (env.TENANT_ENV.contains('prod')) {
+                            if (env.TENANT_ENV.contains('prod') && !env.TENANT_ENV.contains('highland')) {
                                 echo "Environment contains 'prod'. This is a production environment."
                                 // Update production-specific settings
                                 sh """
                                     sed -i 's/^spring\\.datasource\\.password=.*/spring.datasource.password=${POSTGRE_PROD_DB_PASSWORD}/' src/main/resources/application.properties
                                 """
-                            } else if (env.TENANT_ENV.contains('test') || env.TENANT_ENV.contains('alpha')) {
+                            } else if (env.TENANT_ENV.contains('test') || env.TENANT_ENV.contains('highland')) {
                                 
                                 echo "Environment contains 'test'. This is a testing environment."
                                 // Update test-specific settings
