@@ -537,6 +537,21 @@ class BatchControllerHelper {
         row.createCell(4).setCellValue("Media")
 
 
+        // Set the hyperlink (URL)
+        CreationHelper createHelper2 = workbook.getCreationHelper();
+        Hyperlink hyperlink2 = createHelper2.createHyperlink(HyperlinkType.URL);
+        hyperlink2.setAddress(baseqrdomain+"/menu/batch&batchid="+batchVO.batchid);
+
+        Cell qrcell2 = row.createCell(5)
+
+        // Set the hyperlink to the cell
+        qrcell2.setHyperlink(hyperlink2);
+        qrcell2.setCellValue("Menu Link");  // Displayed text for the link
+
+        sheet.setColumnWidth(5,10000)
+        row.createCell(5).setCellValue("Menu Link")
+
+
 
         ArrayList<ProductVO> listofproductsinstock = new ArrayList()
         System.out.println("size of batch set: "+batchVO.product_set)

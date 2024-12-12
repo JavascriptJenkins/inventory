@@ -35,16 +35,19 @@ public class MenuViewController {
     String viewNewForm(
             @ModelAttribute( "menu" ) MenuVO menuVO,
             Model model,
-            
-            @RequestParam("menuid") String menuid,
-            @RequestParam("cartid") String cartid,
+            @RequestParam("menuid") Optional<String> menuid,
+            @RequestParam("cartid") Optional<String> cartid,
             @ModelAttribute( "cart" ) CartVO cartVO
     ){
 
 
 
-        menuVO = menuHelper.loadMenu(menuid, model)
-        model = checkoutHelper.loadCart(cartid, model, cartVO, menuid)
+        if(menuid.isPresent())  {
+            menuHelper.loadMenu(menuid.get(), model)
+        }
+        if(menuid.isPresent()) {
+            checkoutHelper.loadCart(cartid.get(), model, cartVO, menuid.get())
+        }
 
 
 
@@ -57,10 +60,45 @@ public class MenuViewController {
 
         // fetch all customers from database and bind them to model
         checkoutHelper.getAllCustomers(model)
-        techvvsAuthService.checkuserauth(model)
+        //techvvsAuthService.checkuserauth(model)
         return "menu/menu.html";
     }
 
+
+    //default home mapping
+    @GetMapping
+    String viewNewForm(
+            @ModelAttribute( "menu" ) MenuVO menuVO,
+            Model model,
+            @RequestParam("menuid") Optional<String> menuid,
+            @RequestParam("cartid") Optional<String> cartid,
+            @RequestParam("batchid") Optional<String> batchid,
+            @ModelAttribute( "cart" ) CartVO cartVO
+    ){
+
+
+
+        if(menuid.isPresent())  {
+            menuHelper.loadMenu(menuid.get(), model)
+        }
+        if(menuid.isPresent()) {
+            checkoutHelper.loadCart(cartid.get(), model, cartVO, menuid.get())
+        }
+
+
+
+        // todo: add a button on the ui to pull the latest transaction for customer (so if someone clicks off page
+        //  you can come back and finish the transaction)
+
+
+
+
+
+        // fetch all customers from database and bind them to model
+        checkoutHelper.getAllCustomers(model)
+        //techvvsAuthService.checkuserauth(model)
+        return "menu/menu.html";
+    }
 
     // todo: make this so that the quantity is taking off the display amount instead of relying on the product cart list
     @PostMapping("/scan")

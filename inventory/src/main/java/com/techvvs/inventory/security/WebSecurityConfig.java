@@ -75,6 +75,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .antMatchers(FILE_SMS_DOWNLOAD_3).permitAll()
             .antMatchers(FILE_QR_MEDIA_ZIP_DOWNLOAD).permitAll()
             .antMatchers(FILE_QR_MEDIA_ZIP_DOWNLOAD_33).permitAll()
+            .antMatchers(MENU_URI_33).permitAll()
+            .antMatchers(MENU_URI).permitAll()
 //            .antMatchers("/login/systemuser").permitAll()//
             // Add other routes that should be publicly accessible
             // Disallow everything else..
