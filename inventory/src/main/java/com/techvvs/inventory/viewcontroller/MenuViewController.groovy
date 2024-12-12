@@ -77,6 +77,8 @@ public class MenuViewController {
             Model model,
             @RequestParam("cartid") Optional<String> cartid,
             @RequestParam("batchid") Optional<String> batchid,
+            @RequestParam("page") Optional<String> page,
+            @RequestParam("size") Optional<String> size,
             @ModelAttribute( "cart" ) CartVO cartVO
     ){
 
