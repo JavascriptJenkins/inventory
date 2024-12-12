@@ -2,6 +2,7 @@ package com.techvvs.inventory.xlsx.impl
 
 import com.techvvs.inventory.barcode.impl.BarcodeHelper
 import com.techvvs.inventory.barcode.service.BarcodeService
+import com.techvvs.inventory.jparepo.BatchRepo
 import com.techvvs.inventory.jparepo.MenuRepo
 import com.techvvs.inventory.jparepo.ProductRepo
 import com.techvvs.inventory.model.BatchVO
@@ -29,6 +30,9 @@ class MenuGenerator {
     @Autowired
     BarcodeHelper barcodeHelper
 
+    @Autowired
+    BatchRepo batchRepo
+
     boolean generateDefaultMenuFromBatch(BatchVO batchVO){
 
 
@@ -46,7 +50,16 @@ class MenuGenerator {
                 updateTimeStamp: LocalDateTime.now()
         )
 
-        menuRepo.save(menuVO)
+        menuVO = menuRepo.save(menuVO)
+
+
+        // add the new menu
+        BatchVO refreshedbatchvo = batchRepo.getById(batchVO.batchid)
+
+        refreshedbatchvo.menu_set.add(menuVO)
+
+        batchRepo.save(refreshedbatchvo)
+
         return true
     }
 

@@ -37,7 +37,7 @@ class MenuVO implements Serializable {
             joinColumns = @JoinColumn(name = "menuid"),
             inverseJoinColumns = @JoinColumn(name = "productid")
     )
-    List<ProductVO> menu_product_list
+    List<ProductVO> menu_product_list = new ArrayList<>()
 
     @JsonProperty
     Integer isdefault;

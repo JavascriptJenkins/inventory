@@ -1,9 +1,11 @@
 package com.techvvs.inventory.viewcontroller
 
+import com.techvvs.inventory.model.BatchVO
 import com.techvvs.inventory.model.CartVO
 import com.techvvs.inventory.model.MenuVO
 import com.techvvs.inventory.service.auth.TechvvsAuthService
 import com.techvvs.inventory.service.transactional.CartDeleteService
+import com.techvvs.inventory.viewcontroller.helper.BatchControllerHelper
 import com.techvvs.inventory.viewcontroller.helper.CheckoutHelper
 import com.techvvs.inventory.viewcontroller.helper.MenuHelper
 import org.springframework.beans.factory.annotation.Autowired
@@ -25,7 +27,10 @@ public class MenuViewController {
 
     @Autowired
     MenuHelper menuHelper
-    
+
+    @Autowired
+    BatchControllerHelper batchControllerHelper
+
     @Autowired
     TechvvsAuthService techvvsAuthService
     
@@ -45,7 +50,7 @@ public class MenuViewController {
         if(menuid.isPresent())  {
             menuHelper.loadMenu(menuid.get(), model)
         }
-        if(menuid.isPresent()) {
+        if(cartid.isPresent()) {
             checkoutHelper.loadCart(cartid.get(), model, cartVO, menuid.get())
         }
 
@@ -65,37 +70,42 @@ public class MenuViewController {
     }
 
 
-    //default home mapping
+    // this serves the default menu for the batch
     @GetMapping("/batch")
-    String viewNewForm(
+    String viewBatchMenu(
             @ModelAttribute( "menu" ) MenuVO menuVO,
             Model model,
-            @RequestParam("menuid") Optional<String> menuid,
             @RequestParam("cartid") Optional<String> cartid,
             @RequestParam("batchid") Optional<String> batchid,
             @ModelAttribute( "cart" ) CartVO cartVO
     ){
 
 
-
-        if(menuid.isPresent())  {
-            menuHelper.loadMenu(menuid.get(), model)
+        String menuid = "0"
+        if(batchid.isPresent())  {
+            BatchVO batchVO = batchControllerHelper.loadBatch(batchid.get(), model)
+            if(batchVO.menu_set.size() == 1){
+                menuid = String.valueOf(batchVO.menu_set[0].menuid) // grab the default menu id
+            } else {
+                for(MenuVO menu222 : batchVO.menu_set){
+                    if(menu222.isdefault == 1){
+                        menuid = String.valueOf(menu222.menuid) // find the default menu and serve it
+                        break
+                    }
+                }
+            }
         }
-        if(menuid.isPresent()) {
-            checkoutHelper.loadCart(cartid.get(), model, cartVO, menuid.get())
+
+        // todo: modify this to load the cart without a menu id? is that possible or do we require a menuid?
+        if(cartid.isPresent()) {
+            checkoutHelper.loadCart(cartid.get(), model, cartVO, menuid)
         }
 
-
-
-        // todo: add a button on the ui to pull the latest transaction for customer (so if someone clicks off page
-        //  you can come back and finish the transaction)
-
-
-
-
+        // load the menu
+        menuHelper.loadMenu(menuid, model)
 
         // fetch all customers from database and bind them to model
-        checkoutHelper.getAllCustomers(model)
+        //checkoutHelper.getAllCustomers(model)
         //techvvsAuthService.checkuserauth(model)
         return "menu/menu.html";
     }
