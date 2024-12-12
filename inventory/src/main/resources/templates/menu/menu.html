@@ -58,9 +58,29 @@
             color: white !important;
         }
 
+        /* Image styling */
+        .card-img-top {
+            height: 150px;
+            object-fit: cover;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+
+        .no-photo {
+            height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            background-color: #23272a;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            font-size: 0.9em;
+        }
+
         /* Proper spacing between items and ensuring cards are not touching */
         .row-cols-md-5 > .menu-item {
-            margin: 10px; /* Added margin to separate items */
+            margin: 10px;
         }
 
         /* No items found message */
@@ -134,8 +154,15 @@
 
     <div class="row row-cols-1 row-cols-md-5 g-3" id="menuGrid">
         <div class="col menu-item" th:each="product : ${menu.menu_product_list}">
-            <!-- Updated menu item with dark theme and hover effects -->
+            <!-- Updated menu item with image and dark theme -->
             <div class="card h-100">
+                <div th:if="${product.primaryphoto}" class="card-img-top">
+                    <img th:src="${product.primaryphoto}" class="card-img-top" alt="Product Image">
+                </div>
+                <div th:if="${product.primaryphoto == null}" class="no-photo">
+<!--                    <img th:src="${/images/product1.jpg}" class="card-img-top" alt="Product Image">-->
+                    No photo found
+                </div>
                 <div class="card-body">
                     <h5 class="card-title" th:text="${product.name}">Product Name</h5>
                     <p class="card-text"><strong>Quantity:</strong> <span th:text="${product.quantityremaining}"></span></p>

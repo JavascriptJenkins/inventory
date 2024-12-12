@@ -151,6 +151,22 @@
             });
         });
     </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const checkbox = document.getElementById('isPrimaryCheckbox');
+            const form = document.getElementById('uploadForm');
+            const originalAction = form.getAttribute('action');
+
+            checkbox.addEventListener('change', function () {
+                if (checkbox.checked) {
+                console.log('checked');
+                    form.setAttribute('action', originalAction + '?primary=yes');
+                } else {
+                    form.setAttribute('action', originalAction);
+                }
+            });
+        });
+    </script>
 </head>
 <body>
 
@@ -387,8 +403,14 @@
     <div style="margin-bottom: 5px;" class="mx-auto">
         <div class="alert alert-info" role="alert">Upload a file
             <!-- pass the product object to the upload file controller to get the correct ID to save it under -->
-            <form method="post" th:object="${product}" th:action="@{/file/media/upload}" enctype="multipart/form-data">
+            <form id="uploadForm" method="post" th:object="${product}" th:action="@{/file/media/upload}" enctype="multipart/form-data">
                 <div class="form-group">
+
+                    <!-- Checkbox to modify the form action -->
+                    <div class="form-check">
+                        <input type="checkbox" id="isPrimaryCheckbox" class="form-check-input">
+                        <label for="isPrimaryCheckbox" class="form-check-label">Set as Primary (.jpg only)</label>
+                    </div>
                     <div th:if="${disableupload}">
                         <input type="file" disabled="disabled" name="file" class="form-control-file">
                     </div>

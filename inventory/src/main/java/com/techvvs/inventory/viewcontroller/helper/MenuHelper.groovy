@@ -1,5 +1,6 @@
 package com.techvvs.inventory.viewcontroller.helper
 
+import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.jparepo.MenuRepo
 import com.techvvs.inventory.model.CartVO
 import com.techvvs.inventory.model.MenuVO
@@ -20,6 +21,9 @@ class MenuHelper {
 
     @Autowired
     CartDeleteService cartDeleteService
+
+    @Autowired
+    AppConstants appConstants
 
 
     void findMenus(Model model, Optional<Integer> page, Optional<Integer> size){
@@ -89,6 +93,7 @@ class MenuHelper {
 
     }
 
+    // todo: this needs to fill a transient field that holds the path to an image?
     MenuVO loadMenu(String menuid, Model model){
 
         MenuVO menuVO = new MenuVO()
@@ -107,6 +112,11 @@ class MenuHelper {
             menuVO = hydrateTransientQuantitiesForDisplay(menuVO)
 
             List<ProductVO> uniqueproducts = ProductVO.getUniqueProducts(menuVO.menu_product_list)
+            // cycle through every unique product and build the uri for the primary photo
+            for(ProductVO productVO : uniqueproducts){
+                productVO.setPrimaryphoto("/image/images/"+productVO.product_id)
+            }
+
 
             menuVO.menu_product_list = uniqueproducts
 

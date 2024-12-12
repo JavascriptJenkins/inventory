@@ -11,6 +11,10 @@ class AppConstants {
 
     public String UPLOAD_DIR_MEDIA = "./uploads/media/";
     public String UPLOAD_DIR_PRODUCT = "/product/";
+    public String UPLOAD_DIR_PRODUCT_PRIMARY = "/primaryphoto/";
+    public String UPLOAD_DIR_PRODUCT_VIDEOS = "/videos/";
+    public String UPLOAD_DIR_PRODUCT_DOCUMENTS = "/documents/";
+    public String UPLOAD_DIR_PRODUCT_PHOTOS = "/photos/";
 
     // todo: depricate this upload dir?
     String UPLOAD_DIR = "./uploads/";

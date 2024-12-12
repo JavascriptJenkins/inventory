@@ -204,10 +204,16 @@ public class UploadController {
         return "/service/xlsxbatch.html";
     }
 
+    // todo: we probably don't need the isqrmedia one here but whatever who cares fix it later
     @PostMapping("/media/upload")
     public String uploadMediaFile(Model model,
                                   @ModelAttribute("product") ProductVO productVO,
                                   @RequestParam("file") MultipartFile file,
+                                  @RequestParam("primary") Optional<String> isprimary,
+                                  @RequestParam("video") Optional<String> isvideo,
+                                  @RequestParam("document") Optional<String> isdocument,
+                                  @RequestParam("photo") Optional<String> isphoto,
+                                  @RequestParam("qrmedia") Optional<String> isqrmedia,
                                   RedirectAttributes attributes) {
 
         System.out.println("Starting file upload...");
@@ -230,12 +236,53 @@ public class UploadController {
         boolean success = false;
 
         try {
-            // Create the directory structure
-            Path targetDirectory = Paths.get(
-                    appConstants.UPLOAD_DIR_MEDIA,
-                    appConstants.UPLOAD_DIR_PRODUCT,
-                    String.valueOf(productVO.getProduct_id())
-            );
+            Path targetDirectory;
+            if(isprimary.isPresent() && isprimary.get().equals("yes")){
+                checkForJpgExtension(sanitizedFileName); // make sure it's a jpg or jpeg
+                targetDirectory = Paths.get(
+                        appConstants.UPLOAD_DIR_MEDIA,
+                        appConstants.UPLOAD_DIR_PRODUCT,
+                        String.valueOf(productVO.getProduct_id()),
+                        appConstants.UPLOAD_DIR_PRODUCT_PRIMARY
+                );
+                sanitizedFileName = "primary.jpg";
+
+            } else if(isvideo.isPresent() && isvideo.get().equals("yes")){
+                targetDirectory = Paths.get(
+                        appConstants.UPLOAD_DIR_MEDIA,
+                        appConstants.UPLOAD_DIR_PRODUCT,
+                        String.valueOf(productVO.getProduct_id()),
+                        appConstants.UPLOAD_DIR_PRODUCT_VIDEOS
+                );
+            } else if(isdocument.isPresent() && isdocument.get().equals("yes")){
+                targetDirectory = Paths.get(
+                        appConstants.UPLOAD_DIR_MEDIA,
+                        appConstants.UPLOAD_DIR_PRODUCT,
+                        String.valueOf(productVO.getProduct_id()),
+                        appConstants.UPLOAD_DIR_PRODUCT_DOCUMENTS
+                );
+            } else if(isphoto.isPresent() && isphoto.get().equals("yes")){
+                targetDirectory = Paths.get(
+                        appConstants.UPLOAD_DIR_MEDIA,
+                        appConstants.UPLOAD_DIR_PRODUCT,
+                        String.valueOf(productVO.getProduct_id()),
+                        appConstants.UPLOAD_DIR_PRODUCT_PHOTOS
+                );
+            }  else if(isqrmedia.isPresent() && isqrmedia.get().equals("yes")){
+                targetDirectory = Paths.get(
+                        appConstants.UPLOAD_DIR_MEDIA,
+                        appConstants.UPLOAD_DIR_PRODUCT,
+                        String.valueOf(productVO.getProduct_id())
+                );
+            } else {
+                // default is upload the media to the qr directory
+                targetDirectory = Paths.get(
+                        appConstants.UPLOAD_DIR_MEDIA,
+                        appConstants.UPLOAD_DIR_PRODUCT,
+                        String.valueOf(productVO.getProduct_id())
+                );
+            }
+
             Files.createDirectories(targetDirectory);
 
             // Save the file
@@ -277,6 +324,24 @@ public class UploadController {
         // get all the batchtype objects and bind them to select dropdown
         List<BatchTypeVO> batchTypeVOS = batchTypeRepo.findAll();
         model.addAttribute("batchtypes", batchTypeVOS);
+    }
+
+    String checkForJpgExtension(String sanitizedFileName) throws IOException {
+
+        if(sanitizedFileName.toLowerCase().endsWith(".jpg")){
+            return sanitizedFileName;
+        }
+
+        // Check the file extension
+        if (sanitizedFileName.toLowerCase().endsWith(".jpeg")) {
+            // Replace .jpeg with .jpg
+            return sanitizedFileName.substring(0, sanitizedFileName.length() - 5) + ".jpg";
+        } else if (!sanitizedFileName.toLowerCase().endsWith(".jpg")) {
+            // Throw exception if it does not end with .jpg
+            throw new IOException("Sanitized file name must end with .jpg: " + sanitizedFileName);
+        }
+        return sanitizedFileName;
+
     }
 
     void bindProductTypes(Model model){
