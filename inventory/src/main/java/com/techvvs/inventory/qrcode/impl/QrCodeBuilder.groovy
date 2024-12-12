@@ -45,6 +45,7 @@ class QrCodeBuilder {
     }
 
 
+    // todo: cleanup this method
     String buildMediaQrCodeForProductAsLink(
             String baseqrdomain,
             ProductVO productVO
@@ -64,7 +65,7 @@ class QrCodeBuilder {
         filename = filename.replaceAll(',',"")
         filename = filename.replaceAll(" ", "_")
 
-        return baseqrdomain+"/file/smsdownload3?customJwtParameter="+mediadownloadtoken+"&filename="+filename+"&product_id="+productVO.product_id;
+        return baseqrdomain+ "/file/qrzipmediadownload?productid=" + productVO.getProduct_id()
     }
 
 
