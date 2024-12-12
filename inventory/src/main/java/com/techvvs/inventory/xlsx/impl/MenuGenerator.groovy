@@ -35,6 +35,18 @@ class MenuGenerator {
 
     boolean generateDefaultMenuFromBatch(BatchVO batchVO){
 
+        if(batchVO.menu_set.size() > 0){
+            int i = 0;
+            for(MenuVO menuVO: batchVO.menu_set){
+                if(menuVO.isdefault == 1){
+                    batchVO.menu_set.remove(i) // remove the menu from associated batch
+                    batchVO = batchRepo.save(batchVO)
+                    menuRepo.deleteById(menuVO.menuid) // delete existing default menu before generating another one
+                }
+                i++
+            }
+        }
+
 
         LinkedHashSet linkedHashSet = barcodeHelper.convertToLinkedHashSet(batchVO.product_set)
         List<ProductVO> expandedlist = barcodeService.expandAndDuplicateProductQuantities(linkedHashSet)
