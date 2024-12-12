@@ -120,6 +120,8 @@ class MenuHelper {
 
             menuVO.menu_product_list = uniqueproducts
 
+            ProductVO.sortProductsByPrice(menuVO.menu_product_list)
+
             model.addAttribute("menu", menuVO)
             return menuVO
         }
