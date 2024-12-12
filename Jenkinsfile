@@ -15,7 +15,7 @@ pipeline {
         string(name: 'SSHUSER', defaultValue: 'root', description: 'user for ssh key')
         string(name: 'LOAD_REF_DATA', defaultValue: 'no', description: 'Value for load.ref.data (leave blank to keep default)')
         string(name: 'ENVIRONMENT_NAME', defaultValue: 'prod', description: 'environment name, prod and dev1 are the optional values')
-        string(name: 'BASE_QR_DOMAIN', defaultValue: 'https://jenkins.codes', description: 'probably can delete this')
+        string(name: 'BASE_QR_DOMAIN', defaultValue: 'https://qr.jenkins.codes', description: 'probably can delete this')
         string(name: 'DB_TYPE', defaultValue: 'h2', description: 'type of database.  only inventory uses h2')
         string(name: 'DB_H2_CONSOLE_ENABLED', defaultValue: 'true', description: 'type of database.  only inventory uses h2')
         string(name: 'DB_H2_WEB_ALLOWOTHERS', defaultValue: 'true', description: 'type of database.  only inventory uses h2')

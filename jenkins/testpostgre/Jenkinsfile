@@ -30,7 +30,7 @@ pipeline {
         string(name: 'SPRING_DATABASE_ACTION', defaultValue: 'update', description: 'this value will control create-drop, update, etc')
         string(name: 'MAX_FILE_SIZE', defaultValue: '500MB', description: 'key for signing tokens')
         string(name: 'MAX_REQ_SIZE', defaultValue: '500MB', description: 'key for signing tokens')
-        string(name: 'BASE_QR_DOMAIN', defaultValue: 'https://jenkins.codes', description: 'this will get set to the hostname... ')
+        string(name: 'BASE_QR_DOMAIN', defaultValue: 'https://qr.jenkins.codes', description: 'this will get set to the hostname... ')
 
     }
 
