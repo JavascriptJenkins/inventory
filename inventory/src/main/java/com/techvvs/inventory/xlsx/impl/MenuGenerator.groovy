@@ -68,11 +68,11 @@ class MenuGenerator {
 
 
         // add the new menu
-        BatchVO refreshedbatchvo = batchRepo.getById(batchVO.batchid)
+//        batchVO = batchRepo.getById(batchVO.batchid)
 
-        refreshedbatchvo.menu_set.add(menuVO)
+        batchVO.menu_set.add(menuVO)
 
-        batchRepo.save(refreshedbatchvo)
+        batchRepo.save(batchVO)
 
         return true
     }
