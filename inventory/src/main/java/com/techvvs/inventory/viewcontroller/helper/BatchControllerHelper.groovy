@@ -540,7 +540,7 @@ class BatchControllerHelper {
         // Set the hyperlink (URL)
         CreationHelper createHelper2 = workbook.getCreationHelper();
         Hyperlink hyperlink2 = createHelper2.createHyperlink(HyperlinkType.URL);
-        hyperlink2.setAddress(baseqrdomain+"/menu/batch&batchid="+batchVO.batchid);
+        hyperlink2.setAddress(baseqrdomain+"/menu/batch?batchid="+batchVO.batchid);
 
         Cell qrcell2 = row.createCell(5)
 
