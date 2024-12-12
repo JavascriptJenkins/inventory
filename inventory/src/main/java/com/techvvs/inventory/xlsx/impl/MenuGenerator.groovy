@@ -35,17 +35,19 @@ class MenuGenerator {
 
     boolean generateDefaultMenuFromBatch(BatchVO batchVO){
 
-        if(batchVO.menu_set.size() > 0){
-            int i = 0;
-            for(MenuVO menuVO: batchVO.menu_set){
-                if(menuVO.isdefault == 1){
-                    batchVO.menu_set.remove(i) // remove the menu from associated batch
-                    batchVO = batchRepo.save(batchVO)
-                    menuRepo.deleteById(menuVO.menuid) // delete existing default menu before generating another one
+        if (batchVO.menu_set.size() > 0) {
+            // Use an Iterator to safely remove elements during iteration
+            Iterator<MenuVO> iterator = batchVO.menu_set.iterator();
+            while (iterator.hasNext()) {
+                MenuVO menuVO = iterator.next();
+                if (menuVO.isdefault == 1) {
+                    iterator.remove(); // Safely remove the menu from the collection
+                    batchVO = batchRepo.save(batchVO); // Save the updated batch
+                    menuRepo.deleteById(menuVO.menuid); // Delete the menu from the repository
                 }
-                i++
             }
         }
+
 
 
         LinkedHashSet linkedHashSet = barcodeHelper.convertToLinkedHashSet(batchVO.product_set)
