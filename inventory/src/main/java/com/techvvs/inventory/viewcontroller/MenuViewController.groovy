@@ -66,7 +66,7 @@ public class MenuViewController {
 
 
     //default home mapping
-    @GetMapping
+    @GetMapping("/batch")
     String viewNewForm(
             @ModelAttribute( "menu" ) MenuVO menuVO,
             Model model,
