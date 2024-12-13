@@ -364,28 +364,42 @@
     <br>
     <br>
 
-    <!-- Show list of uploaded files -->
     <div th:if="${filePage != null}">
-        <div class="alert alert-primary" role="alert">Files Previously Uploaded</div>
-        <table class="table table-hover table-striped table-dark">
-            <thead>
-            <tr>
-                <th scope="col">File Name</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="file, iStat : ${filePage.content}"
-                th:style="${iStat.odd}? 'font-weight: bold;'"
-                th:alt-title="${iStat.even}? 'even' : 'odd'">
-                <td><span id="filenamespanid" th:text="${file.filename}" th:data-filename="${file.filename}"></span>
-                    <!-- todo: put a download button here that hits inappdownload -->
-<!--                    <div class="text-end">-->
-<!--                        -->
-<!--                    </div>-->
-                </td>
-            </tr>
-            </tbody>
-        </table>
+        <div th:if="${filePage.totalElements > 0}">
+            <div class="alert alert-primary" role="alert">Files Previously Uploaded</div>
+            <table class="table table-hover table-striped table-dark">
+                <thead>
+                <tr>
+                    <th scope="col">File Name</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="file : ${filePage.content}">
+                    <td>
+                        <span th:text="${file.filename}"></span>
+
+                        <!-- Display the primary photo only if the filename contains 'primary' and cap size at 300x300 -->
+                        <img
+                                th:if="${file.filename != null and file.filename.contains('primary')}"
+                                th:src="${product.primaryphoto}"
+                                class="card-img-top"
+                                alt="Product Image"
+                                style="max-width: 300px; max-height: 300px;">
+
+                        <!-- Correct the download link with the proper Thymeleaf syntax -->
+                        <a th:href="@{/download/{filename}(filename=${file.filename})}" class="btn btn-primary btn-sm disabled" aria-disabled="true">Download</a>
+                    </td>
+
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div th:if="${filePage.totalElements == 0}">
+            <div class="alert alert-warning" role="alert">No files uploaded yet.</div>
+        </div>
+    </div>
+
+
         <nav th:if="${filePage != null && filePage.totalPages > 0}">
             <ul class="pagination justify-content-center">
                 <li class="page-item" th:each="pageNumber : ${pageNumbers}">
@@ -400,7 +414,7 @@
 
     </div>
 
-    <div style="margin-bottom: 5px;" class="mx-auto">
+    <div style="margin-bottom: 5px;" class="container mt-4 ">
         <div class="alert alert-info" role="alert">Upload a file
             <!-- pass the product object to the upload file controller to get the correct ID to save it under -->
             <form id="uploadForm" method="post" th:object="${product}" th:action="@{/file/media/upload}" enctype="multipart/form-data">

@@ -114,7 +114,7 @@ class MenuHelper {
             List<ProductVO> uniqueproducts = ProductVO.getUniqueProducts(menuVO.menu_product_list)
             // cycle through every unique product and build the uri for the primary photo
             for(ProductVO productVO : uniqueproducts){
-                productVO.setPrimaryphoto("/image/images/"+productVO.product_id)
+                productVO.setPrimaryphoto(appConstants.UPLOAD_DIR_IMAGES+productVO.product_id)
             }
 
 

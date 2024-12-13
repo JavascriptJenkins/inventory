@@ -218,6 +218,9 @@ public class ProductViewController {
             results = productRepo.findAllByProductnumber(Integer.valueOf(productnumber));
         }
 
+        results.get(0).primaryphoto = appConstants.UPLOAD_DIR_IMAGES+results.get(0).product_id
+
+
         // todo: rewrite this to get files by id
         // check to see if there are files uploaded related to this productnumber
         //List<FileVO> filelist = techvvsFileHelper.getFilesByFileNumber(Integer.valueOf(productnumber), UPLOAD_DIR);

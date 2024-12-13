@@ -124,6 +124,7 @@ public class TechvvsFileHelper {
 
                     fileVO.setCreateTimeStamp(creationDate);
                     fileVO.setFilename(file.getName());
+                    fileVO.setFilepath(file.getPath());
                     fileVO.setDirectory(file.getParent()); // .\topdir\2011253\barcodes\all
                     fileList.add(fileVO);
                 }

@@ -11,6 +11,16 @@ public class FileVO {
 
     public String directory;
 
+    public String getFilepath() {
+        return filepath;
+    }
+
+    public void setFilepath(String filepath) {
+        this.filepath = filepath;
+    }
+
+    public String filepath;
+
     LocalDateTime createTimeStamp;
 
     public LocalDateTime getCreateTimeStamp() {
