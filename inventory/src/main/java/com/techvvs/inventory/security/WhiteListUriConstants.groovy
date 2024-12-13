@@ -36,6 +36,8 @@ class WhiteListUriConstants {
     public static final String MENU_URI_33 = "/menu/";
     public static final String IMAGE_IMAGES = "/image/images/";
     public static final String IMAGE_IMAGES_33 = "/image/images/**";
+    public static final String VIDEO_VIDEOS = "/video/videos/";
+    public static final String VIDEO_VIDEOS_33 = "/video/videos/**";
 
 
 

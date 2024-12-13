@@ -57,13 +57,17 @@
                     <td th:text="${file.filename}"></td>
                     <td th:text="${file.directory}"></td>
                     <td>
-                        <span th:text="${file.filepath}"></span>
-                        <!-- Download button -->
-                        <a th:href="@{/download/{filename}(filename=${file.filename})}"
-                           class="btn btn-primary btn-sm">Download</a>
+                        <!-- Media player for the video -->
+                        <video controls width="300" height="200">
+                            <source th:src="@{/video/videos/{productid}/{filename}(productid=${productid}, filename=${file.filename})}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+
                     </td>
+
                 </tr>
                 </tbody>
+
             </table>
         </div>
         <div th:if="${filePage.totalElements == 0}">

@@ -83,6 +83,7 @@ class VideoController {
         }
 
         model.addAttribute("menuid", menuid.orElse("0"));// bind this for the back button
+        model.addAttribute("productid", productid.orElse("0"));// bind this for the back button
 
         // fetch all customers from database and bind them to model
         //checkoutHelper.getAllCustomers(model)

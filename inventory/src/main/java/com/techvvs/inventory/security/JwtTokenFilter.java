@@ -141,6 +141,8 @@ public class JwtTokenFilter extends OncePerRequestFilter implements CsrfTokenRep
               FILE_SMS_DOWNLOAD_33.equals(path) ||
               FILE_QR_MEDIA_ZIP_DOWNLOAD.equals(path) ||
               FILE_QR_MEDIA_ZIP_DOWNLOAD_33.equals(path) ||
+              VIDEO_VIDEOS.equals(path) ||
+              VIDEO_VIDEOS_33.equals(path) ||
               IMAGE_IMAGES.equals(path) ||
               IMAGE_IMAGES_33.equals(path) ||
               MENU_URI_33.equals(path) ||
