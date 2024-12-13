@@ -248,6 +248,8 @@ public class UploadController {
                 sanitizedFileName = "primary.jpg";
 
             } else if(isvideo.isPresent() && isvideo.get().equals("yes")){
+                checkForVideoExtension(sanitizedFileName);
+
                 targetDirectory = Paths.get(
                         appConstants.UPLOAD_DIR_MEDIA,
                         appConstants.UPLOAD_DIR_PRODUCT,
@@ -255,6 +257,8 @@ public class UploadController {
                         appConstants.UPLOAD_DIR_PRODUCT_VIDEOS
                 );
             } else if(isdocument.isPresent() && isdocument.get().equals("yes")){
+                checkForPdfExtension(sanitizedFileName); //
+
                 targetDirectory = Paths.get(
                         appConstants.UPLOAD_DIR_MEDIA,
                         appConstants.UPLOAD_DIR_PRODUCT,
@@ -262,6 +266,7 @@ public class UploadController {
                         appConstants.UPLOAD_DIR_PRODUCT_DOCUMENTS
                 );
             } else if(isphoto.isPresent() && isphoto.get().equals("yes")){
+                checkForJpgExtension(sanitizedFileName); // make sure it's a jpg or jpeg
                 targetDirectory = Paths.get(
                         appConstants.UPLOAD_DIR_MEDIA,
                         appConstants.UPLOAD_DIR_PRODUCT,
@@ -343,6 +348,28 @@ public class UploadController {
         return sanitizedFileName;
 
     }
+
+    String checkForVideoExtension(String sanitizedFileName) throws IOException {
+
+        if (sanitizedFileName.toLowerCase().endsWith(".mp4") || sanitizedFileName.toLowerCase().endsWith(".mov")) {
+            return sanitizedFileName;
+        }
+
+        // If the extension is not valid, throw an exception
+        throw new IOException("Sanitized file name must end with .mp4 or .mov: " + sanitizedFileName);
+    }
+
+    String checkForPdfExtension(String sanitizedFileName) throws IOException {
+
+        if (sanitizedFileName.toLowerCase().endsWith(".pdf")) {
+            return sanitizedFileName;
+        }
+
+        // If the extension is not valid, throw an exception
+        throw new IOException("Sanitized file name must end with .pdf: " + sanitizedFileName);
+    }
+
+
 
     void bindProductTypes(Model model){
         // get all the batchtype objects and bind them to select dropdown

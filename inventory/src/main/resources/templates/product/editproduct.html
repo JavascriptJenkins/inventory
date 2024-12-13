@@ -153,20 +153,49 @@
     </script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const checkbox = document.getElementById('isPrimaryCheckbox');
             const form = document.getElementById('uploadForm');
             const originalAction = form.getAttribute('action');
 
-            checkbox.addEventListener('change', function () {
-                if (checkbox.checked) {
-                console.log('checked');
-                    form.setAttribute('action', originalAction + '?primary=yes');
+            // Select all checkboxes inside the form
+            const checkboxes = Array.from(document.querySelectorAll('#uploadForm .form-check-input'));
+
+            // Map of checkboxes to query parameters
+            const actionParams = {
+                isPrimaryCheckbox: 'primary=yes',
+                isVideoCheckbox: 'video=yes',
+                isDocumentCheckbox: 'document=yes',
+                isPhotoCheckbox: 'photo=yes'
+            };
+
+            // Update form action and ensure only one checkbox is selected
+            function updateFormAction(event) {
+                // Uncheck all other checkboxes
+                checkboxes.forEach(checkbox => {
+                    if (checkbox !== event.target) {
+                        checkbox.checked = false;
+                    }
+                });
+
+                // Determine the new action based on the selected checkbox
+                const checkedCheckbox = checkboxes.find(checkbox => checkbox.checked);
+                if (checkedCheckbox) {
+                    const param = actionParams[checkedCheckbox.id];
+                    form.setAttribute('action', `${originalAction}?${param}`);
                 } else {
-                    form.setAttribute('action', originalAction);
+                    form.setAttribute('action', originalAction); // Reset to original action
                 }
+
+                console.log('Form action updated to:', form.getAttribute('action'));
+            }
+
+            // Attach event listeners to each checkbox
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', updateFormAction);
             });
         });
     </script>
+
+
 </head>
 <body>
 
@@ -420,11 +449,26 @@
             <form id="uploadForm" method="post" th:object="${product}" th:action="@{/file/media/upload}" enctype="multipart/form-data">
                 <div class="form-group">
 
-                    <!-- Checkbox to modify the form action -->
-                    <div class="form-check">
-                        <input type="checkbox" id="isPrimaryCheckbox" class="form-check-input">
-                        <label for="isPrimaryCheckbox" class="form-check-label">Set as Primary (.jpg only)</label>
+                    <div class="d-flex flex-wrap justify-content-start align-items-center gap-3">
+                        <div class="form-check">
+                            <input type="checkbox" id="isPrimaryCheckbox" class="form-check-input">
+                            <label for="isPrimaryCheckbox" class="form-check-label">Set as Primary (.jpg only)</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" id="isVideoCheckbox" class="form-check-input">
+                            <label for="isVideoCheckbox" class="form-check-label">Video File (.mp4/.mov only)</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" id="isDocumentCheckbox" class="form-check-input">
+                            <label for="isDocumentCheckbox" class="form-check-label">Document File (.pdf only)</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" id="isPhotoCheckbox" class="form-check-input">
+                            <label for="isPhotoCheckbox" class="form-check-label">Photo File (.jpg only)</label>
+                        </div>
                     </div>
+
+
                     <div th:if="${disableupload}">
                         <input type="file" disabled="disabled" name="file" class="form-control-file">
                     </div>
