@@ -81,6 +81,10 @@ class ProductVO implements Serializable, Comparable<ProductVO> {
 
     // for display purposes only
     @Transient
+    String videodir
+
+    // for display purposes only
+    @Transient
     Integer displayquantityReturned
 
     // generic fields below

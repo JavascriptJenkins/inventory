@@ -115,6 +115,7 @@ class MenuHelper {
             // cycle through every unique product and build the uri for the primary photo
             for(ProductVO productVO : uniqueproducts){
                 productVO.setPrimaryphoto(appConstants.UPLOAD_DIR_IMAGES+productVO.product_id)
+                productVO.setVideodir(appConstants.UPLOAD_DIR_IMAGES+productVO.product_id)
             }
 
 
