@@ -8,20 +8,33 @@ import com.techvvs.inventory.model.MenuVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.modelnonpersist.FileVO
 import com.techvvs.inventory.service.paging.FilePagingService
+import org.apache.catalina.connector.ClientAbortException
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.io.FileSystemResource
+import org.springframework.core.io.InputStreamResource
 import org.springframework.core.io.Resource
 import org.springframework.data.domain.Page
+import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpRange
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
+import org.springframework.util.StreamUtils
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 
+import javax.servlet.http.HttpServletResponse
+import java.nio.ByteBuffer
+import java.nio.channels.Channels
+import java.nio.channels.ReadableByteChannel
+import java.nio.channels.WritableByteChannel
+import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -39,25 +52,79 @@ class VideoController {
     ProductRepo productRepo
 
     @GetMapping("/videos/{productid}/{filename}")
-    public ResponseEntity<Resource> getImage(
+    void streamVideo(
             @PathVariable String productid,
             @PathVariable String filename,
-            @PathVariable Optional<String> token
+            @RequestHeader(value = "Range", required = false) String rangeHeader,
+            HttpServletResponse response) throws IOException {
 
-    ) {
+        // Resolve the file path
+        Path videoPath = Paths.get(appConstants.UPLOAD_DIR + "media/product/" + productid + "/videos").resolve(filename)
 
-        Path file = Paths.get(appConstants.UPLOAD_DIR+"media/product/"+productid+"/videos").resolve(filename);
-        Resource resource = new FileSystemResource(file);
-
-        if(filename.contains(".mp4")) {
-            return ResponseEntity.ok().contentType(MediaType.valueOf("video/mp4")).body(resource);
+        if (!Files.exists(videoPath)) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND)
+            return
         }
-        if(filename.contains(".mov")) {
-            return ResponseEntity.ok().contentType(MediaType.valueOf("video/quicktime")).body(resource);
-        }
-        return ResponseEntity.ok().contentType(MediaType.valueOf("video/mp4")).body(resource);
 
+        RandomAccessFile videoFile = null
+        try {
+            videoFile = new RandomAccessFile(videoPath.toFile(), "r")
+            long fileLength = videoFile.length()
+            String contentType = filename.endsWith(".mov") ? "video/quicktime" : "video/mp4"
+            response.setContentType(contentType)
+
+            if (rangeHeader == null) {
+                // Serve the entire file
+                response.setContentLengthLong(fileLength)
+
+                // Stream file using a buffer
+                InputStream inputStream = new FileInputStream(videoPath.toFile())
+                byte[] buffer = new byte[8192] // 8 KB buffer
+                int bytesRead
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    response.getOutputStream().write(buffer, 0, bytesRead)
+                }
+                inputStream.close()
+            } else {
+                // Parse the Range header for partial content
+                HttpRange range = HttpRange.parseRanges(rangeHeader).get(0)
+                long start = range.getRangeStart(fileLength)
+                long end = range.getRangeEnd(fileLength)
+                long chunkSize = end - start + 1
+
+                response.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT)
+                response.setHeader("Content-Range", "bytes ${start}-${end}/${fileLength}")
+                response.setContentLengthLong(chunkSize)
+
+                // Serve the requested range
+                videoFile.seek(start)
+                byte[] buffer = new byte[8192] // 8 KB buffer
+                long bytesRemaining = chunkSize
+                while (bytesRemaining > 0) {
+                    int bytesRead = videoFile.read(buffer, 0, Math.min(buffer.length, (int) bytesRemaining))
+                    if (bytesRead == -1) {
+                        break
+                    }
+                    response.getOutputStream().write(buffer, 0, bytesRead)
+                    bytesRemaining -= bytesRead
+                }
+            }
+        } catch (ClientAbortException e) {
+            // Log and ignore client abort exceptions
+            println("Client aborted the connection: ${e.message}")
+        } catch (IOException e) {
+            // Handle other IOExceptions
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
+            println("Error streaming video: ${e.message}")
+        } finally {
+            if (videoFile != null) {
+                videoFile.close()
+            }
+        }
     }
+
+
+
 
     // this serves the default menu for the batch
     @GetMapping("/product")
