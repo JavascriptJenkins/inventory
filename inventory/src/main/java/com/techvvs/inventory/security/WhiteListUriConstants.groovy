@@ -38,6 +38,16 @@ class WhiteListUriConstants {
     public static final String IMAGE_IMAGES_33 = "/image/images/**";
     public static final String VIDEO_VIDEOS = "/video/videos/";
     public static final String VIDEO_VIDEOS_33 = "/video/videos/**";
+    public static final String VIDEO_PRODUCT = "/video/product";
+    public static final String VIDEO_PRODUCT_33 = "/video/product/**";
+    public static final String PHOTO_PRODUCT = "/photo/product";
+    public static final String PHOTO_PRODUCT_33 = "/photo/product/**";
+    public static final String PHOTO_PHOTO = "/photo/photos";
+    public static final String PHOTO_PHOTO_33 = "/photo/photos/**";
+    public static final String DOCUMENT_PRODUCT = "/document/product";
+    public static final String DOCUMENT_PRODUCT_33 = "/document/product/**";
+    public static final String DOCUMENT_DOCUMENTS = "/document/documents";
+    public static final String DOCUMENT_DOCUMENTS_33 = "/document/documents/**";
 
 
 
