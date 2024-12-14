@@ -490,7 +490,7 @@ class BatchControllerHelper {
 
             String datetime = formattingUtil.getDateTimeForFileSystem()
 
-            String filename = createMediaExcelFile(appConstants.PARENT_LEVEL_DIR+batchVO.batchnumber+appConstants.BATCH_PRICE_SHEETS_DIR+batchVO.name+"_"+datetime+"_pa_"+String.valueOf(priceadjustment)+".xlsx", batchVO, priceadjustment)
+            String filename = createMediaExcelFile(appConstants.PARENT_LEVEL_DIR+batchVO.batchnumber+appConstants.BATCH_PRICE_SHEETS_DIR+batchVO.name.replaceAll(" ", "_")+"_"+datetime+"_pa_"+String.valueOf(priceadjustment)+".xlsx", batchVO, priceadjustment)
 
             boolean isDev1 = "dev1".equals(env.getProperty("spring.profiles.active"));
 
