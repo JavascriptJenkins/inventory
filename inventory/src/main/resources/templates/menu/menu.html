@@ -164,7 +164,13 @@
 
                     <!-- Link to video for the product, passing productid and menuid -->
                     <a th:href="@{/video/product(productid=${product.product_id}, menuid=${menu.menuid})}"
-                       class="btn btn-sm btn-primary mt-2">View Video</a>
+                       class="btn btn-sm btn-primary mt-2">Videos</a>
+                    <!-- Link to video for the product, passing productid and menuid -->
+                    <a th:href="@{/photo/product(productid=${product.product_id}, menuid=${menu.menuid})}"
+                       class="btn btn-sm btn-primary mt-2">Photos</a>
+                    <!-- Link to video for the product, passing productid and menuid -->
+                    <a th:href="@{/document/product(productid=${product.product_id}, menuid=${menu.menuid})}"
+                       class="btn btn-sm btn-primary mt-2">Documents</a>
                 </div>
             </div>
         </div>
