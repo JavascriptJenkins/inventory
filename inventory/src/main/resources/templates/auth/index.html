@@ -158,7 +158,7 @@
             th:style="${iStat.odd}? 'font-weight: bold;'"
             th:alt-title="${iStat.even}? 'even' : 'odd'">
             <td>
-                <a th:href="@{/dashboard/index?menuid=__${menu.menuid}__&cartid=0}"
+                <a th:href="@{/menu?menuid=__${menu.menuid}__&cartid=0}"
                    th:text="${menu.menuid}"
                    class="btn btn-secondary btn-sm">
                 </a>
@@ -172,7 +172,7 @@
         <ul class="pagination">
             <li class="page-item" th:each="pageNumber : ${pageNumbers}">
                 <a class="page-link"
-                   th:href="@{/menu?size=__${#lists.size(menuPage.content)}__&page=__${pageNumber}__}"
+                   th:href="@{/dashboard/index?size=__${#lists.size(menuPage.content)}__&page=__${pageNumber}__}"
                    th:text="${pageNumber}"
                    th:classappend="${pageNumber==menuPage.number + 1} ? 'active'">
                 </a>
