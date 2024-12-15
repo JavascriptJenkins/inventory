@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
+import org.springframework.util.DigestUtils
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
@@ -59,6 +60,9 @@ class ImageController {
         HttpHeaders headers = new HttpHeaders();
         headers.setCacheControl(CacheControl.maxAge(30, TimeUnit.DAYS).cachePublic());
         headers.setLastModified(lastModifiedTime);
+        String eTag = "\"" + DigestUtils.md5DigestAsHex((productid + lastModifiedTime).getBytes()) + "\"";
+        headers.setETag(eTag);
+
 
         return ResponseEntity.ok()
                 .headers(headers)
