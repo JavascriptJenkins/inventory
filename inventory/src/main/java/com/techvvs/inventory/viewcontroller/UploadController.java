@@ -238,7 +238,7 @@ public class UploadController {
         try {
             Path targetDirectory;
             if(isprimary.isPresent() && isprimary.get().equals("yes")){
-                checkForJpgExtension(sanitizedFileName); // make sure it's a jpg or jpeg
+                checkForImageExtension(sanitizedFileName); // make sure it's a jpg or jpeg
                 targetDirectory = Paths.get(
                         appConstants.UPLOAD_DIR_MEDIA,
                         appConstants.UPLOAD_DIR_PRODUCT,
@@ -266,7 +266,7 @@ public class UploadController {
                         appConstants.UPLOAD_DIR_PRODUCT_DOCUMENTS
                 );
             } else if(isphoto.isPresent() && isphoto.get().equals("yes")){
-                checkForJpgExtension(sanitizedFileName); // make sure it's a jpg or jpeg
+                checkForImageExtension(sanitizedFileName); // make sure it's a jpg or jpeg
                 targetDirectory = Paths.get(
                         appConstants.UPLOAD_DIR_MEDIA,
                         appConstants.UPLOAD_DIR_PRODUCT,
@@ -331,22 +331,24 @@ public class UploadController {
         model.addAttribute("batchtypes", batchTypeVOS);
     }
 
-    String checkForJpgExtension(String sanitizedFileName) throws IOException {
+    String checkForImageExtension(String sanitizedFileName) throws IOException {
 
-        if(sanitizedFileName.toLowerCase().endsWith(".jpg")){
+        // Check if the file ends with .jpg, .jpeg, or .png
+        if (sanitizedFileName.toLowerCase().endsWith(".jpg")) {
             return sanitizedFileName;
         }
 
-        // Check the file extension
         if (sanitizedFileName.toLowerCase().endsWith(".jpeg")) {
             // Replace .jpeg with .jpg
             return sanitizedFileName.substring(0, sanitizedFileName.length() - 5) + ".jpg";
-        } else if (!sanitizedFileName.toLowerCase().endsWith(".jpg")) {
-            // Throw exception if it does not end with .jpg
-            throw new IOException("Sanitized file name must end with .jpg: " + sanitizedFileName);
         }
-        return sanitizedFileName;
 
+        if (sanitizedFileName.toLowerCase().endsWith(".png")) {
+            return sanitizedFileName;
+        }
+
+        // Throw exception if it does not end with .jpg, .jpeg, or .png
+        throw new IOException("Sanitized file name must end with .jpg, .jpeg, or .png: " + sanitizedFileName);
     }
 
     String checkForVideoExtension(String sanitizedFileName) throws IOException {
