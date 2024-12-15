@@ -21,6 +21,7 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
+import org.springframework.util.DigestUtils
 import org.springframework.util.StreamUtils
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.ModelAttribute
@@ -56,6 +57,8 @@ class VideoController {
             @PathVariable String productid,
             @PathVariable String filename,
             @RequestHeader(value = "Range", required = false) String rangeHeader,
+            @RequestHeader(value = "If-None-Match", required = false) String ifNoneMatchHeader,
+
             HttpServletResponse response) throws IOException {
 
         // Resolve the file path
@@ -70,8 +73,23 @@ class VideoController {
         try {
             videoFile = new RandomAccessFile(videoPath.toFile(), "r")
             long fileLength = videoFile.length()
+            long lastModifiedTime = Files.getLastModifiedTime(videoPath).toMillis()
             String contentType = filename.endsWith(".mov") ? "video/quicktime" : "video/mp4"
             response.setContentType(contentType)
+
+            // Generate an ETag using file properties
+            String eTag = "\"" + DigestUtils.md5DigestAsHex((filename + fileLength + lastModifiedTime).getBytes()) + "\""
+            response.setHeader("ETag", eTag)
+
+            // Check If-None-Match header for cache validation
+            if (ifNoneMatchHeader && ifNoneMatchHeader == eTag) {
+                response.setStatus(HttpServletResponse.SC_NOT_MODIFIED)
+                return
+            }
+
+            // Add caching headers
+            response.setHeader("Cache-Control", "public, max-age=2592000") // Cache for 30 days
+            response.setDateHeader("Last-Modified", lastModifiedTime)
 
             if (rangeHeader == null) {
                 // Serve the entire file
