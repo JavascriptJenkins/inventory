@@ -146,27 +146,125 @@
     <br>
     <div class="alert alert-info" role="alert">Select a Menu option to get started.</div>
 
-    <table class="table table-hover table-striped table-dark">
-        <thead>
-        <tr>
-            <th scope="col">Menu ID</th>
-            <th scope="col">Menu Name</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="menu, iStat : ${menuPage.content}"
-            th:style="${iStat.odd}? 'font-weight: bold;'"
-            th:alt-title="${iStat.even}? 'even' : 'odd'">
-            <td>
-                <a th:href="@{/menu?menuid=__${menu.menuid}__&cartid=0}"
-                   th:text="${menu.menuid}"
-                   class="btn btn-secondary btn-sm">
-                </a>
-            </td>
-            <td th:text="${menu.name}"></td>
-        </tr>
-        </tbody>
-    </table>
+    <form id="priceChangeForm" method="POST" th:action="@{/menu/pricechange}">
+        <table class="table table-hover table-striped table-dark">
+            <thead>
+            <tr>
+                <th scope="col">Menu ID</th>
+                <th scope="col">Menu Name</th>
+                <th scope="col">Current Amt</th>
+                <th scope="col">Amount</th>
+                <th scope="col">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="menu, iStat : ${menuPage.content}" th:data-menuid="${menu.menuid}">
+                <td th:text="${menu.menuid}"></td>
+                <td th:text="${menu.name}"></td>
+                <!-- Current Amt Column -->
+                <td th:text="${menu.amount}"></td>
+                <td>
+                    <select class="form-select amount-dropdown">
+                        <!-- Default static values -->
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                        <option value="150">150</option>
+                        <option value="200">200</option>
+                        <option value="250">250</option>
+                        <option value="300">300</option>
+                        <option value="350">350</option>
+                        <option value="400">400</option>
+                        <option value="450">450</option>
+                        <option value="500">500</option>
+                    </select>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-primary amt-change-btn">Amt Change</button>
+                    <button type="button" class="btn btn-success submit-btn">Submit</button>
+                    <!-- Checkbox for "New Menu" -->
+                    <div class="form-check form-check-inline">
+                        <input type="checkbox" class="form-check-input new-menu-checkbox" id="newMenuCheck">
+                        <label class="form-check-label" for="newMenuCheck">New Menu</label>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </form>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const amtChangeValues1 = ["0.00", "50.00", "100.00", "150.00", "200.00", "250.00", "300.00", "350.00", "400.00", "450.00", "500.00"];
+            const amtChangeValues2 = ["0.00", ".25", ".50", ".75", "1.00", "1.25", "2.00", "3.00", "4.00", "5.00", "6.00", "7.00", "8.00", "9.00", "10.00", "11.00", "12.00", "13.00", "14.00", "15.00", "16.00", "17.00", "18.00", "19.00", "20.00"];
+
+            // Initialize dropdowns with the default list and set "0.00" as default
+            document.querySelectorAll('.amount-dropdown').forEach(dropdown => {
+                dropdown.innerHTML = ""; // Clear existing options
+                amtChangeValues1.forEach(value => {
+                    const option = document.createElement('option');
+                    option.value = value;
+                    option.textContent = value;
+                    if (value === "0.00") option.selected = true; // Default selection
+                    dropdown.appendChild(option);
+                });
+            });
+
+            // Toggle between dropdown lists
+            document.querySelectorAll('.amt-change-btn').forEach(button => {
+                button.addEventListener('click', function () {
+                    const row = button.closest('tr');
+                    const dropdown = row.querySelector('.amount-dropdown');
+                    const currentValues = Array.from(dropdown.options).map(opt => opt.value);
+
+                    const newValues = currentValues.includes("50.00") ? amtChangeValues2 : amtChangeValues1;
+                    dropdown.innerHTML = ""; // Clear dropdown
+                    newValues.forEach(value => {
+                        const option = document.createElement('option');
+                        option.value = value;
+                        option.textContent = value;
+                        if (value === "0.00") option.selected = true; // Default selection
+                        dropdown.appendChild(option);
+                    });
+                });
+            });
+
+            // Submit button handler
+            document.querySelectorAll('.submit-btn').forEach(button => {
+                button.addEventListener('click', function () {
+                    const row = button.closest('tr');
+                    const menuid = row.dataset.menuid;
+                    const dropdownValue = row.querySelector('.amount-dropdown').value;
+                    const isNew = row.querySelector('.new-menu-checkbox').checked;
+
+                    const form = document.getElementById('priceChangeForm');
+                    let actionUri = `/menu/pricechange?menuid=${menuid}&amount=${dropdownValue}`;
+
+                    if (isNew) {
+                        const userInput = prompt("Enter menu name:");
+                        if (!userInput) {
+                            alert("Menu name cannot be empty.");
+                            return;
+                        }
+                        const sanitizedInput = userInput
+                            .replace(/[\s-]+/g, "_") // Replace spaces and dashes with underscores
+                            .replace(/[^a-zA-Z0-9_]/g, ""); // Remove all non-alphanumeric and underscores
+                        if (sanitizedInput === "") {
+                            alert("Invalid menu name. Please enter a valid name.");
+                            return;
+                        }
+                        actionUri += `&isnew=yes&newname=${sanitizedInput}`;
+                    }
+
+                    form.action = actionUri;
+                    form.submit();
+                });
+            });
+        });
+
+    </script>
+
+
+
 
     <nav th:if="${menuPage.totalPages > 0}">
         <ul class="pagination">

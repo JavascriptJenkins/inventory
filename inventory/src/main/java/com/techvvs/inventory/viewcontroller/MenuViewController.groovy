@@ -35,6 +35,7 @@ public class MenuViewController {
     TechvvsAuthService techvvsAuthService
     
 
+    // todo: modify this to parse user cookie from request and check user permissions
     //default home mapping
     @GetMapping
     String viewNewForm(
@@ -72,6 +73,7 @@ public class MenuViewController {
     }
 
 
+    // todo: modify this to parse user cookie from request and check user permissions
     // this serves the default menu for the batch
     @GetMapping("/batch")
     String viewBatchMenu(
@@ -111,6 +113,30 @@ public class MenuViewController {
         // fetch all customers from database and bind them to model
         //checkoutHelper.getAllCustomers(model)
         //techvvsAuthService.checkuserauth(model)
+        return "menu/menu.html";
+    }
+
+    @PostMapping("/pricechange")
+    String pricechange(
+                Model model,
+                @RequestParam("menuid") Optional<String> menuid,
+                @RequestParam("cartid") Optional<String> cartid,
+                @RequestParam("amount") Optional<String> amount,
+                @RequestParam("isnew") Optional<String> isnew,
+                @RequestParam("page") Optional<Integer> page,
+                @RequestParam("size") Optional<Integer> size
+    ){
+
+        techvvsAuthService.checkuserauth(model)
+
+        if(menuid.isPresent() && amount.isPresent())  {
+            menuHelper.changePrice(menuid.get(), amount.get(), model)
+
+        } else {
+            model.addAttribute("errorMessage", "menuid and amount are required")
+        }
+
+
         return "menu/menu.html";
     }
 

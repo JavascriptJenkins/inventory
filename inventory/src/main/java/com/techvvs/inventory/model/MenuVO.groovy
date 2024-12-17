@@ -31,6 +31,9 @@ class MenuVO implements Serializable {
     @JsonProperty
     String name
 
+    @JsonProperty
+    Double amount = 0.00 // this is the discount that will be taken from the menu price of items
+
     @ManyToMany
     @JoinTable(
             name = "menu_product",
