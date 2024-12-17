@@ -154,8 +154,9 @@
             <tr>
                 <th scope="col">Menu ID</th>
                 <th scope="col">Menu Name</th>
-                <th scope="col">Current Amt</th>
-                <th scope="col">Amount</th>
+                <th scope="col">Discount</th>
+<!--                <th scope="col">Amount</th>-->
+                <th scope="col">Product Type</th>
                 <th scope="col">Actions</th>
             </tr>
             </thead>
@@ -168,36 +169,118 @@
                     </a>
                 </td>
                 <td th:text="${menu.name}"></td>
-                <!-- Current Amt Column -->
-                <td th:text="${menu.amount}"></td>
+<!--                <td th:text="${menu.amount}"></td>-->
+
+                <!-- Amount Dropdown -->
                 <td>
                     <select class="form-select amount-dropdown">
-                        <!-- Default static values -->
-                        <option value="50">50</option>
-                        <option value="100">100</option>
-                        <option value="150">150</option>
-                        <option value="200">200</option>
-                        <option value="250">250</option>
-                        <option value="300">300</option>
-                        <option value="350">350</option>
-                        <option value="400">400</option>
-                        <option value="450">450</option>
-                        <option value="500">500</option>
+                        <option value="0.00" selected>0.00</option>
+                        <option value="50.00">50.00</option>
+                        <option value="100.00">100.00</option>
+                        <option value="150.00">150.00</option>
+                        <option value="200.00">200.00</option>
+                        <option value="250.00">250.00</option>
+                        <option value="300.00">300.00</option>
+                        <option value="350.00">350.00</option>
+                        <option value="400.00">400.00</option>
+                        <option value="450.00">450.00</option>
+                        <option value="500.00">500.00</option>
                     </select>
                 </td>
+
+                <!-- Product Type Dropdown -->
+                <td>
+                    <select class="form-select product-type-dropdown">
+                        <option value="" disabled selected>Select Product Type</option>
+                        <option th:each="product : ${menu.menu_product_list}"
+                                th:value="${product.producttypeid.producttypeid}"
+                                th:text="${product.producttypeid.name}">
+                        </option>
+                    </select>
+                </td>
+
+                <!-- Actions -->
                 <td>
                     <button type="button" class="btn btn-primary amt-change-btn">Amt Change</button>
                     <button type="button" class="btn btn-success submit-btn">Submit</button>
-                    <!-- Checkbox for "New Menu" -->
                     <div class="form-check form-check-inline">
                         <input type="checkbox" class="form-check-input new-menu-checkbox" id="newMenuCheck">
                         <label class="form-check-label" for="newMenuCheck">New Menu</label>
                     </div>
                 </td>
             </tr>
+
+
+
             </tbody>
         </table>
     </form>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Iterate through each Product Type dropdown
+            document.querySelectorAll('.product-type-dropdown').forEach(function (dropdown) {
+                const seenValues = new Set(); // Use a Set to track unique producttypeid values
+                const options = Array.from(dropdown.options); // Convert dropdown options to an array
+
+                // Filter duplicate options
+                options.forEach(option => {
+                    if (seenValues.has(option.value) && option.value !== "") {
+                        option.remove(); // Remove duplicates
+                    } else {
+                        seenValues.add(option.value); // Add value to Set
+                    }
+                });
+            });
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Iterate through each table row
+            document.querySelectorAll('tr').forEach(row => {
+                const productTypeDropdown = row.querySelector('.product-type-dropdown');
+                const submitButton = row.querySelector('.submit-btn');
+
+                // Safely check if both elements exist
+                if (productTypeDropdown && submitButton) {
+                    // Initially disable the Submit button
+                    submitButton.disabled = true;
+
+                    // Add an event listener to monitor changes in the dropdown
+                    productTypeDropdown.addEventListener('change', function () {
+                        if (productTypeDropdown.value && productTypeDropdown.value !== "") {
+                            // Enable the button if a valid option is selected
+                            submitButton.disabled = false;
+                        } else {
+                            // Disable the button if the default is selected
+                            submitButton.disabled = true;
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Update URI when Product Type dropdown value changes
+            document.querySelectorAll('.product-type-dropdown').forEach(function (dropdown) {
+                dropdown.addEventListener('change', function () {
+                    const selectedValue = dropdown.value; // Get the selected product type ID
+                    if (selectedValue) {
+                        // Parse the current URL and update the 'producttype' parameter
+                        const url = new URL(window.location.href);
+                        url.searchParams.set('producttype', selectedValue);
+
+                        // Update the browser's URL without reloading the page
+                        window.history.replaceState({}, '', url);
+                    }
+                });
+            });
+        });
+    </script>
+
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -269,7 +352,6 @@
         });
 
     </script>
-
 
 
 

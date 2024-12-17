@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 
 import javax.persistence.CascadeType
+import javax.persistence.ElementCollection
 import javax.persistence.Entity
 import javax.persistence.FetchType
 import javax.persistence.GeneratedValue
@@ -31,9 +32,6 @@ class MenuVO implements Serializable {
     @JsonProperty
     String name
 
-    @JsonProperty
-    Double amount = 0.00 // this is the discount that will be taken from the menu price of items
-
     @ManyToMany
     @JoinTable(
             name = "menu_product",
@@ -41,6 +39,10 @@ class MenuVO implements Serializable {
             inverseJoinColumns = @JoinColumn(name = "productid")
     )
     List<ProductVO> menu_product_list = new ArrayList<>()
+
+    @JsonProperty
+    @ElementCollection(fetch = FetchType.LAZY)
+    List<DiscountVO> discount_list = new ArrayList<DiscountVO>()
 
     @JsonProperty
     Integer isdefault;

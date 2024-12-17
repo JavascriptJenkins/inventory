@@ -2,10 +2,15 @@ package com.techvvs.inventory.viewcontroller.helper
 
 import com.techvvs.inventory.barcode.service.BarcodeService
 import com.techvvs.inventory.constants.AppConstants
+import com.techvvs.inventory.jparepo.DiscountRepo
 import com.techvvs.inventory.jparepo.MenuRepo
+import com.techvvs.inventory.jparepo.ProductTypeRepo
 import com.techvvs.inventory.model.CartVO
+import com.techvvs.inventory.model.DiscountVO
 import com.techvvs.inventory.model.MenuVO
+import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.ProductVO
+import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.service.transactional.CartDeleteService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
@@ -14,6 +19,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
 import org.springframework.ui.Model
 
+import javax.persistence.EntityNotFoundException
 import javax.transaction.Transactional
 import java.time.LocalDateTime
 
@@ -24,6 +30,9 @@ class MenuHelper {
     MenuRepo menuRepo
 
     @Autowired
+    ProductTypeRepo productTypeRepo
+
+    @Autowired
     CartDeleteService cartDeleteService
 
     @Autowired
@@ -32,17 +41,48 @@ class MenuHelper {
     @Autowired
     BarcodeService barcodeService
 
+    @Autowired
+    DiscountRepo discountRepo
+
     @Transactional
-    MenuVO changePrice(double newpriceadjustment, int existingmenuid, Model model){
+    MenuVO changePrice(
+
+            double newpriceadjustment,
+            int existingmenuid,
+            Model model,
+            int producttypeid // create a discount tied to this menu and product type
+    ){
 
         try{
+
             MenuVO existingmenu = menuRepo.findById(existingmenuid).get()
 
-            existingmenu.setAmount(Math.max(0.00,newpriceadjustment))
-            existingmenu.updateTimeStamp = LocalDateTime.now()
-            model.addAttribute("successMessage", "Success: Updated menu: "+ existingmenu.name+" with price adjustment: "+newpriceadjustment)
+            /* Now, make a new discount entry in the discount table that is tied to the menu that was just created */
+            ProductTypeVO productTypeVO = productTypeRepo.findById(producttypeid).get()
 
-            return menuRepo.save(existingmenu)
+            DiscountVO discountVO = new DiscountVO(
+                    discountamount: newpriceadjustment,
+                    name: productTypeVO.name,
+                    description: "Menu Price Adjustment",
+                    producttype: productTypeVO,
+                    menu: existingmenu,
+                    isactive: 1,
+                    updateTimeStamp: LocalDateTime.now(),
+                    createTimeStamp: LocalDateTime.now(),
+            )
+
+            discountVO = discountRepo.save(discountVO)
+
+            existingmenu.discount_list.add(discountVO)
+
+            existingmenu.updateTimeStamp = LocalDateTime.now()
+            existingmenu = menuRepo.save(existingmenu)
+
+
+            model.addAttribute("successMessage", "Success: Updated menu: "+ existingmenu.name+" with price adjustment: "+newpriceadjustment +"product type: "+productTypeVO.name)
+
+            return existingmenu
+
         } catch (Exception e){
             System.out.println("Caught Exception: "+e.getMessage())
             model.addAttribute("errorMessage", "Error: Problem creating new menu in changePrice. ")
@@ -51,7 +91,14 @@ class MenuHelper {
     }
 
     @Transactional
-    MenuVO createNewMenu(double newpriceadjustment, int existingmenuid, String name, Model model){
+    MenuVO createNewMenu(
+            double newpriceadjustment,
+            int existingmenuid,
+            String name,
+            Model model,
+            int producttypeid // create the initial menu with a discount on this product type
+
+    ){
 
 
         try{
@@ -68,19 +115,46 @@ class MenuHelper {
             }
 
             // Create the new MenuVO and assign the expanded list
-            MenuVO menuVO = new MenuVO(
+            MenuVO newmenu = new MenuVO(
                     name: name + "_" + "pa_" + newpriceadjustment,
                     menu_product_list: expandedlist,
                     isdefault: 0,
-                    amount: Math.max(0.00, newpriceadjustment),
+                    discount_list: null,
                     notes: "new menu created with price adjustment: " + newpriceadjustment,
                     createTimeStamp: LocalDateTime.now(),
                     updateTimeStamp: LocalDateTime.now()
             )
 
             // Save the new menu
+            newmenu = menuRepo.save(newmenu)
+
+
+            /* Now, make a new discount entry in the discount table that is tied to the menu that was just created */
+            ProductTypeVO productTypeVO = productTypeRepo.findById(producttypeid).get()
+
+            DiscountVO discountVO = new DiscountVO(
+                    discountamount: newpriceadjustment,
+                    name: productTypeVO.name,
+                    description: "Menu Price Adjustment",
+                    producttype: productTypeVO,
+                    menu: newmenu,
+                    isactive: 1,
+                    updateTimeStamp: LocalDateTime.now(),
+                    createTimeStamp: LocalDateTime.now(),
+            )
+
+            discountVO = discountRepo.save(discountVO)
+
+            newmenu.discount_list.add(discountVO)
+
+            newmenu.updateTimeStamp = LocalDateTime.now()
+            newmenu = menuRepo.save(newmenu)
+
+
             model.addAttribute("successMessage", "Success: Created new menu with price adjustment: " + newpriceadjustment)
-            return menuRepo.save(menuVO)
+
+            return newmenu
+
         } catch (Exception e){
             System.out.println("Caught Exception: "+e.getMessage())
             model.addAttribute("errorMessage", "Error: Problem creating new menu in createNewMenu. ")
@@ -89,6 +163,34 @@ class MenuHelper {
 
 
 
+    }
+
+    @Transactional
+    TransactionVO checkForExistingDiscountOfSameProducttype(
+            TransactionVO transactionVO,
+            String transactionid,
+            Integer producttypeid
+    ) {
+        List<DiscountVO> discountsCopy = new ArrayList<>(transactionVO.getDiscount_list());
+
+        for (DiscountVO existingOldDiscount : discountsCopy) {
+            if (existingOldDiscount.getProducttype().getProducttypeid().equals(producttypeid)
+                    && existingOldDiscount.getIsactive() == 1) {
+
+                // Deactivate the matching discount
+                existingOldDiscount.setIsactive(0);
+                existingOldDiscount.setUpdateTimeStamp(LocalDateTime.now());
+                discountRepo.save(existingOldDiscount);
+
+                // Re-fetch the transaction to ensure the latest state is loaded
+                transactionVO = transactionRepo.findById(Integer.valueOf(transactionid)).orElseThrow({ new EntityNotFoundException("Transaction not found: " + transactionid) });
+
+                // Recalculate totals by crediting back the removed discount
+                transactionVO = removeDiscountFromTransactionReCalcTotals(transactionVO, existingOldDiscount, transactionVO.originalprice, transactionVO.total);
+            }
+        }
+
+        return transactionVO;
     }
 
 

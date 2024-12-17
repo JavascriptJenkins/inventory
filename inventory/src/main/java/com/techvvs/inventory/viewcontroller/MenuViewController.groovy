@@ -3,6 +3,7 @@ package com.techvvs.inventory.viewcontroller
 import com.techvvs.inventory.model.BatchVO
 import com.techvvs.inventory.model.CartVO
 import com.techvvs.inventory.model.MenuVO
+import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.service.auth.TechvvsAuthService
 import com.techvvs.inventory.service.transactional.CartDeleteService
 import com.techvvs.inventory.viewcontroller.helper.BatchControllerHelper
@@ -124,6 +125,7 @@ public class MenuViewController {
                 @RequestParam("amount") Optional<String> amount,
                 @RequestParam("isnew") Optional<String> isnew,
                 @RequestParam("newname") Optional<String> newname,
+                @RequestParam("producttype") Optional<String> producttypeid,
                 @RequestParam("page") Optional<Integer> page,
                 @RequestParam("size") Optional<Integer> size
     ){
@@ -133,13 +135,30 @@ public class MenuViewController {
         MenuVO returnVO = new MenuVO()
 
         if(menuid.isPresent() && amount.isPresent() &&
-                isnew.isPresent() && isnew.get() == "yes" && newname.isPresent())  {
-            // make a new menu with the new price
-            returnVO = menuHelper.createNewMenu(Double.valueOf(amount.get()), Integer.valueOf(menuid.get()), newname.get(), model)
+                isnew.isPresent() && isnew.get() == "yes" && newname.isPresent()
+                && producttypeid.isPresent()
+        )  {
 
-        } else if(menuid.isPresent() && amount.isPresent() && isnew.isEmpty()){
-            // change the price of existing menu
-            returnVO = menuHelper.changePrice(Double.valueOf(amount.get()), Integer.valueOf(menuid.get()), model)
+
+            // make a new menu with the new price
+            returnVO = menuHelper.createNewMenu(
+                    Double.valueOf(amount.get()),
+                    Integer.valueOf(menuid.get()),
+                    newname.get(),
+                    model,
+                    Integer.valueOf(producttypeid.get())
+
+            )
+
+
+        } else if(menuid.isPresent() && amount.isPresent() && producttypeid.isPresent() && isnew.isEmpty()){
+            // add a discount tied to an existing menu
+            returnVO = menuHelper.changePrice(
+                    Double.valueOf(amount.get()),
+                    Integer.valueOf(menuid.get()),
+                    model,
+                    Integer.valueOf(producttypeid.get())
+            )
 
         } else {
             model.addAttribute("errorMessage", "menuid and amount are required")
