@@ -57,29 +57,54 @@ class MenuHelper {
 
             MenuVO existingmenu = menuRepo.findById(existingmenuid).get()
 
+            boolean isamountvalid = checkIsAmountValid(newpriceadjustment, producttypeid, existingmenu.menu_product_list, model)
+
+            if(!isamountvalid){
+                return new MenuVO(menuid: 0) // return early if discount will set the price all the way to 0.
+            }
+
             /* Now, make a new discount entry in the discount table that is tied to the menu that was just created */
             ProductTypeVO productTypeVO = productTypeRepo.findById(producttypeid).get()
 
-            DiscountVO discountVO = new DiscountVO(
-                    discountamount: newpriceadjustment,
-                    name: productTypeVO.name,
-                    description: "Menu Price Adjustment",
-                    producttype: productTypeVO,
-                    menu: existingmenu,
-                    isactive: 1,
-                    updateTimeStamp: LocalDateTime.now(),
-                    createTimeStamp: LocalDateTime.now(),
-            )
+            boolean updated = false
+            DiscountVO updatedDiscountVO = new DiscountVO()
 
-            discountVO = discountRepo.save(discountVO)
+            /* before creating a new discount, make sure there is not an existing one of the same product type */
+            for(DiscountVO discountVO : existingmenu.discount_list){
+                if(discountVO.producttype.producttypeid == productTypeVO.producttypeid){
+                    // if there an existing discount, update it
+                    discountVO.updateTimeStamp = LocalDateTime.now()
+                    discountVO.discountamount = newpriceadjustment
+                    updatedDiscountVO = discountRepo.save(discountVO)
+                    updated = true
+                    break
+                }
+            }
 
-            existingmenu.discount_list.add(discountVO)
+            // if we didn't find an existing discount of the same product type, create a new one
+            if(!updated){
+                DiscountVO discountVO = new DiscountVO(
+                        discountamount: newpriceadjustment,
+                        name: productTypeVO.name,
+                        description: "Menu Price Adjustment",
+                        producttype: productTypeVO,
+                        menu: existingmenu,
+                        isactive: 1,
+                        updateTimeStamp: LocalDateTime.now(),
+                        createTimeStamp: LocalDateTime.now(),
+                )
+
+                updatedDiscountVO = discountRepo.save(discountVO)
+            }
+
+
+        //    existingmenu.discount_list.add(updatedDiscountVO)
 
             existingmenu.updateTimeStamp = LocalDateTime.now()
             existingmenu = menuRepo.save(existingmenu)
 
 
-            model.addAttribute("successMessage", "Success: Updated menu: "+ existingmenu.name+" with price adjustment: "+newpriceadjustment +"product type: "+productTypeVO.name)
+            model.addAttribute("successMessage", "Success: Updated menu: "+ existingmenu.name+" | with price adjustment: "+newpriceadjustment +" | product type: "+productTypeVO.name)
 
             return existingmenu
 
@@ -104,6 +129,13 @@ class MenuHelper {
         try{
             MenuVO existingmenu = menuRepo.findById(existingmenuid).get()
 
+
+            boolean isamountvalid = checkIsAmountValid(newpriceadjustment, producttypeid, existingmenu.menu_product_list, model)
+
+            if(!isamountvalid){
+                return new MenuVO(menuid: 0) // return early if discount will set the price all the way to 0.
+            }
+
             // Create a new list by detaching the 'menu' ownership temporarily
             List<ProductVO> expandedlist = new ArrayList<>()
             Iterator<ProductVO> iterator = existingmenu.menu_product_list.iterator()
@@ -116,7 +148,7 @@ class MenuHelper {
 
             // Create the new MenuVO and assign the expanded list
             MenuVO newmenu = new MenuVO(
-                    name: name + "_" + "pa_" + newpriceadjustment,
+                    name: name.replaceAll(" ", "_"),
                     menu_product_list: expandedlist,
                     isdefault: 0,
                     discount_list: null,
@@ -127,6 +159,9 @@ class MenuHelper {
 
             // Save the new menu
             newmenu = menuRepo.save(newmenu)
+            if(newmenu.discount_list == null){
+                newmenu.discount_list = new ArrayList<>()
+            }
 
 
             /* Now, make a new discount entry in the discount table that is tied to the menu that was just created */
@@ -191,6 +226,22 @@ class MenuHelper {
         }
 
         return transactionVO;
+    }
+
+
+    boolean checkIsAmountValid(double newpriceadjustment, int producttypeid, List<ProductVO> productVOS, Model model){
+        for(ProductVO productVO : productVOS){
+            // when we find a match check the price to make sure we don't set it below 0
+            if(productVO.producttypeid.producttypeid == producttypeid){
+                double priceafterdiscount = Math.max(0.00, productVO.price - newpriceadjustment)
+                if(priceafterdiscount == Double.valueOf(0.00)){
+                    model.addAttribute("errorMessage", "Price after discount on: "+productVO.name+" must be greater than 0")
+                    return false
+                }
+            }
+        }
+        return true
+
     }
 
 
