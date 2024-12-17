@@ -145,6 +145,8 @@
 
     <br>
     <div class="alert alert-info" role="alert">Select a Menu option to get started.</div>
+    <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
+    <div class="alert alert-info" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
 
     <form id="priceChangeForm" method="POST" th:action="@{/menu/pricechange}">
         <table class="table table-hover table-striped table-dark">
@@ -159,7 +161,12 @@
             </thead>
             <tbody>
             <tr th:each="menu, iStat : ${menuPage.content}" th:data-menuid="${menu.menuid}">
-                <td th:text="${menu.menuid}"></td>
+                <td>
+                    <a th:href="@{/menu?menuid=__${menu.menuid}__&cartid=0}"
+                       th:text="${menu.menuid}"
+                       class="btn btn-secondary btn-sm">
+                    </a>
+                </td>
                 <td th:text="${menu.name}"></td>
                 <!-- Current Amt Column -->
                 <td th:text="${menu.amount}"></td>

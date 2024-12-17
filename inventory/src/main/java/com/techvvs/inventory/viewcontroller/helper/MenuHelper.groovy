@@ -1,5 +1,6 @@
 package com.techvvs.inventory.viewcontroller.helper
 
+import com.techvvs.inventory.barcode.service.BarcodeService
 import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.jparepo.MenuRepo
 import com.techvvs.inventory.model.CartVO
@@ -13,6 +14,9 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
 import org.springframework.ui.Model
 
+import javax.transaction.Transactional
+import java.time.LocalDateTime
+
 @Component
 class MenuHelper {
 
@@ -24,6 +28,68 @@ class MenuHelper {
 
     @Autowired
     AppConstants appConstants
+
+    @Autowired
+    BarcodeService barcodeService
+
+    @Transactional
+    MenuVO changePrice(double newpriceadjustment, int existingmenuid, Model model){
+
+        try{
+            MenuVO existingmenu = menuRepo.findById(existingmenuid).get()
+
+            existingmenu.setAmount(Math.max(0.00,newpriceadjustment))
+            existingmenu.updateTimeStamp = LocalDateTime.now()
+            model.addAttribute("successMessage", "Success: Updated menu: "+ existingmenu.name+" with price adjustment: "+newpriceadjustment)
+
+            return menuRepo.save(existingmenu)
+        } catch (Exception e){
+            System.out.println("Caught Exception: "+e.getMessage())
+            model.addAttribute("errorMessage", "Error: Problem creating new menu in changePrice. ")
+            return MenuVO(menuid: 0)
+        }
+    }
+
+    @Transactional
+    MenuVO createNewMenu(double newpriceadjustment, int existingmenuid, String name, Model model){
+
+
+        try{
+            MenuVO existingmenu = menuRepo.findById(existingmenuid).get()
+
+            // Create a new list by detaching the 'menu' ownership temporarily
+            List<ProductVO> expandedlist = new ArrayList<>()
+            Iterator<ProductVO> iterator = existingmenu.menu_product_list.iterator()
+
+            while (iterator.hasNext()) {
+                ProductVO product = iterator.next()
+                product.menu_list = null // Temporarily detach from the old menu list
+                expandedlist.add(product)
+            }
+
+            // Create the new MenuVO and assign the expanded list
+            MenuVO menuVO = new MenuVO(
+                    name: name + "_" + "pa_" + newpriceadjustment,
+                    menu_product_list: expandedlist,
+                    isdefault: 0,
+                    amount: Math.max(0.00, newpriceadjustment),
+                    notes: "new menu created with price adjustment: " + newpriceadjustment,
+                    createTimeStamp: LocalDateTime.now(),
+                    updateTimeStamp: LocalDateTime.now()
+            )
+
+            // Save the new menu
+            model.addAttribute("successMessage", "Success: Created new menu with price adjustment: " + newpriceadjustment)
+            return menuRepo.save(menuVO)
+        } catch (Exception e){
+            System.out.println("Caught Exception: "+e.getMessage())
+            model.addAttribute("errorMessage", "Error: Problem creating new menu in createNewMenu. ")
+            return new MenuVO(menuid: 0)
+        }
+
+
+
+    }
 
 
     void findMenus(Model model, Optional<Integer> page, Optional<Integer> size){

@@ -123,21 +123,34 @@ public class MenuViewController {
                 @RequestParam("cartid") Optional<String> cartid,
                 @RequestParam("amount") Optional<String> amount,
                 @RequestParam("isnew") Optional<String> isnew,
+                @RequestParam("newname") Optional<String> newname,
                 @RequestParam("page") Optional<Integer> page,
                 @RequestParam("size") Optional<Integer> size
     ){
 
         techvvsAuthService.checkuserauth(model)
 
-        if(menuid.isPresent() && amount.isPresent())  {
-            menuHelper.changePrice(menuid.get(), amount.get(), model)
+        MenuVO returnVO = new MenuVO()
+
+        if(menuid.isPresent() && amount.isPresent() &&
+                isnew.isPresent() && isnew.get() == "yes" && newname.isPresent())  {
+            // make a new menu with the new price
+            returnVO = menuHelper.createNewMenu(Double.valueOf(amount.get()), Integer.valueOf(menuid.get()), newname.get(), model)
+
+        } else if(menuid.isPresent() && amount.isPresent() && isnew.isEmpty()){
+            // change the price of existing menu
+            returnVO = menuHelper.changePrice(Double.valueOf(amount.get()), Integer.valueOf(menuid.get()), model)
 
         } else {
             model.addAttribute("errorMessage", "menuid and amount are required")
         }
 
 
-        return "menu/menu.html";
+        // bind the menu options here
+        menuHelper.findMenus(model, page, size);
+
+
+        return "auth/index.html";
     }
 
     // todo: make this so that the quantity is taking off the display amount instead of relying on the product cart list
