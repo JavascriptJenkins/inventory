@@ -46,74 +46,70 @@ class MenuHelper {
 
     @Transactional
     MenuVO changePrice(
-
             double newpriceadjustment,
             int existingmenuid,
             Model model,
-            int producttypeid // create a discount tied to this menu and product type
-    ){
+            int producttypeid
+    ) {
+        try {
+            MenuVO existingmenu = menuRepo.findById(existingmenuid).orElseThrow({
+                new IllegalArgumentException("Menu not found")
+            })
 
-        try{
+            boolean isamountvalid = checkIsAmountValid(newpriceadjustment, producttypeid, existingmenu.menu_product_list, model);
 
-            MenuVO existingmenu = menuRepo.findById(existingmenuid).get()
-
-            boolean isamountvalid = checkIsAmountValid(newpriceadjustment, producttypeid, existingmenu.menu_product_list, model)
-
-            if(!isamountvalid){
-                return new MenuVO(menuid: 0) // return early if discount will set the price all the way to 0.
+            if (!isamountvalid) {
+                return new MenuVO(menuid: 0); // return early if discount will set the price all the way to 0.
             }
 
-            /* Now, make a new discount entry in the discount table that is tied to the menu that was just created */
-            ProductTypeVO productTypeVO = productTypeRepo.findById(producttypeid).get()
+            ProductTypeVO productTypeVO = productTypeRepo.findById(producttypeid).orElseThrow({
+                new IllegalArgumentException("Product type not found")
+            })
 
-            boolean updated = false
-            DiscountVO updatedDiscountVO = new DiscountVO()
+            DiscountVO updatedDiscountVO = null;
 
-            /* before creating a new discount, make sure there is not an existing one of the same product type */
-            for(DiscountVO discountVO : existingmenu.discount_list){
-                if(discountVO.producttype.producttypeid == productTypeVO.producttypeid){
-                    // if there an existing discount, update it
-                    discountVO.updateTimeStamp = LocalDateTime.now()
-                    discountVO.discountamount = newpriceadjustment
-                    updatedDiscountVO = discountRepo.save(discountVO)
-                    updated = true
-                    break
+            // Check for existing discount
+            for (DiscountVO discountVO : existingmenu.getDiscount_list()) {
+                if (discountVO.getProducttype().getProducttypeid() == productTypeVO.getProducttypeid()) {
+                    discountVO.setUpdateTimeStamp(LocalDateTime.now());
+                    discountVO.setDiscountamount(newpriceadjustment);
+                    updatedDiscountVO = discountRepo.save(discountVO);
+                    break;
                 }
             }
 
-            // if we didn't find an existing discount of the same product type, create a new one
-            if(!updated){
-                DiscountVO discountVO = new DiscountVO(
-                        discountamount: newpriceadjustment,
-                        name: productTypeVO.name,
-                        description: "Menu Price Adjustment",
-                        producttype: productTypeVO,
-                        menu: existingmenu,
-                        isactive: 1,
-                        updateTimeStamp: LocalDateTime.now(),
-                        createTimeStamp: LocalDateTime.now(),
-                )
+            // If no existing discount, create a new one
+            if (updatedDiscountVO == null) {
+                DiscountVO newDiscountVO = new DiscountVO();
+                newDiscountVO.setDiscountamount(newpriceadjustment);
+                newDiscountVO.setName(productTypeVO.getName());
+                newDiscountVO.setDescription("Menu Price Adjustment");
+                newDiscountVO.setProducttype(productTypeVO);
+                newDiscountVO.setMenu(existingmenu);
+                newDiscountVO.setIsactive(1);
+                newDiscountVO.setUpdateTimeStamp(LocalDateTime.now());
+                newDiscountVO.setCreateTimeStamp(LocalDateTime.now());
 
-                updatedDiscountVO = discountRepo.save(discountVO)
+                updatedDiscountVO = discountRepo.save(newDiscountVO);
+
+                // Synchronize both sides of the relationship
+                existingmenu.getDiscount_list().add(updatedDiscountVO);
             }
 
+            existingmenu.setUpdateTimeStamp(LocalDateTime.now());
+            existingmenu = menuRepo.save(existingmenu); // Save the updated menu
 
-        //    existingmenu.discount_list.add(updatedDiscountVO)
+            model.addAttribute("successMessage", "Success: Updated menu: " + existingmenu.getName() + " | with price adjustment: " + newpriceadjustment + " | product type: " + productTypeVO.getName());
 
-            existingmenu.updateTimeStamp = LocalDateTime.now()
-            existingmenu = menuRepo.save(existingmenu)
+            return existingmenu;
 
-
-            model.addAttribute("successMessage", "Success: Updated menu: "+ existingmenu.name+" | with price adjustment: "+newpriceadjustment +" | product type: "+productTypeVO.name)
-
-            return existingmenu
-
-        } catch (Exception e){
-            System.out.println("Caught Exception: "+e.getMessage())
-            model.addAttribute("errorMessage", "Error: Problem creating new menu in changePrice. ")
-            return MenuVO(menuid: 0)
+        } catch (Exception e) {
+            System.out.println("Caught Exception: " + e.getMessage());
+            model.addAttribute("errorMessage", "Error: Problem creating new menu in changePrice.");
+            return new MenuVO(menuid: 0);
         }
     }
+
 
     @Transactional
     MenuVO createNewMenu(
@@ -275,6 +271,7 @@ class MenuHelper {
         model.addAttribute("page", currentPage);
         model.addAttribute("size", pageOfMenu.getTotalPages());
         model.addAttribute("menuPage", pageOfMenu);
+        model.addAttribute("menuPage2", pageOfMenu);// need 2 menuPages so thymeleaf can page it twice with :each
         // END PAGINATION
 
 

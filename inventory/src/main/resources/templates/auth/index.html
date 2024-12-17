@@ -130,6 +130,21 @@
             background-color: #6c757d;
         }
     </style>
+    <style>
+        /* Style for the success message */
+        .alert-success {
+            background-color: #d4edda !important;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        /* Expandable row highlight */
+        .expandable-row td {
+            background-color: #e9ecef;
+        }
+    </style>
+
+
 </head>
 <body>
 
@@ -158,6 +173,7 @@
 <!--                <th scope="col">Amount</th>-->
                 <th scope="col">Product Type</th>
                 <th scope="col">Actions</th>
+                <th scope="col">Expand</th>
             </tr>
             </thead>
             <tbody>
@@ -208,6 +224,12 @@
                         <label class="form-check-label" for="newMenuCheck">New Menu</label>
                     </div>
                 </td>
+                <td>
+                    <button type="button" class="btn btn-outline-primary expand-btn"
+                            th:data-menuid="${menu.menuid}">
+                        <i class="bi bi-plus-lg"></i>
+                    </button>
+                </td>
             </tr>
 
 
@@ -215,6 +237,41 @@
             </tbody>
         </table>
     </form>
+
+
+<!--    <div th:each="menu, iStat : ${menuPage.content}" th:data-menuid="${menu.menuid}" th:id="menuid-hidden-element-278" style="display: none;">-->
+    <div th:each="menu, iStat : ${menuPage2.content}" th:data-menuid="${menu.menuid}" th:id="${'menuid-hidden-element-'+menu.menuid}" style="display: none;">
+        <h3>Menu Details</h3>
+        <p>This is the content for Menu ID <span th:text="${menu.menuid}"></span></p>
+        <p th:text="${menu.name}"></p>
+        <!-- Iterate through the nested discount_list -->
+        <div th:if="${menu.discount_list}">
+            <h4 class="header-small">Discounts</h4>
+            <table class="table table-hover table-striped table-dark">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Amount</th>
+                    <th>Name</th>
+                    <th>Discount Description</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="discount : ${menu.discount_list}">
+                    <td th:text="${discount.discountid}"></td>
+                    <td th:text="${discount.discountamount}"></td>
+                    <td th:text="${discount.name}"></td>
+                    <td th:text="${discount.description}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+
+    </div>
+
+
+
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -354,6 +411,78 @@
 
                     form.action = actionUri;
                     form.submit();
+                });
+            });
+        });
+    </script>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Add event listener to all expand buttons
+            document.querySelectorAll('.expand-btn').forEach(button => {
+                button.addEventListener('click', function () {
+                    // Retrieve menuid from the button's data attribute
+                    const menuid = this.getAttribute('data-menuid');
+                    const hiddenElementId = `menuid-hidden-element-${menuid}`;
+
+                    // Fetch content from the pre-existing hidden div
+                    const hiddenElement = document.getElementById(hiddenElementId);
+                    if (!hiddenElement) {
+                        alert('Content not found for Menu ID: ' + menuid);
+                        return;
+                    }
+                    const content = hiddenElement.innerHTML;
+
+                    // Remove any existing popup
+                    const existingPopup = document.querySelector('.custom-popup-overlay');
+                    if (existingPopup) existingPopup.remove();
+
+                    // Create popup overlay
+                    const popupOverlay = document.createElement('div');
+                    popupOverlay.classList.add('custom-popup-overlay');
+                    popupOverlay.style.position = 'fixed';
+                    popupOverlay.style.top = '0';
+                    popupOverlay.style.left = '0';
+                    popupOverlay.style.width = '100%';
+                    popupOverlay.style.height = '100%';
+                    popupOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+                    popupOverlay.style.display = 'flex';
+                    popupOverlay.style.alignItems = 'center';
+                    popupOverlay.style.justifyContent = 'center';
+                    popupOverlay.style.zIndex = '9999';
+
+                    // Create popup box
+                    const popupBox = document.createElement('div');
+                    popupBox.style.backgroundColor = '#fff';
+                    popupBox.style.color = '#333';
+                    popupBox.style.width = '50%';
+                    popupBox.style.maxWidth = '600px';
+                    popupBox.style.padding = '20px';
+                    popupBox.style.borderRadius = '8px';
+                    popupBox.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
+                    popupBox.style.position = 'relative';
+
+                    // Add content to the popup
+                    popupBox.innerHTML = content;
+
+                    // Add close button
+                    const closeButton = document.createElement('span');
+                    closeButton.textContent = '×';
+                    closeButton.style.position = 'absolute';
+                    closeButton.style.top = '10px';
+                    closeButton.style.right = '15px';
+                    closeButton.style.fontSize = '20px';
+                    closeButton.style.cursor = 'pointer';
+                    closeButton.style.color = '#999';
+                    closeButton.addEventListener('click', () => popupOverlay.remove());
+
+                    // Append close button and popup box
+                    popupBox.appendChild(closeButton);
+                    popupOverlay.appendChild(popupBox);
+
+                    // Append popup overlay to body
+                    document.body.appendChild(popupOverlay);
                 });
             });
         });
