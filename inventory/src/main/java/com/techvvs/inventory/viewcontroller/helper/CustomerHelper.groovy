@@ -48,11 +48,6 @@ class CustomerHelper {
     // only enforcing the name for now...
     CustomerVO createCustomer(CustomerVO customer) {
 
-        // enter some values here if they are null to avoid null pointers when printing invoices etc
-        customer.email == null || customer.email.isEmpty() ? customer.email = "johndoe@gmail.com" : customer.email
-        customer.phone == null || customer.phone.isEmpty() ? customer.phone = "6120000000" : customer.phone
-        customer.address == null || customer.address.isEmpty() ? customer.address = "123 fake st" : customer.address
-        customer.address2 == null || customer.address2.isEmpty() ? customer.address2 = "apt 1" : customer.address2
 
         customer.createTimeStamp = LocalDateTime.now()
         customer.updateTimeStamp = LocalDateTime.now()
