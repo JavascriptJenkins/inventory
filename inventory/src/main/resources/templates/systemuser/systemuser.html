@@ -21,6 +21,24 @@
             border-radius: 5px;
             margin-bottom: 15px;
         }
+        .role-box {
+            display: inline-block;
+            padding: 8px 12px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            background-color: #f8f9fa;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+            font-size: 14px;
+            position: relative;
+        }
+        .role-box .remove-role {
+            position: absolute;
+            top: 2px;
+            right: 5px;
+            cursor: pointer;
+            color: red;
+        }
         .validation-error {
             color: red;
             font-size: 0.9em;
@@ -34,6 +52,63 @@
             box-shadow: 0 0 5px green !important;
         }
     </style>
+    <style>
+        /* Modal CSS */
+        .custom-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1050;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0s, opacity 0.3s ease;
+        }
+
+        .custom-modal-dialog {
+            background-color: white;
+            border-radius: 5px;
+            padding: 20px;
+            width: 500px;
+            max-width: 90%;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+        }
+
+        .custom-modal-header,
+        .custom-modal-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .custom-modal-header {
+            border-bottom: 1px solid #ddd;
+        }
+
+        .custom-modal-footer {
+            border-top: 1px solid #ddd;
+        }
+
+        .custom-modal-title {
+            margin: 0;
+        }
+
+        .hidden {
+            visibility: hidden;
+            opacity: 0;
+        }
+
+        .visible {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const form = document.querySelector('form');
@@ -69,14 +144,14 @@
                 validateField(phoneField, phoneField.value.length === 10, 'Phone number must be exactly 10 digits.');
             });
 
-            const passwordField = form.querySelector('input[name="password"]');
-            const password2Field = form.querySelector('input[name="password2"]');
-            passwordField.addEventListener('input', () => {
-                validateField(passwordField, passwordField.value.length >= 6, 'Password must be at least 6 characters long.');
-            });
-            password2Field.addEventListener('input', () => {
-                validateField(password2Field, passwordField.value === password2Field.value, 'Passwords do not match.');
-            });
+<!--            const passwordField = form.querySelector('input[name="password"]');-->
+<!--            const password2Field = form.querySelector('input[name="password2"]');-->
+<!--            passwordField.addEventListener('input', () => {-->
+<!--                validateField(passwordField, passwordField.value.length >= 6, 'Password must be at least 6 characters long.');-->
+<!--            });-->
+<!--            password2Field.addEventListener('input', () => {-->
+<!--                validateField(password2Field, passwordField.value === password2Field.value, 'Passwords do not match.');-->
+<!--            });-->
 
             // Form submit validation
             form.addEventListener('submit', function (e) {
@@ -109,6 +184,14 @@
     <div class="header-dark">
         <h1>System User Management</h1>
         <p>Manage System Users</p>
+    </div>
+
+    <div id="successDiv" class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">
+        Success
+    </div>
+
+    <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">
+        Error
     </div>
 
     <!-- Form for SystemUserDAO -->
@@ -155,24 +238,71 @@
             <!-- Roles -->
             <div class="col-md-4 mb-3">
                 <label class="form-label">Roles</label>
-                <select multiple class="form-select" th:field="*{roles}" required>
-                    <!-- Loop through all available roles -->
-                    <option th:each="roleOption : ${allRoles}"
-                            th:value="${roleOption}"
-                            th:text="${roleOption}"
-                            th:selected="${#arrays.contains(systemuser.roles, roleOption)}">
-                    </option>
-                </select>
-                <span class="validation-error">Please select at least one role.</span>
+                <!-- Add Role Button -->
+                <button type="button" class="btn btn-success btn-sm ms-3" onclick="showModal('rolesModal')">
+                    Add Role
+                </button>
+                <div id="selectedRoles">
+                    <!-- Display existing roles -->
+                    <span th:each="role : ${systemuser.roles}" class="role-box">
+            <span th:text="${role}"></span>
+            <span class="remove-role" onclick="removeRole('${role}')">✕</span>
+                            <!-- Create hidden inputs for each role -->
+                <input type="hidden" name="roles" th:value="${role}" />
+            </span>
+                </div>
+            </div>
+
+            <!-- Modal -->
+            <div id="rolesModal" class="custom-modal hidden">
+                <div class="custom-modal-dialog">
+                    <div class="custom-modal-content">
+                        <div class="custom-modal-header">
+                            <h5 class="custom-modal-title">Add Role</h5>
+                            <button type="button" class="btn-close" onclick="hideModal('rolesModal')">×</button>
+                        </div>
+                        <div class="custom-modal-body">
+                            <select id="availableRoles" class="form-select" multiple>
+                                <option th:each="roleOption : ${allRoles}" th:value="${roleOption}" th:text="${roleOption}"></option>
+                            </select>
+                        </div>
+                        <div class="custom-modal-footer">
+                            <button type="button" class="btn btn-primary" onclick="addSelectedRoleAndSubmit()">Add</button>
+                            <button type="button" class="btn btn-secondary" onclick="hideModal('rolesModal')">Close</button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
 
             <!-- User Active -->
+            <!-- User Active -->
             <div class="col-md-4 mb-3">
                 <label class="form-label">Is Active</label>
-                <input type="checkbox" class="form-check-input" th:field="*{isuseractive}" value="1">
+                <input
+                        type="checkbox"
+                        class="form-check-input"
+                        id="isuseractive"
+                        th:field="*{isuseractive}"
+                        value="1"
+                th:checked="${isuseractive == 1}"
+                onclick="updateIsUserActive()">
+                <input type="hidden" id="isuseractiveHidden" name="isuseractive" th:field="*{isuseractive}">
                 <span class="validation-error"></span>
             </div>
+            <script>
+                function updateIsUserActive() {
+                    const checkbox = document.getElementById('isuseractive');
+                    const hiddenField = document.getElementById('isuseractiveHidden');
+                    hiddenField.value = checkbox.checked ? 1 : 0; // Set hidden field value to 1 or 0
+                }
+
+                document.addEventListener('DOMContentLoaded', function () {
+                    const checkbox = document.getElementById('isuseractive');
+                    const hiddenField = document.getElementById('isuseractiveHidden');
+                    hiddenField.value = checkbox.checked ? 1 : 0; // Ensure hidden field is updated on page load
+                });
+            </script>
 
             <!-- Created Timestamp -->
             <div class="col-md-4 mb-3">
@@ -206,7 +336,7 @@
         </tr>
         </thead>
         <tbody>
-        <tr th:each="user : ${systemuserPage.content}" th:unless="${user.deleted == 1}">
+        <tr th:each="user : ${systemuserPage.content}">
             <td th:text="${user.name}"></td>
             <td th:text="${user.email}"></td>
             <td th:text="${user.phone}"></td>
@@ -218,6 +348,108 @@
                 </form>
             </td>
         </tr>
+        <script>
+            function addSelectedRole() {
+                const availableRoles = document.getElementById('availableRoles');
+                const selectedRolesContainer = document.getElementById('selectedRoles');
+
+                // Iterate over selected options in the roles dropdown
+                Array.from(availableRoles.selectedOptions).forEach(option => {
+                    // Check if the role already exists in the selected roles
+                    if (!document.getElementById(`role-${option.value}`)) {
+                        // Create a role box
+                        const roleBox = document.createElement('span');
+                        roleBox.classList.add('role-box');
+                        roleBox.id = `role-${option.value}`;
+                        roleBox.innerHTML = `
+                            ${option.value}
+                            <span class="remove-role" onclick="removeRole('${option.value}')">✕</span>
+                        `;
+
+                        // Append the role box to the selected roles container
+                        selectedRolesContainer.appendChild(roleBox);
+
+                        // Create a hidden input for the role
+                        const hiddenInput = document.createElement('input');
+                        hiddenInput.type = 'hidden';
+                        hiddenInput.name = 'roles';
+                        hiddenInput.value = option.value;
+                        hiddenInput.id = `input-role-${option.value}`;
+
+                        // Append the hidden input to the form
+                        selectedRolesContainer.appendChild(hiddenInput);
+                    }
+                });
+
+                hideModal('rolesModal'); // Hide the modal
+            }
+
+            function removeRole(role) {
+                // Remove the role box and corresponding hidden input
+                const roleBox = document.getElementById(`role-${role}`);
+                const hiddenInput = document.getElementById(`input-role-${role}`);
+                if (roleBox) roleBox.remove();
+                if (hiddenInput) hiddenInput.remove();
+            }
+                // Show Modal
+                function showModal(modalId) {
+                    const modal = document.getElementById(modalId);
+                    if (modal) {
+                        modal.classList.remove('hidden');
+                        modal.classList.add('visible');
+                    }
+                }
+
+                // Hide Modal
+                function hideModal(modalId) {
+                    const modal = document.getElementById(modalId);
+                    if (modal) {
+                        modal.classList.remove('visible');
+                        modal.classList.add('hidden');
+                    }
+                }
+        </script>
+        <script>
+            function addSelectedRoleAndSubmit() {
+                const availableRoles = document.getElementById('availableRoles');
+                const selectedRolesContainer = document.getElementById('selectedRoles');
+                const form = document.querySelector('form');
+
+                // Iterate over selected options in the roles dropdown
+                Array.from(availableRoles.selectedOptions).forEach(option => {
+                    // Check if the role already exists in the selected roles
+                    if (!document.getElementById(`role-${option.value}`)) {
+                        // Create a role box
+                        const roleBox = document.createElement('span');
+                        roleBox.classList.add('role-box');
+                        roleBox.id = `role-${option.value}`;
+                        roleBox.innerHTML = `
+                            ${option.value}
+                            <span class="remove-role" onclick="removeRole('${option.value}')">✕</span>
+                        `;
+
+                        // Append the role box to the selected roles container
+                        selectedRolesContainer.appendChild(roleBox);
+
+                        // Create a hidden input for the role
+                        const hiddenInput = document.createElement('input');
+                        hiddenInput.type = 'hidden';
+                        hiddenInput.name = 'roles';
+                        hiddenInput.value = option.value;
+                        hiddenInput.id = `input-role-${option.value}`;
+
+                        // Append the hidden input to the form
+                        selectedRolesContainer.appendChild(hiddenInput);
+                    }
+                });
+
+                // Hide the modal
+                hideModal('rolesModal');
+
+                // Submit the form
+                form.submit();
+            }
+        </script>
         </tbody>
     </table>
 </div>

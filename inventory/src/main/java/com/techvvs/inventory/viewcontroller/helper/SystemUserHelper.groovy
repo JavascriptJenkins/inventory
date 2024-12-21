@@ -70,6 +70,9 @@ class SystemUserHelper {
     }
 
     void updateSystemUser(SystemUserDAO systemUserDAO, Model model) {
+
+        updateSystemUserWithPassword(systemUserDAO, model) // need to grab the password from the backend and bind it
+
         validateSystemUser(systemUserDAO, model)
         if (model.getAttribute(MessageConstants.ERROR_MSG) == null) {
             if (systemUserDAO.id > 0) {
@@ -87,6 +90,15 @@ class SystemUserHelper {
             }
         }
         model.addAttribute("systemuser", systemUserDAO)
+    }
+
+    SystemUserDAO updateSystemUserWithPassword(SystemUserDAO systemUserDAO, Model model) {
+
+        SystemUserDAO systemuserFromDB = systemUserRepo.findById(systemUserDAO.id).get()
+
+        systemUserDAO.password = systemuserFromDB.password // bind the password because we never send it to the ui
+        systemUserDAO.password2 = systemuserFromDB.password // bind the password because we never send it to the ui
+        return systemUserDAO
     }
 
 

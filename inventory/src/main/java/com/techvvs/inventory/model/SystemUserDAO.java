@@ -20,11 +20,9 @@ public class SystemUserDAO {
     @Column(name="password")
     String password;
 
-    @Nullable
     @Column(name="name")
     String name;
 
-    @Nullable
     @Column(name="tenant")
     String tenant;
 
@@ -45,21 +43,11 @@ public class SystemUserDAO {
     @Column(name="isuseractive")
     Integer isuseractive;
 
-    @Column(name="deleted")
-    Integer deleted; // soft delete for system user
-
     @JsonProperty
     LocalDateTime updatedtimestamp;
     @JsonProperty
     LocalDateTime createtimestamp;
 
-    public Integer getDeleted() {
-        return deleted;
-    }
-
-    public void setDeleted(Integer deleted) {
-        this.deleted = deleted;
-    }
 
     public String getPassword() {
         return password;
@@ -145,7 +133,7 @@ public class SystemUserDAO {
         return tenant;
     }
 
-    public void setTenant(@Nullable String project) {
+    public void setTenant( String tenant) {
         this.tenant = tenant;
     }
 
