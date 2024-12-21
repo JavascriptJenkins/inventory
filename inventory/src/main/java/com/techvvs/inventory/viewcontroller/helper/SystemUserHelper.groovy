@@ -4,6 +4,7 @@ import com.techvvs.inventory.constants.MessageConstants
 import com.techvvs.inventory.jparepo.SystemUserRepo
 import com.techvvs.inventory.model.CustomerVO
 import com.techvvs.inventory.model.SystemUserDAO
+import com.techvvs.inventory.security.Role
 import com.techvvs.inventory.validation.StringSecurityValidator
 import com.techvvs.inventory.validation.generic.ObjectValidator
 import org.springframework.beans.factory.annotation.Autowired
@@ -29,8 +30,23 @@ class SystemUserHelper {
     ObjectValidator objectValidator
 
     void loadSystemUser(int systemuserid, Model model) {
-        model.addAttribute("systemuser", systemUserRepo.findById(systemuserid).get())
+        // Fetch the system user from the repository
+        def systemUser = systemUserRepo.findById(systemuserid).orElseThrow {
+            new NoSuchElementException("User not found")
+        }
+
+        // Get all roles (assuming Role is an enum)
+        def allRoles = Role.values().toList()
+
+        // Remove roles already assigned to the system user
+        allRoles.removeAll { role -> systemUser.roles.contains(role) }
+
+        // Bind the remaining roles and system user to the model
+        model.addAttribute("allRoles", allRoles)
+        model.addAttribute("systemuser", systemUser)
     }
+
+
 
     void loadAllSystemUsers(Model model) {
         model.addAttribute("systemuserlist", systemUserRepo.findAll())

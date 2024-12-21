@@ -245,11 +245,11 @@
                 <div id="selectedRoles">
                     <!-- Display existing roles -->
                     <span th:each="role : ${systemuser.roles}" class="role-box">
-            <span th:text="${role}"></span>
-            <span class="remove-role" onclick="removeRole('${role}')">✕</span>
-                            <!-- Create hidden inputs for each role -->
-                <input type="hidden" name="roles" th:value="${role}" />
-            </span>
+                    <span th:text="${role}"></span>
+                    <span class="remove-role" onclick="removeRole('${role}')">✕</span>
+                                    <!-- Create hidden inputs for each role -->
+                        <input type="hidden" name="roles" th:value="${role}" />
+                    </span>
                 </div>
             </div>
 
@@ -349,65 +349,100 @@
             </td>
         </tr>
         <script>
-            function addSelectedRole() {
+            function updateAvailableRoles() {
                 const availableRoles = document.getElementById('availableRoles');
-                const selectedRolesContainer = document.getElementById('selectedRoles');
+                const selectedRoles = document.getElementById('selectedRoles');
 
-                // Iterate over selected options in the roles dropdown
-                Array.from(availableRoles.selectedOptions).forEach(option => {
-                    // Check if the role already exists in the selected roles
-                    if (!document.getElementById(`role-${option.value}`)) {
-                        // Create a role box
-                        const roleBox = document.createElement('span');
-                        roleBox.classList.add('role-box');
-                        roleBox.id = `role-${option.value}`;
-                        roleBox.innerHTML = `
-                            ${option.value}
-                            <span class="remove-role" onclick="removeRole('${option.value}')">✕</span>
-                        `;
+                // Create a set of currently selected role values
+                const selectedRoleIds = new Set(
+                    Array.from(selectedRoles.querySelectorAll('.role-box')).map(roleBox => roleBox.id.replace('role-', ''))
+                );
 
-                        // Append the role box to the selected roles container
-                        selectedRolesContainer.appendChild(roleBox);
-
-                        // Create a hidden input for the role
-                        const hiddenInput = document.createElement('input');
-                        hiddenInput.type = 'hidden';
-                        hiddenInput.name = 'roles';
-                        hiddenInput.value = option.value;
-                        hiddenInput.id = `input-role-${option.value}`;
-
-                        // Append the hidden input to the form
-                        selectedRolesContainer.appendChild(hiddenInput);
+                // Iterate through all the options in the roles dropdown
+                Array.from(availableRoles.options).forEach(option => {
+                    // Disable options already added to selectedRoles
+                    if (selectedRoleIds.has(option.value)) {
+                        option.disabled = true;
+                        option.style.color = '#ccc'; // Visual indicator for disabled option
+                    } else {
+                        option.disabled = false;
+                        option.style.color = ''; // Reset style for enabled option
                     }
                 });
-
-                hideModal('rolesModal'); // Hide the modal
             }
 
-            function removeRole(role) {
-                // Remove the role box and corresponding hidden input
-                const roleBox = document.getElementById(`role-${role}`);
-                const hiddenInput = document.getElementById(`input-role-${role}`);
-                if (roleBox) roleBox.remove();
-                if (hiddenInput) hiddenInput.remove();
-            }
-                // Show Modal
-                function showModal(modalId) {
-                    const modal = document.getElementById(modalId);
-                    if (modal) {
-                        modal.classList.remove('hidden');
-                        modal.classList.add('visible');
-                    }
-                }
+    function addSelectedRole() {
+        const availableRoles = document.getElementById('availableRoles');
+        const selectedRolesContainer = document.getElementById('selectedRoles');
 
-                // Hide Modal
-                function hideModal(modalId) {
-                    const modal = document.getElementById(modalId);
-                    if (modal) {
-                        modal.classList.remove('visible');
-                        modal.classList.add('hidden');
+        // Iterate over selected options in the roles dropdown
+        Array.from(availableRoles.selectedOptions).forEach(option => {
+            // Check if the role already exists in the selected roles
+            if (!document.getElementById(`role-${option.value}`)) {
+                // Create a role box
+                const roleBox = document.createElement('span');
+                roleBox.classList.add('role-box');
+                roleBox.id = `role-${option.value}`;
+                roleBox.innerHTML = `
+                    ${option.value}
+                    <span class="remove-role" onclick="removeRole('${option.value}')">✕</span>
+                `;
+
+                // Append the role box to the selected roles container
+                selectedRolesContainer.appendChild(roleBox);
+
+                // Create a hidden input for the role
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'roles';
+                hiddenInput.value = option.value;
+                hiddenInput.id = `input-role-${option.value}`;
+
+                // Append the hidden input to the form
+                selectedRolesContainer.appendChild(hiddenInput);
+            }
+        });
+
+        updateAvailableRoles(); // Update the dropdown after adding roles
+        hideModal('rolesModal'); // Hide the modal
+    }
+
+
+    function removeRole(role) {
+        // Remove the role box and corresponding hidden input
+        const roleBox = document.getElementById(`role-${role}`);
+        const hiddenInput = document.getElementById(`input-role-${role}`);
+        if (roleBox) roleBox.remove();
+        if (hiddenInput) hiddenInput.remove();
+
+        // Enable the removed role in the dropdown
+        const availableRoles = document.getElementById('availableRoles');
+        const optionToEnable = Array.from(availableRoles.options).find(option => option.value === role);
+        if (optionToEnable) {
+            optionToEnable.disabled = false;
+            optionToEnable.style.color = ''; // Reset style for enabled option
+        }
+    }
+                    // Show Modal
+                    function showModal(modalId) {
+                        const modal = document.getElementById(modalId);
+                        if (modal) {
+                            modal.classList.remove('hidden');
+                            modal.classList.add('visible');
+                        }
                     }
-                }
+
+                    // Hide Modal
+                    function hideModal(modalId) {
+                        const modal = document.getElementById(modalId);
+                        if (modal) {
+                            modal.classList.remove('visible');
+                            modal.classList.add('hidden');
+                        }
+                    }
+                    document.addEventListener('DOMContentLoaded', () => {
+                        updateAvailableRoles(); // Ensure dropdown is updated on page load
+                    });
         </script>
         <script>
             function addSelectedRoleAndSubmit() {
@@ -415,6 +450,9 @@
                 const selectedRolesContainer = document.getElementById('selectedRoles');
                 const form = document.querySelector('form');
 
+                // Flag to track if duplicates are found
+                let duplicatesFound = false;
+
                 // Iterate over selected options in the roles dropdown
                 Array.from(availableRoles.selectedOptions).forEach(option => {
                     // Check if the role already exists in the selected roles
@@ -440,8 +478,15 @@
 
                         // Append the hidden input to the form
                         selectedRolesContainer.appendChild(hiddenInput);
+                    } else {
+                        // If a duplicate role is found, set the flag
+                        duplicatesFound = true;
                     }
                 });
+
+                if (duplicatesFound) {
+                    alert('Some selected roles were already added and were ignored to avoid duplicates.');
+                }
 
                 // Hide the modal
                 hideModal('rolesModal');
@@ -450,6 +495,7 @@
                 form.submit();
             }
         </script>
+
         </tbody>
     </table>
 </div>

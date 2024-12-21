@@ -57,10 +57,6 @@ public class SystemUserViewController {
             systemUserHelper.loadSystemUser(Integer.valueOf(systemuserid.get()), model)
         }
 
-        // Add all roles to the model
-        List<Role> allRoles = Arrays.asList(Role.values()); // Assuming Role is an enum
-        model.addAttribute("allRoles", allRoles);
-
 
         systemUserHelper.loadAllSystemUsers(model)
         return "systemuser/systemuser.html";
@@ -100,13 +96,7 @@ public class SystemUserViewController {
 
         systemUserHelper.addPaginatedData(model, page)
 
-        if(systemuserid.isPresent())  {
-            systemUserHelper.loadSystemUser(Integer.valueOf(systemuserid.get()), model)
-        }
-
-        // Add all roles to the model
-        List<Role> allRoles = Arrays.asList(Role.values()); // Assuming Role is an enum
-        model.addAttribute("allRoles", allRoles);
+        systemUserHelper.loadSystemUser(Integer.valueOf(systemUser.id), model)
 
         systemUserHelper.loadAllSystemUsers(model)
         return "systemuser/systemuser.html";
