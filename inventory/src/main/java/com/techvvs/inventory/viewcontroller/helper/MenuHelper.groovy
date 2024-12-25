@@ -402,7 +402,7 @@ class MenuHelper {
             menuVO.menu_product_list = uniqueproducts
 
             // now that we have the unique products, find all discounts with this menuid and apply them to prices
-            List<DiscountVO> discountVOS = discountRepo.findAllByMenuid(Integer.valueOf(menuid))
+            List<DiscountVO> discountVOS = discountRepo.findAllByMenu(menuVO)
             menuVO.applyDiscount(discountVOS) // this sets the displayprice on the products
 
             ProductVO.sortProductsByDisplayPrice(menuVO.menu_product_list)
