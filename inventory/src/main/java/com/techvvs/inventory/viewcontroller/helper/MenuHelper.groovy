@@ -2,18 +2,23 @@ package com.techvvs.inventory.viewcontroller.helper
 
 import com.techvvs.inventory.barcode.service.BarcodeService
 import com.techvvs.inventory.constants.AppConstants
+import com.techvvs.inventory.jparepo.CustomerRepo
 import com.techvvs.inventory.jparepo.DiscountRepo
 import com.techvvs.inventory.jparepo.MenuRepo
 import com.techvvs.inventory.jparepo.ProductTypeRepo
 import com.techvvs.inventory.model.CartVO
+import com.techvvs.inventory.model.CustomerVO
 import com.techvvs.inventory.model.DiscountVO
 import com.techvvs.inventory.model.MenuVO
 import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.security.JwtTokenProvider
+import com.techvvs.inventory.security.Role
 import com.techvvs.inventory.service.transactional.CartDeleteService
+import com.techvvs.inventory.util.TwilioTextUtil
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.core.env.Environment
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
@@ -37,6 +42,9 @@ class MenuHelper {
     CartDeleteService cartDeleteService
 
     @Autowired
+    Environment environment
+
+    @Autowired
     AppConstants appConstants
 
     @Autowired
@@ -47,6 +55,12 @@ class MenuHelper {
 
     @Autowired
     JwtTokenProvider jwtTokenProvider
+
+    @Autowired
+    CustomerRepo customerRepo
+
+    @Autowired
+    TwilioTextUtil twilioTextUtil
 
     @Autowired
     CheckoutHelper checkoutHelper
@@ -461,14 +475,17 @@ class MenuHelper {
 
     ){
 
+        List<Role> roles = Arrays.asList(Role.ROLE_CLIENT, Role.ROLE_SHOPPING_TOKEN);
+
+        CustomerVO customerVO = customerRepo.findByCustomerid(Integer.valueOf(customerid)).get()
+
         //generate a token
-        String token = jwtTokenProvider.createMenuShoppingToken(menuid, customerid, phonenumber, tokenlength, model)
+        String token = jwtTokenProvider.createMenuShoppingToken(customerVO.email, roles, Integer.valueOf(tokenlength), menuid, customerid)
 
-        // send the token to the customer
-        menuHelper.sendTokenToCustomer(token, customerid, model)
+        boolean isDev1 = "dev1".equals(environment.getProperty("spring.profiles.active"));
+        twilioTextUtil.sendShoppingTokenLinkSMS(phonenumber,isDev1, menuid, token)
 
-
-
+        model.addAttribute("successMessage","Shopping token sent to :"+phonenumber+" valid for "+tokenlength+" hours.  ")
     }
 
 

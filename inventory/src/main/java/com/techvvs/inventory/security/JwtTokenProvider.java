@@ -138,7 +138,7 @@ public class JwtTokenProvider {
             .compact();
   }
 
-  public String createMenuShoppingToken(String email, List<Role> roles, int hours, String menuid) {
+  public String createMenuShoppingToken(String email, List<Role> roles, int hours, String menuid, String customerid) {
 
     Claims claims = Jwts.claims().setSubject(email);
     claims.put("auth", roles.stream()
@@ -146,6 +146,7 @@ public class JwtTokenProvider {
             .filter(Objects::nonNull)
             .collect(Collectors.toList()));
     claims.put("menuid", menuid); // Add the "menuid" claim
+    claims.put("customerid", customerid); // Add the "menuid" claim
     claims.put("token_type", appConstants.MENU_SHOPPING_TOKEN); // Add the "token_type" claim
 
     Date now = new Date();

@@ -212,7 +212,6 @@ public class MenuViewController {
 
         techvvsAuthService.checkuserauth(model)
 
-
         // if all values present, send token
         if(menuid.isPresent() && customerid.isPresent() && phonenumber.isPresent() && tokenlength.isPresent())  {
             menuHelper.sendShoppingToken(menuid.get(), customerid.get(), phonenumber.get(), tokenlength.get(), model)
@@ -224,7 +223,6 @@ public class MenuViewController {
         menuHelper.findMenus(model, page, size)
 
         checkoutHelper.getAllCustomers(model);
-
 
         return "auth/index.html";
     }
