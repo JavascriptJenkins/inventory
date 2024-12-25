@@ -82,4 +82,8 @@ String VIEW_INVOICE = "view"
     String TENANT_TEST1 = "test1"
     String TENANT_TEST = "test"
 
+
+    // TOKEN TYPES
+    public String MENU_SHOPPING_TOKEN = "MENU_SHOPPING_TOKEN"
+
 }

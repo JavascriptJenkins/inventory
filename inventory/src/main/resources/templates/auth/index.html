@@ -604,6 +604,84 @@
         });
     </script>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const popupForm = document.getElementById('shoppingTokenForm'); // Correct form ID
+            const popupMenuName = document.getElementById('popupMenuName');
+            const closePopupBtn = document.getElementById('closePopupBtn');
+            const customerSelect = document.getElementById('customerSelect');
+            const tokenLengthSelect = document.getElementById('tokenLengthSelect');
+            const phoneNumberInput = document.getElementById('phoneNumber');
+            const submitBtn = document.getElementById('submitBtn');
+
+            let currentMenuId = null; // To store the correct menu ID for the popup
+
+            // Show popup on "Send Menu" button click
+            document.querySelectorAll('.send-menu-btn').forEach(button => {
+                button.addEventListener('click', function () {
+                    currentMenuId = this.getAttribute('data-menuid'); // Set the correct menu ID
+                    const menuname = this.getAttribute('data-menuname');
+
+                    // Populate dynamic data
+                    popupMenuName.textContent = `Send Menu: ${menuname}`;
+                    popupForm.style.display = 'flex';
+                });
+            });
+
+            // Close popup
+            closePopupBtn.addEventListener('click', function () {
+                popupForm.style.display = 'none';
+                currentMenuId = null; // Clear the menu ID when the popup is closed
+            });
+
+            // Validate inputs
+            phoneNumberInput.addEventListener('input', function () {
+                const phoneValue = phoneNumberInput.value;
+                const isValid = /^\d{10}$/.test(phoneValue);
+                phoneNumberInput.style.borderColor = isValid ? 'green' : 'red';
+                toggleSubmitButton();
+            });
+
+            [customerSelect, tokenLengthSelect].forEach(select => {
+                select.addEventListener('change', toggleSubmitButton);
+            });
+
+            function toggleSubmitButton() {
+                const isCustomerSelected = customerSelect.value !== '';
+                const isTokenLengthSelected = tokenLengthSelect.value !== '';
+                const isPhoneNumberValid = /^\d{10}$/.test(phoneNumberInput.value);
+                submitBtn.disabled = !(isCustomerSelected && isTokenLengthSelected && isPhoneNumberValid);
+            }
+
+            // Handle submit button click
+            submitBtn.addEventListener('click', function (event) {
+                event.preventDefault(); // Prevent default form submission
+
+                const customerId = customerSelect.value;
+                const tokenLength = tokenLengthSelect.value;
+                const phoneNumber = phoneNumberInput.value;
+
+                if (!currentMenuId || !customerId || !tokenLength || !phoneNumber) {
+                    alert('All fields must be completed.');
+                    return;
+                }
+
+                // Construct the dynamic URI
+                const actionUri = `/menu/shoppingtoken/send?menuid=${encodeURIComponent(currentMenuId)}`
+                    + `&customerid=${encodeURIComponent(customerId)}`
+                    + `&phonenumber=${encodeURIComponent(phoneNumber)}`
+                    + `&tokenlength=${encodeURIComponent(tokenLength)}`;
+
+                // Safely submit the form
+                popupForm.setAttribute('action', actionUri);
+                popupForm.submit(); // Explicitly call the submit method of the form element
+            });
+        });
+
+    </script>
+
+
+
 
 
 

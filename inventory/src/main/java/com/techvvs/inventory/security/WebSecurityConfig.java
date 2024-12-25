@@ -91,6 +91,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .antMatchers(DOCUMENT_DOCUMENTS_33).permitAll()
             .antMatchers(MENU_URI_33).permitAll()
             .antMatchers(MENU_URI).permitAll()
+            .antMatchers(MENU_SHOP_URI).permitAll()
+            .antMatchers(MENU_SHOP_URI_33).permitAll()
 //            .antMatchers("/login/systemuser").permitAll()//
             // Add other routes that should be publicly accessible
             // Disallow everything else..

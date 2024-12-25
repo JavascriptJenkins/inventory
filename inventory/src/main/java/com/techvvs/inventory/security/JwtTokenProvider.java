@@ -1,5 +1,6 @@
 package com.techvvs.inventory.security;
 
+import com.techvvs.inventory.constants.AppConstants;
 import com.techvvs.inventory.exception.CustomException;
 import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,9 @@ public class JwtTokenProvider {
    * THIS IS NOT A SECURE PRACTICE! For simplicity, we are storing a static key here. Ideally, in a
    * microservices environment, this key would be kept on a config-server.
    */
+
+  @Autowired
+  AppConstants appConstants;
 
   // https://stackoverflow.com/questions/35238579/password-encoding-and-decoding-using-spring-security-spring-boot-and-mongodb
   @Value("${security.jwt.token.secret-key:secret-key}") // todo: change this "secret-key" value to a real hash - see link above
@@ -133,6 +137,33 @@ public class JwtTokenProvider {
             .signWith(SignatureAlgorithm.HS256, secretKey)//
             .compact();
   }
+
+  public String createMenuShoppingToken(String email, List<Role> roles, int hours, String menuid) {
+
+    Claims claims = Jwts.claims().setSubject(email);
+    claims.put("auth", roles.stream()
+            .map(s -> new SimpleGrantedAuthority(s.getAuthority()))
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList()));
+    claims.put("menuid", menuid); // Add the "menuid" claim
+    claims.put("token_type", appConstants.MENU_SHOPPING_TOKEN); // Add the "token_type" claim
+
+    Date now = new Date();
+    // Calculate validity dynamically based on input hours
+    long validityInMilliseconds = hours * 3600000L; // 1 hour = 3600000 milliseconds
+    Date validity = new Date(now.getTime() + validityInMilliseconds);
+
+    return Jwts.builder()
+            .setClaims(claims)
+            .setIssuedAt(now)
+            .setExpiration(validity)
+            .signWith(SignatureAlgorithm.HS256, secretKey)
+            .compact();
+  }
+
+
+
+
 
 
 
@@ -257,6 +288,30 @@ public class JwtTokenProvider {
       throw new CustomException("Expired or invalid JWT token", HttpStatus.FORBIDDEN);
     }
   }
+
+  public boolean validateShoppingToken(String token) {
+    try {
+      // Parse the token claims
+      Jws<Claims> claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
+
+      // Check if the "token_type" claim is "MENU_SHOPPING_TOKEN"
+      String tokenType = claims.getBody().get("token_type", String.class);
+      if (!"MENU_SHOPPING_TOKEN".equals(tokenType)) {
+        throw new CustomException("Invalid token type", HttpStatus.FORBIDDEN);
+      }
+
+      // Check if the "menuid" claim is present
+      String menuid = claims.getBody().get("menuid", String.class);
+      if (menuid == null || menuid.isEmpty()) {
+        throw new CustomException("Menu ID is missing in the token", HttpStatus.FORBIDDEN);
+      }
+
+      return true; // Valid token
+    } catch (JwtException | IllegalArgumentException e) {
+      throw new CustomException("Expired or invalid JWT token", HttpStatus.FORBIDDEN);
+    }
+  }
+
 
 
   void logout(HttpServletRequest request, HttpServletResponse response){

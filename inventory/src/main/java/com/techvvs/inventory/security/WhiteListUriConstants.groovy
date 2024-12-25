@@ -32,6 +32,8 @@ class WhiteListUriConstants {
     public static final String FILE_PUBLIC_DOWNLOAD_2 = "/file/publicdownload";
     public static final String FILE_QR_MEDIA_ZIP_DOWNLOAD = "/file/qrzipmediadownload/**";
     public static final String FILE_QR_MEDIA_ZIP_DOWNLOAD_33 = "/file/qrzipmediadownload";
+    public static final String MENU_SHOP_URI = "/menu/shop/**";
+    public static final String MENU_SHOP_URI_33 = "/menu/shop";
     public static final String MENU_URI = "/menu/**";
     public static final String MENU_URI_33 = "/menu/";
     public static final String IMAGE_IMAGES = "/image/images/";

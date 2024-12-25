@@ -73,6 +73,33 @@ public class MenuViewController {
         return "menu/menu.html";
     }
 
+    // todo: open this up on the firewall
+    // allow user to shop menu with shopping token
+    @GetMapping("/shop")
+    String shopMenu(
+            @ModelAttribute( "menu" ) MenuVO menuVO,
+            Model model,
+            @RequestParam("menuid") Optional<String> menuid,
+            @RequestParam("shoppingtoken") Optional<String> shoppingtoken,
+            @RequestParam("size") Optional<String> size,
+            @ModelAttribute( "cart" ) CartVO cartVO
+    ){
+
+
+
+        if(menuid.isPresent() && shoppingtoken.isPresent()) {
+            menuHelper.loadMenuWithToken(menuid.get(), model, shoppingtoken.get())
+        }
+
+
+
+
+        // fetch all customers from database and bind them to model
+        checkoutHelper.getAllCustomers(model)
+        //techvvsAuthService.checkuserauth(model)
+        return "menu/menu.html";
+    }
+
 
     // todo: modify this to parse user cookie from request and check user permissions
     // this serves the default menu for the batch
@@ -178,47 +205,25 @@ public class MenuViewController {
             @RequestParam("menuid") Optional<String> menuid,
             @RequestParam("customerid") Optional<String> customerid,
             @RequestParam("phonenumber") Optional<String> phonenumber,
+            @RequestParam("tokenlength") Optional<String> tokenlength,
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size
     ){
 
         techvvsAuthService.checkuserauth(model)
 
-        MenuVO returnVO = new MenuVO()
 
-        if(menuid.isPresent() && amount.isPresent() &&
-                isnew.isPresent() && isnew.get() == "yes" && newname.isPresent()
-                && producttypeid.isPresent()
-        )  {
-
-
-            // make a new menu with the new price
-            returnVO = menuHelper.createNewMenu(
-                    Double.valueOf(amount.get()),
-                    Integer.valueOf(menuid.get()),
-                    newname.get(),
-                    model,
-                    Integer.valueOf(producttypeid.get())
-
-            )
-
-
-        } else if(menuid.isPresent() && amount.isPresent() && producttypeid.isPresent() && isnew.isEmpty()){
-            // add a discount tied to an existing menu
-            returnVO = menuHelper.changePrice(
-                    Double.valueOf(amount.get()),
-                    Integer.valueOf(menuid.get()),
-                    model,
-                    Integer.valueOf(producttypeid.get())
-            )
-
+        // if all values present, send token
+        if(menuid.isPresent() && customerid.isPresent() && phonenumber.isPresent() && tokenlength.isPresent())  {
+            menuHelper.sendShoppingToken(menuid.get(), customerid.get(), phonenumber.get(), tokenlength.get(), model)
         } else {
-            model.addAttribute("errorMessage", "menuid and amount are required")
+            model.addAttribute("errorMessage", "menuid, customerid, phonenumber, and tokenlength are required")
         }
 
-
         // bind the menu options here
-        menuHelper.findMenus(model, page, size);
+        menuHelper.findMenus(model, page, size)
+
+        checkoutHelper.getAllCustomers(model);
 
 
         return "auth/index.html";

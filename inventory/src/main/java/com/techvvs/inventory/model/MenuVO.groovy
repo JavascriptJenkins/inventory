@@ -65,6 +65,22 @@ class MenuVO implements Serializable {
     @JsonProperty
     LocalDateTime createTimeStamp;
 
+    /**
+     * Apply discounts to the products in the menu_product_list.
+     * @param discountVOs A list of DiscountVO objects to apply.
+     */
+    void applyDiscount(List<DiscountVO> discountVOs) {
+        menu_product_list.each { product ->
+            discountVOs.each { discount ->
+                // Check for matching product type name and discount name
+                if (product.producttypeid?.name == discount.name) {
+                    // Apply the discount ensuring the display price does not go below 0
+                    product.displayprice = Math.max(0, product.displayprice - discount.discountamount)
+                }
+            }
+        }
+    }
+
 
 
 }

@@ -11,6 +11,7 @@ import com.techvvs.inventory.model.MenuVO
 import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.TransactionVO
+import com.techvvs.inventory.security.JwtTokenProvider
 import com.techvvs.inventory.service.transactional.CartDeleteService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
@@ -43,6 +44,12 @@ class MenuHelper {
 
     @Autowired
     DiscountRepo discountRepo
+
+    @Autowired
+    JwtTokenProvider jwtTokenProvider
+
+    @Autowired
+    CheckoutHelper checkoutHelper
 
     @Transactional
     MenuVO changePrice(
@@ -344,6 +351,56 @@ class MenuHelper {
         }
     }
 
+    // todo: this needs to fill a transient field that holds the path to an image?
+    MenuVO loadMenuWithToken(String menuid, Model model, String token){
+
+        // check to see if token is valid
+        if(!jwtTokenProvider.validateShoppingToken(token)){
+            model.addAttribute("errorMessage", "Invalid shopping token")
+            return null
+        }
+
+        // if token was validated, then we can load the menu
+
+        MenuVO menuVO = new MenuVO()
+        // if cartid == 0 then load normally, otherwise load the existing transaction
+        if(menuid == "0"){
+            // do nothing
+            // if it is the first time loading the page
+            if(menuVO.menu_product_list == null){
+                // menuVO.setTotal(0) // set total to 0 initially
+            }
+            model.addAttribute("menu", menuVO);
+            return menuVO
+
+        } else {
+            menuVO = getExistingMenu(menuid)
+            menuVO = hydrateTransientQuantitiesForDisplay(menuVO)
+
+            List<ProductVO> uniqueproducts = ProductVO.getUniqueProducts(menuVO.menu_product_list)
+            // cycle through every unique product and build the uri for the primary photo
+            for(ProductVO productVO : uniqueproducts){
+                productVO.setPrimaryphoto(appConstants.UPLOAD_DIR_IMAGES+productVO.product_id)
+                productVO.setVideodir(appConstants.UPLOAD_DIR_IMAGES+productVO.product_id)
+            }
+
+
+            menuVO.menu_product_list = uniqueproducts
+
+            // now that we have the unique products, find all discounts with this menuid and apply them to prices
+            List<DiscountVO> discountVOS = discountRepo.findAllByMenuid(Integer.valueOf(menuid))
+            menuVO.applyDiscount(discountVOS) // this sets the displayprice on the products
+
+            ProductVO.sortProductsByDisplayPrice(menuVO.menu_product_list)
+
+            menuVO.menu_product_list.each { item ->
+                item.price = item.displayprice // set all prices to the displayprice
+            }
+
+            model.addAttribute("menu", menuVO)
+            return menuVO
+        }
+    }
 
 
     CartVO validateCartVO(CartVO cartVO, Model model){
@@ -393,6 +450,27 @@ class MenuHelper {
 
         return cartVO
     }
-    
+
+    void sendShoppingToken(
+
+                            String menuid,
+                           String customerid,
+                           String phonenumber,
+                           String tokenlength,
+                           Model model
+
+    ){
+
+        //generate a token
+        String token = jwtTokenProvider.createMenuShoppingToken(menuid, customerid, phonenumber, tokenlength, model)
+
+        // send the token to the customer
+        menuHelper.sendTokenToCustomer(token, customerid, model)
+
+
+
+    }
+
+
     
 }

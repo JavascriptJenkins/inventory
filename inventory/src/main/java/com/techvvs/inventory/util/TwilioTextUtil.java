@@ -200,6 +200,41 @@ public class TwilioTextUtil {
         return "success";
     }
 
+    public String sendShoppingTokenLinkSMS(String phonenumber,
+                                           boolean isDev1,
+                                           String menuid,
+                                           String shoppingtoken
+    ) {
+        // Save a token value to a username and then send a text message
+
+        String result = "";
+        try {
+            List<Role> roles = new ArrayList<>(1);
+            roles.add(Role.ROLE_CLIENT);
+            roles.add(Role.ROLE_SHOPPING_TOKEN);
+
+        } catch (Exception ex) {
+            System.out.println("Error inserting token into database: " + ex.getMessage());
+        } finally {
+            // Only send the text message after everything else went smoothly
+            if (!isDev1) {
+
+                String baseuri = env.getProperty("base.qr.domain");
+                // Construct the URL including custom JWT and filename
+                String smsUrl = baseuri+"/menu/shop?shoppingtoken=" + shoppingtoken + "&menuid=" + menuid;
+
+                result = sendDownloadLinkCustomPhoneNumber(phonenumber, smsUrl, isDev1);
+            } else {
+                result = "success"; // Set to success in dev mode
+                System.out.println("Did NOT send validation text because we are in dev1");
+            }
+            System.out.println("Send Download Text with result: " + result);
+        }
+
+        return "success";
+    }
+
+
 
     public static String encodeStringForURL(String input) {
         try {

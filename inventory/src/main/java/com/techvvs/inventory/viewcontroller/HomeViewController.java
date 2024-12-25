@@ -4,6 +4,7 @@ import com.techvvs.inventory.model.MenuVO;
 import com.techvvs.inventory.model.ProductTypeVO;
 import com.techvvs.inventory.model.ProductVO;
 import com.techvvs.inventory.service.auth.TechvvsAuthService;
+import com.techvvs.inventory.viewcontroller.helper.CheckoutHelper;
 import com.techvvs.inventory.viewcontroller.helper.MenuHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,6 +31,9 @@ public class HomeViewController {
     @Autowired
     TechvvsAuthService techvvsAuthService;
 
+    @Autowired
+    CheckoutHelper checkoutHelper;
+
 
 
     @GetMapping("/index")
@@ -52,6 +56,7 @@ public class HomeViewController {
 //        }
 //        model.addAttribute("uniqueProductTypes", uniqueProductTypes); // Pass unique types to the template
 
+        checkoutHelper.getAllCustomers(model);
 
         techvvsAuthService.checkuserauth(model);
         model.addAttribute("menu",menuVO);

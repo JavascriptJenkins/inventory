@@ -10,5 +10,7 @@ import java.util.List;
 public interface DiscountRepo extends JpaRepository<DiscountVO, Integer> {
 
     List<DiscountVO> findAllByTransaction(TransactionVO transactionVO);
+    List<DiscountVO> findAllByMenuid(Integer menuid);
+
 
 }

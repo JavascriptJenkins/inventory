@@ -85,6 +85,10 @@ class ProductVO implements Serializable, Comparable<ProductVO> {
 
     // for display purposes only
     @Transient
+    Double displayprice
+
+    // for display purposes only
+    @Transient
     Integer displayquantityReturned
 
     // generic fields below
@@ -121,6 +125,15 @@ class ProductVO implements Serializable, Comparable<ProductVO> {
             @Override
             public int compare(ProductVO p1, ProductVO p2) {
                 return Double.compare(p1.getPrice(), p2.getPrice());
+            }
+        });
+    }
+
+    public static void sortProductsByDisplayPrice(ArrayList<ProductVO> listofproductsinstock) {
+        Collections.sort(listofproductsinstock, new Comparator<ProductVO>() {
+            @Override
+            public int compare(ProductVO p1, ProductVO p2) {
+                return Double.compare(p1.getDisplayprice(), p2.getDisplayprice());
             }
         });
     }
