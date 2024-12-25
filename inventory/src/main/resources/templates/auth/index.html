@@ -144,6 +144,32 @@
         }
     </style>
 
+    <style>
+        .custom-popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .popup-box {
+            background-color: #fff;
+            color: #333;
+            width: 50%;
+            max-width: 600px;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+    </style>
+
 
 </head>
 <body>
@@ -174,6 +200,7 @@
                 <th scope="col">Product Type</th>
                 <th scope="col">Actions</th>
                 <th scope="col">Expand</th>
+                <th scope="col">Send Menu</th>
             </tr>
             </thead>
             <tbody>
@@ -230,6 +257,12 @@
                         <i class="bi bi-plus-lg"></i>
                     </button>
                 </td>
+                <!-- Add the new "Send Menu" button -->
+                <td>
+                    <button type="button" class="btn btn-warning send-menu-btn" th:data-menuid="${menu.menuid}" th:data-menuname="${menu.name}">
+                        Send Menu
+                    </button>
+                </td>
             </tr>
 
 
@@ -270,10 +303,93 @@
 
     </div>
 
+    <!-- Hidden Popup Form -->
+    <div id="popupForm" class="custom-popup-overlay" style="display: none;">
+        <div class="popup-box">
+            <h4 id="popupMenuName">Send Menu</h4>
+            <form id="shoppingTokenForm" action="/menu/shoppingtoken/send" method="POST">
+                <!-- Customer Dropdown -->
+                <div class="mb-3">
+                    <label for="customerSelect" class="form-label">Customer</label>
+                    <select id="customerSelect" name="customerId" class="form-select">
+                        <option value="" selected>Select Customer</option>
+                        <option th:each="customer : ${customers}" th:value="${customer.customerid}" th:text="${customer.name}"></option>
+                    </select>
+                </div>
+
+                <!-- Token Length Dropdown -->
+                <div class="mb-3">
+                    <label for="tokenLengthSelect" class="form-label">Token Length (Hours)</label>
+                    <select id="tokenLengthSelect" name="tokenLength" class="form-select">
+                        <option value="" selected>Select Hour Amt</option>
+                        <option th:each="hour : ${#numbers.sequence(1,36)}" th:value="${hour}" th:text="${hour}"></option>
+                    </select>
+                </div>
+
+                <!-- Phone Number Input -->
+                <div class="mb-3">
+                    <label for="phoneNumber" class="form-label">Phone Number</label>
+                    <input type="text" id="phoneNumber" name="phoneNumber" class="form-control" maxlength="10" placeholder="Enter 10-digit phone number">
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" id="submitBtn" class="btn btn-primary" disabled>Submit</button>
+            </form>
+            <button class="btn btn-secondary" id="closePopupBtn">Close</button>
+        </div>
+    </div>
+
+
 
 
 
     <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const popupForm = document.getElementById('popupForm');
+            const popupMenuName = document.getElementById('popupMenuName');
+            const closePopupBtn = document.getElementById('closePopupBtn');
+            const customerSelect = document.getElementById('customerSelect');
+            const tokenLengthSelect = document.getElementById('tokenLengthSelect');
+            const phoneNumberInput = document.getElementById('phoneNumber');
+            const submitBtn = document.getElementById('submitBtn');
+
+            // Show popup on "Send Menu" button click
+            document.querySelectorAll('.send-menu-btn').forEach(button => {
+                button.addEventListener('click', function () {
+                    const menuid = this.getAttribute('data-menuid');
+                    const menuname = this.getAttribute('data-menuname');
+
+                    // Populate dynamic data
+                    popupMenuName.textContent = `Send Menu: ${menuname}`;
+                    popupForm.style.display = 'flex';
+                });
+            });
+
+            // Close popup
+            closePopupBtn.addEventListener('click', function () {
+                popupForm.style.display = 'none';
+            });
+
+            // Validate inputs
+            phoneNumberInput.addEventListener('input', function () {
+                const phoneValue = phoneNumberInput.value;
+                const isValid = /^\d{10}$/.test(phoneValue);
+                phoneNumberInput.style.borderColor = isValid ? 'green' : 'red';
+                toggleSubmitButton();
+            });
+
+            [customerSelect, tokenLengthSelect].forEach(select => {
+                select.addEventListener('change', toggleSubmitButton);
+            });
+
+            function toggleSubmitButton() {
+                const isCustomerSelected = customerSelect.value !== '';
+                const isTokenLengthSelected = tokenLengthSelect.value !== '';
+                const isPhoneNumberValid = /^\d{10}$/.test(phoneNumberInput.value);
+                submitBtn.disabled = !(isCustomerSelected && isTokenLengthSelected && isPhoneNumberValid);
+            }
+        });
+
         document.addEventListener('DOMContentLoaded', function () {
             // Iterate through each Product Type dropdown
             document.querySelectorAll('.product-type-dropdown').forEach(function (dropdown) {

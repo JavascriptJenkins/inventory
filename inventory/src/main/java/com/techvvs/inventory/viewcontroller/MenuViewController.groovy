@@ -172,6 +172,59 @@ public class MenuViewController {
         return "auth/index.html";
     }
 
+    @PostMapping("/shoppingtoken/send")
+    String sendShoppingToken(
+            Model model,
+            @RequestParam("menuid") Optional<String> menuid,
+            @RequestParam("customerid") Optional<String> customerid,
+            @RequestParam("phonenumber") Optional<String> phonenumber,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size
+    ){
+
+        techvvsAuthService.checkuserauth(model)
+
+        MenuVO returnVO = new MenuVO()
+
+        if(menuid.isPresent() && amount.isPresent() &&
+                isnew.isPresent() && isnew.get() == "yes" && newname.isPresent()
+                && producttypeid.isPresent()
+        )  {
+
+
+            // make a new menu with the new price
+            returnVO = menuHelper.createNewMenu(
+                    Double.valueOf(amount.get()),
+                    Integer.valueOf(menuid.get()),
+                    newname.get(),
+                    model,
+                    Integer.valueOf(producttypeid.get())
+
+            )
+
+
+        } else if(menuid.isPresent() && amount.isPresent() && producttypeid.isPresent() && isnew.isEmpty()){
+            // add a discount tied to an existing menu
+            returnVO = menuHelper.changePrice(
+                    Double.valueOf(amount.get()),
+                    Integer.valueOf(menuid.get()),
+                    model,
+                    Integer.valueOf(producttypeid.get())
+            )
+
+        } else {
+            model.addAttribute("errorMessage", "menuid and amount are required")
+        }
+
+
+        // bind the menu options here
+        menuHelper.findMenus(model, page, size);
+
+
+        return "auth/index.html";
+    }
+
+
     // todo: make this so that the quantity is taking off the display amount instead of relying on the product cart list
     @PostMapping("/scan")
     String scan(@ModelAttribute( "cart" ) CartVO cartVO,
