@@ -1,16 +1,21 @@
 package com.techvvs.inventory.service.controllers
 
+import com.itextpdf.text.pdf.Barcode
+import com.techvvs.inventory.barcode.impl.BarcodeHelper
 import com.techvvs.inventory.jparepo.CartRepo
 import com.techvvs.inventory.jparepo.CustomerRepo
 import com.techvvs.inventory.jparepo.DeliveryRepo
 import com.techvvs.inventory.jparepo.PackageRepo
 import com.techvvs.inventory.jparepo.PackageTypeRepo
 import com.techvvs.inventory.jparepo.ProductRepo
+import com.techvvs.inventory.jparepo.ProductTypeRepo
 import com.techvvs.inventory.model.CartVO
 import com.techvvs.inventory.model.CrateVO
 import com.techvvs.inventory.model.PackageVO
+import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.TransactionVO
+import org.apache.commons.math3.stat.descriptive.summary.Product
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import org.springframework.ui.Model
@@ -39,6 +44,13 @@ class ProductService {
     @Autowired
     DeliveryRepo deliveryRepo
 
+    @Autowired
+    ProductTypeRepo productTypeRepo
+
+    @Autowired
+    BarcodeHelper barcodeHelper
+
+    @Transactional
     void saveProductAssociations(TransactionVO transactionVO) {
 
 
@@ -67,10 +79,12 @@ class ProductService {
 
     }
 
+    @Transactional
     ProductVO saveProduct(ProductVO productVO){
         return productRepo.save(productVO)
     }
 
+    @Transactional
     ProductVO findProductByID(ProductVO productVO){
         return productRepo.findById(productVO.product_id).get()
     }
@@ -80,7 +94,7 @@ class ProductService {
         return products
     }
 
-
+    @Transactional
     void saveProductCartAssociations(String barcode,
                                      CartVO cartVO,
                                      Model model,
@@ -148,6 +162,7 @@ class ProductService {
     }
 
 
+    @Transactional
     void saveProductPackageAssociations(String barcode,
                                         PackageVO packageVO,
                                         Model model,
@@ -229,6 +244,122 @@ class ProductService {
         return packageVO
 
     }
+
+    @Transactional
+    ProductVO subtractProductQuantity(ProductVO productVO, int quantity){
+
+        ProductVO existingProduct = productRepo.findById(productVO.getProduct_id())
+
+        productVO.quantityremaining = productVO.quantityremaining - quantity
+        return productRepo.save(productVO)
+    }
+
+    // this will take in the split amount and divide it by 1 and return the label for the split
+    String matchSplitAmountWithLabel(int split) {
+        // Calculate the amount as a double
+        double amount = 1.0 / split;
+
+        // Match on the amount
+        switch (String.valueOf(amount)) {
+            case "0.5":  // 1/2
+                return "HP";
+            case "0.25": // 1/4
+                return "QP";
+            case "0.0625": // 1/16
+                return "OUNCE";
+            case "0.015625": // 1/64
+                return "QUAD";
+            case "0.0078125": // 1/128
+                return "EIGHTH";
+            default:
+                return "UNKNOWN"; // Handle cases where the value doesn't match
+        }
+    }
+
+    // this will take in the split amount and figure out how many times it fits into 1.00
+    int calculateSplitMultiplier(int split) {
+        // Calculate the amount as a double
+        double amount = 1.0 / split;
+
+        // Match on the amount
+        switch (String.valueOf(amount)) {
+            case "0.5":  // 1/2
+                return 2;
+            case "0.25": // 1/4
+                return 4;
+            case "0.0625": // 1/16
+                return 16;
+            case "0.015625": // 1/64
+                return 64;
+            case "0.0078125": // 1/128
+                return 128;
+            default:
+                return 0; // Handle cases where the value doesn't match
+        }
+    }
+
+    // this will take in the split amount and figure out how many times it fits into 1.00
+    ProductTypeVO assignProductType(ProductTypeVO existingProductType, String splitlabel) {
+
+        // check if productType exists with the name extension
+        Optional<ProductTypeVO> productType = productTypeRepo.findByName(existingProductType.name + " " + splitlabel)
+
+        if(productType.isPresent()){
+            return productType.get() // if we already have this productType in DB, return it
+        } else {
+
+            ProductTypeVO newProductType = new ProductTypeVO(
+                    name: existingProductType.name + " " + splitlabel,
+                    description: existingProductType.description,
+            )
+            newProductType.name = existingProductType.name + " " + splitlabel
+            newProductType.description = existingProductType.description + " split label is " + splitlabel
+
+            newProductType.createTimeStamp = LocalDateTime.now()
+            newProductType.updateTimeStamp = LocalDateTime.now()
+
+            return productTypeRepo.save(newProductType) // save a new productType in DB and return it
+        }
+
+
+    }
+
+
+    // NOTE: this method is terrible.  needs to handle barcode creation better if we accidently generate an existing barcode
+    // NOTE: I don't know why we are generating barcodes using batchnumbers.  This was a bad idea.
+    // NOTE: Going to run with this for now and hope everything is ok.  This is just a temporary implementation...... fuck
+    String generateBarcodeForSplitProduct(int batchnumber) {
+        Random random = new Random();
+
+        // Generate random 2-digit integers for row, column, and pagenumber
+        int row = random.nextInt(90) + 10;       // Random number between 10 and 99
+        int column = random.nextInt(90) + 10;    // Random number between 10 and 99
+        int pagenumber = random.nextInt(90) + 10; // Random number between 10 and 99
+
+        // Generate the barcode
+        String barcode = barcodeHelper.generateBarcodeData(row, column, batchnumber, pagenumber);
+
+        // Check for existing barcode and regenerate if necessary
+        if (barcodeExists(barcode)) {
+            System.out.println("Found existing barcode when splitting product. This is not good. This should not happen.");
+
+            // Regenerate random values and barcode
+            row = random.nextInt(90) + 10;
+            column = random.nextInt(90) + 10;
+            pagenumber = random.nextInt(90) + 10;
+            barcode = barcodeHelper.generateBarcodeData(row, column, batchnumber, pagenumber);
+        }
+
+        return barcode;
+    }
+
+
+    boolean barcodeExists(String barcode){
+        Optional<ProductVO> existingproduct = productRepo.findByBarcode(barcode)
+        return existingproduct.isPresent()
+    }
+
+
 
 
 }

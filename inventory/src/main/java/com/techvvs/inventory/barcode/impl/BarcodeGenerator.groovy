@@ -228,7 +228,7 @@ class BarcodeGenerator {
                 }
 
                 // Add the barcode data to the product in the database
-                addBarcodeToProduct(productVO, barcodeData)
+                barcodeHelper.addBarcodeToProduct(productVO, barcodeData)
 
                 // Generate the barcode image
                 BufferedImage barcodeImage = imageGenerator.generateUPCABarcodeImage(barcodeData)
@@ -321,26 +321,6 @@ class BarcodeGenerator {
         contentStream.endText();
     }
 
-    // todo: add a check here to make sure barcodes are unique before adding....
-    void addBarcodeToProduct(ProductVO productVO, String barcodedata){
-
-        Optional<ProductVO> existingproduct = productRepo.findById(productVO.getProduct_id())
-
-        // if we have an existing barcode do NOT overwrite it.
-        if(existingproduct.get().barcode != null && existingproduct.get().barcode.length() > 0){
-            // do nothing
-        } else {
-
-            // probably don't need to do this....
-            if(barcodedata.length() == 11){
-                barcodedata = barcodedata.padLeft(12,'0')
-            }
-
-            productVO.setBarcode(barcodedata)
-            productRepo.save(productVO)
-        }
-
-    }
 
 
 
