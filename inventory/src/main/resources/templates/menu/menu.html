@@ -258,7 +258,12 @@
                     <!-- Integrated Add to Cart Button -->
                     <a href="javascript:void(0);"
                        class="btn btn-sm btn-warning mt-2 add-to-cart-btn"
-                       data-product-id="${product.product_id}">Add to Cart</a>
+                       th:data-product-id="${product.product_id}"
+                       th:data-product-name="${product.name}"
+                       th:data-product-price="${product.displayprice}">
+                        Add to Cart
+                    </a>
+
                 </div>
             </div>
         </div>
@@ -267,14 +272,16 @@
 
     <!-- ADD TO CART Popup Modal -->
     <!-- Popup Modal -->
+    <!-- Popup Modal -->
     <div id="addToCartModal" class="modal" tabindex="-1" style="display: none;">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Add to Cart</h5>
+                    <h5 id="modalProductName" class="modal-title">Add to Cart</h5>
                     <button type="button" class="btn-close close-modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    <p id="modalProductPrice" class="text-muted"></p> <!-- Product price will be displayed here -->
                     <label for="quantitySelect" class="form-label">Select Quantity:</label>
                     <select id="quantitySelect" class="form-select">
                         <option value="">Select Amount</option>
@@ -292,16 +299,30 @@
         </div>
     </div>
 
+
     <script>
         $(document).ready(function () {
             let currentProductId;
 
             // Show modal on "Add to Cart" button click
             $('.add-to-cart-btn').on('click', function () {
-                currentProductId = $(this).data('product-id'); // Store product ID
-                $('#addToCartModal').fadeIn(); // Show modal
-                $('#quantitySelect').val(''); // Reset dropdown
-                $('#submitQuantity').prop('disabled', true); // Disable Confirm button
+                // Store product ID
+                currentProductId = $(this).data('product-id');
+
+                // Get product name and displayprice from the button's data attributes
+                const productName = $(this).data('product-name');
+                const productPrice = $(this).data('product-price');
+
+                // Update the modal with product name and price
+                $('#modalProductName').text(`Add ${productName} to Cart`);
+                $('#modalProductPrice').text(`Price: $${productPrice}`);
+
+                // Reset dropdown and disable Confirm button
+                $('#quantitySelect').val('');
+                $('#submitQuantity').prop('disabled', true);
+
+                // Show the modal
+                $('#addToCartModal').fadeIn();
             });
 
             // Close modal
@@ -312,7 +333,7 @@
             // Enable Confirm button when a valid quantity is selected
             $('#quantitySelect').on('change', function () {
                 const selectedValue = $(this).val();
-                $('#submitQuantity').prop('disabled', !selectedValue); // Enable if valid, disable otherwise
+                $('#submitQuantity').prop('disabled', !selectedValue);
             });
 
             // Handle quantity selection and form submission
@@ -337,6 +358,7 @@
             });
         });
     </script>
+
 
 
     <!-- ADD TO CART Popup Modal ENDS -->
