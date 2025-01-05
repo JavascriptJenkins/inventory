@@ -86,6 +86,90 @@
         }
     </style>
 
+    <style>
+        body {
+            background-color: rgba(34, 139, 34, 0.1);
+        }
+
+        /* Floating arrow smoothness */
+        .floating-arrow {
+            position: fixed;
+            top: 50%;
+            right: 0;
+            z-index: 1000;
+            font-size: 2rem;
+            background: rgba(34, 139, 34, 0.8);
+            color: white;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 5px 0 0 5px;
+            transition: opacity 0.3s ease, transform 0.3s ease; /* Smooth transitions */
+        }
+
+        .floating-arrow:hover {
+            transform: scale(1.1); /* Slight enlargement on hover */
+        }
+
+        .floating-arrow.hidden {
+            opacity: 0;
+            pointer-events: none; /* Disable interaction when hidden */
+        }
+
+        .cart-section {
+            position: fixed;
+            top: 0;
+            right: -100%; /* Initially hidden */
+            width: 20%;
+            height: 100%;
+            background: white;
+            border-left: 2px solid #ddd;
+            z-index: 999;
+            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            transition: right 0.5s cubic-bezier(0.4, 0.0, 0.2, 1); /* Smooth ease-out */
+        }
+
+        .cart-section.open {
+            right: 0; /* Slide in from the right */
+        }
+
+        .cart-header {
+            background: rgba(34, 139, 34, 0.8);
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-size: 1.5rem;
+            position: sticky;
+            top: 0;
+        }
+
+        .cart-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .cart-controls button {
+            background: rgba(34, 139, 34, 0.8);
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+        }
+
+        .cart-footer {
+            position: sticky;
+            bottom: 0;
+            background: rgba(34, 139, 34, 0.8);
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+    </style>
+
 
     <script>
         $(document).ready(function () {
@@ -171,10 +255,145 @@
                     <!-- Link to video for the product, passing productid and menuid -->
                     <a th:href="@{/document/product(productid=${product.product_id}, menuid=${menu.menuid})}"
                        class="btn btn-sm btn-primary mt-2">Documents</a>
+                    <!-- Integrated Add to Cart Button -->
+                    <a href="javascript:void(0);"
+                       class="btn btn-sm btn-warning mt-2 add-to-cart-btn"
+                       data-product-id="${product.product_id}">Add to Cart</a>
                 </div>
             </div>
         </div>
     </div>
+    <!-- MENU GRID ENDS -->
+
+    <!-- ADD TO CART Popup Modal -->
+    <!-- Popup Modal -->
+    <div id="addToCartModal" class="modal" tabindex="-1" style="display: none;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add to Cart</h5>
+                    <button type="button" class="btn-close close-modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <label for="quantitySelect" class="form-label">Select Quantity:</label>
+                    <select id="quantitySelect" class="form-select">
+                        <option value="">Select Amount</option>
+                        <script>
+                            for (let i = 1; i <= 100; i++) {
+                                document.write(`<option value="${i}">${i}</option>`);
+                            }
+                        </script>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button id="submitQuantity" class="btn btn-primary" disabled>Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            let currentProductId;
+
+            // Show modal on "Add to Cart" button click
+            $('.add-to-cart-btn').on('click', function () {
+                currentProductId = $(this).data('product-id'); // Store product ID
+                $('#addToCartModal').fadeIn(); // Show modal
+                $('#quantitySelect').val(''); // Reset dropdown
+                $('#submitQuantity').prop('disabled', true); // Disable Confirm button
+            });
+
+            // Close modal
+            $('.close-modal').on('click', function () {
+                $('#addToCartModal').fadeOut();
+            });
+
+            // Enable Confirm button when a valid quantity is selected
+            $('#quantitySelect').on('change', function () {
+                const selectedValue = $(this).val();
+                $('#submitQuantity').prop('disabled', !selectedValue); // Enable if valid, disable otherwise
+            });
+
+            // Handle quantity selection and form submission
+            $('#submitQuantity').on('click', function () {
+                const selectedQuantity = $('#quantitySelect').val();
+
+                if (!selectedQuantity) {
+                    alert('Please select a quantity!');
+                    return;
+                }
+
+                // Set the quantity for the product
+                $.post('/menu/shop/product/cart/add', {
+                    product_id: currentProductId,
+                    quantity_selected: selectedQuantity
+                }).done(function () {
+                    alert('Item added to cart successfully!');
+                    $('#addToCartModal').fadeOut();
+                }).fail(function () {
+                    alert('Failed to add item to cart.');
+                });
+            });
+        });
+    </script>
+
+
+    <!-- ADD TO CART Popup Modal ENDS -->
+
+
+    <!-- Floating Arrow -->
+    <div id="cartToggle" class="floating-arrow bi bi-arrow-right"></div>
+
+    <!-- Cart Section -->
+    <div id="cartSection" class="cart-section">
+        <div class="cart-header">
+            <span>Shopping Cart</span>
+            <div id="cartClose" class="floating-arrow bi bi-arrow-left" style="position: absolute; top: 10px; right: 10px;"></div>
+        </div>
+
+        <div id="cartRows">
+            <div th:each="product : ${cart.product_cart_list}" class="cart-row">
+                <span th:text="${product.name}">Product Name</span>
+                <span>
+                <button class="cart-controls" onclick="updateQuantity('decrease')">-</button>
+                <span th:text="${product.displayquantity}">0</span>
+                <button class="cart-controls" onclick="updateQuantity('increase')">+</button>
+            </span>
+                <span th:text="${product.displayprice}">$0.00</span>
+            </div>
+        </div>
+
+        <div class="cart-footer">
+            <div>
+                <strong>Total:</strong> <span th:text="${cart.total}">$0.00</span>
+            </div>
+            <button class="btn btn-light mt-2" type="submit" form="cartForm">Submit Cart</button>
+            <form id="cartForm" th:action="@{/menu/shop/checkout}" method="post"></form>
+        </div>
+    </div>
+    <!-- CART SECTION ENDS -->
+
+    <script>
+        // JavaScript for toggle animations
+        $(document).ready(function () {
+            const cartToggle = $('#cartToggle');
+            const cartClose = $('#cartClose');
+            const cartSection = $('#cartSection');
+
+            cartToggle.click(function () {
+                cartSection.addClass('open');
+                cartToggle.fadeOut(300); // Smooth fade out for the arrow
+            });
+
+            cartClose.click(function () {
+                cartSection.removeClass('open');
+                cartToggle.fadeIn(300); // Smooth fade in for the arrow
+            });
+        });
+    </script>
+
+
 
 </div>
 </body>

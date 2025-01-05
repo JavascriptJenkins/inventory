@@ -76,6 +76,8 @@ class MenuVO implements Serializable {
                 if (product.producttypeid?.name == discount.name) {
                     // Apply the discount ensuring the display price does not go below 0
                     product.displayprice = Math.max(0, product.price - discount.discountamount)
+                } else {
+                    product.displayprice = product.price // if there is no discount applied, set display price to normal price
                 }
             }
         }

@@ -50,6 +50,12 @@ class CartVO implements Serializable{
     @JoinColumn(name = "deliveryid")
     DeliveryVO delivery
 
+    // need to track a relationship back to menu so we can access the discounts applied to that menu and apply them to
+    // this cart when we are calculating the final price at checkout
+    @ManyToOne
+    @JoinColumn(name = "menuid")
+    MenuVO menu;
+
     @Transient
     String menuid
 

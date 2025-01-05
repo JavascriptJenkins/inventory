@@ -225,6 +225,12 @@ public class TwilioTextUtil {
 
                 result = sendDownloadLinkCustomPhoneNumber(phonenumber, smsUrl, isDev1);
             } else {
+                String baseuri = env.getProperty("base.qr.domain");
+                String smsUrl = baseuri+"/menu/shop?shoppingtoken=" + shoppingtoken + "&menuid=" + menuid;
+                System.out.println("------------------------------------------------------------------------------");
+                System.out.println("SHOPPING TOKEN HERE FOR DEVELOPMENT PURPOSES: " + shoppingtoken);
+                System.out.println("URI LINK FOR DEVELOPMENT PURPOSES: " + smsUrl);
+                System.out.println("------------------------------------------------------------------------------");
                 result = "success"; // Set to success in dev mode
                 System.out.println("Did NOT send validation text because we are in dev1");
             }

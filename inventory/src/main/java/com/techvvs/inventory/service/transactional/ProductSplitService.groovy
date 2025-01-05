@@ -22,6 +22,7 @@ class ProductSplitService {
 
 
 
+    // todo: make sure this cannot be called if the product calling it has a quantity of 0
     /* accepts a single product, outputs a list of products that was split from the original */
     @Transactional
     ProductVO splitProduct(int productid, Double newprice, int split) {

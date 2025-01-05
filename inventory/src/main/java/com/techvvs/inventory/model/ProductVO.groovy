@@ -91,6 +91,10 @@ class ProductVO implements Serializable, Comparable<ProductVO> {
     @Transient
     Integer displayquantityReturned
 
+    // for adding Product to the Cart
+    @Transient
+    Integer quantityselected
+
     // generic fields below
     @JsonProperty
     LocalDateTime updateTimeStamp;
