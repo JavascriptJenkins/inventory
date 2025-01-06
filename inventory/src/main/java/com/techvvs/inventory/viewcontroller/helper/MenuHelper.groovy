@@ -6,6 +6,7 @@ import com.techvvs.inventory.jparepo.CartRepo
 import com.techvvs.inventory.jparepo.CustomerRepo
 import com.techvvs.inventory.jparepo.DiscountRepo
 import com.techvvs.inventory.jparepo.MenuRepo
+import com.techvvs.inventory.jparepo.ProductRepo
 import com.techvvs.inventory.jparepo.ProductTypeRepo
 import com.techvvs.inventory.model.CartVO
 import com.techvvs.inventory.model.CustomerVO
@@ -75,6 +76,9 @@ class MenuHelper {
 
     @Autowired
     CartRepo cartRepo
+
+    @Autowired
+    ProductRepo productRepo
 
     @Transactional
     MenuVO changePrice(
@@ -520,7 +524,7 @@ class MenuHelper {
     ){
 
         if(!validateShoppingToken(String.valueOf(menuid), token, model)){
-            return false
+            return 0
         }
 
 
@@ -559,6 +563,87 @@ class MenuHelper {
         cartVO = productService.addProductToCart(cartVO, quantityselected, model, String.valueOf(productid), String.valueOf(menuid))
         return cartVO.cartid
     }
+
+    @Transactional
+    int removeProductFromCart(
+            Integer cartid,
+            Integer menuid,
+            Integer productid,
+            Integer quantityselected,
+            Integer customerid,
+            Model model,
+            String token
+    ){
+
+        if(!validateShoppingToken(String.valueOf(menuid), token, model)){
+            return 0
+        }
+
+
+
+        CustomerVO customerVO = customerRepo.findById(customerid).get()
+        MenuVO menuVO = menuRepo.findById(menuid).get()
+
+        // check to see if we need to make a new cart or not
+        CartVO cartVO
+        if(cartid == null || cartid == 0){
+
+            Optional<CartVO> existingcart = cartRepo.findByMenuAndCustomer(menuVO,customerVO)
+
+            if(existingcart.empty){
+
+                return 0
+
+            } else {
+                // this should never execute - in here as a safety measure to make sure we never have more
+                // than a single cart per customerid and menuid combination
+                cartVO = cartRepo.findById(cartid).get()
+                deleteProductFromCart(cartVO, productid)
+            }
+
+        } else {
+            // get the existing cart
+            cartVO = cartRepo.findById(cartid).get()
+            // delete it from cart
+            cartVO = deleteProductFromCart(cartVO, productid)
+        }
+
+        return cartVO.cartid
+    }
+
+    @Transactional
+    CartVO deleteProductFromCart(CartVO cartVO, int product_id){
+
+        CartVO carttoremove = new CartVO(cartid: 0)
+        // we are only removing one product at a time
+        for(ProductVO productVO : cartVO.product_cart_list){
+            if(productVO.product_id == product_id){
+                cartVO.product_cart_list.remove(productVO)
+                cartVO.total = cartVO.total - productVO.price // subtract the price from the cart total
+
+                productVO.quantityremaining = productVO.quantityremaining + 1
+                // remove the cart association from the product
+                for(CartVO existingCart : productVO.cart_list){
+                    if(existingCart.cartid == cartVO.cartid){
+                        carttoremove = existingCart
+                    }
+                }
+                productVO.cart_list.remove(carttoremove)
+
+                productVO.updateTimeStamp = LocalDateTime.now()
+                productRepo.save(productVO)
+                break
+            }
+        }
+
+        cartVO.updateTimeStamp = LocalDateTime.now()
+        cartVO = cartRepo.save(cartVO)
+
+
+        return cartVO
+
+    }
+
 
 
     void loadCart(int cartid, Model model){
