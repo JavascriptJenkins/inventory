@@ -263,8 +263,12 @@
                     <a href="javascript:void(0);"
                        class="btn btn-sm btn-warning mt-2 add-to-cart-btn"
                        th:data-product-id="${product.product_id}"
+                       th:data-cart-id="${cartid}"
+                       th:data-shopping-token-id="${shoppingtoken}"
+                       th:data-menu-id="${menuid}"
                        th:data-product-name="${product.name}"
-                       th:data-product-price="${product.displayprice}">
+                       th:data-product-price="${product.displayprice}"
+                    >
                         Add to Cart
                     </a>
 
@@ -310,14 +314,13 @@
 
             // Show modal on "Add to Cart" button click
             $('.add-to-cart-btn').on('click', function () {
-                // Store product ID
                 currentProductId = $(this).data('product-id');
 
-                // Get product name and displayprice from the button's data attributes
+                // Get product name and price from the button's data attributes
                 const productName = $(this).data('product-name');
                 const productPrice = $(this).data('product-price');
 
-                // Update the modal with product name and price
+                // Update modal with product details
                 $('#modalProductName').text(`Add ${productName} to Cart`);
                 $('#modalProductPrice').text(`Price: $${productPrice}`);
 
@@ -340,28 +343,40 @@
                 $('#submitQuantity').prop('disabled', !selectedValue);
             });
 
-            // Handle quantity selection and form submission
+            // Handle Confirm button click
             $('#submitQuantity').on('click', function () {
                 const selectedQuantity = $('#quantitySelect').val();
-                const urlParams = new URLSearchParams(window.location.search);
-                const shoppingToken = urlParams.get('shoppingtoken');
-                const menuId = urlParams.get('menuid');
-                let cartId = urlParams.get('cartid');
 
+                // Ensure quantity is selected
                 if (!selectedQuantity) {
                     alert('Please select a quantity!');
                     return;
                 }
 
+                // Fetch parameters from URL
+                let urlParams = new URLSearchParams(window.location.search);
+                let shoppingToken = urlParams.get('shoppingtoken');
+                let menuId = urlParams.get('menuid');
+                let cartId = urlParams.get('cartid');
+
+                // Check for missing values and fallback to button attributes
+                if (!shoppingToken || !menuId || !cartId) {
+                    const addToCartButton = $('.add-to-cart-btn').first(); // Example fallback to the first button
+                    shoppingToken = shoppingToken || addToCartButton.data('shopping-token-id');
+                    menuId = menuId || addToCartButton.data('menu-id');
+                    cartId = cartId || addToCartButton.data('cart-id');
+                }
+
+                // Validate necessary parameters
                 if (!shoppingToken || !menuId || !currentProductId) {
                     alert('Missing required parameters!');
                     return;
                 }
 
-                // Default cartId to 0 if it's null, undefined, or equal to 0
+                // Default cartId if null, undefined, or '0'
                 cartId = cartId && cartId !== '0' ? cartId : '0';
 
-                // Create a form dynamically
+                // Create a form dynamically for submission
                 const form = document.createElement('form');
                 form.method = 'POST';
                 form.action = '/menu/shop/product/cart/add';
@@ -388,6 +403,8 @@
                 form.submit();
             });
         });
+
+
     </script>
 
 
@@ -407,12 +424,19 @@
         </div>
 
         <div id="cartRows">
-            <div th:each="product : ${cart.product_cart_list}" class="cart-row">
+            <div th:each="product : ${cart.product_cart_list}" class="cart-row"
+                 th:data-product-id="${product.product_id}"
+                 th:data-cart-id="${cartid}"
+                 th:data-shopping-token-id="${shoppingtoken}"
+                 th:data-menu-id="${menuid}"
+                 th:data-product-name="${product.name}"
+                 th:data-product-price="${product.displayprice}"
+            >
                 <span th:text="${product.name}">Product Name</span>
                 <span>
-                <button class="cart-controls" onclick="updateQuantity('decrease')">-</button>
+                <button class="cart-controls" onclick="updateQuantity('decrease', this)">-</button>
                 <span th:text="${product.displayquantity}"></span>
-                <button class="cart-controls" onclick="updateQuantity('increase')">+</button>
+                <button class="cart-controls" onclick="updateQuantity('increase', this)">+</button>
             </span>
                 <span th:text="${product.displayprice}">$0.00</span>
             </div>
@@ -445,6 +469,60 @@
                 cartToggle.fadeIn(300); // Smooth fade in for the arrow
             });
         });
+
+        function updateQuantity(action, button) {
+            // Get parent row to retrieve necessary data
+            const cartRow = button.closest('.cart-row');
+            const productId = $(cartRow).attr('data-product-id'); // Assuming each row has data-product-id attribute
+            let cartId = $(cartRow).attr('data-cart-id'); // Get the cartId from the row
+            const shoppingToken = $(cartRow).attr('data-shopping-token-id');
+            const menuId = $(cartRow).attr('data-menu-id');
+
+            if (!shoppingToken || !menuId || !productId) {
+                alert('Missing required parameters!');
+                return;
+            }
+
+            // Default cartId to 0 if it's null, undefined, or equal to 0
+            cartId = cartId && cartId !== '0' ? cartId : '0';
+
+            // Determine endpoint based on action
+            const endpoint =
+                action === 'increase'
+                    ? '/menu/shop/product/cart/add'
+                    : '/menu/shop/product/cart/subtract';
+
+            // Quantity selected is always 1 for both actions
+            const quantitySelected = 1;
+
+            // Create a form dynamically
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = endpoint;
+
+            // Append parameters as hidden fields
+            const fields = [
+                { name: 'shoppingtoken', value: shoppingToken },
+                { name: 'menuid', value: menuId },
+                { name: 'productid', value: productId },
+                { name: 'cartid', value: cartId },
+                { name: 'quantityselected', value: quantitySelected },
+            ];
+
+            fields.forEach(field => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = field.name;
+                input.value = field.value;
+                form.appendChild(input);
+            });
+
+            // Append form to body and submit
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+
     </script>
 
 

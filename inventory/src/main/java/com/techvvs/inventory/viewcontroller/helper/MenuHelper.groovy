@@ -509,7 +509,7 @@ class MenuHelper {
 
 
     @Transactional
-    boolean addProductToCart(
+    int addProductToCart(
             Integer cartid,
             Integer menuid,
             Integer productid,
@@ -531,14 +531,24 @@ class MenuHelper {
         // check to see if we need to make a new cart or not
         CartVO cartVO
         if(cartid == null || cartid == 0){
-            //create a new cart
-            cartVO = cartRepo.save(new CartVO(
-                    menu: menuVO,
-                    customer: customerVO,
-                    updateTimeStamp: LocalDateTime.now(),
-                    createTimeStamp: LocalDateTime.now(),
-                    isprocessed: 0
-            ))
+
+            Optional<CartVO> existingcart = cartRepo.findByMenuAndCustomer(menuVO,customerVO)
+
+            if(existingcart.empty){
+                //create a new cart
+                cartVO = cartRepo.save(new CartVO(
+                        menu: menuVO,
+                        customer: customerVO,
+                        updateTimeStamp: LocalDateTime.now(),
+                        createTimeStamp: LocalDateTime.now(),
+                        isprocessed: 0
+                ))
+            } else {
+                // this should never execute - in here as a safety measure to make sure we never have more
+                // than a single cart per customerid and menuid combination
+                cartVO = cartRepo.findById(cartid).get()
+            }
+
         } else {
             // get the existing cart
             cartVO = cartRepo.findById(cartid).get()
@@ -546,17 +556,23 @@ class MenuHelper {
 
 
         // now that we have correct cart loaded for the customer, we can add the product
-        productService.addProductToCart(cartVO, quantityselected, model, String.valueOf(productid), String.valueOf(menuid))
+        cartVO = productService.addProductToCart(cartVO, quantityselected, model, String.valueOf(productid), String.valueOf(menuid))
+        return cartVO.cartid
     }
 
 
     void loadCart(int cartid, Model model){
         if(cartid != 0){
             CartVO cartVO = cartRepo.findById(cartid).get()
+            // sort the items in the cartVO
+            checkoutHelper.hydrateTransientQuantitiesForDisplay(cartVO)
+
             model.addAttribute("cart", cartVO)
             model.addAttribute("cartid", cartVO.cartid) // bind this for uri param
+        } else {
+            model.addAttribute("cart", new CartVO(cartid: 0))
         }
-        model.addAttribute("cart", new CartVO(cartid: 0))
+
     }
 
     void loadCartByCustomerIdAndMenuId(String shoppingtoken, Model model){
@@ -576,6 +592,14 @@ class MenuHelper {
             model.addAttribute("cartid", cart.get().cartid) // bind this for uri param
         }
 
+    }
+
+
+    // we need to bind these because initially they come from the user navigating from a phone SMS message with them in the URI
+    void bindHiddenValues(Model model, String shoppingtoken, String menuid){
+
+        model.addAttribute("shoppingtoken", shoppingtoken)
+        model.addAttribute("menuid", menuid)
     }
 
 

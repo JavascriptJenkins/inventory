@@ -96,6 +96,8 @@ public class MenuViewController {
 
         if(menuid.isPresent() && shoppingtoken.isPresent()) {
             menuHelper.loadMenuWithToken(menuid.get(), model, shoppingtoken.get())
+            // hydrate hidden values for passing into the post methods like token etc
+            menuHelper.bindHiddenValues(model, shoppingtoken.get(), menuid.get())
         }
 
 
@@ -127,8 +129,10 @@ public class MenuViewController {
         // pass in the cartid and menuid and productid and quantityselected into a method to add to the cart
         if(cartid.isPresent() && menuid.isPresent() && productid.isPresent() && quantityselected.isPresent()) {
             String customerid = jwtTokenProvider.getCustomerIdFromToken(shoppingtoken.get())
-            menuHelper.addProductToCart(Integer.valueOf(cartid.get()), Integer.valueOf(menuid.get()), Integer.valueOf(productid.get()), Integer.valueOf(quantityselected.get()), Integer.valueOf(customerid), model, shoppingtoken.get())
-            menuHelper.loadCart(Integer.valueOf(cartid.get()), model)
+            int savedcartid = menuHelper.addProductToCart(Integer.valueOf(cartid.get()), Integer.valueOf(menuid.get()), Integer.valueOf(productid.get()), Integer.valueOf(quantityselected.get()), Integer.valueOf(customerid), model, shoppingtoken.get())
+            menuHelper.loadCart(savedcartid, model)
+            // hydrate hidden values for passing into the post methods like token etc
+            menuHelper.bindHiddenValues(model, shoppingtoken.get(), menuid.get())
         }
 
 
