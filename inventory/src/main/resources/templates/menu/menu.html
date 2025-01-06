@@ -339,25 +339,53 @@
             // Handle quantity selection and form submission
             $('#submitQuantity').on('click', function () {
                 const selectedQuantity = $('#quantitySelect').val();
+                const urlParams = new URLSearchParams(window.location.search);
+                const shoppingToken = urlParams.get('shoppingtoken');
+                const menuId = urlParams.get('menuid');
+                let cartId = urlParams.get('cartid');
 
                 if (!selectedQuantity) {
                     alert('Please select a quantity!');
                     return;
                 }
 
-                // Set the quantity for the product
-                $.post('/menu/shop/product/cart/add', {
-                    product_id: currentProductId,
-                    quantity_selected: selectedQuantity
-                }).done(function () {
-                    alert('Item added to cart successfully!');
-                    $('#addToCartModal').fadeOut();
-                }).fail(function () {
-                    alert('Failed to add item to cart.');
+                if (!shoppingToken || !menuId || !currentProductId) {
+                    alert('Missing required parameters!');
+                    return;
+                }
+
+                // Default cartId to 0 if it's null, undefined, or equal to 0
+                cartId = cartId && cartId !== '0' ? cartId : '0';
+
+                // Create a form dynamically
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/menu/shop/product/cart/add';
+
+                // Append parameters as hidden fields
+                const fields = [
+                    { name: 'shoppingtoken', value: shoppingToken },
+                    { name: 'menuid', value: menuId },
+                    { name: 'productid', value: currentProductId },
+                    { name: 'quantityselected', value: selectedQuantity },
+                    { name: 'cartid', value: cartId },
+                ];
+
+                fields.forEach(field => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = field.name;
+                    input.value = field.value;
+                    form.appendChild(input);
                 });
+
+                // Append form to body and submit
+                document.body.appendChild(form);
+                form.submit();
             });
         });
     </script>
+
 
 
 

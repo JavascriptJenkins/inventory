@@ -100,6 +100,31 @@ public class MenuViewController {
         return "menu/menu.html";
     }
 
+    // allow user to shop menu with shopping token
+    @PostMapping("/shop/product/cart/add")
+    String addProductToCart(
+            @ModelAttribute( "menu" ) MenuVO menuVO,
+            Model model,
+            @RequestParam("menuid") Optional<String> menuid,
+            @RequestParam("shoppingtoken") Optional<String> shoppingtoken,
+            @RequestParam("size") Optional<String> size,
+            @ModelAttribute( "cart" ) CartVO cartVO
+    ){
+
+
+
+        if(menuid.isPresent() && shoppingtoken.isPresent()) {
+            menuHelper.loadMenuWithToken(menuid.get(), model, shoppingtoken.get())
+        }
+
+
+
+
+        // fetch all customers from database and bind them to model
+        checkoutHelper.getAllCustomers(model)
+        //techvvsAuthService.checkuserauth(model)
+        return "menu/menu.html";
+    }
 
     // todo: modify this to parse user cookie from request and check user permissions
     // this serves the default menu for the batch
