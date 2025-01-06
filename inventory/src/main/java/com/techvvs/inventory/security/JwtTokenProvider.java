@@ -290,7 +290,7 @@ public class JwtTokenProvider {
     }
   }
 
-  public boolean validateShoppingToken(String token) {
+  public boolean validateShoppingToken(String token, String menuidFromUriParam) {
     try {
       // Parse the token claims
       Jws<Claims> claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
@@ -307,12 +307,49 @@ public class JwtTokenProvider {
         throw new CustomException("Menu ID is missing in the token", HttpStatus.FORBIDDEN);
       }
 
+      if(!menuid.equals(menuidFromUriParam)){
+        throw new CustomException("Invalid menu ID in the token", HttpStatus.FORBIDDEN);
+      }
+
       return true; // Valid token
     } catch (JwtException | IllegalArgumentException e) {
       throw new CustomException("Expired or invalid JWT token", HttpStatus.FORBIDDEN);
     }
   }
 
+  public String getCustomerIdFromToken(String token) {
+    try {
+      // Parse the token claims
+      Jws<Claims> claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
+
+      // Check if the "custromerid" claim is present and extract the value
+      String custromerid = claims.getBody().get("customerid", String.class);
+      if (custromerid == null || custromerid.isEmpty()) {
+        throw new CustomException("Customer ID is missing in the token", HttpStatus.FORBIDDEN);
+      }
+      return custromerid;
+
+    } catch (JwtException | IllegalArgumentException e) {
+      throw new CustomException("Expired or invalid JWT token", HttpStatus.FORBIDDEN);
+    }
+  }
+
+  public String getMenuIdFromToken(String token) {
+    try {
+      // Parse the token claims
+      Jws<Claims> claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
+
+      // Check if the "custromerid" claim is present and extract the value
+      String menuid = claims.getBody().get("menuid", String.class);
+      if (menuid == null || menuid.isEmpty()) {
+        throw new CustomException("Menu ID is missing in the token", HttpStatus.FORBIDDEN);
+      }
+      return menuid;
+
+    } catch (JwtException | IllegalArgumentException e) {
+      throw new CustomException("Expired or invalid JWT token", HttpStatus.FORBIDDEN);
+    }
+  }
 
 
   void logout(HttpServletRequest request, HttpServletResponse response){

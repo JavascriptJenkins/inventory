@@ -230,6 +230,10 @@
     <!-- "No items found" message -->
     <div class="no-items">No items found matching your search.</div>
 
+    <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
+    <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
+
+
     <!-- Menu grid -->
     <div class="row row-cols-1 row-cols-md-5 g-3" id="menuGrid">
         <div class="col menu-item" th:each="product : ${menu.menu_product_list}">
@@ -407,7 +411,7 @@
                 <span th:text="${product.name}">Product Name</span>
                 <span>
                 <button class="cart-controls" onclick="updateQuantity('decrease')">-</button>
-                <span th:text="${product.displayquantity}">0</span>
+                <span th:text="${product.displayquantity}"></span>
                 <button class="cart-controls" onclick="updateQuantity('increase')">+</button>
             </span>
                 <span th:text="${product.displayprice}">$0.00</span>

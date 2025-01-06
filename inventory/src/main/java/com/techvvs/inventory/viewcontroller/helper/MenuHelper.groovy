@@ -2,6 +2,7 @@ package com.techvvs.inventory.viewcontroller.helper
 
 import com.techvvs.inventory.barcode.service.BarcodeService
 import com.techvvs.inventory.constants.AppConstants
+import com.techvvs.inventory.jparepo.CartRepo
 import com.techvvs.inventory.jparepo.CustomerRepo
 import com.techvvs.inventory.jparepo.DiscountRepo
 import com.techvvs.inventory.jparepo.MenuRepo
@@ -15,13 +16,17 @@ import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.security.JwtTokenProvider
 import com.techvvs.inventory.security.Role
+import com.techvvs.inventory.service.controllers.ProductService
 import com.techvvs.inventory.service.transactional.CartDeleteService
 import com.techvvs.inventory.util.TwilioTextUtil
+import io.jsonwebtoken.Claims
+import io.jsonwebtoken.Jwt
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.springframework.security.core.parameters.P
 import org.springframework.stereotype.Component
 import org.springframework.ui.Model
 
@@ -64,6 +69,12 @@ class MenuHelper {
 
     @Autowired
     CheckoutHelper checkoutHelper
+
+    @Autowired
+    ProductService productService
+
+    @Autowired
+    CartRepo cartRepo
 
     @Transactional
     MenuVO changePrice(
@@ -312,23 +323,23 @@ class MenuHelper {
     }
 
 
-    MenuVO hydrateTransientQuantitiesForDisplay(MenuVO menuVO){
-
-        // cycle thru here and if the productid is the same then update the quantity
-        ProductVO previous = new ProductVO(barcode: 0)
-        for(ProductVO productVO : menuVO.menu_product_list){
-            if(productVO.displayquantity == null){
-                productVO.displayquantity = 1
-            }
-            if(productVO.barcode == previous.barcode){
-                productVO.displayquantity = productVO.displayquantity + 1
-            }
-            previous = productVO
-        }
-
-        return menuVO
-
-    }
+//    MenuVO hydrateTransientQuantitiesForDisplay(MenuVO menuVO){
+//
+//        // cycle thru here and if the productid is the same then update the quantity
+//        ProductVO previous = new ProductVO(barcode: 0)
+//        for(ProductVO productVO : menuVO.menu_product_list){
+//            if(productVO.displayquantity == null){
+//                productVO.displayquantity = 1
+//            }
+//            if(productVO.barcode == previous.barcode){
+//                productVO.displayquantity = productVO.displayquantity + 1
+//            }
+//            previous = productVO
+//        }
+//
+//        return menuVO
+//
+//    }
 
     // todo: this needs to fill a transient field that holds the path to an image?
     MenuVO loadMenu(String menuid, Model model){
@@ -365,13 +376,21 @@ class MenuHelper {
         }
     }
 
+
+    boolean validateShoppingToken(String menuid, String token, Model model){
+        // check to see if token is valid
+        if(!jwtTokenProvider.validateShoppingToken(token, menuid)){
+            model.addAttribute("errorMessage", "Invalid shopping token")
+            return false
+        }
+        return true
+    }
+
     // todo: this needs to fill a transient field that holds the path to an image?
     MenuVO loadMenuWithToken(String menuid, Model model, String token){
 
-        // check to see if token is valid
-        if(!jwtTokenProvider.validateShoppingToken(token)){
-            model.addAttribute("errorMessage", "Invalid shopping token")
-            return null
+        if(!validateShoppingToken(menuid, token, model)){
+            return null // should do something other than this but whatever
         }
 
         // if token was validated, then we can load the menu
@@ -389,7 +408,7 @@ class MenuHelper {
 
         } else {
             menuVO = getExistingMenu(menuid)
-            menuVO = hydrateTransientQuantitiesForDisplay(menuVO)
+            //menuVO = hydrateTransientQuantitiesForDisplay(menuVO)
 
             List<ProductVO> uniqueproducts = ProductVO.getUniqueProducts(menuVO.menu_product_list)
             // cycle through every unique product and build the uri for the primary photo
@@ -489,5 +508,77 @@ class MenuHelper {
     }
 
 
-    
+    @Transactional
+    boolean addProductToCart(
+            Integer cartid,
+            Integer menuid,
+            Integer productid,
+            Integer quantityselected,
+            Integer customerid,
+            Model model,
+            String token
+    ){
+
+        if(!validateShoppingToken(String.valueOf(menuid), token, model)){
+            return false
+        }
+
+
+
+        CustomerVO customerVO = customerRepo.findById(customerid).get()
+        MenuVO menuVO = menuRepo.findById(menuid).get()
+
+        // check to see if we need to make a new cart or not
+        CartVO cartVO
+        if(cartid == null || cartid == 0){
+            //create a new cart
+            cartVO = cartRepo.save(new CartVO(
+                    menu: menuVO,
+                    customer: customerVO,
+                    updateTimeStamp: LocalDateTime.now(),
+                    createTimeStamp: LocalDateTime.now(),
+                    isprocessed: 0
+            ))
+        } else {
+            // get the existing cart
+            cartVO = cartRepo.findById(cartid).get()
+        }
+
+
+        // now that we have correct cart loaded for the customer, we can add the product
+        productService.addProductToCart(cartVO, quantityselected, model, String.valueOf(productid), String.valueOf(menuid))
+    }
+
+
+    void loadCart(int cartid, Model model){
+        if(cartid != 0){
+            CartVO cartVO = cartRepo.findById(cartid).get()
+            model.addAttribute("cart", cartVO)
+            model.addAttribute("cartid", cartVO.cartid) // bind this for uri param
+        }
+        model.addAttribute("cart", new CartVO(cartid: 0))
+    }
+
+    void loadCartByCustomerIdAndMenuId(String shoppingtoken, Model model){
+        String customerid = jwtTokenProvider.getCustomerIdFromToken(shoppingtoken)
+        String menuid = jwtTokenProvider.getMenuIdFromToken(shoppingtoken)
+        CustomerVO customerVO = customerRepo.findByCustomerid(Integer.valueOf(customerid)).get()
+        MenuVO menuVO = menuRepo.findById(Integer.valueOf(menuid)).get()
+
+
+        // The System is assuming we will only ever have a single cart per menu and customer combination
+        Optional<CartVO> cart = cartRepo.findByMenuAndCustomer(menuVO, customerVO)
+        if(cart.isPresent()){
+            // here we need to format the items inside the cart to consolidate them for proper display on ui
+            checkoutHelper.hydrateTransientQuantitiesForDisplay(cart.get())
+
+            model.addAttribute("cart", cart.get())
+            model.addAttribute("cartid", cart.get().cartid) // bind this for uri param
+        }
+
+    }
+
+
+
+
 }

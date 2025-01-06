@@ -4,6 +4,7 @@ import com.techvvs.inventory.model.BatchVO
 import com.techvvs.inventory.model.CartVO
 import com.techvvs.inventory.model.MenuVO
 import com.techvvs.inventory.model.ProductTypeVO
+import com.techvvs.inventory.security.JwtTokenProvider
 import com.techvvs.inventory.service.auth.TechvvsAuthService
 import com.techvvs.inventory.service.transactional.CartDeleteService
 import com.techvvs.inventory.viewcontroller.helper.BatchControllerHelper
@@ -34,6 +35,9 @@ public class MenuViewController {
 
     @Autowired
     TechvvsAuthService techvvsAuthService
+
+    @Autowired
+    JwtTokenProvider jwtTokenProvider
     
 
     // todo: modify this to parse user cookie from request and check user permissions
@@ -84,7 +88,10 @@ public class MenuViewController {
             @RequestParam("size") Optional<String> size,
             @ModelAttribute( "cart" ) CartVO cartVO
     ){
-
+        // this needs to do a search on the customerid and see if there is cart pending with this exact menu id
+        if(shoppingtoken.isPresent()) {
+            menuHelper.loadCartByCustomerIdAndMenuId(shoppingtoken.get(), model)
+        }
 
 
         if(menuid.isPresent() && shoppingtoken.isPresent()) {
@@ -100,6 +107,7 @@ public class MenuViewController {
         return "menu/menu.html";
     }
 
+
     // allow user to shop menu with shopping token
     @PostMapping("/shop/product/cart/add")
     String addProductToCart(
@@ -107,22 +115,35 @@ public class MenuViewController {
             Model model,
             @RequestParam("menuid") Optional<String> menuid,
             @RequestParam("shoppingtoken") Optional<String> shoppingtoken,
+            @RequestParam("cartid") Optional<String> cartid,
+            @RequestParam("productid") Optional<String> productid,
+            @RequestParam("quantityselected") Optional<String> quantityselected,
             @RequestParam("size") Optional<String> size,
             @ModelAttribute( "cart" ) CartVO cartVO
     ){
 
 
 
-        if(menuid.isPresent() && shoppingtoken.isPresent()) {
-            menuHelper.loadMenuWithToken(menuid.get(), model, shoppingtoken.get())
+        // pass in the cartid and menuid and productid and quantityselected into a method to add to the cart
+        if(cartid.isPresent() && menuid.isPresent() && productid.isPresent() && quantityselected.isPresent()) {
+            String customerid = jwtTokenProvider.getCustomerIdFromToken(shoppingtoken.get())
+            menuHelper.addProductToCart(Integer.valueOf(cartid.get()), Integer.valueOf(menuid.get()), Integer.valueOf(productid.get()), Integer.valueOf(quantityselected.get()), Integer.valueOf(customerid), model, shoppingtoken.get())
+            menuHelper.loadCart(Integer.valueOf(cartid.get()), model)
         }
 
 
+        if(menuid.isPresent() && shoppingtoken.isPresent()) {
+            // load the product menu to be displayed back to the user
+            menuHelper.loadMenuWithToken(menuid.get(), model, shoppingtoken.get())
+        }
 
+        // make sure we have a cart bound even an empty one
+        if(null == model.getAttribute("cart")){
+            model.addAttribute("cart", new CartVO(cartid:0))
+        }
 
         // fetch all customers from database and bind them to model
         checkoutHelper.getAllCustomers(model)
-        //techvvsAuthService.checkuserauth(model)
         return "menu/menu.html";
     }
 

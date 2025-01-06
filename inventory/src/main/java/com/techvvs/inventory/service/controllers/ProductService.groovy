@@ -5,12 +5,15 @@ import com.techvvs.inventory.barcode.impl.BarcodeHelper
 import com.techvvs.inventory.jparepo.CartRepo
 import com.techvvs.inventory.jparepo.CustomerRepo
 import com.techvvs.inventory.jparepo.DeliveryRepo
+import com.techvvs.inventory.jparepo.MenuRepo
 import com.techvvs.inventory.jparepo.PackageRepo
 import com.techvvs.inventory.jparepo.PackageTypeRepo
 import com.techvvs.inventory.jparepo.ProductRepo
 import com.techvvs.inventory.jparepo.ProductTypeRepo
 import com.techvvs.inventory.model.CartVO
 import com.techvvs.inventory.model.CrateVO
+import com.techvvs.inventory.model.CustomerVO
+import com.techvvs.inventory.model.MenuVO
 import com.techvvs.inventory.model.PackageVO
 import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.ProductVO
@@ -33,7 +36,13 @@ class ProductService {
     CartRepo cartRepo
 
     @Autowired
+    MenuRepo menuRepo
+
+    @Autowired
     CustomerRepo customerRepo
+
+    @Autowired
+    CartService cartService
 
     @Autowired
     PackageRepo packageRepo
@@ -358,6 +367,108 @@ class ProductService {
         Optional<ProductVO> existingproduct = productRepo.findByBarcode(barcode)
         return existingproduct.isPresent()
     }
+
+
+    // The normal b2b checkout uses a barcode scanning ui to identify products.
+    // When we send a product to checkout from the Menu, we are using the product_id to identify it
+    // We are also saving a menu that is associated with the cart too
+    @Transactional
+    void saveProductCartMenuAssociationsForMenuShopping(
+                                    String product_id,
+                                    String menuid,
+                                     CartVO cartVO,
+                                     Model model,
+                                     int counter
+
+    ) {
+        Optional<ProductVO> productVO = productRepo.findById(Integer.valueOf(product_id))
+
+        // todo: on second time thru we need to fully hydrate the customer and product_set before saving
+
+        if(!productVO.empty){
+
+            // update the product cart list association
+            if(productVO.get().cart_list == null){
+                productVO.get().cart_list = new ArrayList<>()
+            }
+            productVO.get().cart_list.add(cartVO)
+
+            productVO.get().updateTimeStamp = LocalDateTime.now()
+            // when product is added to the cart, decrease the quantity remaining.
+            productVO.get().quantityremaining = productVO.get().quantityremaining == 0 ? 0 : productVO.get().quantityremaining - 1
+            ProductVO savedProduct = productRepo.save(productVO.get())
+
+            if(cartVO.total == null){
+                cartVO.total = 0.00
+            }
+
+            /* Cart code below */
+            cartVO.total += Double.valueOf(productVO.get().price) // add the product price to the total
+
+            // handle quantity here (have to iterate thru all product cert list and update the quantity)
+
+            // if it's the first time adding a product we need to create the set to hold them
+            if(cartVO.product_cart_list == null){
+                cartVO.product_cart_list = new ArrayList<ProductVO>()
+            }
+
+            cartVO = refreshProductCartList(cartVO)
+
+            // now save the cart side of the many to many
+            cartVO.product_cart_list.add(savedProduct)
+            cartVO.updateTimeStamp = LocalDateTime.now()
+
+            // find the menu from db and save it associated with the cart
+            Optional<MenuVO> menuVO = menuRepo.findById(Integer.valueOf(menuid))
+            cartVO.menu = menuVO.get()
+
+            cartVO = cartRepo.save(cartVO)
+
+
+            // find the menu from db and save it associated with the cart
+            // this could maybe be done in the above save but we
+//            Optional<MenuVO> menuVO = menuRepo.findById(Integer.valueOf(menuid))
+//            cartVO.menu = menuVO.get()
+//            cartVO.updateTimeStamp = LocalDateTime.now()
+//            cartVO = cartRepo.save(cartVO)
+
+
+            model.addAttribute("successMessage","Product: "+productVO.get().name + " added successfully. Quantity: "+counter)
+        } else {
+            // need to bind the selected customer here otherwise the dropdown wont work
+            cartVO.customer = customerRepo.findById(cartVO.customer.customerid).get()
+            model.addAttribute("errorMessage","Product not found")
+        }
+
+
+    }
+
+
+    // add product to cart and then update the cart and product associations
+    @Transactional
+    CartVO addProductToCart(
+            CartVO cartVO,
+            int quantityselected,
+            Model model,
+            String product_id,
+            String menuid
+    ){
+
+        if(quantityselected == 0){
+            saveProductCartMenuAssociationsForMenuShopping(product_id, menuid, cartVO, model, 1)
+        } else {
+            int j = 0;
+            // run the product save once for every quantity selected
+            for (int i = 0; i < quantityselected; i++) {
+                j++
+                saveProductCartMenuAssociationsForMenuShopping(product_id, menuid, cartVO, model, j)
+            }
+        }
+
+
+        return cartVO
+    }
+
 
 
 
