@@ -176,6 +176,36 @@ public class MenuViewController {
         return "menu/menu.html";
     }
 
+    @PostMapping("/shop/empty/cart")
+    String emptyCart(
+            @ModelAttribute( "menu" ) MenuVO menuVO,
+            Model model,
+            @RequestParam("menuid") Optional<String> menuid,
+            @RequestParam("shoppingtoken") Optional<String> shoppingtoken,
+            @RequestParam("cartid") Optional<String> cartid,
+            @RequestParam("productid") Optional<String> productid,
+            @RequestParam("quantityselected") Optional<String> quantityselected,
+            @RequestParam("size") Optional<String> size,
+            @ModelAttribute( "cart" ) CartVO cartVO
+    ){
+
+
+        // first we need to check if we have all required items
+        if(shoppingtoken.present && cartid.present && menuid.present){
+            // empty the cart
+            int emptiedcartid = menuHelper.emptyWholeCart(Integer.valueOf(cartid.get()), Integer.valueOf(menuid.get()), model, shoppingtoken.get())
+            menuHelper.loadCart(emptiedcartid, model)
+            model.addAttribute("successMessage", "Cart emptied")
+            // hydrate hidden values for passing into the post methods like token etc
+            menuHelper.bindHiddenValues(model, shoppingtoken.get(), menuid.get())
+        } else {
+            loadDataOnError(menuid, shoppingtoken, cartid, model)
+        }
+
+        processRestOfStuff(menuid, shoppingtoken, model)
+        return "menu/menu.html";
+    }
+
     @PostMapping("/shop/checkout")
     String checkoutCartFromMenu(
             Model model,

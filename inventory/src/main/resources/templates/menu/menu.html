@@ -207,6 +207,56 @@
             background: #dc3545; /* Red for less than 30 minutes */
         }
 
+        .floating-button {
+            position: fixed;
+            top: 60px; /* Adjust to appear below the timer */
+            left: 10px;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .floating-button button {
+            background: #dc3545; /* Red for empty cart */
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .floating-button button:hover {
+            background: #b02a37; /* Darker red on hover */
+        }
+
+
+        .floating-confirmation {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            color: black;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            text-align: center;
+            width: 300px;
+        }
+
+        .floating-confirmation p {
+            margin-bottom: 15px;
+        }
+
+        .confirmation-buttons {
+            display: flex;
+            justify-content: space-between;
+        }
+
     </style>
 
 
@@ -521,6 +571,19 @@
     <div id="shoppingTokenTimer" class="hovering-timer">
         Shopping Time Left:&nbsp; <span id="timeDisplay"></span>
     </div>
+    <div id="emptyCartButton" class="floating-button">
+        <button class="btn btn-danger">Empty Cart</button>
+    </div>
+
+
+    <div id="emptyCartConfirmation" class="floating-confirmation" style="display: none;">
+        <p>Are you sure you want to empty your cart?</p>
+        <p>Cart will be emptied automatically when the shopping token expires.</p>
+        <div class="confirmation-buttons">
+            <button id="confirmEmptyCart" class="btn btn-danger">Yes, Empty Cart</button>
+            <button id="cancelEmptyCart" class="btn btn-secondary">Cancel</button>
+        </div>
+    </div>
 
 
     <script>
@@ -773,6 +836,70 @@
             }, 1000);
         });
 
+
+
+        $(document).ready(function () {
+            // Handle Empty Cart button click
+            $('#emptyCartButton button').on('click', function (event) {
+                event.preventDefault(); // Prevent default behavior
+                $('#emptyCartConfirmation').fadeIn(); // Show the confirmation popup
+            });
+
+            // Handle Cancel button click
+            $('#cancelEmptyCart').on('click', function () {
+                $('#emptyCartConfirmation').fadeOut(); // Hide the confirmation popup
+            });
+
+            // Handle Confirm button click
+            $('#confirmEmptyCart').on('click', function () {
+                $('#emptyCartConfirmation').fadeOut(); // Hide the confirmation popup
+
+                // Fetch parameters from the first product row
+                const firstCartRow = $('#cartRows .cart-row').first();
+
+                if (!firstCartRow.length) {
+                    alert('No products found in the cart!');
+                    return;
+                }
+
+                const shoppingToken = firstCartRow.attr('data-shopping-token-id');
+                const menuId = firstCartRow.attr('data-menu-id');
+                let cartId = firstCartRow.attr('data-cart-id');
+
+                // Default cartId to 0 if null or undefined
+                cartId = cartId && cartId !== '0' ? cartId : '0';
+
+                // Validate necessary parameters
+                if (!shoppingToken || !menuId) {
+                    alert('Missing required parameters!');
+                    return;
+                }
+
+                // Create a form dynamically for Empty Cart POST
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/menu/shop/empty/cart'; // Endpoint for Empty Cart
+
+                // Add necessary parameters to the form
+                const fields = [
+                    { name: 'shoppingtoken', value: shoppingToken },
+                    { name: 'menuid', value: menuId },
+                    { name: 'cartid', value: cartId },
+                ];
+
+                fields.forEach(field => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = field.name;
+                    input.value = field.value;
+                    form.appendChild(input);
+                });
+
+                // Append the form to the document body and submit it
+                document.body.appendChild(form);
+                form.submit();
+            });
+        });
 
     </script>
 

@@ -622,7 +622,7 @@ class MenuHelper {
         for(ProductVO productVO : cartVO.product_cart_list){
             if(productVO.product_id == product_id){
                 cartVO.product_cart_list.remove(productVO)
-                cartVO.total = cartVO.total - productVO.price // subtract the price from the cart total
+                cartVO.total = Math.max(0, cartVO.total - productVO.price) // subtract the price from the cart total
 
                 productVO.quantityremaining = productVO.quantityremaining + 1
                 // remove the cart association from the product
@@ -647,6 +647,42 @@ class MenuHelper {
 
     }
 
+    @Transactional
+    CartVO emptyCart(CartVO cartVO) {
+
+        CartVO carttoremove = new CartVO(cartid: 0);
+
+        // Use an iterator to safely modify the list while iterating
+        Iterator<ProductVO> iterator = cartVO.product_cart_list.iterator();
+        while (iterator.hasNext()) {
+            ProductVO productVO = iterator.next();
+
+            // Remove the product from the cart
+            iterator.remove();
+            cartVO.total = Math.max(0, cartVO.total - productVO.price); // Subtract the price from the cart total
+
+            // Update the product quantity remaining
+            productVO.quantityremaining = productVO.quantityremaining + 1;
+
+            // Remove the cart association from the product
+            for (CartVO existingCart : productVO.cart_list) {
+                if (existingCart.cartid == cartVO.cartid) {
+                    carttoremove = existingCart;
+                }
+            }
+            productVO.cart_list.remove(carttoremove);
+
+            // Update timestamps and save product
+            productVO.updateTimeStamp = LocalDateTime.now();
+            productRepo.save(productVO);
+        }
+
+        // Update and save the cart
+        cartVO.updateTimeStamp = LocalDateTime.now();
+        cartVO = cartRepo.save(cartVO);
+
+        return cartVO;
+    }
 
 
     void loadCart(int cartid, Model model){
@@ -715,6 +751,28 @@ class MenuHelper {
             model.addAttribute("errorMessage", "Product does not exist");
             return false;
         }
+    }
+
+
+    @Transactional
+    int emptyWholeCart(
+            Integer cartid,
+            Integer menuid,
+            Model model,
+            String token
+    ){
+
+        if(!validateShoppingToken(String.valueOf(menuid), token, model)){
+            return 0
+        }
+
+        // get the existing cart
+        CartVO cartVO = cartRepo.findById(cartid).get()
+        // delete it from cart
+        cartVO = emptyCart(cartVO)
+
+
+        return cartVO.cartid
     }
 
 
