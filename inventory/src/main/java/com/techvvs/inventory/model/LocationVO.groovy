@@ -28,6 +28,8 @@ class LocationVO implements Serializable{
     @JsonProperty
     String description;
     @JsonProperty
+    String notes;
+    @JsonProperty
     @OneToOne(cascade= CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name="locationtypeid")
     LocationTypeVO locationtype;

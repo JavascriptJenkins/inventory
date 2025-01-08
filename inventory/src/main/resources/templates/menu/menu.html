@@ -556,10 +556,22 @@
                 </div>
                 <div class="modal-body">
                     <p>Here are the products in your cart:</p>
-                    <div id="cartReviewContent"></div> <!-- Cart rows will be displayed here -->
+                    <div id="cartReviewContent"></div>
                     <hr>
                     <p><strong>Total:</strong> $<span id="cartReviewTotal">0.00</span></p>
                     <hr>
+                    <!-- Conditional Dropdown -->
+                    <div id="deliveryLocationContainer" th:if="${not #lists.isEmpty(cart.customer.locationlist)}">
+                        <label for="deliveryLocationSelect" class="form-label"><strong>Select Delivery Location</strong></label>
+                        <select id="deliveryLocationSelect" class="form-select">
+                            <option value="default">Select delivery location</option>
+                            <!-- Inject locations dynamically with Thymeleaf -->
+                            <li th:each="location : ${cart.customer.locationlist}"
+                                th:data-location-id="${location.locationid}"
+                                th:text="${location.name}">
+                            </li>
+                        </select>
+                    </div>
                     <!-- Delivery Notes Textarea -->
                     <div class="mb-3">
                         <label for="deliveryNotes" class="form-label"><strong>Delivery Notes</strong></label>
@@ -574,6 +586,7 @@
             </div>
         </div>
     </div>
+
 
     <!-- End Cart Review Modal -->
 
@@ -772,49 +785,22 @@
                     $('#confirmOrder').prop('disabled', deliveryNotesLength < 3);
                 });
 
-                // Handle Confirm Order inside the modal
-                $('#confirmOrder').off('click').on('click', function () {
-                    // Fetch parameters from the first cart row (assumes rows contain required attributes)
-                    const firstCartRow = $('#cartRows .cart-row').first();
+                // Handle Delivery Location Dropdown Logic
+                const locationList = $('[data-location-id]'); // Fetch location data
+                const dropdown = $('#deliveryLocationSelect');
+                const locationContainer = $('#deliveryLocationContainer');
 
-                    const shoppingToken = firstCartRow.attr('data-shopping-token-id');
-                    const menuId = firstCartRow.attr('data-menu-id');
-                    let cartId = firstCartRow.attr('data-cart-id');
-
-                    // Validate parameters
-                    if (!shoppingToken || !menuId) {
-                        alert('Missing required parameters! Ensure you have items in the cart.');
-                        return;
-                    }
-
-                    // Default cartId to 0 if null, undefined, or '0'
-                    cartId = cartId && cartId !== '0' ? cartId : '0';
-
-                    // Add parameters to the form dynamically
-                    const form = $('#cartForm')[0];
-
-                    const fields = [
-                        { name: 'shoppingtoken', value: shoppingToken },
-                        { name: 'menuid', value: menuId },
-                        { name: 'cartid', value: cartId },
-                        { name: 'deliverynotes', value: $('#deliveryNotes').val() }, // Capture delivery notes value
-                    ];
-
-                    // Clear existing hidden inputs to prevent duplicates
-                    $(form).find('input[type="hidden"]').remove();
-
-                    // Append all parameters as hidden fields
-                    fields.forEach(field => {
-                        const input = document.createElement('input');
-                        input.type = 'hidden';
-                        input.name = field.name;
-                        input.value = field.value;
-                        form.appendChild(input);
+                if (locationList.length === 0) {
+                    locationContainer.hide(); // Hide dropdown if no locations
+                } else {
+                    // Populate the dropdown with location data
+                    dropdown.empty().append(new Option("Select delivery location", "default"));
+                    locationList.each(function () {
+                        const locationId = $(this).attr('data-location-id');
+                        const locationName = $(this).text();
+                        dropdown.append(new Option(locationName, locationId));
                     });
-
-                    // Submit the form
-                    form.submit();
-                });
+                }
 
                 // Display the cart review modal
                 $('#cartReviewModal').fadeIn();
@@ -823,6 +809,22 @@
             // Close cart review modal
             $('#closeCartReview, #cancelOrder').on('click', function () {
                 $('#cartReviewModal').fadeOut();
+            });
+
+            // Handle Confirm Order click
+            $('#confirmOrder').on('click', function () {
+                const dropdown = $('#deliveryLocationSelect');
+                const selectedLocation = dropdown.val();
+                const deliveryNotes = $('#deliveryNotes').val();
+
+                if (!deliveryNotes.trim() || selectedLocation === 'default') {
+                    alert('Please select a delivery location and add delivery notes.');
+                    return;
+                }
+
+                // Proceed with order submission logic...
+                console.log("Delivery Notes:", deliveryNotes);
+                console.log("Selected Location ID:", selectedLocation);
             });
         });
 
