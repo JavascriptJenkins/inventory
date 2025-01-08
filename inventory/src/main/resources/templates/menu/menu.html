@@ -179,6 +179,34 @@
             background: #f9f9f9;
         }
 
+        .hovering-timer {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            z-index: 1000;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hovering-timer.green {
+            background: #28a745; /* Green for more than 1 hour */
+        }
+
+        .hovering-timer.yellow {
+            background: #ffc107; /* Yellow for less than 1 hour */
+        }
+
+        .hovering-timer.red {
+            background: #dc3545; /* Red for less than 30 minutes */
+        }
+
     </style>
 
 
@@ -488,8 +516,12 @@
             </div>
         </div>
     </div>
-
     <!-- End Cart Review Modal -->
+
+    <div id="shoppingTokenTimer" class="hovering-timer">
+        Shopping Time Left:&nbsp; <span id="timeDisplay"></span>
+    </div>
+
 
     <script>
         // JavaScript for toggle animations
@@ -675,6 +707,71 @@
             });
         });
 
+
+
+        $(document).ready(function () {
+            // Get the shopping token from the relevant cart row
+            const cartRow = $('[data-shopping-token-id]').first();
+            const shoppingToken = $(cartRow).attr('data-shopping-token-id'); // JWT from the attribute
+
+            if (!shoppingToken) {
+                console.error("Shopping token not found.");
+                return;
+            }
+
+            // Decode the JWT to extract the expiration time (exp)
+            function parseJwt(token) {
+                const base64Payload = token.split('.')[1]; // Extract payload part of the JWT
+                const payload = atob(base64Payload); // Decode base64
+                return JSON.parse(payload); // Parse JSON
+            }
+
+            const tokenData = parseJwt(shoppingToken);
+            const expirationTime = tokenData.exp; // Expiration time in seconds since epoch
+
+            if (!expirationTime) {
+                console.error("Invalid token: missing expiration time (exp).");
+                return;
+            }
+
+            // Calculate expiration timestamp (convert to milliseconds)
+            const expirationTimestamp = expirationTime * 1000;
+
+            // Update the timer every second
+            const timerInterval = setInterval(() => {
+                const currentTime = Date.now();
+                const remainingTime = Math.max(0, expirationTimestamp - currentTime);
+
+                if (remainingTime <= 0) {
+                    clearInterval(timerInterval);
+                    $('#timeDisplay').text('Expired');
+                    $('#shoppingTokenTimer').addClass('red').removeClass('green yellow');
+                    return;
+                }
+
+                // Convert remaining time to hours, minutes, and seconds
+                const hours = Math.floor(remainingTime / (1000 * 60 * 60));
+                const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
+
+                // Update the timer display
+                $('#timeDisplay').text(
+                    `${hours.toString().padStart(2, '0')} hours, ${minutes
+                        .toString()
+                        .padStart(2, '0')} minutes, ${seconds.toString().padStart(2, '0')} seconds`
+                );
+
+                // Change the timer color based on the remaining time
+                const timerElement = $('#shoppingTokenTimer');
+                if (remainingTime > 60 * 60 * 1000) {
+                    timerElement.addClass('green').removeClass('yellow red');
+                } else if (remainingTime > 30 * 60 * 1000) {
+                    timerElement.addClass('yellow').removeClass('green red');
+                } else {
+                    timerElement.addClass('red').removeClass('green yellow');
+                }
+            }, 1000);
+        });
 
 
     </script>
