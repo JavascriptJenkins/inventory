@@ -414,7 +414,10 @@
 
 
     <!-- Floating Arrow -->
-    <div id="cartToggle" class="floating-arrow bi bi-arrow-right"></div>
+    <div id="cartToggle"
+         class="floating-arrow bi bi-arrow-right"
+         th:classappend="${cart.product_cart_list != null and !#lists.isEmpty(cart.product_cart_list)} ? 'invisible' : ''">
+    </div>
 
     <!-- Cart Section -->
     <div id="cartSection" class="cart-section"
@@ -523,6 +526,27 @@
             form.submit();
         }
 
+
+    </script>
+
+    <script>
+        $(document).ready(function () {
+            const cartToggle = $('#cartToggle');
+            const cartClose = $('#cartClose');
+            const cartSection = $('#cartSection');
+
+            // Handle opening the cart
+            cartToggle.click(function () {
+                cartSection.addClass('open');
+                cartToggle.addClass('invisible'); // Hide the arrow
+            });
+
+            // Handle closing the cart
+            cartClose.click(function () {
+                cartSection.removeClass('open');
+                cartToggle.removeClass('invisible'); // Show the arrow
+            });
+        });
 
     </script>
 
