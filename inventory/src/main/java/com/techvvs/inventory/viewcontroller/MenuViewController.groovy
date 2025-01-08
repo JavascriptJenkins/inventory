@@ -135,19 +135,9 @@ public class MenuViewController {
             menuHelper.bindHiddenValues(model, shoppingtoken.get(), menuid.get())
         }
 
+        processRestOfStuff(menuid, shoppingtoken, model)
 
-        if(menuid.isPresent() && shoppingtoken.isPresent()) {
-            // load the product menu to be displayed back to the user
-            menuHelper.loadMenuWithToken(menuid.get(), model, shoppingtoken.get())
-        }
 
-        // make sure we have a cart bound even an empty one
-        if(null == model.getAttribute("cart")){
-            model.addAttribute("cart", new CartVO(cartid:0))
-        }
-
-        // fetch all customers from database and bind them to model
-        checkoutHelper.getAllCustomers(model)
         return "menu/menu.html";
     }
 
@@ -175,7 +165,40 @@ public class MenuViewController {
             menuHelper.bindHiddenValues(model, shoppingtoken.get(), menuid.get())
         }
 
+        processRestOfStuff(menuid, shoppingtoken, model)
+        return "menu/menu.html";
+    }
 
+    @PostMapping("/shop/checkout")
+    String checkoutCartFromMenu(
+            Model model,
+            @RequestParam("menuid") Optional<String> menuid,
+            @RequestParam("shoppingtoken") Optional<String> shoppingtoken,
+            @RequestParam("cartid") Optional<String> cartid,
+            @RequestParam("productid") Optional<String> productid,
+            @RequestParam("quantityselected") Optional<String> quantityselected,
+            @RequestParam("size") Optional<String> size,
+            @ModelAttribute( "cart" ) CartVO cartVO
+    ){
+
+
+
+        // pass in the cartid and menuid and productid and quantityselected into a method to add to the cart
+        if(cartid.isPresent() && menuid.isPresent() && productid.isPresent() && quantityselected.isPresent()) {
+            String customerid = jwtTokenProvider.getCustomerIdFromToken(shoppingtoken.get())
+            int savedcartid = menuHelper.removeProductFromCart(Integer.valueOf(cartid.get()), Integer.valueOf(menuid.get()), Integer.valueOf(productid.get()), Integer.valueOf(quantityselected.get()), Integer.valueOf(customerid), model, shoppingtoken.get())
+            menuHelper.loadCart(savedcartid, model)
+            // hydrate hidden values for passing into the post methods like token etc
+            menuHelper.bindHiddenValues(model, shoppingtoken.get(), menuid.get())
+        }
+
+        processRestOfStuff(menuid, shoppingtoken, model)
+        return "menu/menu.html";
+    }
+
+
+
+    void processRestOfStuff(Optional<String> menuid, Optional<String> shoppingtoken, Model model) {
         if(menuid.isPresent() && shoppingtoken.isPresent()) {
             // load the product menu to be displayed back to the user
             menuHelper.loadMenuWithToken(menuid.get(), model, shoppingtoken.get())
@@ -188,7 +211,6 @@ public class MenuViewController {
 
         // fetch all customers from database and bind them to model
         checkoutHelper.getAllCustomers(model)
-        return "menu/menu.html";
     }
 
     // todo: modify this to parse user cookie from request and check user permissions

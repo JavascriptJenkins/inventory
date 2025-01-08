@@ -548,6 +548,62 @@
             });
         });
 
+
+        $(document).ready(function () {
+            const cartForm = $('#cartForm');
+
+            cartForm.submit(function (event) {
+                event.preventDefault(); // Prevent the default form submission
+
+                // Select any one product row to extract the necessary parameters
+                const firstCartRow = $('#cartRows .cart-row').first();
+
+                if (!firstCartRow.length) {
+                    alert('No products found in the cart!');
+                    return;
+                }
+
+                // Fetch parameters from the first product row
+                const shoppingToken = firstCartRow.data('shopping-token-id');
+                const menuId = firstCartRow.data('menu-id');
+                let cartId = firstCartRow.data('cart-id');
+
+                // Default cartId to 0 if null or undefined
+                cartId = cartId && cartId !== '0' ? cartId : '0';
+
+                // Validate necessary parameters
+                if (!shoppingToken || !menuId) {
+                    alert('Missing required parameters!');
+                    return;
+                }
+
+                // Construct a form dynamically (like the other methods)
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/menu/shop/checkout'; // Adjust to your backend endpoint
+
+                // Add necessary parameters to the form
+                const fields = [
+                    { name: 'shoppingtoken', value: shoppingToken },
+                    { name: 'menuid', value: menuId },
+                    { name: 'cartid', value: cartId },
+                ];
+
+                fields.forEach(field => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = field.name;
+                    input.value = field.value;
+                    form.appendChild(input);
+                });
+
+                // Append the form to the document body and submit it
+                document.body.appendChild(form);
+                form.submit();
+            });
+        });
+
+
     </script>
 
 
