@@ -417,7 +417,8 @@
     <div id="cartToggle" class="floating-arrow bi bi-arrow-right"></div>
 
     <!-- Cart Section -->
-    <div id="cartSection" class="cart-section">
+    <div id="cartSection" class="cart-section"
+         th:classappend="${cart.product_cart_list != null and !#lists.isEmpty(cart.product_cart_list)} ? 'open'">
         <div class="cart-header">
             <div id="cartClose" class="floating-arrow bi bi-arrow-left" style="position: relative; display: block; margin: auto;"></div>
             <span style="display: block; margin-top: 10px;">Shopping Cart</span>
