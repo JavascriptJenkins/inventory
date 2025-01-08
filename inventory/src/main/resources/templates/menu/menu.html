@@ -168,6 +168,17 @@
             padding: 15px;
             text-align: center;
         }
+        #cartReviewModal .modal-dialog {
+            max-width: 500px;
+        }
+        #cartReviewContent {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            background: #f9f9f9;
+        }
+
     </style>
 
 
@@ -447,14 +458,38 @@
         </div>
 
         <div class="cart-footer">
-            <div>
-                <strong>Total:</strong> <span th:text="${cart.total}">$0.00</span>
+            <div id="totalDiv">
+                <strong>Total:</strong> <span th:data-total="${cart.total}" th:text="${cart.total}">$0.00</span>
             </div>
-            <button class="btn btn-light mt-2" type="submit" form="cartForm">Submit Cart</button>
+            <button id="submitCartButton" class="btn btn-light mt-2" type="submit" form="cartForm">Submit Cart</button>
             <form id="cartForm" th:action="@{/menu/shop/checkout}" method="post"></form>
         </div>
     </div>
     <!-- CART SECTION ENDS -->
+
+    <!-- Cart Review Modal -->
+    <div id="cartReviewModal" class="modal" tabindex="-1" style="display: none;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Review Your Cart</h5>
+                    <button type="button" class="btn-close" id="closeCartReview" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Here are the products in your cart:</p>
+                    <div id="cartReviewContent"></div> <!-- This will display cart rows -->
+                    <hr>
+                    <p><strong>Total:</strong> $<span id="cartReviewTotal">0.00</span></p> <!-- Total placeholder -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" id="cancelOrder">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="confirmOrder">Confirm Order</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- End Cart Review Modal -->
 
     <script>
         // JavaScript for toggle animations
@@ -602,6 +637,44 @@
                 form.submit();
             });
         });
+
+
+        $(document).ready(function () {
+            // Intercept "Submit Cart" button click
+            $('#submitCartButton').on('click', function (event) {
+                event.preventDefault(); // Prevent default form submission
+
+                // Populate the cart modal with current cart rows
+                const cartContent = $('#cartRows').html(); // Clone cart content
+                if (!cartContent.trim()) {
+                    alert('Your cart is empty! Please add items before submitting.');
+                    return;
+                }
+
+                // Get the total value using the id of totalDiv
+                const total = $('#totalDiv span').attr('data-total'); // Locate the span inside #totalDiv and fetch data-total
+                console.log(total);
+                const formattedTotal = parseFloat(total) || 0; // Ensure it's a valid number
+
+                // Update the modal with cart content and total
+                $('#cartReviewContent').html(cartContent);
+                $('#cartReviewTotal').text(formattedTotal.toFixed(2));
+
+                // Display the cart review modal
+                $('#cartReviewModal').fadeIn();
+            });
+
+            // Close cart review modal
+            $('#closeCartReview, #cancelOrder').on('click', function () {
+                $('#cartReviewModal').fadeOut();
+            });
+
+            // Confirm order and submit the form
+            $('#confirmOrder').on('click', function () {
+                $('#cartForm').submit(); // Programmatically submit the form
+            });
+        });
+
 
 
     </script>

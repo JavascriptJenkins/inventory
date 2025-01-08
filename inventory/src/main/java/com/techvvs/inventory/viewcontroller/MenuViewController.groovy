@@ -181,6 +181,16 @@ public class MenuViewController {
             @ModelAttribute( "cart" ) CartVO cartVO
     ){
 
+        // first we need to check if we have all required items
+        if(shoppingtoken.present && cartid.present && menuid.present){
+
+            //
+
+        }
+
+
+
+
 
 
         // pass in the cartid and menuid and productid and quantityselected into a method to add to the cart
