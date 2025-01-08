@@ -8,6 +8,7 @@ import com.techvvs.inventory.jparepo.TransactionRepo
 import com.techvvs.inventory.model.BatchVO
 import com.techvvs.inventory.model.CartVO
 import com.techvvs.inventory.model.CustomerVO
+import com.techvvs.inventory.model.DiscountVO
 import com.techvvs.inventory.model.PackageVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.TransactionVO
@@ -134,6 +135,12 @@ class CheckoutHelper {
 
             cartVO.originalprice += productincart.price // hydrate the originalprice before any discounts
 
+            // apply discount on by product_type to the total
+            applyDiscountByProductType(cartVO, productincart)
+
+            // in the future, we can apply a per product discount here
+
+
             productMap.put(productincart.getProduct_id(), productincart)
         }
         cartVO.product_cart_list = new ArrayList<>(productMap.values());
@@ -142,6 +149,18 @@ class CheckoutHelper {
         }
         return cartVO
 
+    }
+
+    void applyDiscountByProductType(CartVO cartVO, ProductVO productVO) {
+        // need to check for product.menu, if it exists, cycle thru the discount list on menu and apply it to the total
+        if(cartVO.menu != null){
+            for(DiscountVO discountVO : cartVO.menu.discount_list) {
+                if (productVO.getProducttypeid().producttypeid == discountVO.producttype.producttypeid) {
+                    cartVO.total = Math.max(0,cartVO.total - discountVO.discountamount)
+                    // this will subtract the discount amount for every product in the cart
+                }
+            }
+        }
     }
 
 
