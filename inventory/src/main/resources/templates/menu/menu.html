@@ -546,6 +546,7 @@
     <!-- CART SECTION ENDS -->
 
     <!-- Cart Review Modal -->
+    <!-- Update the Cart Review Modal -->
     <div id="cartReviewModal" class="modal" tabindex="-1" style="display: none;">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -555,9 +556,16 @@
                 </div>
                 <div class="modal-body">
                     <p>Here are the products in your cart:</p>
-                    <div id="cartReviewContent"></div> <!-- This will display cart rows -->
+                    <div id="cartReviewContent"></div> <!-- Cart rows will be displayed here -->
                     <hr>
-                    <p><strong>Total:</strong> $<span id="cartReviewTotal">0.00</span></p> <!-- Total placeholder -->
+                    <p><strong>Total:</strong> $<span id="cartReviewTotal">0.00</span></p>
+                    <hr>
+                    <!-- Delivery Notes Textarea -->
+                    <div class="mb-3">
+                        <label for="deliveryNotes" class="form-label"><strong>Delivery Notes</strong></label>
+                        <textarea id="deliveryNotes" name="deliverynotes" class="form-control" rows="4"
+                                  placeholder="Enter the delivery instructions here to proceed"></textarea>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-danger" id="cancelOrder">Cancel</button>
@@ -566,6 +574,7 @@
             </div>
         </div>
     </div>
+
     <!-- End Cart Review Modal -->
 
     <div id="shoppingTokenTimer" class="hovering-timer">
@@ -748,12 +757,64 @@
 
                 // Get the total value using the id of totalDiv
                 const total = $('#totalDiv span').attr('data-total'); // Locate the span inside #totalDiv and fetch data-total
-                console.log(total);
                 const formattedTotal = parseFloat(total) || 0; // Ensure it's a valid number
 
                 // Update the modal with cart content and total
                 $('#cartReviewContent').html(cartContent);
                 $('#cartReviewTotal').text(formattedTotal.toFixed(2));
+
+                // Disable Confirm Order button initially
+                $('#confirmOrder').prop('disabled', true);
+
+                // Enable Confirm Order button when delivery notes have 3+ characters
+                $('#deliveryNotes').on('input', function () {
+                    const deliveryNotesLength = $(this).val().length;
+                    $('#confirmOrder').prop('disabled', deliveryNotesLength < 3);
+                });
+
+                // Handle Confirm Order inside the modal
+                $('#confirmOrder').off('click').on('click', function () {
+                    // Fetch parameters from the first cart row (assumes rows contain required attributes)
+                    const firstCartRow = $('#cartRows .cart-row').first();
+
+                    const shoppingToken = firstCartRow.attr('data-shopping-token-id');
+                    const menuId = firstCartRow.attr('data-menu-id');
+                    let cartId = firstCartRow.attr('data-cart-id');
+
+                    // Validate parameters
+                    if (!shoppingToken || !menuId) {
+                        alert('Missing required parameters! Ensure you have items in the cart.');
+                        return;
+                    }
+
+                    // Default cartId to 0 if null, undefined, or '0'
+                    cartId = cartId && cartId !== '0' ? cartId : '0';
+
+                    // Add parameters to the form dynamically
+                    const form = $('#cartForm')[0];
+
+                    const fields = [
+                        { name: 'shoppingtoken', value: shoppingToken },
+                        { name: 'menuid', value: menuId },
+                        { name: 'cartid', value: cartId },
+                        { name: 'deliverynotes', value: $('#deliveryNotes').val() }, // Capture delivery notes value
+                    ];
+
+                    // Clear existing hidden inputs to prevent duplicates
+                    $(form).find('input[type="hidden"]').remove();
+
+                    // Append all parameters as hidden fields
+                    fields.forEach(field => {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = field.name;
+                        input.value = field.value;
+                        form.appendChild(input);
+                    });
+
+                    // Submit the form
+                    form.submit();
+                });
 
                 // Display the cart review modal
                 $('#cartReviewModal').fadeIn();
@@ -763,12 +824,9 @@
             $('#closeCartReview, #cancelOrder').on('click', function () {
                 $('#cartReviewModal').fadeOut();
             });
-
-            // Confirm order and submit the form
-            $('#confirmOrder').on('click', function () {
-                $('#cartForm').submit(); // Programmatically submit the form
-            });
         });
+
+
 
 
 
