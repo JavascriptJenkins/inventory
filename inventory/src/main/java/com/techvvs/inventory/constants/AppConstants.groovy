@@ -72,9 +72,10 @@ String VIEW_INVOICE = "view"
 
     //delivery constants below
     int DELIVERY_STATUS_CREATED = 0
-    int DELIVERY_STATUS_EN_ROUTE = 1
-    int DELIVERY_STATUS_DELIVERED = 2
-    int DELIVERY_STATUS_CANCELED = 3
+    int DELIVERY_STATUS_PREPPING = 1
+    int DELIVERY_STATUS_EN_ROUTE = 2
+    int DELIVERY_STATUS_DELIVERED = 3
+    int DELIVERY_STATUS_CANCELED = 4
 
 
     // tenants
@@ -85,5 +86,15 @@ String VIEW_INVOICE = "view"
 
     // TOKEN TYPES
     public String MENU_SHOPPING_TOKEN = "MENU_SHOPPING_TOKEN"
+
+
+    // Location Types
+    public String B2B_DISTRO = "B2B.DISTRO"
+    public String B2C_RETAIL = "B2C.RETAIL"
+    public String ADHOC_CUSTOMER_DELIVERY = "ADHOC.CUSTOMER.DELIVERY"
+
+    // Package Types
+    public String LARGE_BOX = "LARGE.BOX"
+    public String SMALL_BOX = "SMALL.BOX"
 
 }

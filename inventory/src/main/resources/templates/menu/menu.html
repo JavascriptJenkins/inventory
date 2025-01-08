@@ -348,7 +348,7 @@
                     <!-- Link to video for the product, passing productid and menuid -->
                     <a th:href="@{/document/product(productid=${product.product_id}, menuid=${menu.menuid})}"
                        class="btn btn-sm btn-primary mt-2">Documents</a>
-                    <!-- Integrated Add to Cart Button -->
+                    <!-- Modify Add to Cart Buttons -->
                     <a href="javascript:void(0);"
                        class="btn btn-sm btn-warning mt-2 add-to-cart-btn"
                        th:data-product-id="${product.product_id}"
@@ -357,7 +357,8 @@
                        th:data-menu-id="${menuid}"
                        th:data-product-name="${product.name}"
                        th:data-product-price="${product.displayprice}"
-                    >
+                       th:disabled="${cart.isprocessed == 1}"
+                       th:classappend="${cart.isprocessed == 1} ? 'disabled' : ''">
                         Add to Cart
                     </a>
 
@@ -527,9 +528,11 @@
             >
                 <span th:text="${product.name}">Product Name</span>
                 <span>
-                <button class="cart-controls" onclick="updateQuantity('decrease', this)">-</button>
+                <button class="cart-controls" onclick="updateQuantity('decrease', this)"                 th:disabled="${cart.isprocessed == 1}"
+                        th:classappend="${cart.isprocessed == 1} ? 'disabled' : ''">-</button>
                 <span th:text="${product.displayquantity}"></span>
-                <button class="cart-controls" onclick="updateQuantity('increase', this)">+</button>
+                <button class="cart-controls" onclick="updateQuantity('increase', this)"                 th:disabled="${cart.isprocessed == 1}"
+                        th:classappend="${cart.isprocessed == 1} ? 'disabled' : ''">+</button>
             </span>
                 <span th:text="${product.displayprice}">$0.00</span>
             </div>
