@@ -214,14 +214,18 @@ public class MenuViewController {
             @RequestParam("cartid") Optional<String> cartid,
             @RequestParam("productid") Optional<String> productid,
             @RequestParam("quantityselected") Optional<String> quantityselected,
+            @RequestParam("deliverynotes") Optional<String> deliverynotes,
+            @RequestParam("locationid") Optional<String> locationid,
             @RequestParam("size") Optional<String> size,
             @ModelAttribute( "cart" ) CartVO cartVO
     ){
 
         // first we need to check if we have all required items
-        if(shoppingtoken.present && cartid.present && menuid.present){
+        if(shoppingtoken.present && cartid.present && menuid.present && locationid.present && deliverynotes.present){
 
-            //
+            // now we will checkout this cart and turn it into a transaction
+            menuHelper.checkoutCart(Integer.valueOf(cartid.get()), Integer.valueOf(menuid.get()), Integer.valueOf(locationid.get()),deliverynotes.get(), shoppingtoken.get(), model)
+            //model.addAttribute("successMessage", "Cart checked out")
 
         }
 

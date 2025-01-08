@@ -2,12 +2,21 @@ package com.techvvs.inventory.service.controllers
 
 import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.jparepo.CartRepo
+import com.techvvs.inventory.jparepo.DeliveryRepo
 import com.techvvs.inventory.jparepo.DiscountRepo
+import com.techvvs.inventory.jparepo.LocationRepo
+import com.techvvs.inventory.jparepo.LocationTypeRepo
 import com.techvvs.inventory.jparepo.PackageRepo
+import com.techvvs.inventory.jparepo.PackageTypeRepo
 import com.techvvs.inventory.jparepo.ProductTypeRepo
 import com.techvvs.inventory.jparepo.TransactionRepo
 import com.techvvs.inventory.model.CartVO
+import com.techvvs.inventory.model.CustomerVO
+import com.techvvs.inventory.model.DeliveryVO
 import com.techvvs.inventory.model.DiscountVO
+import com.techvvs.inventory.model.LocationTypeVO
+import com.techvvs.inventory.model.LocationVO
+import com.techvvs.inventory.model.PackageTypeVO
 import com.techvvs.inventory.model.PackageVO
 import com.techvvs.inventory.model.PaymentVO
 import com.techvvs.inventory.model.ProductTypeVO
@@ -16,6 +25,7 @@ import com.techvvs.inventory.model.ReturnVO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.model.nonpersist.Totals
 import com.techvvs.inventory.printers.PrinterService
+import com.techvvs.inventory.qrcode.impl.QrCodeGenerator
 import com.techvvs.inventory.service.transactional.CheckoutService
 import com.techvvs.inventory.util.FormattingUtil
 import com.techvvs.inventory.util.TechvvsAppUtil
@@ -25,6 +35,7 @@ import org.springframework.stereotype.Component
 
 import javax.persistence.EntityNotFoundException
 import javax.transaction.Transactional
+import java.security.SecureRandom
 import java.time.LocalDateTime
 
 
@@ -72,6 +83,21 @@ class TransactionService {
 
     @Autowired
     DiscountService discountService
+
+    @Autowired
+    QrCodeGenerator qrCodeGenerator
+
+    @Autowired
+    DeliveryRepo deliveryRepo
+
+    @Autowired
+    LocationRepo locationRepo
+
+    @Autowired
+    LocationTypeRepo locationTypeRepo
+
+    @Autowired
+    PackageTypeRepo packageTypeRepo
 
 
     @Transactional
@@ -138,6 +164,138 @@ class TransactionService {
 
     }
 
+
+    // todo: holy crap this method is ridiculous.  god willing inshallah it shall be refactored
+    @Transactional
+    TransactionVO processCartGenerateNewTransactionForDelivery(CartVO cartVO, int locationid, String deliverynotes) {
+
+        Double taxpercentage = environment.getProperty("tax.percentage", Double.class)
+
+        double originalprice = cartService.calculateTotalPriceOfProductList(cartVO.product_cart_list)
+
+        double totalwithtax = 0.00
+
+        totalwithtax = formattingUtil.calculateTotalWithTax(originalprice, taxpercentage, 0.00)
+
+        ArrayList<ProductVO> newlist = cartVO.product_cart_list
+
+        TransactionVO newtransaction = new TransactionVO(
+
+                product_list: newlist,
+                cart: cartVO,
+                updateTimeStamp: LocalDateTime.now(),
+                createTimeStamp: LocalDateTime.now(),
+                customervo: cartVO.customer,
+                total: cartVO.total,
+                originalprice: originalprice,
+                totalwithtax: totalwithtax,
+//                totalwithtax: cartVO.total,
+                paid: 0.00,
+                taxpercentage: techvvsAppUtil.dev1 ? 0 : 0, // we are not going to set a tax percentage here in non dev environments
+                isprocessed: 0
+
+        )
+
+        newtransaction = transactionRepo.save(newtransaction)
+
+        // only save the cart after transaction is created
+        productService.saveProductAssociations(newtransaction)
+
+        // save the cart with processed=1
+        cartVO.isprocessed = 1
+        cartVO.updateTimeStamp = LocalDateTime.now()
+        cartVO = cartRepo.save(newtransaction.cart)
+
+
+        // create a delivery instance for the transaction so it will show up in the delivery que
+        DeliveryVO deliveryVO = new DeliveryVO(
+                transaction: newtransaction,
+                name: cartVO.customer.name+" | Order " + " | " +newtransaction.transactionid,
+                description: "typical order description",
+                deliverybarcode: productService.generateBarcodeForSplitProduct(generateEightDigitNumber()),
+                deliveryqrlink: "", // this contains the deliveryid, has to be set after the delivery is created
+                location: setLocation(deliverynotes, locationid),
+                notes: deliverynotes,
+                iscanceled: 0,
+                isprocessed: 0,
+                status: appConstants.DELIVERY_STATUS_CREATED,
+                total: newtransaction.total,
+                updateTimeStamp: LocalDateTime.now(),
+                createTimeStamp: LocalDateTime.now()
+
+        )
+        deliveryVO = deliveryRepo.save(deliveryVO)
+
+        // now set the delivery qr link on the delivery object
+        deliveryVO.deliveryqrlink = qrCodeGenerator.buildQrLinkForDeliveryItem(String.valueOf(deliveryVO.deliveryid))
+        deliveryVO.package_list = createNewPackage(newtransaction, deliveryVO)
+
+        deliveryVO = deliveryRepo.save(deliveryVO)
+
+
+        return newtransaction
+
+    }
+
+    LocationVO setLocation(String deliverynotes, int locationid){
+        if(locationid > 0){
+            // this means user chose a location on the dropdown and we grab that from the database
+            return locationRepo.findById(locationid).get()
+        } else {
+            LocationTypeVO locationTypeVO = locationTypeRepo.findByName(appConstants.ADHOC_CUSTOMER_DELIVERY).get()
+
+            return locationRepo.save(new LocationVO(
+                    name: deliverynotes ? deliverynotes.substring(0, Math.min(25, deliverynotes.length())) : "", // we are setting the location name to first 25 characters of the delivery notes
+                    description: deliverynotes,
+                    locationtype: locationTypeVO,
+                    notes: deliverynotes,
+                    updateTimeStamp: LocalDateTime.now(),
+                    createTimeStamp: LocalDateTime.now()
+            ))
+        }
+    }
+
+    List<PackageVO>  createNewPackage(TransactionVO transactionVO, DeliveryVO deliveryVO){
+        PackageTypeVO packageTypeVO = packageTypeRepo.findByName(appConstants.SMALL_BOX).get()
+        List<ProductVO> detachedList = new ArrayList<>(transactionVO.product_list);
+
+        PackageVO packageVO = packageRepo.save(new PackageVO(
+                name: transactionVO.customervo.name + " | Package | " + transactionVO.transactionid,
+                description: "this package is going out for delivery or pickup in a package locker. ",
+                packagebarcode: productService.generateBarcodeForSplitProduct(generateEightDigitNumber()), // we are not going to use this in this customer fulfillment delivery flow.  no reason to track multiple barcodes rn. in the future we might use this for tracking code
+                packagetype: packageTypeVO,
+                customer: transactionVO.customervo,
+                transaction: transactionVO,
+                weight: 0.00,
+                bagcolor: "normal",
+                delivery: deliveryVO,
+                product_package_list: detachedList,
+                total: transactionVO.total,
+                isprocessed: 0,
+                updateTimeStamp: LocalDateTime.now(),
+                createTimeStamp: LocalDateTime.now(),
+        ))
+
+        List<PackageVO> newlist = new ArrayList<PackageVO>()
+        newlist.add(packageVO)
+
+        return newlist
+    }
+
+//    int generateSixDigitNumber() {
+//        // Initialize SecureRandom
+//        SecureRandom secureRandom = new SecureRandom()
+//        // Generate a random number between 100000 and 999999 (inclusive)
+//        return Integer.valueOf(100000 + secureRandom.nextInt(900000))
+//    }
+
+    int generateEightDigitNumber() {
+        // Initialize SecureRandom
+        SecureRandom secureRandom = new SecureRandom();
+
+        // Generate a random number between 10000000 and 99999999 (inclusive)
+        return 10000000 + secureRandom.nextInt(90000000);
+    }
 
     // todo: i don't think i need this, keep it just in case we need a method that adds a list of packages to a transaction....
     @Transactional

@@ -21,6 +21,10 @@ class DeliveryVO implements Serializable{
     String description;
     @JsonProperty
     String deliverybarcode
+    @JsonProperty
+    String deliveryqrlink
+    @JsonProperty
+    String notes
 
     @JsonProperty
     @OneToOne(cascade= CascadeType.ALL, fetch  = FetchType.EAGER)

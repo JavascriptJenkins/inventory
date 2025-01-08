@@ -8,16 +8,19 @@ import com.techvvs.inventory.jparepo.DiscountRepo
 import com.techvvs.inventory.jparepo.MenuRepo
 import com.techvvs.inventory.jparepo.ProductRepo
 import com.techvvs.inventory.jparepo.ProductTypeRepo
+import com.techvvs.inventory.jparepo.SystemUserRepo
 import com.techvvs.inventory.model.CartVO
 import com.techvvs.inventory.model.CustomerVO
 import com.techvvs.inventory.model.DiscountVO
 import com.techvvs.inventory.model.MenuVO
 import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.ProductVO
+import com.techvvs.inventory.model.SystemUserDAO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.security.JwtTokenProvider
 import com.techvvs.inventory.security.Role
 import com.techvvs.inventory.service.controllers.ProductService
+import com.techvvs.inventory.service.controllers.TransactionService
 import com.techvvs.inventory.service.transactional.CartDeleteService
 import com.techvvs.inventory.util.TwilioTextUtil
 import io.jsonwebtoken.Claims
@@ -27,6 +30,8 @@ import org.springframework.core.env.Environment
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.springframework.security.core.Authentication
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.parameters.P
 import org.springframework.stereotype.Component
 import org.springframework.ui.Model
@@ -79,6 +84,12 @@ class MenuHelper {
 
     @Autowired
     ProductRepo productRepo
+
+    @Autowired
+    TransactionService transactionService
+
+    @Autowired
+    SystemUserRepo systemUserRepo
 
     @Transactional
     MenuVO changePrice(
@@ -509,6 +520,24 @@ class MenuHelper {
         String token = jwtTokenProvider.createMenuShoppingToken(customerVO.email, roles, Integer.valueOf(tokenlength), menuid, customerid)
 
         boolean isDev1 = "dev1".equals(environment.getProperty("spring.profiles.active"));
+
+        BigInteger numberfromui = new BigInteger("1" + phonenumber);
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        SystemUserDAO systemUserDAO = systemUserRepo.findByEmail(authentication.getPrincipal().username)
+
+        if(systemUserDAO.phone.equals(String.valueOf(numberfromui))){
+            // if the phone number entered is the same as the logged in user, just send a single token out
+            twilioTextUtil.sendShoppingTokenLinkSMS(phonenumber,isDev1, menuid, token)
+        } else {
+            // send a copy of the token to the system user logged in number and also to the customer phone number
+            twilioTextUtil.sendShoppingTokenLinkSMS(phonenumber,isDev1, menuid, token)
+
+            twilioTextUtil.sendShoppingTokenLinkSMSWithCustomMessage(
+                    systemUserDAO.phone,isDev1, menuid, token, "Menu for Customer: "+customerVO.name+"              ")
+        }
+
+
         twilioTextUtil.sendShoppingTokenLinkSMS(phonenumber,isDev1, menuid, token)
 
         model.addAttribute("successMessage","Shopping token sent to :"+phonenumber+" valid for "+tokenlength+" hours.  ")
@@ -708,7 +737,7 @@ class MenuHelper {
 
         // The System is assuming we will only ever have a single cart per menu and customer combination
         Optional<CartVO> cart = cartRepo.findByMenuAndCustomer(menuVO, customerVO)
-        if(cart.isPresent()){
+        if(cart.isPresent() && cart.get().isprocessed == 0){
             // here we need to format the items inside the cart to consolidate them for proper display on ui
             checkoutHelper.hydrateTransientQuantitiesForDisplay(cart.get())
 
@@ -775,6 +804,28 @@ class MenuHelper {
         return cartVO.cartid
     }
 
+
+    @Transactional
+    TransactionVO checkoutCart(
+            Integer cartid,
+            Integer menuid,
+            Integer locationid,
+            String  deliverynotes,
+            String token,
+            Model model
+    ){
+        if(!validateShoppingToken(String.valueOf(menuid), token, model)){
+            return false
+        }
+
+        // get the existing cart
+        CartVO cartVO = cartRepo.findById(cartid).get()
+
+        // generate a new transaction
+        TransactionVO transactionVO = transactionService.processCartGenerateNewTransactionForDelivery(cartVO, locationid, deliverynotes)
+
+        return transactionVO
+    }
 
 
 

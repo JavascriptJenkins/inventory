@@ -50,6 +50,10 @@ class CustomerVO implements Serializable {
     @JoinColumn(name="deliveryid")
     DeliveryVO delivery
 
+    @JsonProperty
+    @ElementCollection(fetch = FetchType.LAZY)
+    List<LocationVO> locationlist = new ArrayList<LocationVO>()
+
     // generic fields below
     @JsonProperty
     LocalDateTime updateTimeStamp

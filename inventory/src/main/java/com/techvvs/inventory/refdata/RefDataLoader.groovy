@@ -84,7 +84,7 @@ class RefDataLoader {
         }
         // Creating the first PackageTypeVO instance for "large box"
         PackageTypeVO palletTypeVO = new PackageTypeVO();
-        palletTypeVO.setName("LARGE.BOX");
+        palletTypeVO.setName(appConstants.LARGE_BOX);
         palletTypeVO.setDescription("A large box used for shipping");
         palletTypeVO.setCreateTimeStamp(LocalDateTime.now());
         palletTypeVO.setUpdateTimeStamp(LocalDateTime.now());
@@ -92,7 +92,7 @@ class RefDataLoader {
 
         // Creating the second PackageTypeVO instance for "small box"
         PackageTypeVO smallBoxTypeVO = new PackageTypeVO();
-        smallBoxTypeVO.setName("SMALL.BOX");
+        smallBoxTypeVO.setName(appConstants.SMALL_BOX);
         smallBoxTypeVO.setDescription("A small box used for shipping");
         smallBoxTypeVO.setCreateTimeStamp(LocalDateTime.now());
         smallBoxTypeVO.setUpdateTimeStamp(LocalDateTime.now());
@@ -235,26 +235,39 @@ class RefDataLoader {
 
     void loadLocationTypes(){
 
-        List<LocationTypeVO> list = locationTypeRepo.findAll()
-        if(list.size() > 0){
-            return // return early to not pollute database with duplicates
+        if(locationTypeRepo.findByName(appConstants.B2B_DISTRO).present){
+            // nothing
+        } else {
+            LocationTypeVO locationType1 = new LocationTypeVO();
+            locationType1.setName(appConstants.B2B_DISTRO);
+            locationType1.setDescription("biz to biz distribution");
+            locationType1.setCreateTimeStamp(LocalDateTime.now());
+            locationType1.setUpdateTimeStamp(LocalDateTime.now());
+            locationTypeRepo.save(locationType1);
         }
 
+        if(locationTypeRepo.findByName(appConstants.B2C_RETAIL).present){
+            // nothing
+        } else {
+            LocationTypeVO locationType2 = new LocationTypeVO();
+            locationType2.setName("B2C.RETAIL");
+            locationType2.setDescription("biz to customer retail");
+            locationType2.setCreateTimeStamp(LocalDateTime.now());
+            locationType2.setUpdateTimeStamp(LocalDateTime.now());
+            locationTypeRepo.save(locationType2);
+        }
 
-        LocationTypeVO locationType1 = new LocationTypeVO();
-        locationType1.setName("B2B.DISTRO");
-        locationType1.setDescription("biz to biz distribution");
-        locationType1.setCreateTimeStamp(LocalDateTime.now());
-        locationType1.setUpdateTimeStamp(LocalDateTime.now());
-        locationTypeRepo.save(locationType1);
+        if(locationTypeRepo.findByName(appConstants.ADHOC_CUSTOMER_DELIVERY).present){
+            // nothing
+        } else {
+            LocationTypeVO locationType3 = new LocationTypeVO();
+            locationType3.setName("ADHOC.CUSTOMER.DELIVERY");
+            locationType3.setDescription("adhoc order from a customer for delivery fulfillment");
+            locationType3.setCreateTimeStamp(LocalDateTime.now());
+            locationType3.setUpdateTimeStamp(LocalDateTime.now());
+            locationTypeRepo.save(locationType3);
+        }
 
-        LocationTypeVO locationType2 = new LocationTypeVO();
-        locationType2.setName("B2C.RETAIL");
-        locationType2.setDescription("biz to customer retail");
-        locationType2.setCreateTimeStamp(LocalDateTime.now());
-        locationType2.setUpdateTimeStamp(LocalDateTime.now());
-
-        locationTypeRepo.save(locationType2);
 
         System.out.println("Location Type ref data loaded");
 
