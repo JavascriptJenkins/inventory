@@ -539,7 +539,13 @@
             <div id="totalDiv">
                 <strong>Total:</strong> <span th:data-total="${cart.total}" th:text="${cart.total}">$0.00</span>
             </div>
-            <button id="submitCartButton" class="btn btn-light mt-2" type="submit" form="cartForm">Submit Cart</button>
+            <!-- Replace Submit Cart Button Based on cart.isprocessed -->
+            <div th:if="${cart.isprocessed == 1}">
+                <p class="text-muted">This cart has already been processed.</p>
+            </div>
+            <div th:if="${cart.isprocessed != 1}">
+                <button id="submitCartButton" class="btn btn-light mt-2" type="button">Submit Cart</button>
+            </div>
             <form id="cartForm" th:action="@{/menu/shop/checkout}" method="post"></form>
         </div>
     </div>
@@ -593,8 +599,12 @@
     <div id="shoppingTokenTimer" class="hovering-timer">
         Shopping Time Left:&nbsp; <span id="timeDisplay"></span>
     </div>
-    <div id="emptyCartButton" class="floating-button">
+    <!-- Conditional Empty Cart Button or Message -->
+    <div id="emptyCartButton" th:if="${cart.isprocessed != 1}" class="floating-button">
         <button class="btn btn-danger">Empty Cart</button>
+    </div>
+    <div th:if="${cart.isprocessed == 1}" class="floating-button">
+        <p class="text-muted">This cart has already been processed and cannot be emptied.</p>
     </div>
 
 
