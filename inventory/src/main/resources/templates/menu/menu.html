@@ -809,6 +809,12 @@
                     clearInterval(timerInterval);
                     $('#timeDisplay').text('Expired');
                     $('#shoppingTokenTimer').addClass('red').removeClass('green yellow');
+
+                    // Check if there are items in the cart before triggering the emptyCartButton
+                    if ($('#cartRows .cart-row').length > 0) {
+                        $('#emptyCartButton button').click();
+                    }
+
                     return;
                 }
 
