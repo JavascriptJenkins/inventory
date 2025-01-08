@@ -248,7 +248,7 @@
                 <div class="card-body">
                     <h5 class="card-title" th:text="${product.name}">Product Name</h5>
                     <p class="card-text"><strong>Quantity:</strong> <span th:text="${product.quantityremaining}"></span></p>
-                    <p class="card-text"><strong>Price:</strong> $<span th:text="${product.price}"></span></p>
+                    <p class="card-text"><strong>Price:</strong> $<span th:text="${product.displayprice}"></span></p>
 
                     <!-- Link to video for the product, passing productid and menuid -->
                     <a th:href="@{/video/product(productid=${product.product_id}, menuid=${menu.menuid})}"

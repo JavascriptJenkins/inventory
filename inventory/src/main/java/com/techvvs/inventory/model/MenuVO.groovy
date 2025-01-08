@@ -69,16 +69,12 @@ class MenuVO implements Serializable {
      * Apply discounts to the products in the menu_product_list.
      * @param discountVOs A list of DiscountVO objects to apply.
      */
-    void applyDiscount(List<DiscountVO> discountVOs) {
+    void setDisplayPrice() {
         menu_product_list.each { product ->
-            discountVOs.each { discount ->
-                // Check for matching product type name and discount name
-                if (product.producttypeid?.name == discount.name) {
-                    // Apply the discount ensuring the display price does not go below 0
-                    product.displayprice = Math.max(0, product.price - discount.discountamount)
-                } else {
-                    product.displayprice = product.price // if there is no discount applied, set display price to normal price
-                }
+            if(product.displayprice != null && product.displayprice != product.price){
+                // do nothing
+            } else {
+                product.displayprice = product.price // if there is no discount applied, set display price to normal price
             }
         }
     }

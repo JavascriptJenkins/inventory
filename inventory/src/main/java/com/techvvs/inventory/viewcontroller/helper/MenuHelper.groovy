@@ -419,20 +419,23 @@ class MenuHelper {
             for(ProductVO productVO : uniqueproducts){
                 productVO.setPrimaryphoto(appConstants.UPLOAD_DIR_IMAGES+productVO.product_id)
                 productVO.setVideodir(appConstants.UPLOAD_DIR_IMAGES+productVO.product_id)
+                // apply discount to these products so price displays on ui correctly
+                checkoutHelper.applyDiscountByProductTypeForMenu(Optional.of(menuVO), productVO)
             }
+
 
 
             menuVO.menu_product_list = uniqueproducts
 
             // now that we have the unique products, find all discounts with this menuid and apply them to prices
-            List<DiscountVO> discountVOS = discountRepo.findAllByMenu(menuVO)
-            menuVO.applyDiscount(discountVOS) // this sets the displayprice on the products
+            //List<DiscountVO> discountVOS = discountRepo.findAllByMenu(menuVO)
+            menuVO.setDisplayPrice() // this sets the displayprice on the products
 
             ProductVO.sortProductsByDisplayPrice(menuVO.menu_product_list)
 
-            menuVO.menu_product_list.each { item ->
-                item.price = item.displayprice // set all prices to the displayprice
-            }
+//            menuVO.menu_product_list.each { item ->
+//                item.price = item.displayprice // set all prices to the displayprice
+//            }
 
             model.addAttribute("menu", menuVO)
             return menuVO
