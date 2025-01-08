@@ -692,5 +692,32 @@ class MenuHelper {
 
 
 
+    @Transactional
+    boolean checkQuantity(Integer productid, Integer quantityselected, Model model) {
+        // Retrieve the product from the repository
+        Optional<ProductVO> productVO = productRepo.findById(productid);
+
+        // Check if the product exists
+        if (productVO.isPresent()) {
+            // Get the quantity remaining for the product
+            ProductVO product = productVO.get();
+
+            // Check if the quantity remaining is sufficient
+            if (product.quantityremaining >= quantityselected) {
+                return true; // Quantity is sufficient
+            } else {
+                // Add an error message for insufficient quantity
+                model.addAttribute("errorMessage", "Insufficient quantity available");
+                return false;
+            }
+        } else {
+            // Add an error message if the product does not exist
+            model.addAttribute("errorMessage", "Product does not exist");
+            return false;
+        }
+    }
+
+
+
 
 }

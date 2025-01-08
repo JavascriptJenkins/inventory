@@ -127,12 +127,17 @@ public class MenuViewController {
 
 
         // pass in the cartid and menuid and productid and quantityselected into a method to add to the cart
-        if(cartid.isPresent() && menuid.isPresent() && productid.isPresent() && quantityselected.isPresent()) {
+        if(cartid.isPresent() && menuid.isPresent() && productid.isPresent() && quantityselected.isPresent()
+        && menuHelper.checkQuantity(Integer.valueOf(productid.get()), Integer.valueOf(quantityselected.get()), model)
+        ) {
+
             String customerid = jwtTokenProvider.getCustomerIdFromToken(shoppingtoken.get())
             int savedcartid = menuHelper.addProductToCart(Integer.valueOf(cartid.get()), Integer.valueOf(menuid.get()), Integer.valueOf(productid.get()), Integer.valueOf(quantityselected.get()), Integer.valueOf(customerid), model, shoppingtoken.get())
             menuHelper.loadCart(savedcartid, model)
             // hydrate hidden values for passing into the post methods like token etc
             menuHelper.bindHiddenValues(model, shoppingtoken.get(), menuid.get())
+        } else {
+            loadDataOnError(menuid, shoppingtoken, cartid, model)
         }
 
         processRestOfStuff(menuid, shoppingtoken, model)
@@ -163,6 +168,8 @@ public class MenuViewController {
             menuHelper.loadCart(savedcartid, model)
             // hydrate hidden values for passing into the post methods like token etc
             menuHelper.bindHiddenValues(model, shoppingtoken.get(), menuid.get())
+        } else {
+                loadDataOnError(menuid, shoppingtoken, cartid, model)
         }
 
         processRestOfStuff(menuid, shoppingtoken, model)
@@ -206,6 +213,12 @@ public class MenuViewController {
         return "menu/menu.html";
     }
 
+
+    void loadDataOnError(Optional<String> menuid, Optional<String> shoppingtoken, Optional<String> cartid, Model model) {
+        menuHelper.loadCart(Integer.valueOf(cartid.get()), model)
+        // hydrate hidden values for passing into the post methods like token etc
+        menuHelper.bindHiddenValues(model, shoppingtoken.get(), menuid.get())
+    }
 
 
     void processRestOfStuff(Optional<String> menuid, Optional<String> shoppingtoken, Model model) {
