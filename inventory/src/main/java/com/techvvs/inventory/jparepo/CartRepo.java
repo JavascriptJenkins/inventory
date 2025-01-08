@@ -15,6 +15,7 @@ public interface CartRepo extends JpaRepository<CartVO, Integer> {
     List<CartVO> findAll();
     Page<CartVO> findAllByIsprocessed(int isprocessed, Pageable pageable);
     Optional<CartVO> findByMenuAndCustomer(MenuVO menuVO, CustomerVO customerVO);
+    List<CartVO> findAllByMenuAndCustomer(MenuVO menuVO, CustomerVO customerVO);
 
 
 

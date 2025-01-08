@@ -568,9 +568,17 @@ class MenuHelper {
         CartVO cartVO
         if(cartid == null || cartid == 0){
 
-            Optional<CartVO> existingcart = cartRepo.findByMenuAndCustomer(menuVO,customerVO)
+            List<CartVO> listcarts = cartRepo.findAllByMenuAndCustomer(menuVO,customerVO)
+            boolean found = false
+            for(CartVO cart : listcarts){
+                if(cart.isprocessed == 0){
+                    found = true
+                    cartVO = cart
+                    break
+                }
+            }
 
-            if(existingcart.empty){
+            if(!found){
                 //create a new cart
                 cartVO = cartRepo.save(new CartVO(
                         menu: menuVO,
@@ -579,11 +587,8 @@ class MenuHelper {
                         createTimeStamp: LocalDateTime.now(),
                         isprocessed: 0
                 ))
-            } else {
-                // this should never execute - in here as a safety measure to make sure we never have more
-                // than a single cart per customerid and menuid combination
-                cartVO = cartRepo.findById(cartid).get()
             }
+
 
         } else {
             // get the existing cart
@@ -736,13 +741,20 @@ class MenuHelper {
 
 
         // The System is assuming we will only ever have a single cart per menu and customer combination
-        Optional<CartVO> cart = cartRepo.findByMenuAndCustomer(menuVO, customerVO)
-        if(cart.isPresent() && cart.get().isprocessed == 0){
-            // here we need to format the items inside the cart to consolidate them for proper display on ui
-            checkoutHelper.hydrateTransientQuantitiesForDisplay(cart.get())
+        List<CartVO> cartlist = cartRepo.findAllByMenuAndCustomer(menuVO, customerVO)
 
-            model.addAttribute("cart", cart.get())
-            model.addAttribute("cartid", cart.get().cartid) // bind this for uri param
+        // we are assuming here we will only ever have a single cart per user that is not processed
+        for(CartVO cart : cartlist){
+            if(cart.isprocessed == 0){
+                // here we need to format the items inside the cart to consolidate them for proper display on ui
+                checkoutHelper.hydrateTransientQuantitiesForDisplay(cart)
+
+                model.addAttribute("cart", cart)
+                model.addAttribute("cartid", cart.cartid) // bind this for uri param
+            } else{
+                model.addAttribute("cartid", 0) // bind this for uri param
+            }
+            break // break just to make sure we only ever do this once.....
         }
 
     }

@@ -256,6 +256,11 @@
             display: flex;
             justify-content: space-between;
         }
+        .invisible {
+            opacity: 0; /* Make invisible */
+            pointer-events: none; /* Disable interaction */
+        }
+
 
     </style>
 
@@ -506,7 +511,7 @@
     <!-- Floating Arrow -->
     <div id="cartToggle"
          class="floating-arrow bi bi-arrow-right"
-         th:classappend="${cart.product_cart_list != null and !#lists.isEmpty(cart.product_cart_list)} ? 'invisible' : ''">
+         th:classappend="${cart.product_cart_list == null or #lists.isEmpty(cart.product_cart_list)} ? '' : 'invisible'">
     </div>
 
     <!-- Cart Section -->
