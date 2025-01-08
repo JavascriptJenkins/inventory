@@ -803,9 +803,10 @@ class MenuHelper {
             String token
     ){
 
-        if(!validateShoppingToken(String.valueOf(menuid), token, model)){
-            return 0
-        }
+        // not validating here
+//        if(!validateShoppingToken(String.valueOf(menuid), token, model)){
+//            return 0
+//        }
 
         // get the existing cart
         CartVO cartVO = cartRepo.findById(cartid).get()

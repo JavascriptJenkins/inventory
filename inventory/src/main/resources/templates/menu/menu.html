@@ -878,64 +878,94 @@
 
 
         $(document).ready(function () {
-            // Get the shopping token from the relevant cart row
+            // Decode the JWT and calculate expiration
+            function parseJwt(token) {
+                const base64Payload = token.split('.')[1];
+                const payload = atob(base64Payload);
+                return JSON.parse(payload);
+            }
+
             const cartRow = $('[data-shopping-token-id]').first();
-            const shoppingToken = $(cartRow).attr('data-shopping-token-id'); // JWT from the attribute
+            const shoppingToken = $(cartRow).attr('data-shopping-token-id');
 
             if (!shoppingToken) {
                 console.error("Shopping token not found.");
                 return;
             }
 
-            // Decode the JWT to extract the expiration time (exp)
-            function parseJwt(token) {
-                const base64Payload = token.split('.')[1]; // Extract payload part of the JWT
-                const payload = atob(base64Payload); // Decode base64
-                return JSON.parse(payload); // Parse JSON
-            }
-
             const tokenData = parseJwt(shoppingToken);
-            const expirationTime = tokenData.exp; // Expiration time in seconds since epoch
+            const expirationTime = tokenData.exp * 1000;
 
-            if (!expirationTime) {
-                console.error("Invalid token: missing expiration time (exp).");
-                return;
-            }
-
-            // Calculate expiration timestamp (convert to milliseconds)
-            const expirationTimestamp = expirationTime * 1000;
-
-            // Update the timer every second
             const timerInterval = setInterval(() => {
                 const currentTime = Date.now();
-                const remainingTime = Math.max(0, expirationTimestamp - currentTime);
+                const remainingTime = expirationTime - currentTime;
 
                 if (remainingTime <= 0) {
                     clearInterval(timerInterval);
                     $('#timeDisplay').text('Expired');
                     $('#shoppingTokenTimer').addClass('red').removeClass('green yellow');
 
-                    // Check if there are items in the cart before triggering the emptyCartButton
+                    // Automatically empty the cart when token expires
                     if ($('#cartRows .cart-row').length > 0) {
-                        $('#emptyCartButton button').click();
+                        triggerEmptyCart(); // Call the new function to empty the cart
                     }
 
                     return;
                 }
 
-                // Convert remaining time to hours, minutes, and seconds
+                // Timer UI logic (update color and remaining time display)
+                updateTimerUI(remainingTime);
+            }, 1000);
+
+            function triggerEmptyCart() {
+                // Automatically submit the empty cart form without popup
+                const firstCartRow = $('#cartRows .cart-row').first();
+
+                if (!firstCartRow.length) {
+                    console.error('No products found in the cart.');
+                    return;
+                }
+
+                const menuId = firstCartRow.attr('data-menu-id');
+                let cartId = firstCartRow.attr('data-cart-id') || '0';
+
+                // Validate required parameters
+                if (!shoppingToken || !menuId) {
+                    console.error('Missing required parameters to empty cart.');
+                    return;
+                }
+
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/menu/shop/empty/cart';
+
+                const fields = [
+                    { name: 'shoppingtoken', value: shoppingToken },
+                    { name: 'menuid', value: menuId },
+                    { name: 'cartid', value: cartId },
+                ];
+
+                fields.forEach(field => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = field.name;
+                    input.value = field.value;
+                    form.appendChild(input);
+                });
+
+                document.body.appendChild(form);
+                form.submit();
+            }
+
+            function updateTimerUI(remainingTime) {
                 const hours = Math.floor(remainingTime / (1000 * 60 * 60));
                 const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
 
-                // Update the timer display
                 $('#timeDisplay').text(
-                    `${hours.toString().padStart(2, '0')} hours, ${minutes
-                        .toString()
-                        .padStart(2, '0')} minutes, ${seconds.toString().padStart(2, '0')} seconds`
+                    `${hours.toString().padStart(2, '0')} hours, ${minutes.toString().padStart(2, '0')} minutes, ${seconds.toString().padStart(2, '0')} seconds`
                 );
 
-                // Change the timer color based on the remaining time
                 const timerElement = $('#shoppingTokenTimer');
                 if (remainingTime > 60 * 60 * 1000) {
                     timerElement.addClass('green').removeClass('yellow red');
@@ -944,7 +974,7 @@
                 } else {
                     timerElement.addClass('red').removeClass('green yellow');
                 }
-            }, 1000);
+            }
         });
 
 
