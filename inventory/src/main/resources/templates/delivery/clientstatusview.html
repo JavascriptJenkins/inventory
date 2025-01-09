@@ -16,13 +16,42 @@
             border-radius: 10px;
             color: #fff;
         }
+        .progress-container {
+            position: relative;
+            margin-top: 20px;
+        }
         .progress-bar {
             transition: width 0.5s ease-in-out;
+            background: linear-gradient(90deg, #0f2027, #203a43, #2c5364);
+            box-shadow: 0px 0px 15px rgba(0, 255, 255, 0.5);
+            height: 20px;
+            border-radius: 10px;
         }
-        .progress-bar.fill-25 { background: linear-gradient(to right, #ff5722, #ff9800); }
-        .progress-bar.fill-50 { background: linear-gradient(to right, #ff9800, #ffc107); }
-        .progress-bar.fill-75 { background: linear-gradient(to right, #ffc107, #8bc34a); }
-        .progress-bar.fill-100 { background: linear-gradient(to right, #8bc34a, #4caf50); }
+        .progress {
+            background-color: rgba(255, 255, 255, 0.1);
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            width: 80%;
+            margin: 0 auto;
+        }
+        .progress-hover {
+            position: relative;
+            margin: 20px auto;
+            width: 80%;
+        }
+        .status-text {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.2em;
+            color: #00ffff;
+            text-shadow: 0px 0px 10px #00ffff;
+        }
+        .updated-time {
+            margin-bottom: 60px; /* Added margin for spacing */
+        }
     </style>
 </head>
 <body>
@@ -37,13 +66,23 @@
             </div>
             <div class="modal-body">
                 <p><strong>Order Created:</strong> <span th:text="${delivery.createTimeStamp}"></span></p>
-                <p><strong>Order Last Updated:</strong> <span th:text="${delivery.updateTimeStamp}"></span></p>
+                <p class="updated-time"><strong>Order Last Updated:</strong> <span th:text="${delivery.updateTimeStamp}"></span></p>
 
-                <!-- Progress Bar -->
-                <div th:if="${delivery.status < 4}" class="progress my-4">
-                    <div class="progress-bar" th:style="'width: ' + ${delivery.progressWidth} + '%'"></div>
+                <!-- Status Message and Progress Bar -->
+                <div th:if="${delivery.status < 5}" class="progress-container">
+                    <div class="status-text" th:if="${delivery.status == 0}">Order Created</div>
+                    <div class="status-text" th:if="${delivery.status == 1}">Order Being Prepared</div>
+                    <div class="status-text" th:if="${delivery.status == 2}">Order Ready For Dispatch</div>
+                    <div class="status-text" th:if="${delivery.status == 3}">Order En Route</div>
+                    <div class="status-text" th:if="${delivery.status == 4}">Order has been delivered!</div>
+
+                    <div class="progress-hover">
+                        <div class="progress">
+                            <div class="progress-bar" th:style="'width: ' + ${delivery.progressWidth} + '%'"></div>
+                        </div>
+                    </div>
                 </div>
-                <p th:if="${delivery.status == 4}" class="text-danger"><strong>Delivery Canceled</strong></p>
+                <p th:if="${delivery.status == 5}" class="text-danger"><strong>Delivery Canceled</strong></p>
 
                 <!-- Package List -->
                 <h5>Products in Delivery</h5>

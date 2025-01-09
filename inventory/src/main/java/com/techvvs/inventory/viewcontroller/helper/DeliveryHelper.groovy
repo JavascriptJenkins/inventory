@@ -550,11 +550,13 @@ class DeliveryHelper {
     int calculateProgressWidth(DeliveryVO deliveryVO){
         switch (deliveryVO.status){
             case appConstants.DELIVERY_STATUS_CREATED:
-                return 25
+                return 20
             case appConstants.DELIVERY_STATUS_PREPPING:
-                return 50
+                return 40
+            case appConstants.DELIVERY_STATUS_READY_FOR_DISPATCH:
+                return 60
             case appConstants.DELIVERY_STATUS_EN_ROUTE:
-                return 75
+                return 80
             case appConstants.DELIVERY_STATUS_DELIVERED:
                 return 100
             default:
