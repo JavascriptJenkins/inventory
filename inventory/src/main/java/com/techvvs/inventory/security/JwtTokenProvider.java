@@ -163,6 +163,30 @@ public class JwtTokenProvider {
   }
 
 
+  public String createDeliveryViewToken(String email, List<Role> roles, int hours, String menuid, String customerid) {
+
+    Claims claims = Jwts.claims().setSubject(email);
+    claims.put("auth", roles.stream()
+            .map(s -> new SimpleGrantedAuthority(s.getAuthority()))
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList()));
+    claims.put("menuid", menuid); // Add the "menuid" claim
+    claims.put("customerid", customerid); // Add the "menuid" claim
+    claims.put("token_type", appConstants.MENU_SHOPPING_TOKEN); // Add the "token_type" claim
+
+    Date now = new Date();
+    // Calculate validity dynamically based on input hours
+    long validityInMilliseconds = hours * 3600000L; // 1 hour = 3600000 milliseconds
+    Date validity = new Date(now.getTime() + validityInMilliseconds);
+
+    return Jwts.builder()
+            .setClaims(claims)
+            .setIssuedAt(now)
+            .setExpiration(validity)
+            .signWith(SignatureAlgorithm.HS256, secretKey)
+            .compact();
+  }
+
 
 
 

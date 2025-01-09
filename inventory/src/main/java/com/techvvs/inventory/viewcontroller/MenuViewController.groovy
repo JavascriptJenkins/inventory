@@ -8,6 +8,7 @@ import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.qrcode.impl.QrCodeGenerator
 import com.techvvs.inventory.security.JwtTokenProvider
+import com.techvvs.inventory.security.Role
 import com.techvvs.inventory.service.auth.TechvvsAuthService
 import com.techvvs.inventory.service.transactional.CartDeleteService
 import com.techvvs.inventory.viewcontroller.helper.BatchControllerHelper
@@ -254,7 +255,9 @@ public class MenuViewController {
 
             model.addAttribute("ordercomplete", "yes")
             model.addAttribute("successMessage", "Click HERE to monitor your delivery!")
-            model.addAttribute("successLink", transactionVO.delivery.deliveryqrlink)
+            List<Role> roles = Arrays.asList(Role.ROLE_CLIENT, Role.ROLE_DELIVERY_VIEW_TOKEN);
+            String token = jwtTokenProvider.createMenuShoppingToken(transactionVO.customervo.email, roles, 96, menuid.get(), String.valueOf(transactionVO.customervo.customerid))
+            model.addAttribute("successLink", transactionVO.delivery.deliveryqrlink+"&deliverytoken="+token)
         }
 
 
