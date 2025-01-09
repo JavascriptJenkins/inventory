@@ -32,6 +32,11 @@ class DeliveryVO implements Serializable{
     LocationVO location
 
     @JsonProperty
+    @OneToOne(cascade= CascadeType.ALL, fetch  = FetchType.EAGER)
+    @JoinColumn(name="lockerid")
+    LockerVO locker
+
+    @JsonProperty
     @OneToOne(cascade=CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name="transactionid")
     TransactionVO transaction;
@@ -50,6 +55,9 @@ class DeliveryVO implements Serializable{
 
     @JsonProperty
     int isprocessed;
+
+    @JsonProperty
+    int ispickup = 0
 
     @JsonProperty
     int status;

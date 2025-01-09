@@ -223,6 +223,7 @@ class TransactionService {
                 notes: deliverynotes,
                 iscanceled: 0,
                 isprocessed: 0,
+                ispickup: "delivery".equals(type) ? 0 : 1,
                 status: appConstants.DELIVERY_STATUS_CREATED,
                 total: newtransaction.total,
                 updateTimeStamp: LocalDateTime.now(),

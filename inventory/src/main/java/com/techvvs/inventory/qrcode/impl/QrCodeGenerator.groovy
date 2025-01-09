@@ -388,6 +388,17 @@ class QrCodeGenerator {
         return baseqrdomain+"/delivery/item?deliveryid="+deliveryid
     }
 
+    String buildQrLinkForLockerItem(String lockerid){
+        boolean isdev1 = env.getProperty("spring.profiles.active").equals(appConstants.DEV_1)
+        String baseqrdomain = env.getProperty("base.qr.domain")
+
+        if(isdev1){
+            baseqrdomain = "http://localhost:8080"
+        }
+
+        return baseqrdomain+"/locker/item?lockerid="+lockerid
+    }
+
 
 
 

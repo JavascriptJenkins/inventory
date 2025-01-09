@@ -6,6 +6,7 @@ import com.techvvs.inventory.jparepo.CustomerRepo
 import com.techvvs.inventory.jparepo.DiscountRepo
 import com.techvvs.inventory.jparepo.LocationRepo
 import com.techvvs.inventory.jparepo.LocationTypeRepo
+import com.techvvs.inventory.jparepo.LockerRepo
 import com.techvvs.inventory.jparepo.PackageTypeRepo
 import com.techvvs.inventory.jparepo.ProductTypeRepo
 import com.techvvs.inventory.model.BatchTypeVO
@@ -13,8 +14,10 @@ import com.techvvs.inventory.model.CustomerVO
 import com.techvvs.inventory.model.DiscountVO
 import com.techvvs.inventory.model.LocationTypeVO
 import com.techvvs.inventory.model.LocationVO
+import com.techvvs.inventory.model.LockerVO
 import com.techvvs.inventory.model.PackageTypeVO
 import com.techvvs.inventory.model.ProductTypeVO
+import com.techvvs.inventory.qrcode.impl.QrCodeGenerator
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
@@ -38,6 +41,9 @@ class RefDataLoader {
     LocationTypeRepo locationTypeRepo
 
     @Autowired
+    LockerRepo lockerRepo
+
+    @Autowired
     DiscountRepo discountRepo
 
     @Autowired
@@ -48,6 +54,9 @@ class RefDataLoader {
 
     @Autowired
     AppConstants appConstants
+
+    @Autowired
+    QrCodeGenerator qrCodeGenerator
 
 
     void loadRefData(){
@@ -165,10 +174,10 @@ class RefDataLoader {
 
     void loadCustomers(){
 
-        List<CustomerVO> list = customerRepo.findAll()
-        if(list.size() > 0){
-            return // return early to not pollute database with duplicates
-        }
+//        List<CustomerVO> list = customerRepo.findAll()
+//        if(list.size() > 0){
+//            return // return early to not pollute database with duplicates
+//        }
 
 //        CustomerVO customerVO = new CustomerVO();
 //        customerVO.name = "John Doe"
@@ -275,6 +284,31 @@ class RefDataLoader {
 
     }
 
+
+    void loadDefaultDeliveryLockers(){
+
+
+        if(lockerRepo.findByName("locker-1").present){
+            // don't do anything, we already have default lockers loaded
+            System.out.println("20 Default Lockers NOT Loaded in Ref Data.  Locker-1 already exists. ");
+        } else {
+            int amtOfLockersToCreate = 20
+            for(amtOfLockersToCreate; amtOfLockersToCreate > 0; amtOfLockersToCreate--){
+                LockerVO savedlocker = lockerRepo.save(new LockerVO(
+                        name: "locker-" + amtOfLockersToCreate,
+                        description: "locker-" + amtOfLockersToCreate,
+                        notes: "default locker for delivering products.",
+                        createTimeStamp: LocalDateTime.now(),
+                        updateTimeStamp: LocalDateTime.now()))
+
+                savedlocker.setUpdateTimeStamp(LocalDateTime.now())
+                savedlocker.lockerqrlink = qrCodeGenerator.buildQrLinkForLockerItem(String.valueOf(savedlocker.lockerid))
+                lockerRepo.save(savedlocker)
+            }
+            System.out.println("20 Default Lockers Loaded in Ref Data");
+        }
+
+    }
 
     // Helper method to create and save product types
     private void saveProductType(String name, String description) {
