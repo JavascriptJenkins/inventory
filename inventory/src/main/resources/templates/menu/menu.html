@@ -1151,13 +1151,12 @@
             function validateForm() {
                 const isDelivery = $('#deliveryCheckbox').is(':checked');
                 const address1Valid = $('#address1').val().length > 0;
-                const address2Valid = $('#address2').val().length > 0;
                 const cityValid = $('#city').val().length >= 3;
                 const stateValid = $('#state').val() !== '';
                 const zipcodeValid = /^\d{5}$/.test($('#zipcode').val());
                 const deliveryNotesValid = $('#deliveryNotes').val().length > 5;
 
-                const allValid = !isDelivery || (address1Valid && address2Valid && cityValid && stateValid && zipcodeValid && deliveryNotesValid);
+                const allValid = !isDelivery || (address1Valid && cityValid && stateValid && zipcodeValid && deliveryNotesValid);
                 $('#confirmOrder').prop('disabled', !allValid);
             }
 
@@ -1177,7 +1176,11 @@
             });
 
             // Validate Fields
-            $('#address1, #address2').on('input', function () {
+            // Automatically validate Address 2
+            $('#address2').siblings('.validation-icon').html('✔').css('color', 'green');
+
+
+            $('#address1').on('input', function () {
                 validateField(this, $(this).val().length > 0);
                 validateForm();
             });
