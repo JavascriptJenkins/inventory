@@ -311,6 +311,10 @@
     </script>
 </head>
 <body>
+
+<!-- Conditional rendering based on 'ordercomplete' attribute -->
+<div th:if="${ordercomplete == null}">
+
 <div class="container">
     <!-- Modernized menu header -->
     <div class="menu-header">Menu</div>
@@ -1221,6 +1225,15 @@
 
 
 
+</div> <!-- main container ends -->
+</div> <!-- wrapping it here to hide after the order is complete -->
+
+
+<!-- Success message if ordercomplete == 'yes' -->
+<div th:if="${ordercomplete == 'yes'}" class="d-flex justify-content-center align-items-center" style="height: 100vh; background-color: #f8f9fa;">
+    <h1>
+        <a th:href="${successLink}" th:text="${successMessage}" class="text-success" style="text-decoration: none;"></a>
+    </h1>
 </div>
 </body>
 

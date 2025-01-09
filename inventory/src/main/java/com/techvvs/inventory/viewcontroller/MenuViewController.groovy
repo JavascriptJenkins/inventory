@@ -5,6 +5,8 @@ import com.techvvs.inventory.model.CartVO
 import com.techvvs.inventory.model.LocationVO
 import com.techvvs.inventory.model.MenuVO
 import com.techvvs.inventory.model.ProductTypeVO
+import com.techvvs.inventory.model.TransactionVO
+import com.techvvs.inventory.qrcode.impl.QrCodeGenerator
 import com.techvvs.inventory.security.JwtTokenProvider
 import com.techvvs.inventory.service.auth.TechvvsAuthService
 import com.techvvs.inventory.service.transactional.CartDeleteService
@@ -239,7 +241,7 @@ public class MenuViewController {
             LocationVO locationVO = prepLocationObject(address1, address2, city, state, zipcode, type, locationid, model)
 
             // now we will checkout this cart and turn it into a transaction
-            menuHelper.checkoutCart(
+            TransactionVO transactionVO = menuHelper.checkoutCart(
                     Integer.valueOf(cartid.get()),
                     Integer.valueOf(menuid.get()),
                     Integer.valueOf(locationid.get()),
@@ -250,8 +252,9 @@ public class MenuViewController {
                     model
             )
 
-            //model.addAttribute("successMessage", "Cart checked out")
-
+            model.addAttribute("ordercomplete", "yes")
+            model.addAttribute("successMessage", "Click HERE to monitor your delivery!")
+            model.addAttribute("successLink", transactionVO.delivery.deliveryqrlink)
         }
 
 

@@ -31,6 +31,7 @@ import com.techvvs.inventory.qrcode.impl.QrCodeGenerator
 import com.techvvs.inventory.service.transactional.CheckoutService
 import com.techvvs.inventory.util.FormattingUtil
 import com.techvvs.inventory.util.TechvvsAppUtil
+import com.techvvs.inventory.util.TwilioTextUtil
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
@@ -103,6 +104,9 @@ class TransactionService {
 
     @Autowired
     CustomerRepo customerRepo
+
+    @Autowired
+    TwilioTextUtil twilioTextUtil
 
 
     @Transactional
@@ -238,6 +242,9 @@ class TransactionService {
 
         deliveryVO = deliveryRepo.save(deliveryVO)
 
+        // todo: should we text the user the delivery qr link upon creation?   will just display in work que ui for now
+
+        newtransaction.delivery = deliveryVO // binding this here just so the upstream methods will have it and we don't have to do another fetch to the database
 
         return newtransaction
 
