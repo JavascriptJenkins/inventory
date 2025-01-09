@@ -20,13 +20,13 @@
             position: relative;
             margin-top: 20px;
         }
-        .progress-bar {
-            transition: width 0.5s ease-in-out;
-            background: linear-gradient(90deg, #0f2027, #203a43, #2c5364);
-            box-shadow: 0px 0px 15px rgba(0, 255, 255, 0.5);
-            height: 20px;
-            border-radius: 10px;
-        }
+    .progress-bar {
+        transition: width 0.1s linear; /* Smooth animation for each step */
+        background: linear-gradient(90deg, #0f2027, #203a43, #2c5364);
+        box-shadow: 0px 0px 15px rgba(0, 255, 255, 0.5);
+        height: 20px;
+        border-radius: 10px;
+    }
         .progress {
             background-color: rgba(255, 255, 255, 0.1);
             height: 20px;
@@ -83,9 +83,15 @@
 
                     <div class="progress-hover">
                         <div class="progress">
-                            <div class="progress-bar" th:style="'width: ' + ${delivery.progressWidth} + '%'"></div>
+                            <div
+                                    class="progress-bar"
+                                    th:style="'width: ' + ${delivery.progressWidth} + '%'"
+                                    data-status="${delivery.status}"
+                                    data-progress="${delivery.progressWidth}">
+                            </div>
                         </div>
                     </div>
+
                 </div>
                 <p th:if="${delivery.status == 5}" class="text-danger"><strong>Delivery Canceled</strong></p>
 
@@ -121,5 +127,40 @@
         </div>
     </div>
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const progressBar = document.querySelector('.progress-bar');
+
+        // Define progress mapping based on status
+        const statusProgressMap = {
+            0: 20, // Start from 20% for status 0
+            1: 40, // Start from 40% for status 1
+            2: 60, // Start from 60% for status 2
+            3: 80, // Start from 80% for status 3
+            4: 100 // Full for status 4
+        };
+
+        // Fetch the initial status
+        const deliveryStatus = parseInt(progressBar.getAttribute('data-status')) || 0;
+        const initialProgress = statusProgressMap[deliveryStatus] || 0;
+
+        let progress = initialProgress; // Start animation from the mapped percentage
+        const maxProgress = 100;
+
+        const animateProgress = () => {
+            if (progress < maxProgress) {
+                progress += 1; // Increment progress
+            } else {
+                progress = initialProgress; // Reset to initial progress
+            }
+            progressBar.style.width = `${progress}%`;
+        };
+
+        setInterval(animateProgress, 100); // Update every 100ms
+    });
+</script>
+
+
+
 </body>
 </html>
