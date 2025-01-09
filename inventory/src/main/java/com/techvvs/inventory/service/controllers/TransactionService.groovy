@@ -3,6 +3,7 @@ package com.techvvs.inventory.service.controllers
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.jparepo.CartRepo
+import com.techvvs.inventory.jparepo.CustomerRepo
 import com.techvvs.inventory.jparepo.DeliveryRepo
 import com.techvvs.inventory.jparepo.DiscountRepo
 import com.techvvs.inventory.jparepo.LocationRepo
@@ -99,6 +100,9 @@ class TransactionService {
 
     @Autowired
     PackageTypeRepo packageTypeRepo
+
+    @Autowired
+    CustomerRepo customerRepo
 
 
     @Transactional
@@ -215,7 +219,7 @@ class TransactionService {
                 description: "typical order description",
                 deliverybarcode: productService.generateBarcodeForSplitProduct(generateEightDigitNumber()),
                 deliveryqrlink: "", // this contains the deliveryid, has to be set after the delivery is created
-                location: setLocation(deliverynotes, locationid, locationVO, type),
+                location: setLocation(deliverynotes, locationid, locationVO, type, cartVO.customer),
                 notes: deliverynotes,
                 iscanceled: 0,
                 isprocessed: 0,
@@ -238,14 +242,15 @@ class TransactionService {
 
     }
 
-    LocationVO setLocation(String deliverynotes, int locationid, LocationVO locationVO, String type){
+    LocationVO setLocation(String deliverynotes, int locationid, LocationVO locationVO, String type, CustomerVO customerVO) {
         if(locationid > 0){
             // this means user chose a location on the dropdown and we grab that from the database
             return locationRepo.findById(locationid).get()
         } else {
+            CustomerVO detachedVO = customerVO
             LocationTypeVO locationTypeVO = locationTypeRepo.findByName(appConstants.ADHOC_CUSTOMER_DELIVERY).get()
 
-            return locationRepo.save(new LocationVO(
+            LocationVO newlocation = locationRepo.save(new LocationVO(
                     name: deliverynotes ? deliverynotes.substring(0, Math.min(25, deliverynotes.length())) : "", // we are setting the location name to first 25 characters of the delivery notes
                     description: deliverynotes,
                     locationtype: locationTypeVO,
@@ -258,6 +263,12 @@ class TransactionService {
                     updateTimeStamp: LocalDateTime.now(),
                     createTimeStamp: LocalDateTime.now()
             ))
+
+            // save the locationid relationship to the customer
+            detachedVO.locationlist.add(newlocation)
+
+            customerRepo.save(detachedVO)
+            return newlocation
         }
     }
 
