@@ -13,6 +13,7 @@ import com.techvvs.inventory.service.auth.TechvvsAuthService;
 import com.techvvs.inventory.util.SendgridEmailUtil;
 import com.techvvs.inventory.util.TwilioTextUtil;
 import com.techvvs.inventory.validation.ValidateAuth;
+import com.techvvs.inventory.viewcontroller.helper.CheckoutHelper;
 import com.techvvs.inventory.viewcontroller.helper.MenuHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -49,6 +50,9 @@ public class AuthViewController {
     PasswordEncoder passwordEncoder;
     @Autowired
     JwtTokenProvider jwtTokenProvider;
+
+    @Autowired
+    CheckoutHelper checkoutHelper;
 
     @Autowired
     TwilioTextUtil textMagicUtil;
@@ -174,6 +178,12 @@ public class AuthViewController {
                                 HttpServletResponse response
 
     ) {
+
+
+        // bind the menu options here
+        menuHelper.findMenus(model, Optional.empty(), Optional.empty());
+        // get all the customers
+        checkoutHelper.getAllCustomers(model);
 
         if (tokenDAO != null && tokenDAO.getUsermetadata() != null && tokenDAO.getToken() != null) {
 
