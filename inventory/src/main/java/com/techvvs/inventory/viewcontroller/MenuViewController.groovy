@@ -256,7 +256,8 @@ public class MenuViewController {
             model.addAttribute("ordercomplete", "yes")
             model.addAttribute("successMessage", "Click HERE to monitor your delivery!")
             List<Role> roles = Arrays.asList(Role.ROLE_CLIENT, Role.ROLE_DELIVERY_VIEW_TOKEN);
-            String token = jwtTokenProvider.createMenuShoppingToken(transactionVO.customervo.email, roles, 96, menuid.get(), String.valueOf(transactionVO.customervo.customerid))
+            String token = jwtTokenProvider.createDeliveryViewToken(transactionVO.customervo.email, roles, 96,
+                    menuid.get(), String.valueOf(transactionVO.customervo.customerid), String.valueOf(transactionVO.delivery.deliveryid))
             model.addAttribute("successLink", transactionVO.delivery.deliveryqrlink+"&deliverytoken="+token)
         }
 

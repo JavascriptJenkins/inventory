@@ -86,6 +86,7 @@ String VIEW_INVOICE = "view"
 
     // TOKEN TYPES
     public String MENU_SHOPPING_TOKEN = "MENU_SHOPPING_TOKEN"
+    public String DELIVERY_VIEW_TOKEN = "DELIVERY_VIEW_TOKEN"
 
 
     // Location Types

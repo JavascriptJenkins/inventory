@@ -17,6 +17,7 @@ import com.techvvs.inventory.service.controllers.TransactionService
 import com.techvvs.inventory.service.paging.FilePagingService
 import com.techvvs.inventory.service.transactional.CartDeleteService
 import com.techvvs.inventory.util.TechvvsFileHelper
+import com.techvvs.inventory.viewcontroller.helper.CheckoutHelper
 import com.techvvs.inventory.viewcontroller.helper.CrateHelper
 import com.techvvs.inventory.viewcontroller.helper.DeliveryHelper
 import com.techvvs.inventory.viewcontroller.helper.PackageHelper
@@ -77,6 +78,9 @@ public class DeliveryViewController {
     @Autowired
     BarcodeService barcodeService
 
+    @Autowired
+    CheckoutHelper checkoutHelper
+
     //default home mapping
     @GetMapping
     String viewNewForm(
@@ -135,6 +139,26 @@ public class DeliveryViewController {
         techvvsAuthService.checkuserauth(model)
         model.addAttribute("delivery", deliveryVO);
         return "delivery/pendingdeliveries.html";
+    }
+
+
+    // NOTE: this is not doing typical user auth
+    //client view of readonly delivery status
+    @GetMapping("item")
+    String viewDeliveryForClient(
+            Model model,
+            @RequestParam("deliverytoken") Optional<String> deliverytoken,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size
+    ){
+
+        // this needs to do a search on the customerid and see if there is cart pending with this exact menu id
+        if(deliverytoken.isPresent()) {
+            deliveryHelper.loadDeliveryByDeliveryToken(deliverytoken.get(), model)
+            deliveryHelper.bindHiddenValues(model, deliverytoken.get())
+        }
+
+        return "delivery/clientstatusview.html";
     }
 
     // todo: write in a validation check to make sure you can't add more than is available in the batch

@@ -68,10 +68,15 @@ class DeliveryVO implements Serializable{
     @Transient
     PackageVO packageinscope
 
+    @Transient
+    List<ProductVO> allproductsinpackages
+
 
     @Transient
     CrateVO crateinscope
 
+    @Transient
+    int progressWidth
 
     @Transient
     int displayquantitytotal

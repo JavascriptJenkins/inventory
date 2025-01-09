@@ -163,7 +163,7 @@ public class JwtTokenProvider {
   }
 
 
-  public String createDeliveryViewToken(String email, List<Role> roles, int hours, String menuid, String customerid) {
+  public String createDeliveryViewToken(String email, List<Role> roles, int hours, String menuid, String customerid, String deliveryid) {
 
     Claims claims = Jwts.claims().setSubject(email);
     claims.put("auth", roles.stream()
@@ -172,7 +172,8 @@ public class JwtTokenProvider {
             .collect(Collectors.toList()));
     claims.put("menuid", menuid); // Add the "menuid" claim
     claims.put("customerid", customerid); // Add the "menuid" claim
-    claims.put("token_type", appConstants.MENU_SHOPPING_TOKEN); // Add the "token_type" claim
+    claims.put("deliveryid", deliveryid); // Add the "deliveryid" claim
+    claims.put("token_type", appConstants.DELIVERY_VIEW_TOKEN); // Add the "token_type" claim
 
     Date now = new Date();
     // Calculate validity dynamically based on input hours
@@ -374,6 +375,24 @@ public class JwtTokenProvider {
       throw new CustomException("Expired or invalid JWT token", HttpStatus.FORBIDDEN);
     }
   }
+
+  public String getDeliveryIdFromToken(String token) {
+    try {
+      // Parse the token claims
+      Jws<Claims> claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
+
+      // Check if the "custromerid" claim is present and extract the value
+      String deliveryid = claims.getBody().get("deliveryid", String.class);
+      if (deliveryid == null || deliveryid.isEmpty()) {
+        throw new CustomException("Delivery ID is missing in the token", HttpStatus.FORBIDDEN);
+      }
+      return deliveryid;
+
+    } catch (JwtException | IllegalArgumentException e) {
+      throw new CustomException("Expired or invalid JWT token", HttpStatus.FORBIDDEN);
+    }
+  }
+
 
 
   void logout(HttpServletRequest request, HttpServletResponse response){
