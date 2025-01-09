@@ -12,6 +12,7 @@ import com.techvvs.inventory.jparepo.SystemUserRepo
 import com.techvvs.inventory.model.CartVO
 import com.techvvs.inventory.model.CustomerVO
 import com.techvvs.inventory.model.DiscountVO
+import com.techvvs.inventory.model.LocationVO
 import com.techvvs.inventory.model.MenuVO
 import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.ProductVO
@@ -828,6 +829,8 @@ class MenuHelper {
             Integer locationid,
             String  deliverynotes,
             String token,
+            LocationVO locationVO,
+            String type,
             Model model
     ){
         if(!validateShoppingToken(String.valueOf(menuid), token, model)){
@@ -838,7 +841,7 @@ class MenuHelper {
         CartVO cartVO = cartRepo.findById(cartid).get()
 
         // generate a new transaction
-        TransactionVO transactionVO = transactionService.processCartGenerateNewTransactionForDelivery(cartVO, locationid, deliverynotes)
+        TransactionVO transactionVO = transactionService.processCartGenerateNewTransactionForDelivery(cartVO, locationid, deliverynotes, locationVO, type)
 
         return transactionVO
     }

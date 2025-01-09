@@ -2,6 +2,7 @@ package com.techvvs.inventory.viewcontroller
 
 import com.techvvs.inventory.model.BatchVO
 import com.techvvs.inventory.model.CartVO
+import com.techvvs.inventory.model.LocationVO
 import com.techvvs.inventory.model.MenuVO
 import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.security.JwtTokenProvider
@@ -229,10 +230,26 @@ public class MenuViewController {
     ){
 
         // first we need to check if we have all required items
-        if(shoppingtoken.present && cartid.present && menuid.present && locationid.present && deliverynotes.present){
+        if(shoppingtoken.present && cartid.present && menuid.present && locationid.present && deliverynotes.present
+
+            && type.present // if type is present and is "delivery" and locationid is "0" then we have a new incoming location
+
+        ){
+
+            LocationVO locationVO = prepLocationObject(address1, address2, city, state, zipcode, type, locationid, model)
 
             // now we will checkout this cart and turn it into a transaction
-            menuHelper.checkoutCart(Integer.valueOf(cartid.get()), Integer.valueOf(menuid.get()), Integer.valueOf(locationid.get()),deliverynotes.get(), shoppingtoken.get(), model)
+            menuHelper.checkoutCart(
+                    Integer.valueOf(cartid.get()),
+                    Integer.valueOf(menuid.get()),
+                    Integer.valueOf(locationid.get()),
+                    deliverynotes.get(),
+                    shoppingtoken.get(),
+                    locationVO,
+                    type.get(),
+                    model
+            )
+
             //model.addAttribute("successMessage", "Cart checked out")
 
         }
@@ -253,6 +270,37 @@ public class MenuViewController {
 
         processRestOfStuff(menuid, shoppingtoken, model)
         return "menu/menu.html";
+    }
+
+    LocationVO prepLocationObject(
+            Optional<String> address1,
+            Optional<String> address2,
+            Optional<String> city,
+            Optional<String> state,
+            Optional<String> zipcode,
+            Optional<String> type,
+            Optional<String> locationid,
+            Model model
+    ){
+        LocationVO locationVO
+        if(type.get().equals("delivery") && locationid.get().equals("0")) {
+            // this means it's users first time ordering and we have to create their first location
+             locationVO = new LocationVO(
+                    address1: address1.get(),
+                    address2: address2.present ? address2.get() : "",
+                    city: city.get(),
+                    state: state.get(),
+                    zipcode: zipcode.get(),
+                    locationid: Integer.valueOf(locationid.get())
+            )
+        } else {
+             locationVO = new LocationVO(
+                    locationid: Integer.valueOf(locationid.get())
+            )
+        }
+
+        return locationVO
+
     }
 
 

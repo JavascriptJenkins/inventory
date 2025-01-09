@@ -1,5 +1,6 @@
 package com.techvvs.inventory.service.controllers
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.jparepo.CartRepo
 import com.techvvs.inventory.jparepo.DeliveryRepo
@@ -167,7 +168,7 @@ class TransactionService {
 
     // todo: holy crap this method is ridiculous.  god willing inshallah it shall be refactored
     @Transactional
-    TransactionVO processCartGenerateNewTransactionForDelivery(CartVO cartVO, int locationid, String deliverynotes) {
+    TransactionVO processCartGenerateNewTransactionForDelivery(CartVO cartVO, int locationid, String deliverynotes, LocationVO locationVO, type) {
 
         Double taxpercentage = environment.getProperty("tax.percentage", Double.class)
 
@@ -214,7 +215,7 @@ class TransactionService {
                 description: "typical order description",
                 deliverybarcode: productService.generateBarcodeForSplitProduct(generateEightDigitNumber()),
                 deliveryqrlink: "", // this contains the deliveryid, has to be set after the delivery is created
-                location: setLocation(deliverynotes, locationid),
+                location: setLocation(deliverynotes, locationid, locationVO, type),
                 notes: deliverynotes,
                 iscanceled: 0,
                 isprocessed: 0,
@@ -237,7 +238,7 @@ class TransactionService {
 
     }
 
-    LocationVO setLocation(String deliverynotes, int locationid){
+    LocationVO setLocation(String deliverynotes, int locationid, LocationVO locationVO, String type){
         if(locationid > 0){
             // this means user chose a location on the dropdown and we grab that from the database
             return locationRepo.findById(locationid).get()
@@ -249,6 +250,11 @@ class TransactionService {
                     description: deliverynotes,
                     locationtype: locationTypeVO,
                     notes: deliverynotes,
+                    address1: locationVO.address1,
+                    address2: locationVO.address2 != null ? locationVO.address2 : "",
+                    city: locationVO.city,
+                    state: locationVO.state,
+                    zipcode: locationVO.zipcode,
                     updateTimeStamp: LocalDateTime.now(),
                     createTimeStamp: LocalDateTime.now()
             ))
