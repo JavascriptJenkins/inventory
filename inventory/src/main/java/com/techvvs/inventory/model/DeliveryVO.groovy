@@ -91,6 +91,12 @@ class DeliveryVO implements Serializable{
     @Transient
     String barcode
 
+    @Transient
+    String displayCreateDateTimeStamp
+
+    @Transient
+    String displayUpdateDateTimeStamp
+
     // generic fields below
     @JsonProperty
     LocalDateTime updateTimeStamp;

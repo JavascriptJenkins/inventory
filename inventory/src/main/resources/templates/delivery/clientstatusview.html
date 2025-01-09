@@ -65,8 +65,13 @@
                 </h5>
             </div>
             <div class="modal-body">
-                <p><strong>Order Created:</strong> <span th:text="${delivery.createTimeStamp}"></span></p>
-                <p class="updated-time"><strong>Order Last Updated:</strong> <span th:text="${delivery.updateTimeStamp}"></span></p>
+                <p><strong>Order Created:</strong>
+                    <span th:text="${delivery.displayCreateDateTimeStamp}"></span>
+                </p>
+                <p class="updated-time"><strong>Order Last Updated:</strong>
+                    <span th:text="${delivery.displayUpdateDateTimeStamp}"></span>
+                </p>
+
 
                 <!-- Status Message and Progress Bar -->
                 <div th:if="${delivery.status < 5}" class="progress-container">
@@ -85,7 +90,7 @@
                 <p th:if="${delivery.status == 5}" class="text-danger"><strong>Delivery Canceled</strong></p>
 
                 <!-- Package List -->
-                <h5>Products in Delivery</h5>
+                <h5>Products in Order</h5>
                 <table class="table table-striped table-dark table-bordered">
                     <thead>
                     <tr>
@@ -105,6 +110,13 @@
 
                     </tbody>
                 </table>
+                <!-- Display Total Below the Table -->
+                <p class="text-end mt-3" style="font-size: 1.2em; font-weight: bold; color: #00ffcc;">
+                    <strong>Total:</strong> <span th:text="${#numbers.formatCurrency(delivery.total)}"></span>
+                </p>
+
+
+
             </div>
         </div>
     </div>

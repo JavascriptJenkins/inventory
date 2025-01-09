@@ -16,6 +16,9 @@ import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Component
 import org.springframework.ui.Model
 
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+
 // helper class to make sure actual checkout controller code stays clean n tidy
 @Component
 class DeliveryHelper {
@@ -543,6 +546,15 @@ class DeliveryHelper {
 
         deliveryVO.progressWidth = calculateProgressWidth(deliveryVO)
         deliveryVO.allproductsinpackages = new ArrayList<>(productMap.values());
+
+        deliveryVO.displayCreateDateTimeStamp = deliveryVO.createTimeStamp
+                .atZone(ZoneId.of("America/Chicago"))
+                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm a"));
+
+        deliveryVO.displayUpdateDateTimeStamp = deliveryVO.updateTimeStamp
+                .atZone(ZoneId.of("America/Chicago"))
+                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm a"));
+
 
         return deliveryVO
     }
