@@ -561,7 +561,7 @@
 
     <!-- Cart Review Modal -->
     <!-- Update the Cart Review Modal -->
-    <div id="cartReviewModal" class="modal" tabindex="-1" style="display: none;">
+    <div id="cartReviewModal" class="modal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -574,32 +574,60 @@
                     <hr>
                     <p><strong>Total:</strong> $<span id="cartReviewTotal">0.00</span></p>
                     <hr>
-                    <!-- Conditional Dropdown -->
-                    <div id="deliveryLocationContainer" th:if="${not #lists.isEmpty(cart.customer.locationlist)}">
-                        <label for="deliveryLocationSelect" class="form-label"><strong>Select Delivery Location</strong></label>
-                        <select id="deliveryLocationSelect" class="form-select">
-                            <option value="default">Select delivery location</option>
-                            <!-- Inject locations dynamically with Thymeleaf -->
-                            <li th:each="location : ${cart.customer.locationlist}"
-                                th:data-location-id="${location.locationid}"
-                                th:text="${location.name}">
-                            </li>
-                        </select>
+
+                    <!-- Delivery or Pickup Selection -->
+                    <div>
+                        <label><input type="checkbox" id="deliveryCheckbox" name="type" value="delivery"> Delivery</label>
+                        <label><input type="checkbox" id="pickupCheckbox" name="type" value="pickup"> Pickup</label>
                     </div>
-                    <!-- Delivery Notes Textarea -->
-                    <div class="mb-3">
-                        <label for="deliveryNotes" class="form-label"><strong>Delivery Notes</strong></label>
-                        <textarea id="deliveryNotes" name="deliverynotes" class="form-control" rows="4"
-                                  placeholder="Enter the delivery instructions here to proceed"></textarea>
+
+                    <!-- Address Fields -->
+                    <div id="deliveryFields" style="display: none;">
+                        <div>
+                            <label for="address1">Address 1</label>
+                            <input type="text" id="address1" name="address1" class="form-control">
+                            <span class="validation-icon"></span>
+                        </div>
+                        <div>
+                            <label for="address2">Address 2</label>
+                            <input type="text" id="address2" name="address2" class="form-control">
+                            <span class="validation-icon"></span>
+                        </div>
+                        <div>
+                            <label for="city">City</label>
+                            <input type="text" id="city" name="city" class="form-control">
+                            <span class="validation-icon"></span>
+                        </div>
+                        <div>
+                            <label for="state">State</label>
+                            <select id="state" name="state" class="form-select">
+                                <option value="">Select State</option>
+                                <option value="AL">AL</option>
+                                <option value="AK">AK</option>
+                                <!-- Add other state options -->
+                            </select>
+                            <span class="validation-icon"></span>
+                        </div>
+                        <div>
+                            <label for="zipcode">Zipcode</label>
+                            <input type="text" id="zipcode" name="zipcode" class="form-control" maxlength="5">
+                            <span class="validation-icon"></span>
+                        </div>
+                        <div>
+                            <label for="deliveryNotes">Delivery Notes</label>
+                            <textarea id="deliveryNotes" name="deliverynotes" class="form-control"></textarea>
+                            <span class="validation-icon"></span>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-danger" id="cancelOrder">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="confirmOrder">Confirm Order</button>
+                    <button type="button" id="confirmOrder" class="btn btn-primary" disabled>Confirm Order</button>
                 </div>
             </div>
         </div>
     </div>
+
 
 
     <!-- End Cart Review Modal -->
@@ -835,6 +863,7 @@
             const shoppingToken = firstCartRow.attr('data-shopping-token-id');
             const menuId = firstCartRow.attr('data-menu-id');
             let cartId = firstCartRow.attr('data-cart-id');
+            console.log('cartid: '+cartId);
 
             // Default cartId to 0 if null, undefined, or invalid
             cartId = cartId && cartId !== '0' ? cartId : '0';
@@ -850,6 +879,14 @@
             form.method = 'POST';
             form.action = '/menu/shop/checkout'; // Adjust to your backend endpoint
 
+            // get the values from the form on cart review
+            let type = $('#deliveryCheckbox').is(':checked') ? 'delivery' : 'pickup';
+            let address1 = $('#address1').val();
+            let address2 = $('#address2').val();
+            let city = $('#city').val();
+            let state = $('#state').val();
+            let zipcode = $('#zipcode').val();
+
             // Append necessary parameters as hidden input fields
             const fields = [
                 { name: 'shoppingtoken', value: shoppingToken },
@@ -857,6 +894,12 @@
                 { name: 'cartid', value: cartId },
                 { name: 'deliverynotes', value: deliveryNotes },
                 { name: 'locationid', value: selectedLocation },
+                { name: 'type', value: type },
+                { name: 'address1', value: address1 },
+                { name: 'address2', value: address2 },
+                { name: 'city', value: city },
+                { name: 'state', value: state },
+                { name: 'zipcode', value: zipcode },
             ];
 
             fields.forEach(field => {
@@ -1041,6 +1084,87 @@
                 form.submit();
             });
         });
+
+
+        $(document).ready(function () {
+            function validateField(selector, condition) {
+                const field = $(selector);
+                const icon = field.siblings('.validation-icon');
+
+                if (condition) {
+                    field.css('border-color', 'green');
+                    icon.html('✔').css('color', 'green');
+                } else {
+                    field.css('border-color', 'red');
+                    icon.html('✖').css('color', 'red');
+                }
+            }
+
+            function validateForm() {
+                const isDelivery = $('#deliveryCheckbox').is(':checked');
+                const address1Valid = $('#address1').val().length > 0;
+                const address2Valid = $('#address2').val().length > 0;
+                const cityValid = $('#city').val().length >= 3;
+                const stateValid = $('#state').val() !== '';
+                const zipcodeValid = /^\d{5}$/.test($('#zipcode').val());
+                const deliveryNotesValid = $('#deliveryNotes').val().length > 5;
+
+                const allValid = !isDelivery || (address1Valid && address2Valid && cityValid && stateValid && zipcodeValid && deliveryNotesValid);
+                $('#confirmOrder').prop('disabled', !allValid);
+            }
+
+            // Toggle Delivery Fields
+            $('#deliveryCheckbox').on('change', function () {
+                const isChecked = $(this).is(':checked');
+                $('#pickupCheckbox').prop('checked', false);
+                $('#deliveryFields').toggle(isChecked);
+                validateForm();
+            });
+
+            $('#pickupCheckbox').on('change', function () {
+                const isChecked = $(this).is(':checked');
+                $('#deliveryCheckbox').prop('checked', false);
+                $('#deliveryFields').hide();
+                validateForm();
+            });
+
+            // Validate Fields
+            $('#address1, #address2').on('input', function () {
+                validateField(this, $(this).val().length > 0);
+                validateForm();
+            });
+
+            $('#city').on('input', function () {
+                validateField(this, $(this).val().length >= 3);
+                validateForm();
+            });
+
+            $('#state').on('change', function () {
+                validateField(this, $(this).val() !== '');
+                validateForm();
+            });
+
+            $('#zipcode').on('input', function () {
+                validateField(this, /^\d{5}$/.test($(this).val()));
+                validateForm();
+            });
+
+            $('#deliveryNotes').on('input', function () {
+                validateField(this, $(this).val().length > 5);
+                validateForm();
+            });
+
+            // Cancel Order Button
+            $('#cancelOrder').on('click', function () {
+                $('#cartReviewModal').fadeOut();
+            });
+
+            // Modal Close Button
+            $('#closeCartReview').on('click', function () {
+                $('#cartReviewModal').fadeOut();
+            });
+        });
+
 
     </script>
 

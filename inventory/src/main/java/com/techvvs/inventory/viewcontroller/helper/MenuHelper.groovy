@@ -743,6 +743,7 @@ class MenuHelper {
         // The System is assuming we will only ever have a single cart per menu and customer combination
         List<CartVO> cartlist = cartRepo.findAllByMenuAndCustomer(menuVO, customerVO)
 
+        boolean cartidset = false
         // we are assuming here we will only ever have a single cart per user that is not processed
         for(CartVO cart : cartlist){
             if(cart.isprocessed == 0){
@@ -751,10 +752,12 @@ class MenuHelper {
 
                 model.addAttribute("cart", cart)
                 model.addAttribute("cartid", cart.cartid) // bind this for uri param
+                cartidset = true
             } else{
-                model.addAttribute("cartid", 0) // bind this for uri param
+                if(!cartidset) {
+                    model.addAttribute("cartid", 0) // bind this for uri param
+                }
             }
-            break // break just to make sure we only ever do this once.....
         }
 
     }

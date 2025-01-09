@@ -216,6 +216,14 @@ public class MenuViewController {
             @RequestParam("quantityselected") Optional<String> quantityselected,
             @RequestParam("deliverynotes") Optional<String> deliverynotes,
             @RequestParam("locationid") Optional<String> locationid,
+
+            @RequestParam("address1") Optional<String> address1,
+            @RequestParam("address2") Optional<String> address2,
+            @RequestParam("city") Optional<String> city,
+            @RequestParam("state") Optional<String> state,
+            @RequestParam("zipcode") Optional<String> zipcode,
+            @RequestParam("type") Optional<String> type, // "delivery" or "pickup"
+
             @RequestParam("size") Optional<String> size,
             @ModelAttribute( "cart" ) CartVO cartVO
     ){
