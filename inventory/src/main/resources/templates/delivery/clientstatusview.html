@@ -268,29 +268,33 @@
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const progressBar = document.querySelector('.progress-bar');
+        const statusTextElement = document.querySelector('.status-text');
 
-        // Define progress mapping based on status
-        const statusProgressMap = {
-            0: 20,  // Order Created
-            1: 40,  // Order Being Prepared
-            2: 60,  // Order Ready For Dispatch
-            3: 80,  // Order En Route
-            4: 100  // Order Delivered
+        // Define mappings for progress and status text based on status code
+        const statusMapping = {
+            0: { text: "Order Created", progress: 20 },
+            1: { text: "Order Being Prepared", progress: 40 },
+            2: { text: "Order Ready For Dispatch", progress: 60 },
+            3: { text: "Order En Route", progress: 80 },
+            4: { text: "Order Delivered", progress: 100 },
         };
 
         let targetProgress = 0; // Target progress based on status
         let currentProgress = 0; // Current animated progress
 
-        const updateProgress = (newStatus) => {
+        const updateStatusAndProgress = (newStatus) => {
             const parsedStatus = parseInt(newStatus, 10);
-            console.log('Updating progress for status:', parsedStatus);
+            console.log('Updating status and progress for:', parsedStatus);
 
-            if (statusProgressMap.hasOwnProperty(parsedStatus)) {
-                targetProgress = statusProgressMap[parsedStatus];
-                console.log(`Target progress set to ${targetProgress}% for status ${parsedStatus}`);
+            if (statusMapping.hasOwnProperty(parsedStatus)) {
+                const { text, progress } = statusMapping[parsedStatus];
+                targetProgress = progress;
+                statusTextElement.textContent = text; // Update the status text
+                console.log(`Status updated to: "${text}", progress: ${progress}%`);
             } else {
                 console.warn('Invalid status received:', parsedStatus);
                 targetProgress = 0; // Fallback if invalid
+                statusTextElement.textContent = "Unknown Status"; // Fallback text
             }
         };
 
@@ -319,7 +323,7 @@
 
                 if (data !== undefined) {
                     progressBar.setAttribute('data-status', data);
-                    updateProgress(data); // Dynamically adjust target
+                    updateStatusAndProgress(data); // Dynamically adjust status and progress
                 } else {
                     console.warn('Invalid status received:', data);
                 }
@@ -328,6 +332,7 @@
             }
         }, 10000); // Check for updates every 10 seconds
     });
+
 
 </script>
 
