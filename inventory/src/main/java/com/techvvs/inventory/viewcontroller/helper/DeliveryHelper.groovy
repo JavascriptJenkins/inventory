@@ -532,6 +532,27 @@ class DeliveryHelper {
 
     }
 
+    void loadDeliveryByCustomParametersForInternalUser(String deliverytoken, int deliveryid, int menuid, Model model){
+        List<String> authorities = jwtTokenProvider.extractAuthorities(deliverytoken) // passing internal token in here
+        Optional<DeliveryVO> deliveryVO = deliveryRepo.findById(Integer.valueOf(deliveryid))
+
+        // process the products here for display
+        if(deliveryVO.present){
+            model.addAttribute("delivery", deliveryVO.get())
+            hydrateTransientQuantitiesForDisplayForClientStatusView(deliveryVO.get(), String.valueOf(menuid))
+        } else {
+            // return empty object to ui if we don't find one
+            model.addAttribute("delivery", new DeliveryVO(deliveryid:0))
+        }
+
+        if(hasRole(authorities, String.valueOf(Role.ROLE_DELIVERY_EMPLOYEE_VIEW_TOKEN))){
+
+            // write code here to add certain attributes to the model that will enable the user to click certain buttons
+            model.addAttribute("DeliveryEmployeeViewActivated", "yes")
+        }
+
+    }
+
     void changeStatusToPrep(String deliverytoken, Model model){
         String deliveryid = jwtTokenProvider.getDeliveryIdFromToken(deliverytoken)
         Optional<DeliveryVO> deliveryVO = deliveryRepo.findById(Integer.valueOf(deliveryid))

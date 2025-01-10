@@ -3,12 +3,16 @@ package com.techvvs.inventory.viewcontroller
 import com.techvvs.inventory.barcode.service.BarcodeService
 import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.jparepo.PackageRepo
+import com.techvvs.inventory.jparepo.SystemUserRepo
 import com.techvvs.inventory.model.CrateVO
 import com.techvvs.inventory.model.DeliveryVO
 import com.techvvs.inventory.model.PackageVO
+import com.techvvs.inventory.model.SystemUserDAO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.modelnonpersist.FileVO
 import com.techvvs.inventory.printers.PrinterService
+import com.techvvs.inventory.security.JwtTokenProvider
+import com.techvvs.inventory.security.Role
 import com.techvvs.inventory.service.auth.TechvvsAuthService
 import com.techvvs.inventory.service.controllers.CrateService
 import com.techvvs.inventory.service.controllers.DeliveryService
@@ -25,9 +29,14 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.springframework.security.core.Authentication
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.*
+
+import javax.servlet.http.Cookie
+import javax.servlet.http.HttpServletRequest
 
 @RequestMapping("/delivery")
 @Controller
@@ -80,6 +89,12 @@ public class DeliveryViewController {
 
     @Autowired
     CheckoutHelper checkoutHelper
+
+    @Autowired
+    JwtTokenProvider jwtTokenProvider
+
+    @Autowired
+    SystemUserRepo systemUserRepo
 
     //default home mapping
     @GetMapping
@@ -148,15 +163,35 @@ public class DeliveryViewController {
     String viewDeliveryForClient(
             Model model,
             @RequestParam("deliverytoken") Optional<String> deliverytoken,
+            @RequestParam("deliveryid") Optional<String> deliveryid,
+            @RequestParam("menuid") Optional<String> menuid,
+            @RequestParam("customerid") Optional<String> customerid,
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size
     ){
 
         // this needs to do a search on the customerid and see if there is cart pending with this exact menu id
-        if(deliverytoken.isPresent()) {
+        if(deliverytoken.isPresent() && !menuid.isPresent()) {
             deliveryHelper.loadDeliveryByDeliveryToken(deliverytoken.get(), model)
             deliveryHelper.bindHiddenValues(model, deliverytoken.get())
         }
+
+        // this is path for an internal user using a non-sms token to get access
+        if(deliveryid.isPresent() && menuid.isPresent()){
+            deliveryHelper.loadDeliveryByCustomParametersForInternalUser(
+                    deliverytoken.get(), Integer.valueOf(deliveryid.get()), Integer.valueOf(menuid.get()), model)
+            model.addAttribute("showbackbutton", "yes") // give internal users the back button
+        }
+
+        if(customerid.isPresent()){
+            model.addAttribute("backButtonCustomerId", customerid.get())
+        }
+
+        if(page.isPresent() && size.isPresent()){
+            model.addAttribute("backButtonPage", page.get())
+            model.addAttribute("backButtonSize", size.get())
+        }
+
 
         return "delivery/clientstatusview.html";
     }
@@ -165,9 +200,22 @@ public class DeliveryViewController {
             Model model,
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size,
-            @RequestParam("customerid") Optional<Integer> customerid
+            @RequestParam("customerid") Optional<Integer> customerid,
+    HttpServletRequest request
     ){
         techvvsAuthService.checkuserauth(model)
+
+        Cookie[] cookies = request.getCookies();
+
+        String token = ""
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("techvvs_token".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                }
+            }
+        }
+
 
         // get a list of all the deliveries using pagination
 
@@ -176,6 +224,20 @@ public class DeliveryViewController {
         } else {
             deliveryHelper.findAllDeliveries(model, page, size, Optional.empty())
         }
+
+        // pull the user who is currently logged in
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        SystemUserDAO systemUserDAO = systemUserRepo.findByEmail(authentication.getPrincipal().username)
+
+//        public String createEmployeeDeliveryViewToken
+//        (String email, List<Role> roles, int hours, String menuid, String customerid, String deliveryid) {
+
+//        List<Role> roles = Arrays.asList(Role.ROLE_CLIENT, Role.ROLE_DELIVERY_VIEW_TOKEN);
+//        String token = jwtTokenProvider.createEmployeeDeliveryViewTokenForInternalCustomer(systemUserDAO.email, roles, 96,
+//                menuid.get(), String.valueOf(transactionVO.customervo.customerid), String.valueOf(transactionVO.delivery.deliveryid))
+
+
+        model.addAttribute("deliverytoken", token)
         checkoutHelper.getAllCustomers(model)
 
         return "delivery/deliveryqueue.html";

@@ -92,6 +92,88 @@
             box-shadow: 0px 0px 15px rgba(0, 255, 255, 0.7);
         }
     </style>
+    <style>
+        /* Base style for the status icon links */
+        .status-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            font-weight: bold;
+            text-align: center;
+            font-size: 0.8em;
+            margin: auto;
+            text-shadow: 0px 0px 8px rgba(255, 255, 255, 0.7);
+            box-shadow: 0px 0px 15px rgba(0, 255, 255, 0.7);
+            text-decoration: none; /* Remove default underline for links */
+            color: inherit; /* Use the icon's color for the link */
+        }
+
+        /* Neon colors for statuses */
+        .status-created {
+            background-color: #0d6efd;
+            color: #80dfff;
+        }
+
+        .status-prep {
+            background-color: #fd7e14;
+            color: #ffe0b3;
+        }
+
+        .status-dispatch {
+            background-color: #6f42c1;
+            color: #d9b3ff;
+        }
+
+        .status-enroute {
+            background-color: #ffc107;
+            color: #fff5cc;
+        }
+
+        .status-complete {
+            background-color: #28a745;
+            color: #99ffcc;
+        }
+
+        .status-canceled {
+            background-color: #dc3545;
+            color: #ffb3b3;
+        }
+
+        /* Pulsing effect for active statuses */
+        .pulsing-status-0 { animation: pulse 2s infinite; }
+        .pulsing-status-1 { animation: pulse 1.5s infinite; }
+        .pulsing-status-2 { animation: pulse 1.2s infinite; }
+        .pulsing-status-3 { animation: pulse 0.8s infinite; }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0px 0px 15px rgba(0, 255, 255, 0.7);
+            }
+            50% {
+                box-shadow: 0px 0px 40px rgba(0, 255, 255, 1);
+            }
+        }
+
+        /* Hover effect */
+        .status-icon:hover {
+            transform: scale(1.1); /* Slight zoom on hover */
+            box-shadow: 0px 0px 30px rgba(255, 255, 255, 1); /* Intensified glow */
+            transition: all 0.3s ease-in-out;
+        }
+
+        /* Click effect */
+        .status-icon:active {
+            transform: scale(0.95); /* Slight shrink on click */
+            box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.8); /* Reduced glow */
+        }
+    </style>
+
+
+
+
 </head>
 <body>
 <input type="hidden" th:data-current-pagination-page="${page}" th:value="${page}" id="currentPageId">
@@ -135,17 +217,56 @@
             <th>Status</th>
         </tr>
         </thead>
-        <tbody id="tableBody">
-        <tr th:each="delivery : ${deliveryPage.content}" class="delivery-row">
+        <tbody>
+        <tr th:each="delivery : ${deliveryPage.content}">
             <td th:text="${delivery.deliveryid}"></td>
             <td th:text="${delivery.transaction.customervo.name}"></td>
+            <td th:text="${delivery.name}"></td>
             <td>
-                <span th:text="${delivery.name}"></span><br>
+                <div class="status-icon-container" th:switch="${delivery.status}">
+                    <!-- Dynamic anchor tag wrapping the icon -->
+                    <a th:case="0"
+                       class="status-icon status-created pulsing-status-0"
+                       th:href="@{/delivery/item(deliveryid=${delivery.deliveryid}, menuid=${delivery.transaction.cart.menu.menuid}, deliverytoken=${deliverytoken}, customerid=${customerid}, size=${size}, page=${page})}">
+                        CREATED
+                    </a>
+
+
+                    <a th:case="1"
+                       class="status-icon status-prep pulsing-status-1"
+                       th:href="@{/delivery/item(deliveryid=${delivery.deliveryid}, menuid=${delivery.transaction.cart.menu.menuid}, deliverytoken=${deliverytoken}, customerid=${delivery.transaction.customervo.customerid}, size=${size}, page=${page})}">
+                        PREP
+                    </a>
+                    <a th:case="2"
+                       class="status-icon status-dispatch pulsing-status-2"
+                       th:href="@{/delivery/item(deliveryid=${delivery.deliveryid}, menuid=${delivery.transaction.cart.menu.menuid}, deliverytoken=${deliverytoken}, customerid=${delivery.transaction.customervo.customerid}, size=${size}, page=${page})}">
+                        DISPATCH
+                    </a>
+                    <a th:case="3"
+                       class="status-icon status-enroute pulsing-status-3"
+                       th:href="@{/delivery/item(deliveryid=${delivery.deliveryid}, menuid=${delivery.transaction.cart.menu.menuid}, deliverytoken=${deliverytoken}, customerid=${delivery.transaction.customervo.customerid}, size=${size}, page=${page})}">
+                        EN ROUTE
+                    </a>
+                    <a th:case="4"
+                       class="status-icon status-complete"
+                       th:href="@{/delivery/item(deliveryid=${delivery.deliveryid}, menuid=${delivery.transaction.cart.menu.menuid}, deliverytoken=${deliverytoken}, customerid=${delivery.transaction.customervo.customerid}, size=${size}, page=${page})}">
+                        COMPLETE
+                    </a>
+                    <a th:case="5"
+                       class="status-icon status-canceled"
+                       th:href="@{/delivery/item(deliveryid=${delivery.deliveryid}, menuid=${delivery.transaction.cart.menu.menuid}, deliverytoken=${deliverytoken}, customerid=${delivery.transaction.customervo.customerid}, size=${size}, page=${page})}">
+                        CANCELED
+                    </a>
+                </div>
             </td>
-            <td th:text="${delivery.status}"></td>
+
+
+
+
         </tr>
         </tbody>
     </table>
+
     <div class="mt-3 d-flex justify-content-between align-items-center">
         <p><strong>Total Deliveries:</strong> <span th:text="${deliveryPage.totalElements}"></span></p>
         <p><strong>Page:</strong> <span th:text="${deliveryPage.number + 1}"></span> of <span th:text="${deliveryPage.totalPages}"></span></p>

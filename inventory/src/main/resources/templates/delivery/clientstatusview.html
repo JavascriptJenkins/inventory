@@ -238,6 +238,40 @@
         }
 
     </style>
+    <style>
+        .back-button {
+            position: absolute;
+            left: 15px;
+            top: 40%;
+            transform: translateY(-50%);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            background-color: #00bfff; /* Match existing blue color */
+            color: #fff;
+            font-size: 2rem; /* Large arrow size */
+            border-radius: 50%;
+            box-shadow: 0px 0px 15px rgba(0, 255, 255, 0.7); /* Glowing effect */
+            text-decoration: none; /* Remove underline */
+            transition: all 0.3s ease-in-out;
+            z-index: 9999; /* Ensure it stays above other elements */
+        }
+
+        .back-button:hover {
+            background-color: #00e5ff; /* Brighter blue on hover */
+            transform: translateY(-50%) scale(1.1); /* Slight zoom on hover */
+            box-shadow: 0px 0px 30px rgba(0, 255, 255, 1); /* Intensified glow */
+        }
+
+        .back-button:active {
+            background-color: #00b3cc; /* Slightly darker on click */
+            transform: translateY(-50%) scale(0.95); /* Press effect */
+            box-shadow: 0px 0px 10px rgba(0, 255, 255, 0.5); /* Reduced glow */
+        }
+    </style>
+
 
 </head>
 <body>
@@ -246,6 +280,11 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content p-4">
             <div class="modal-header">
+                <!-- Floating Glowing Back Button -->
+                <a class="back-button"
+                   th:href="@{/delivery/queue(page=${backButtonPage}, size=${backButtonSize}, customerid=${backButtonCustomerId})}">
+                    &#8592; <!-- Left Arrow Icon -->
+                </a>
                 <h5 class="modal-title">
                     <span th:text="${delivery.transaction.customervo.name}"></span>
                     | Delivery #<span th:text="${delivery.deliveryid}"></span>
