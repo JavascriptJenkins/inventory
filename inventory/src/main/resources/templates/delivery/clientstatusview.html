@@ -29,9 +29,12 @@
         .progress-bar {
             transition: width 0.1s linear;
             background: linear-gradient(90deg, #0f2027, #203a43, #2c5364);
-            box-shadow: 0px 0px 15px rgba(0, 255, 255, 0.5);
+        box-shadow: 0px 0px 15px rgba(0, 255, 255, 0.75); /* Blue glow effect */
             height: 20px;
             border-radius: 10px;
+                width: 0; /* Start with 0% width */
+
+
         }
 
         .progress {
@@ -41,18 +44,30 @@
             overflow: hidden;
             width: 90%;
             margin: 0 auto;
+            margin-top: 20px;
+        box-shadow: 0px 0px 10px rgba(0, 255, 255, 0.5); /* Optional: Add glow to the entire progress container */
+
         }
 
         .status-text {
-            position: absolute;
-            top: -30px;
+        position: relative; /* Ensure proper flow in the layout */
             left: 50%;
             transform: translateX(-50%);
-            font-size: 1.2em;
+            font-size: 2.4em; /* Double the font size */
             color: #00ffff;
             text-shadow: 0px 0px 10px #00ffff;
+            padding: 10px; /* Add padding inside the border */
+            border: 2px solid #00bfff; /* Blue border */
+            border-radius: 10px; /* Rounded corners */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5); /* Floating shadow effect */
+<!--            display: inline-block; /* Keep it wrapped and inline */-->
+        margin: 20px auto; /* Add spacing around the box */
+
+        text-align: center; /* Center text content */
 
         }
+
+
 
         .updated-time {
             margin-bottom: 60px;
@@ -131,32 +146,31 @@
             font-size: 1.3rem;
         }
 
-        .status-text {
-            font-size: 1em;
-        }
 
         .table {
             font-size: 0.8rem;
         }
     }
 
-          @media (max-width: 576px) {
-                body {
-                    font-size: 0.8rem; /* Further reduce for small screens */
-                }
+    @media (max-width: 576px) {
+        .modal-dialog {
+            width: 100vw; /* Full viewport width */
+            max-width: 100vw; /* Prevents any width restriction */
+            height: 100vh; /* Full viewport height */
+            margin: 0; /* Remove margins around the modal */
+        }
 
-                h5 {
-                    font-size: 1.1rem;
-                }
+        .modal-content {
+            height: 100%; /* Ensure modal content fills the height */
+            display: flex;
+            flex-direction: column; /* Layout content vertically */
+        }
 
-                .status-text {
-                    font-size: 0.8em;
-                }
-
-                .table {
-                    font-size: 0.7rem;
-                }
-            }
+        .modal-body {
+            overflow-y: auto; /* Add scrolling if content overflows */
+            flex-grow: 1; /* Let the body expand as much as possible */
+        }
+    }
     </style>
 
 </head>
@@ -215,9 +229,7 @@
 
                     <div class="progress-hover">
                         <div class="progress">
-                            <div
-                                    class="progress-bar"
-                                    th:style="'width: ' + ${delivery.progressWidth} + '%'">
+                            <div class="progress-bar" th:data-status="${delivery.status}" th:data-progress-width="${delivery.progressWidth}" th:style="'width: ' + ${delivery.progressWidth} + '%'">
                             </div>
                         </div>
                     </div>
@@ -259,49 +271,67 @@
 
         // Define progress mapping based on status
         const statusProgressMap = {
-            0: 20, // Start from 20% for status 0
-            1: 40, // Start from 40% for status 1
-            2: 60, // Start from 60% for status 2
-            3: 80, // Start from 80% for status 3
-            4: 100 // Full for status 4
+            0: 20,  // Order Created
+            1: 40,  // Order Being Prepared
+            2: 60,  // Order Ready For Dispatch
+            3: 80,  // Order En Route
+            4: 100  // Order Delivered
         };
 
-        let currentProgress = parseInt(progressBar.getAttribute('data-progress')) || 0;
+        let targetProgress = 0; // Target progress based on status
+        let currentProgress = 0; // Current animated progress
 
         const updateProgress = (newStatus) => {
-            const initialProgress = statusProgressMap[newStatus] || 0;
-            currentProgress = initialProgress;
+            const parsedStatus = parseInt(newStatus, 10);
+            console.log('Updating progress for status:', parsedStatus);
+
+            if (statusProgressMap.hasOwnProperty(parsedStatus)) {
+                targetProgress = statusProgressMap[parsedStatus];
+                console.log(`Target progress set to ${targetProgress}% for status ${parsedStatus}`);
+            } else {
+                console.warn('Invalid status received:', parsedStatus);
+                targetProgress = 0; // Fallback if invalid
+            }
         };
 
         const animateProgress = () => {
-            if (currentProgress < 100) {
+            if (currentProgress < targetProgress) {
                 currentProgress += 1; // Increment progress
-            } else {
-                currentProgress = statusProgressMap[parseInt(progressBar.getAttribute('data-status'))] || 0;
+            } else if (currentProgress > targetProgress) {
+                currentProgress -= 1; // Decrement progress for regression
             }
+
             progressBar.style.width = `${currentProgress}%`;
+
+            if (currentProgress === targetProgress) {
+                console.log('Progress animation completed!');
+            }
         };
 
-        setInterval(animateProgress, 100); // Update animation every 100ms
+        setInterval(animateProgress, 30); // Smooth animation
 
-        // Polling logic to fetch real-time status
         setInterval(async () => {
             try {
-                // Fetch the deliverytoken from the data attribute
                 const deliveryTokenElement = document.getElementById('hiddenDeliverytoken');
                 const deliveryToken = deliveryTokenElement.getAttribute('data-delivery-token-id');
-
-                // Make the API call using the token
                 const response = await fetch(`/delivery/item/ajax/status?deliverytoken=${deliveryToken}`);
-                const { status } = await response.json();
-                progressBar.setAttribute('data-status', status); // Update status attribute
-                updateProgress(status); // Adjust progress dynamically
+                const data = await response.json();
+
+                if (data !== undefined) {
+                    progressBar.setAttribute('data-status', data);
+                    updateProgress(data); // Dynamically adjust target
+                } else {
+                    console.warn('Invalid status received:', data);
+                }
             } catch (error) {
                 console.error('Failed to fetch delivery status:', error);
             }
-        }, 5000); // Check for updates every 5 seconds
+        }, 10000); // Check for updates every 10 seconds
     });
+
 </script>
+
+
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const notes = document.querySelector('.address-notes');
