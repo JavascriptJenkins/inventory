@@ -544,6 +544,36 @@ class MenuHelper {
         model.addAttribute("successMessage","Shopping token sent to :"+phonenumber+" valid for "+tokenlength+" hours.  ")
     }
 
+    void sendEmployeeDeliveryViewToken(
+
+            String menuid,
+            String customerid,
+            String tokenlength,
+            int deliveryid,
+            Model model
+
+    ){
+
+        List<Role> roles = Arrays.asList(Role.ROLE_CLIENT, Role.ROLE_DELIVERY_EMPLOYEE_VIEW_TOKEN);
+
+        CustomerVO customerVO = customerRepo.findByCustomerid(Integer.valueOf(customerid)).get()
+
+        //generate a token
+        String token = jwtTokenProvider.createEmployeeDeliveryViewToken(customerVO.email, roles, Integer.valueOf(tokenlength), menuid, customerid, String.valueOf(deliveryid))
+
+        boolean isDev1 = "dev1".equals(environment.getProperty("spring.profiles.active"));
+
+        // pull the user who is currently logged in
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        SystemUserDAO systemUserDAO = systemUserRepo.findByEmail(authentication.getPrincipal().username)
+
+        // send the employee delivery view token to the user who is currently logged in
+        twilioTextUtil.sendEmployeeDeliveryViewTokenLinkSMSWithCustomMessage(
+                systemUserDAO.phone,isDev1, menuid, token, "Employee Delivery View Token for Customer: "+customerVO.name+" and Order #: "+deliveryid+ "              ")
+
+        //model.addAttribute("successMessage","Delivery token sent to :"+systemUserDAO.phone+" valid for "+tokenlength+" hours.  ")
+    }
+
 
     @Transactional
     int addProductToCart(

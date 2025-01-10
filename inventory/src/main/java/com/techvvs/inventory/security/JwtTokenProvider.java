@@ -19,10 +19,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.util.Base64;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -164,6 +161,32 @@ public class JwtTokenProvider {
 
 
   public String createDeliveryViewToken(String email, List<Role> roles, int hours, String menuid, String customerid, String deliveryid) {
+
+    Claims claims = Jwts.claims().setSubject(email);
+    claims.put("auth", roles.stream()
+            .map(s -> new SimpleGrantedAuthority(s.getAuthority()))
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList()));
+    claims.put("menuid", menuid); // Add the "menuid" claim
+    claims.put("customerid", customerid); // Add the "menuid" claim
+    claims.put("deliveryid", deliveryid); // Add the "deliveryid" claim
+    claims.put("token_type", appConstants.DELIVERY_VIEW_TOKEN); // Add the "token_type" claim
+
+    Date now = new Date();
+    // Calculate validity dynamically based on input hours
+    long validityInMilliseconds = hours * 3600000L; // 1 hour = 3600000 milliseconds
+    Date validity = new Date(now.getTime() + validityInMilliseconds);
+
+    return Jwts.builder()
+            .setClaims(claims)
+            .setIssuedAt(now)
+            .setExpiration(validity)
+            .signWith(SignatureAlgorithm.HS256, secretKey)
+            .compact();
+  }
+
+
+  public String createEmployeeDeliveryViewToken(String email, List<Role> roles, int hours, String menuid, String customerid, String deliveryid) {
 
     Claims claims = Jwts.claims().setSubject(email);
     claims.put("auth", roles.stream()
@@ -393,6 +416,29 @@ public class JwtTokenProvider {
     }
   }
 
+
+  public List<String> extractAuthorities(String token) {
+    // Parse the token and extract claims
+    Jws<Claims> claimsJws = Jwts.parser()
+            .setSigningKey(secretKey)
+            .parseClaimsJws(token);
+    Claims claims = claimsJws.getBody();
+
+    // Extract the 'auth' claim (assumed to be a List<Map<String, String>>)
+    List<Map<String, String>> authList = claims.get("auth", List.class);
+
+    // Extract the 'authority' field from each map
+    List<String> authorities = new ArrayList<>();
+    if (authList != null) {
+      for (Map<String, String> authEntry : authList) {
+        if (authEntry.containsKey("authority")) {
+          authorities.add(authEntry.get("authority"));
+        }
+      }
+    }
+
+    return authorities;
+  }
 
 
   void logout(HttpServletRequest request, HttpServletResponse response){

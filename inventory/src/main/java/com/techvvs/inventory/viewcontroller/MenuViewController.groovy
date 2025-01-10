@@ -258,6 +258,11 @@ public class MenuViewController {
             List<Role> roles = Arrays.asList(Role.ROLE_CLIENT, Role.ROLE_DELIVERY_VIEW_TOKEN);
             String token = jwtTokenProvider.createDeliveryViewToken(transactionVO.customervo.email, roles, 96,
                     menuid.get(), String.valueOf(transactionVO.customervo.customerid), String.valueOf(transactionVO.delivery.deliveryid))
+
+            // send employee view token to the logged in user over sms
+            menuHelper.sendEmployeeDeliveryViewToken(menuid.get(), String.valueOf(transactionVO.customervo.customerid), String.valueOf(96), transactionVO.delivery.deliveryid, model)
+
+            // send client view token to the client using html
             model.addAttribute("successLink", transactionVO.delivery.deliveryqrlink+"&deliverytoken="+token)
         }
 

@@ -310,6 +310,70 @@
         </div>
     </div>
 </div>
+<!-- Updated Modal with Button and Spinner -->
+<div th:if="${DeliveryEmployeeViewActivated == 'yes'}" class="modal show d-block" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content p-4">
+            <div class="modal-header">
+                <h5 class="modal-title">Delivery Status Increment</h5>
+            </div>
+            <div class="modal-body text-center">
+                <!-- Styled Button and Spinner -->
+                <div class="d-flex justify-content-center align-items-center gap-2">
+                    <button id="incrementStatusButton"
+                            class="btn btn-primary"
+                            style="background-color: #00bfff; border-color: #00bfff; border-radius: 10px; color: #fff; font-size: 1.5em; padding: 10px 20px;"
+                            onclick="incrementDeliveryStatus()">
+                        Increment Delivery Status
+                    </button>
+                    <div id="loadingSpinner" class="spinner-border text-info" style="display: none;" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // JavaScript function to handle POST request with spinner and button disable
+    function incrementDeliveryStatus() {
+        const button = document.getElementById('incrementStatusButton');
+        const spinner = document.getElementById('loadingSpinner');
+        const deliveryTokenElement = document.getElementById('hiddenDeliverytoken');
+        const deliveryToken = deliveryTokenElement.getAttribute('data-delivery-token-id');
+
+        // Disable button and show spinner
+        button.disabled = true;
+        spinner.style.display = 'inline-block';
+
+        fetch('/delivery/status/increment', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ deliverytoken: deliveryToken })
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('Delivery status incremented successfully!');
+                location.reload(); // Optionally refresh the page
+            } else {
+                throw new Error('Failed to increment status.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while incrementing the delivery status.');
+        })
+        .finally(() => {
+            // Enable button and hide spinner
+            button.disabled = false;
+            spinner.style.display = 'none';
+        });
+    }
+</script>
+
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const progressBar = document.querySelector('.progress-bar');

@@ -8,11 +8,13 @@ import com.techvvs.inventory.jparepo.MenuRepo
 import com.techvvs.inventory.jparepo.PackageRepo
 import com.techvvs.inventory.model.*
 import com.techvvs.inventory.security.JwtTokenProvider
+import com.techvvs.inventory.security.Role
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
+import org.springframework.security.core.GrantedAuthority
 import org.springframework.stereotype.Component
 import org.springframework.ui.Model
 
@@ -496,10 +498,10 @@ class DeliveryHelper {
     void loadDeliveryByDeliveryToken(String deliverytoken, Model model){
         String deliveryid = jwtTokenProvider.getDeliveryIdFromToken(deliverytoken)
         String menuid = jwtTokenProvider.getMenuIdFromToken(deliverytoken)
+        List<String> authorities = jwtTokenProvider.extractAuthorities(deliverytoken)
         Optional<DeliveryVO> deliveryVO = deliveryRepo.findById(Integer.valueOf(deliveryid))
 
         // process the products here for display
-
         if(deliveryVO.present){
             model.addAttribute("delivery", deliveryVO.get())
             hydrateTransientQuantitiesForDisplayForClientStatusView(deliveryVO.get(), menuid)
@@ -507,9 +509,33 @@ class DeliveryHelper {
             // return empty object to ui if we don't find one
             model.addAttribute("delivery", new DeliveryVO(deliveryid:0))
         }
+//
+//        boolean hasRole = authorities.stream()
+//                .map(authority -> authority instanceof GrantedAuthority ?
+//                        ((GrantedAuthority) authority).getAuthority() : authority.toString())
+//                .anyMatch(authority -> authority.equals(Role.ROLE_DELIVERY_EMPLOYEE_VIEW_TOKEN));
+
+        if(hasRole(authorities, String.valueOf(Role.ROLE_DELIVERY_EMPLOYEE_VIEW_TOKEN))){
+
+            // write code here to add certain attributes to the model that will enable the user to click certain buttons
+            model.addAttribute("DeliveryEmployeeViewActivated", "yes")
+        }
+
 
 
     }
+
+    boolean hasRole(List authorities, String roleToCheck) {
+        println "Authorities: ${authorities}"
+        println "Role to check: ${roleToCheck}"
+
+        return authorities.any { authority ->
+            def valueToCompare = authority instanceof GrantedAuthority ? authority.authority : authority.toString()
+            valueToCompare == roleToCheck
+        }
+    }
+
+
 
     int returnDeliveryStatus(String deliverytoken, Model model){
         String deliveryid = jwtTokenProvider.getDeliveryIdFromToken(deliverytoken)
