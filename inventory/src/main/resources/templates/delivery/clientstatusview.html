@@ -374,21 +374,33 @@
                 <div class="mt-4 text-center" th:if="${DeliveryEmployeeViewActivated == 'yes'}">
                     <form id="prepForm" method="POST" action="/delivery/status/prep" style="display: none;">
                         <input type="hidden" name="deliverytoken" th:value="${deliverytoken}" />
+                        <input type="hidden" name="menuid" th:value="${delivery.transaction.cart.menu.menuid}" />
+                        <input type="hidden" name="customerid" th:value="${backButtonCustomerId}" />
+                        <input type="hidden" name="deliveryid" th:value="${delivery.deliveryid}" />
                     </form>
                     <button id="prepButton" type="button" class="btn btn-lg delivery-btn mb-3">Prep</button>
 
                     <form id="dispatchForm" method="POST" action="/delivery/status/dispatch" style="display: none;">
                         <input type="hidden" name="deliverytoken" th:value="${deliverytoken}" />
+                        <input type="hidden" name="menuid" th:value="${delivery.transaction.cart.menu.menuid}" />
+                        <input type="hidden" name="customerid" th:value="${backButtonCustomerId}" />
+                        <input type="hidden" name="deliveryid" th:value="${delivery.deliveryid}" />
                     </form>
                     <button id="dispatchButton" type="button" class="btn btn-lg delivery-btn mb-3">Dispatch</button>
 
                     <form id="enrouteForm" method="POST" action="/delivery/status/enroute" style="display: none;">
                         <input type="hidden" name="deliverytoken" th:value="${deliverytoken}" />
+                        <input type="hidden" name="menuid" th:value="${delivery.transaction.cart.menu.menuid}" />
+                        <input type="hidden" name="customerid" th:value="${backButtonCustomerId}" />
+                        <input type="hidden" name="deliveryid" th:value="${delivery.deliveryid}" />
                     </form>
                     <button id="enrouteButton" type="button" class="btn btn-lg delivery-btn mb-3">En Route</button>
 
                     <form id="completeForm" method="POST" action="/delivery/status/complete" style="display: none;">
                         <input type="hidden" name="deliverytoken" th:value="${deliverytoken}" />
+                        <input type="hidden" name="menuid" th:value="${delivery.transaction.cart.menu.menuid}" />
+                        <input type="hidden" name="customerid" th:value="${backButtonCustomerId}" />
+                        <input type="hidden" name="deliveryid" th:value="${delivery.deliveryid}" />
                     </form>
                     <button id="completeButton" type="button" class="btn btn-lg delivery-btn mb-3">Complete</button>
                 </div>

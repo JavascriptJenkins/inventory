@@ -16,6 +16,9 @@ import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.*
 
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
+
 @RequestMapping("/systemuser")
 @Controller
 public class SystemUserViewController {
@@ -89,8 +92,11 @@ public class SystemUserViewController {
             Model model,
             @RequestParam("systemuserid") Optional<String> systemuserid,
             @RequestParam("page") Optional<Integer> page,
-            @RequestParam("size") Optional<Integer> size
+            @RequestParam("size") Optional<Integer> size,
+            HttpServletRequest request,
+            HttpServletResponse response
     ){
+        techvvsAuthService.checkuserauth(model)
 
         systemUserHelper.updateSystemUser(systemUser, model)
 
@@ -99,6 +105,12 @@ public class SystemUserViewController {
         systemUserHelper.loadSystemUser(Integer.valueOf(systemUser.id), model)
 
         systemUserHelper.loadAllSystemUsers(model)
+
+
+        // update the active jwt
+        techvvsAuthService.updateJwtToken(techvvsAuthService.getActiveCookie(request), response)
+
+
         return "systemuser/systemuser.html";
     }
 

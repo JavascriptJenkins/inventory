@@ -302,30 +302,29 @@
                         CREATED
                     </a>
 
-
                     <a th:case="1"
                        class="status-icon status-prep pulsing-status-1"
-                       th:href="@{/delivery/item(deliveryid=${delivery.deliveryid}, menuid=${delivery.transaction.cart.menu.menuid}, deliverytoken=${deliverytoken}, customerid=${delivery.transaction.customervo.customerid}, size=${size}, page=${page})}">
+                       th:href="@{/delivery/item(deliveryid=${delivery.deliveryid}, menuid=${delivery.transaction.cart.menu.menuid}, deliverytoken=${deliverytoken}, customerid=${customerid}, size=${size}, page=${page})}">
                         PREP
                     </a>
                     <a th:case="2"
                        class="status-icon status-dispatch pulsing-status-2"
-                       th:href="@{/delivery/item(deliveryid=${delivery.deliveryid}, menuid=${delivery.transaction.cart.menu.menuid}, deliverytoken=${deliverytoken}, customerid=${delivery.transaction.customervo.customerid}, size=${size}, page=${page})}">
+                       th:href="@{/delivery/item(deliveryid=${delivery.deliveryid}, menuid=${delivery.transaction.cart.menu.menuid}, deliverytoken=${deliverytoken}, customerid=${customerid}, size=${size}, page=${page})}">
                         DISPATCH
                     </a>
                     <a th:case="3"
                        class="status-icon status-enroute pulsing-status-3"
-                       th:href="@{/delivery/item(deliveryid=${delivery.deliveryid}, menuid=${delivery.transaction.cart.menu.menuid}, deliverytoken=${deliverytoken}, customerid=${delivery.transaction.customervo.customerid}, size=${size}, page=${page})}">
+                       th:href="@{/delivery/item(deliveryid=${delivery.deliveryid}, menuid=${delivery.transaction.cart.menu.menuid}, deliverytoken=${deliverytoken}, customerid=${customerid}, size=${size}, page=${page})}">
                         EN ROUTE
                     </a>
                     <a th:case="4"
                        class="status-icon status-complete"
-                       th:href="@{/delivery/item(deliveryid=${delivery.deliveryid}, menuid=${delivery.transaction.cart.menu.menuid}, deliverytoken=${deliverytoken}, customerid=${delivery.transaction.customervo.customerid}, size=${size}, page=${page})}">
+                       th:href="@{/delivery/item(deliveryid=${delivery.deliveryid}, menuid=${delivery.transaction.cart.menu.menuid}, deliverytoken=${deliverytoken}, customerid=${customerid}, size=${size}, page=${page})}">
                         COMPLETE
                     </a>
                     <a th:case="5"
                        class="status-icon status-canceled"
-                       th:href="@{/delivery/item(deliveryid=${delivery.deliveryid}, menuid=${delivery.transaction.cart.menu.menuid}, deliverytoken=${deliverytoken}, customerid=${delivery.transaction.customervo.customerid}, size=${size}, page=${page})}">
+                       th:href="@{/delivery/item(deliveryid=${delivery.deliveryid}, menuid=${delivery.transaction.cart.menu.menuid}, deliverytoken=${deliverytoken}, customerid=${customerid}, size=${size}, page=${page})}">
                         CANCELED
                     </a>
                 </div>

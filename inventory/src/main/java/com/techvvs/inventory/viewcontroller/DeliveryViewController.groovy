@@ -192,6 +192,10 @@ public class DeliveryViewController {
             model.addAttribute("backButtonSize", size.get())
         }
 
+        if(deliverytoken.present){
+            deliveryHelper.bindHiddenValues(model, deliverytoken.get())
+        }
+
 
         return "delivery/clientstatusview.html";
     }
@@ -246,14 +250,39 @@ public class DeliveryViewController {
     String changeStatusToEnPrep(
             Model model,
             @RequestParam("deliverytoken") Optional<String> deliverytoken,
+            @RequestParam("deliveryid") Optional<String> deliveryid,
+            @RequestParam("menuid") Optional<String> menuid,
+            @RequestParam("customerid") Optional<String> customerid,
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size
     ){
 
         // this needs to do a search on the customerid and see if there is cart pending with this exact menu id
-        if(deliverytoken.isPresent()) {
+        if(deliverytoken.isPresent() && !menuid.isPresent()) {
             deliveryHelper.changeStatusToPrep(deliverytoken.get(), model)
             deliveryHelper.loadDeliveryByDeliveryToken(deliverytoken.get(), model)
+            deliveryHelper.bindHiddenValues(model, deliverytoken.get())
+        }
+
+        // this is path for an internal user using a non-sms token to get access
+        if(deliveryid.isPresent() && menuid.isPresent()){
+            jwtTokenProvider.validateTokenSimple(deliverytoken.get())
+            deliveryHelper.changeStatusToPrepForInternalUser(deliveryid.get())
+            deliveryHelper.loadDeliveryByCustomParametersForInternalUser(
+                    deliverytoken.get(), Integer.valueOf(deliveryid.get()), Integer.valueOf(menuid.get()), model)
+            model.addAttribute("showbackbutton", "yes") // give internal users the back button
+        }
+
+        if(customerid.isPresent()){
+            model.addAttribute("backButtonCustomerId", customerid.get())
+        }
+
+        if(page.isPresent() && size.isPresent()){
+            model.addAttribute("backButtonPage", page.get())
+            model.addAttribute("backButtonSize", size.get())
+        }
+
+        if(deliverytoken.present){
             deliveryHelper.bindHiddenValues(model, deliverytoken.get())
         }
 
@@ -264,14 +293,39 @@ public class DeliveryViewController {
     String changeStatusToDispatch(
             Model model,
             @RequestParam("deliverytoken") Optional<String> deliverytoken,
+            @RequestParam("deliveryid") Optional<String> deliveryid,
+            @RequestParam("menuid") Optional<String> menuid,
+            @RequestParam("customerid") Optional<String> customerid,
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size
     ){
 
         // this needs to do a search on the customerid and see if there is cart pending with this exact menu id
-        if(deliverytoken.isPresent()) {
+        if(deliverytoken.isPresent() && !menuid.isPresent()) {
             deliveryHelper.changeStatusToDispatch(deliverytoken.get(), model)
             deliveryHelper.loadDeliveryByDeliveryToken(deliverytoken.get(), model)
+            deliveryHelper.bindHiddenValues(model, deliverytoken.get())
+        }
+
+        // this is path for an internal user using a non-sms token to get access
+        if(deliveryid.isPresent() && menuid.isPresent()){
+            jwtTokenProvider.validateTokenSimple(deliverytoken.get())
+            deliveryHelper.changeStatusToDispatchForInternalUser(deliveryid.get())
+            deliveryHelper.loadDeliveryByCustomParametersForInternalUser(
+                    deliverytoken.get(), Integer.valueOf(deliveryid.get()), Integer.valueOf(menuid.get()), model)
+            model.addAttribute("showbackbutton", "yes") // give internal users the back button
+        }
+
+        if(customerid.isPresent()){
+            model.addAttribute("backButtonCustomerId", customerid.get())
+        }
+
+        if(page.isPresent() && size.isPresent()){
+            model.addAttribute("backButtonPage", page.get())
+            model.addAttribute("backButtonSize", size.get())
+        }
+
+        if(deliverytoken.present){
             deliveryHelper.bindHiddenValues(model, deliverytoken.get())
         }
 
@@ -282,14 +336,39 @@ public class DeliveryViewController {
     String changeStatusToEnRoute(
             Model model,
             @RequestParam("deliverytoken") Optional<String> deliverytoken,
+            @RequestParam("deliveryid") Optional<String> deliveryid,
+            @RequestParam("menuid") Optional<String> menuid,
+            @RequestParam("customerid") Optional<String> customerid,
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size
     ){
 
         // this needs to do a search on the customerid and see if there is cart pending with this exact menu id
-        if(deliverytoken.isPresent()) {
+        if(deliverytoken.isPresent() && !menuid.isPresent()) {
             deliveryHelper.changeStatusToEnroute(deliverytoken.get(), model)
             deliveryHelper.loadDeliveryByDeliveryToken(deliverytoken.get(), model)
+            deliveryHelper.bindHiddenValues(model, deliverytoken.get())
+        }
+
+        // this is path for an internal user using a non-sms token to get access
+        if(deliveryid.isPresent() && menuid.isPresent()){
+            jwtTokenProvider.validateTokenSimple(deliverytoken.get())
+            deliveryHelper.changeStatusToEnrouteForInternalUser(deliveryid.get())
+            deliveryHelper.loadDeliveryByCustomParametersForInternalUser(
+                    deliverytoken.get(), Integer.valueOf(deliveryid.get()), Integer.valueOf(menuid.get()), model)
+            model.addAttribute("showbackbutton", "yes") // give internal users the back button
+        }
+
+        if(customerid.isPresent()){
+            model.addAttribute("backButtonCustomerId", customerid.get())
+        }
+
+        if(page.isPresent() && size.isPresent()){
+            model.addAttribute("backButtonPage", page.get())
+            model.addAttribute("backButtonSize", size.get())
+        }
+
+        if(deliverytoken.present){
             deliveryHelper.bindHiddenValues(model, deliverytoken.get())
         }
 
@@ -300,14 +379,39 @@ public class DeliveryViewController {
     String changeStatusToComplete(
             Model model,
             @RequestParam("deliverytoken") Optional<String> deliverytoken,
+            @RequestParam("deliveryid") Optional<String> deliveryid,
+            @RequestParam("menuid") Optional<String> menuid,
+            @RequestParam("customerid") Optional<String> customerid,
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size
     ){
 
         // this needs to do a search on the customerid and see if there is cart pending with this exact menu id
-        if(deliverytoken.isPresent()) {
+        if(deliverytoken.isPresent() && !menuid.isPresent()) {
             deliveryHelper.changeStatusToComplete(deliverytoken.get(), model)
             deliveryHelper.loadDeliveryByDeliveryToken(deliverytoken.get(), model)
+            deliveryHelper.bindHiddenValues(model, deliverytoken.get())
+        }
+
+        // this is path for an internal user using a non-sms token to get access
+        if(deliveryid.isPresent() && menuid.isPresent()){
+            jwtTokenProvider.validateTokenSimple(deliverytoken.get())
+            deliveryHelper.changeStatusToCompleteForInternalUser(deliveryid.get())
+            deliveryHelper.loadDeliveryByCustomParametersForInternalUser(
+                    deliverytoken.get(), Integer.valueOf(deliveryid.get()), Integer.valueOf(menuid.get()), model)
+            model.addAttribute("showbackbutton", "yes") // give internal users the back button
+        }
+
+        if(customerid.isPresent()){
+            model.addAttribute("backButtonCustomerId", customerid.get())
+        }
+
+        if(page.isPresent() && size.isPresent()){
+            model.addAttribute("backButtonPage", page.get())
+            model.addAttribute("backButtonSize", size.get())
+        }
+
+        if(deliverytoken.present){
             deliveryHelper.bindHiddenValues(model, deliverytoken.get())
         }
 
@@ -319,14 +423,39 @@ public class DeliveryViewController {
     String getDeliveryStatus(
             Model model,
             @RequestParam("deliverytoken") Optional<String> deliverytoken,
+            @RequestParam("deliveryid") Optional<String> deliveryid,
+            @RequestParam("menuid") Optional<String> menuid,
+            @RequestParam("customerid") Optional<String> customerid,
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size
     ){
 
         // this needs to do a search on the customerid and see if there is cart pending with this exact menu id
-        if(deliverytoken.isPresent()) {
+        if(deliverytoken.isPresent() && !menuid.present) {
             return String.valueOf(deliveryHelper.returnDeliveryStatus(deliverytoken.get(), model))
         }
+
+        // todo: split all these internal user paths into a method
+        // this is path for an internal user using a non-sms token to get access
+        if(deliveryid.isPresent() && menuid.isPresent()){
+            deliveryHelper.loadDeliveryByCustomParametersForInternalUser(
+                    deliverytoken.get(), Integer.valueOf(deliveryid.get()), Integer.valueOf(menuid.get()), model)
+            model.addAttribute("showbackbutton", "yes") // give internal users the back button
+        }
+
+        if(customerid.isPresent()){
+            model.addAttribute("backButtonCustomerId", customerid.get())
+        }
+
+        if(page.isPresent() && size.isPresent()){
+            model.addAttribute("backButtonPage", page.get())
+            model.addAttribute("backButtonSize", size.get())
+        }
+
+        if(deliverytoken.present){
+            deliveryHelper.bindHiddenValues(model, deliverytoken.get())
+        }
+
         return "0"
     }
 

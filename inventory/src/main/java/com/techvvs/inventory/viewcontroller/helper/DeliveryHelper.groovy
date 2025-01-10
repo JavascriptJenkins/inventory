@@ -564,9 +564,30 @@ class DeliveryHelper {
             deliveryRepo.save(deliveryVO.get())
         }
     }
+    void changeStatusToPrepForInternalUser(String deliveryid){
+        Optional<DeliveryVO> deliveryVO = deliveryRepo.findById(Integer.valueOf(deliveryid))
+
+        // process the products here for display
+        if(deliveryVO.present){
+            // change the status of the delivery
+            deliveryVO.get().setStatus(appConstants.DELIVERY_STATUS_PREPPING)
+            deliveryRepo.save(deliveryVO.get())
+        }
+    }
 
     void changeStatusToDispatch(String deliverytoken, Model model){
         String deliveryid = jwtTokenProvider.getDeliveryIdFromToken(deliverytoken)
+        Optional<DeliveryVO> deliveryVO = deliveryRepo.findById(Integer.valueOf(deliveryid))
+
+        // process the products here for display
+        if(deliveryVO.present){
+            // change the status of the delivery
+            deliveryVO.get().setStatus(appConstants.DELIVERY_STATUS_READY_FOR_DISPATCH)
+            deliveryRepo.save(deliveryVO.get())
+        }
+    }
+
+    void changeStatusToDispatchForInternalUser(String deliveryid){
         Optional<DeliveryVO> deliveryVO = deliveryRepo.findById(Integer.valueOf(deliveryid))
 
         // process the products here for display
@@ -589,6 +610,16 @@ class DeliveryHelper {
         }
     }
 
+    void changeStatusToEnrouteForInternalUser(String deliveryid){
+        Optional<DeliveryVO> deliveryVO = deliveryRepo.findById(Integer.valueOf(deliveryid))
+
+        // process the products here for display
+        if(deliveryVO.present){
+            // change the status of the delivery
+            deliveryVO.get().setStatus(appConstants.DELIVERY_STATUS_EN_ROUTE)
+            deliveryRepo.save(deliveryVO.get())
+        }
+    }
     void changeStatusToComplete(String deliverytoken, Model model){
         String deliveryid = jwtTokenProvider.getDeliveryIdFromToken(deliverytoken)
         Optional<DeliveryVO> deliveryVO = deliveryRepo.findById(Integer.valueOf(deliveryid))
@@ -601,6 +632,16 @@ class DeliveryHelper {
         }
     }
 
+    void changeStatusToCompleteForInternalUser(String deliveryid){
+        Optional<DeliveryVO> deliveryVO = deliveryRepo.findById(Integer.valueOf(deliveryid))
+
+        // process the products here for display
+        if(deliveryVO.present){
+            // change the status of the delivery
+            deliveryVO.get().setStatus(appConstants.DELIVERY_STATUS_DELIVERED)
+            deliveryRepo.save(deliveryVO.get())
+        }
+    }
 
     boolean hasRole(List authorities, String roleToCheck) {
         println "Authorities: ${authorities}"

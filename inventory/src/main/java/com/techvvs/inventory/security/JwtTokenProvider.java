@@ -354,6 +354,17 @@ public class JwtTokenProvider {
     }
   }
 
+  public boolean validateTokenSimple(String token) {
+    try {
+      Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
+      return true;
+    } catch (JwtException | IllegalArgumentException e) {
+      //throw new CustomException("Expired or invalid JWT token", HttpStatus.FORBIDDEN);
+      return false;
+    }
+  }
+
+
   public boolean validateTokenForSmsPhoneDownload(String token) {
     try {
       // todo: parse the claims and make sure it has the role of "DOWNLOAD_LINK"
