@@ -509,11 +509,6 @@ class DeliveryHelper {
             // return empty object to ui if we don't find one
             model.addAttribute("delivery", new DeliveryVO(deliveryid:0))
         }
-//
-//        boolean hasRole = authorities.stream()
-//                .map(authority -> authority instanceof GrantedAuthority ?
-//                        ((GrantedAuthority) authority).getAuthority() : authority.toString())
-//                .anyMatch(authority -> authority.equals(Role.ROLE_DELIVERY_EMPLOYEE_VIEW_TOKEN));
 
         if(hasRole(authorities, String.valueOf(Role.ROLE_DELIVERY_EMPLOYEE_VIEW_TOKEN))){
 
@@ -521,9 +516,56 @@ class DeliveryHelper {
             model.addAttribute("DeliveryEmployeeViewActivated", "yes")
         }
 
-
-
     }
+
+    void changeStatusToPrep(String deliverytoken, Model model){
+        String deliveryid = jwtTokenProvider.getDeliveryIdFromToken(deliverytoken)
+        Optional<DeliveryVO> deliveryVO = deliveryRepo.findById(Integer.valueOf(deliveryid))
+
+        // process the products here for display
+        if(deliveryVO.present){
+            // change the status of the delivery
+            deliveryVO.get().setStatus(appConstants.DELIVERY_STATUS_PREPPING)
+            deliveryRepo.save(deliveryVO.get())
+        }
+    }
+
+    void changeStatusToDispatch(String deliverytoken, Model model){
+        String deliveryid = jwtTokenProvider.getDeliveryIdFromToken(deliverytoken)
+        Optional<DeliveryVO> deliveryVO = deliveryRepo.findById(Integer.valueOf(deliveryid))
+
+        // process the products here for display
+        if(deliveryVO.present){
+            // change the status of the delivery
+            deliveryVO.get().setStatus(appConstants.DELIVERY_STATUS_READY_FOR_DISPATCH)
+            deliveryRepo.save(deliveryVO.get())
+        }
+    }
+
+    void changeStatusToEnroute(String deliverytoken, Model model){
+        String deliveryid = jwtTokenProvider.getDeliveryIdFromToken(deliverytoken)
+        Optional<DeliveryVO> deliveryVO = deliveryRepo.findById(Integer.valueOf(deliveryid))
+
+        // process the products here for display
+        if(deliveryVO.present){
+            // change the status of the delivery
+            deliveryVO.get().setStatus(appConstants.DELIVERY_STATUS_EN_ROUTE)
+            deliveryRepo.save(deliveryVO.get())
+        }
+    }
+
+    void changeStatusToComplete(String deliverytoken, Model model){
+        String deliveryid = jwtTokenProvider.getDeliveryIdFromToken(deliverytoken)
+        Optional<DeliveryVO> deliveryVO = deliveryRepo.findById(Integer.valueOf(deliveryid))
+
+        // process the products here for display
+        if(deliveryVO.present){
+            // change the status of the delivery
+            deliveryVO.get().setStatus(appConstants.DELIVERY_STATUS_DELIVERED)
+            deliveryRepo.save(deliveryVO.get())
+        }
+    }
+
 
     boolean hasRole(List authorities, String roleToCheck) {
         println "Authorities: ${authorities}"

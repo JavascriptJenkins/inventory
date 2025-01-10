@@ -160,6 +160,77 @@ public class DeliveryViewController {
 
         return "delivery/clientstatusview.html";
     }
+    @PostMapping("/status/prep")
+    String changeStatusToEnPrep(
+            Model model,
+            @RequestParam("deliverytoken") Optional<String> deliverytoken,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size
+    ){
+
+        // this needs to do a search on the customerid and see if there is cart pending with this exact menu id
+        if(deliverytoken.isPresent()) {
+            deliveryHelper.changeStatusToPrep(deliverytoken.get(), model)
+            deliveryHelper.loadDeliveryByDeliveryToken(deliverytoken.get(), model)
+            deliveryHelper.bindHiddenValues(model, deliverytoken.get())
+        }
+
+        return "delivery/clientstatusview.html";
+    }
+
+    @PostMapping("/status/dispatch")
+    String changeStatusToDispatch(
+            Model model,
+            @RequestParam("deliverytoken") Optional<String> deliverytoken,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size
+    ){
+
+        // this needs to do a search on the customerid and see if there is cart pending with this exact menu id
+        if(deliverytoken.isPresent()) {
+            deliveryHelper.changeStatusToDispatch(deliverytoken.get(), model)
+            deliveryHelper.loadDeliveryByDeliveryToken(deliverytoken.get(), model)
+            deliveryHelper.bindHiddenValues(model, deliverytoken.get())
+        }
+
+        return "delivery/clientstatusview.html";
+    }
+
+    @PostMapping("/status/enroute")
+    String changeStatusToEnRoute(
+            Model model,
+            @RequestParam("deliverytoken") Optional<String> deliverytoken,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size
+    ){
+
+        // this needs to do a search on the customerid and see if there is cart pending with this exact menu id
+        if(deliverytoken.isPresent()) {
+            deliveryHelper.changeStatusToEnroute(deliverytoken.get(), model)
+            deliveryHelper.loadDeliveryByDeliveryToken(deliverytoken.get(), model)
+            deliveryHelper.bindHiddenValues(model, deliverytoken.get())
+        }
+
+        return "delivery/clientstatusview.html";
+    }
+
+    @PostMapping("/status/complete")
+    String changeStatusToComplete(
+            Model model,
+            @RequestParam("deliverytoken") Optional<String> deliverytoken,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size
+    ){
+
+        // this needs to do a search on the customerid and see if there is cart pending with this exact menu id
+        if(deliverytoken.isPresent()) {
+            deliveryHelper.changeStatusToComplete(deliverytoken.get(), model)
+            deliveryHelper.loadDeliveryByDeliveryToken(deliverytoken.get(), model)
+            deliveryHelper.bindHiddenValues(model, deliverytoken.get())
+        }
+
+        return "delivery/clientstatusview.html";
+    }
 
     @GetMapping("item/ajax/status")
     @ResponseBody // this returns plain string instead of view
