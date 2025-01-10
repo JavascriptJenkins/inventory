@@ -2,6 +2,7 @@ package com.techvvs.inventory.jparepo;
 
 import com.techvvs.inventory.model.CrateVO;
 import com.techvvs.inventory.model.DeliveryVO;
+import com.techvvs.inventory.model.TransactionVO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,6 +19,9 @@ public interface DeliveryRepo extends JpaRepository<DeliveryVO, Integer> {
     Page<DeliveryVO> findAllByIsprocessed(int isprocessed, Pageable pageable);
 
     Optional<DeliveryVO> findByDeliveryid(Integer deliveryid);
+
+    Page<DeliveryVO> findByTransaction_Customervo_customerid(Integer customerid, Pageable pageable);
+
     //Page<TransactionVO> findByCustomervo_customerid(Integer customerid, Pageable pageable);
 
 

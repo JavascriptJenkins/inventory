@@ -160,6 +160,26 @@ public class DeliveryViewController {
 
         return "delivery/clientstatusview.html";
     }
+    @GetMapping("queue")
+    String getListOfPendingPickupAndDeliveryOrders(
+            Model model,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size,
+            @RequestParam("customerid") Optional<Integer> customerid
+    ){
+        techvvsAuthService.checkuserauth(model)
+
+        // get a list of all the deliveries using pagination
+
+        if(customerid.present && customerid.get() > 0) {
+            deliveryHelper.findAllDeliveries(model, page, size, customerid)
+        } else {
+            deliveryHelper.findAllDeliveries(model, page, size, Optional.empty())
+        }
+        checkoutHelper.getAllCustomers(model)
+
+        return "delivery/deliveryqueue.html";
+    }
     @PostMapping("/status/prep")
     String changeStatusToEnPrep(
             Model model,
