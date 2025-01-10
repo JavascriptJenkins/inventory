@@ -670,6 +670,20 @@ class DeliveryHelper {
 
     }
 
+    int returnDeliveryStatusForInternalUser(String deliveryid){
+        Optional<DeliveryVO> deliveryVO = deliveryRepo.findById(Integer.valueOf(deliveryid))
+
+        // process the products here for display
+
+        if(deliveryVO.present){
+            return deliveryVO.get().status
+        } else {
+            return 0
+        }
+
+
+    }
+
 
     // we need to bind these because initially they come from the user navigating from a phone SMS message with them in the URI
     void bindHiddenValues(Model model, String deliverytoken){

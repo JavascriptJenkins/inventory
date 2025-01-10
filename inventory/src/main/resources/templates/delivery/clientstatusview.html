@@ -277,6 +277,8 @@
 <body>
 <div class="modal show d-block" tabindex="-1">
     <input id="hiddenDeliverytoken" type="hidden" th:data-delivery-token-id="${deliverytoken}" th:value="${deliverytoken}"/>
+    <input id="hiddenMenuId" type="hidden" th:data-menuid="${delivery.transaction.cart.menu.menuid}" th:value="${delivery.transaction.cart.menu.menuid}"/>
+    <input id="hiddenDeliveryId" type="hidden" th:data-deliveryid="${delivery.deliveryid}" th:value="${delivery.deliveryid}"/>
     <div class="modal-dialog modal-lg">
         <div class="modal-content p-4">
             <div class="modal-header">
@@ -510,7 +512,14 @@
             try {
                 const deliveryTokenElement = document.getElementById('hiddenDeliverytoken');
                 const deliveryToken = deliveryTokenElement.getAttribute('data-delivery-token-id');
-                const response = await fetch(`/delivery/item/ajax/status?deliverytoken=${deliveryToken}`);
+
+                const menuElement = document.getElementById('hiddenMenuId');
+                const menuid = menuElement.getAttribute('data-menuid');
+
+                 const hiddendeliveryIDElement = document.getElementById('hiddenDeliveryId');
+                const deliveryid = hiddendeliveryIDElement.getAttribute('data-deliveryid');
+
+                const response = await fetch(`/delivery/item/ajax/status?deliverytoken=${deliveryToken}&menuid=${menuid}&deliveryid=${deliveryid}`);
                 const data = await response.json();
 
                 if (data !== undefined) {

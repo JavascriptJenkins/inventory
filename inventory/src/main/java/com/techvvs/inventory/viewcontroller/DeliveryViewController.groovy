@@ -455,8 +455,8 @@ public class DeliveryViewController {
         if(deliverytoken.present){
             deliveryHelper.bindHiddenValues(model, deliverytoken.get())
         }
+        return String.valueOf(deliveryHelper.returnDeliveryStatusForInternalUser(deliveryid.get()))
 
-        return "0"
     }
 
     // todo: write in a validation check to make sure you can't add more than is available in the batch
