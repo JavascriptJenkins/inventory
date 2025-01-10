@@ -297,9 +297,13 @@
                     </tbody>
                 </table>
                 <!-- Display Total Below the Table -->
-                <p class="text-end mt-3" style="font-size: 1.2em; font-weight: bold; color: #00ffcc;">
-                    <strong>Total:</strong> <span th:text="${#numbers.formatCurrency(delivery.total)}"></span>
+                <!-- Display Total and Units in the Same Row -->
+                <p class="d-flex justify-content-between align-items-center mt-3" style="font-size: 1.2em; font-weight: bold; color: #00ffcc;">
+                    <span><strong>Units:</strong> <span th:text="${delivery.displayquantitytotal}"></span></span>
+                    <span><strong>Total:</strong> <span th:text="${#numbers.formatCurrency(delivery.total)}"></span></span>
                 </p>
+
+
             </div>
 
 
