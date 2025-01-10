@@ -56,6 +56,7 @@
 </head>
 <body>
 <div class="modal show d-block" tabindex="-1">
+    <input id="hiddenDeliverytoken" type="hidden" th:data-delivery-token-id="${deliverytoken}" th:value="${deliverytoken}"/>
     <div class="modal-dialog modal-lg">
         <div class="modal-content p-4">
             <div class="modal-header">
@@ -140,25 +141,43 @@
             4: 100 // Full for status 4
         };
 
-        // Fetch the initial status
-        const deliveryStatus = parseInt(progressBar.getAttribute('data-status')) || 0;
-        const initialProgress = statusProgressMap[deliveryStatus] || 0;
+        let currentProgress = parseInt(progressBar.getAttribute('data-progress')) || 0;
 
-        let progress = initialProgress; // Start animation from the mapped percentage
-        const maxProgress = 100;
-
-        const animateProgress = () => {
-            if (progress < maxProgress) {
-                progress += 1; // Increment progress
-            } else {
-                progress = initialProgress; // Reset to initial progress
-            }
-            progressBar.style.width = `${progress}%`;
+        const updateProgress = (newStatus) => {
+            const initialProgress = statusProgressMap[newStatus] || 0;
+            currentProgress = initialProgress;
         };
 
-        setInterval(animateProgress, 100); // Update every 100ms
+        const animateProgress = () => {
+            if (currentProgress < 100) {
+                currentProgress += 1; // Increment progress
+            } else {
+                currentProgress = statusProgressMap[parseInt(progressBar.getAttribute('data-status'))] || 0;
+            }
+            progressBar.style.width = `${currentProgress}%`;
+        };
+
+        setInterval(animateProgress, 100); // Update animation every 100ms
+
+        // Polling logic to fetch real-time status
+        setInterval(async () => {
+            try {
+                // Fetch the deliverytoken from the data attribute
+                const deliveryTokenElement = document.getElementById('hiddenDeliverytoken');
+                const deliveryToken = deliveryTokenElement.getAttribute('data-delivery-token-id');
+
+                // Make the API call using the token
+                const response = await fetch(`/delivery/item/ajax/status?deliverytoken=${deliveryToken}`);
+                const { status } = await response.json();
+                progressBar.setAttribute('data-status', status); // Update status attribute
+                updateProgress(status); // Adjust progress dynamically
+            } catch (error) {
+                console.error('Failed to fetch delivery status:', error);
+            }
+        }, 5000); // Check for updates every 5 seconds
     });
 </script>
+
 
 
 

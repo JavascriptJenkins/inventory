@@ -161,6 +161,22 @@ public class DeliveryViewController {
         return "delivery/clientstatusview.html";
     }
 
+    @GetMapping("item/ajax/status")
+    @ResponseBody // this returns plain string instead of view
+    String getDeliveryStatus(
+            Model model,
+            @RequestParam("deliverytoken") Optional<String> deliverytoken,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size
+    ){
+
+        // this needs to do a search on the customerid and see if there is cart pending with this exact menu id
+        if(deliverytoken.isPresent()) {
+            return String.valueOf(deliveryHelper.returnDeliveryStatus(deliverytoken.get(), model))
+        }
+        return "0"
+    }
+
     // todo: write in a validation check to make sure you can't add more than is available in the batch
     // first user creates a cart by scanning items.
     // on next page "final package", the cart will be transformed into a transaction
