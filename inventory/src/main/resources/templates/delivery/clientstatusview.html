@@ -53,6 +53,41 @@
             margin-bottom: 60px; /* Added margin for spacing */
         }
     </style>
+    <style>
+        .address-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #1e1e1e;
+            border: 2px solid #00bfff;
+            border-radius: 10px;
+            padding: 10px;
+            color: #ffffff;
+            width: 250px;
+            font-size: 0.9em;
+            z-index: 1000; /* Ensure it hovers over other elements */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5); /* Add a shadow for better visibility */
+        }
+
+        .address-container .show-more {
+            display: none;
+            margin-top: 5px;
+        }
+
+        .address-container button {
+            background-color: transparent;
+            border: none;
+            color: #00bfff;
+            cursor: pointer;
+            text-decoration: underline;
+            font-size: 0.85em;
+        }
+
+        .progress-container {
+            margin-top: 200px; /* Push the progress bar down to avoid overlap */
+        }
+    </style>
+
 </head>
 <body>
 <div class="modal show d-block" tabindex="-1">
@@ -65,6 +100,27 @@
                     - Delivery ID: <span th:text="${delivery.deliveryid}"></span>
                 </h5>
             </div>
+            <!-- Address Container in the Corner -->
+            <!-- Address Container in the Corner -->
+            <div class="address-container">
+                <p><strong>Address:</strong></p>
+                <p>
+                    <span th:text="${delivery.location.address1}"></span><br>
+                    <span th:if="${delivery.location.address2 != null}" th:text="${delivery.location.address2}"></span>
+                    <span th:if="${delivery.location.address2 != null}"><br></span>
+                    <span th:text="${delivery.location.city}"></span>,
+                    <span th:text="${delivery.location.state}"></span>
+                    <span th:text="${delivery.location.zipcode}"></span>
+                </p>
+                <p><strong>Notes:</strong></p>
+                <p class="address-notes" th:text="${delivery.location.notes}"></p>
+
+            </div>
+
+
+
+
+
             <div class="modal-body">
                 <p><strong>Order Created:</strong>
                     <span th:text="${delivery.displayCreateDateTimeStamp}"></span>
@@ -125,6 +181,7 @@
 
 
             </div>
+
         </div>
     </div>
 </div>
@@ -177,7 +234,11 @@
         }, 5000); // Check for updates every 5 seconds
     });
 </script>
-
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const notes = document.querySelector('.address-notes');
+    });
+</script>
 
 
 
