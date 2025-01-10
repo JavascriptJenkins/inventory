@@ -116,7 +116,7 @@ class DeliveryHelper {
         Page<DeliveryVO> pageOfDelivery
         // this means someone selected a value on the ui and we need to run a filtered query
         if(customerid.isPresent() && customerid.get() > 0) {
-            pageOfDelivery = deliveryRepo.findByCustomervo_customerid(customerid.get(),pageable);
+            pageOfDelivery = deliveryRepo.findByTransaction_Customervo_customerid(customerid.get(),pageable);
         } else {
             pageOfDelivery = deliveryRepo.findAll(pageable);
         }
@@ -715,7 +715,7 @@ class DeliveryHelper {
 
         pageSize = pageSize < 5 ? 5 : pageSize; // make sure it's not less than 5
 
-        model.addAttribute("currentpagesize", pageSize);
+       // model.addAttribute("currentpagesize", pageSize);
 
         // run first page request
         Pageable pageable = PageRequest.of(currentPage, pageSize, Sort.by(Sort.Direction.ASC, "createTimeStamp"));

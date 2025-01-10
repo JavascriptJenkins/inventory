@@ -94,7 +94,8 @@
     </style>
 </head>
 <body>
-<input type="hidden" th:data-current-pagination-size="${currentpagesize}" id="currentSizeId">
+<input type="hidden" th:data-current-pagination-page="${page}" th:value="${page}" id="currentPageId">
+<input type="hidden" th:data-current-pagination-size="${size}" th:value="${size}" id="currentSizeId">
 <div class="container mt-4">
     <h1 class="status-text">Delivery Queue</h1>
     <!-- Search Bar -->
@@ -113,7 +114,7 @@
             <label for="customerselectid" class="form-label">Filter:</label>
             <select id="customerselectid" class="form-select">
                 <option value="0">Filter by customer</option>
-                <option th:each="customer : ${customers}" th:value="${customer.customerid}" th:text="${customer.name}" th:selected="${customer.customerid == customerid}"></option>
+                <option th:each="customer : ${customers}" th:data-customerid="${customer.customerid}" th:value="${customer.customerid}" th:text="${customer.name}" th:selected="${customer.customerid == customerid}"></option>
             </select>
         </div>
         <div class="col-md-4 search-bar">
@@ -213,7 +214,7 @@
         }
 
         // Get the value of the current pagination size
-        const currentPageSize = element.dataset.currentPaginationSize;
+        const currentPageSize = $(element).attr('data-current-pagination-size');
         if (!currentPageSize) {
             console.error('Current pagination size is not set in the element "currentSizeId".');
             return;
@@ -242,6 +243,40 @@
         }
     });
 </script>
+
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const customerSelect = document.getElementById('customerselectid');
+            const currentPageElement = document.getElementById('currentPageId');
+            const currentSizeElement = document.getElementById('currentSizeId');
+
+            if (customerSelect && currentPageElement && currentSizeElement) {
+                customerSelect.addEventListener('change', function () {
+                    const selectedCustomerId = customerSelect.value;
+                    const currentPage = currentPageElement.dataset.currentPaginationPage;
+                    const currentSize = currentSizeElement.dataset.currentPaginationSize;
+
+                    if (selectedCustomerId && currentPage && currentSize) {
+                        // Build the query string
+                        const queryParams = new URLSearchParams({
+                            customerid: selectedCustomerId,
+                            page: currentPage,
+                            size: currentSize
+                        }).toString();
+
+                        // Redirect to the new URL
+                        window.location.href = `/delivery/queue?${queryParams}`;
+                    } else {
+                        console.error('Missing required data for redirection.');
+                    }
+                });
+            } else {
+                console.error('Required elements not found.');
+            }
+        });
+</script>
+
+
 
 </body>
 </html>
