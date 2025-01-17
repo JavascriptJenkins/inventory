@@ -566,11 +566,15 @@ class MenuHelper {
 
         // pull the user who is currently logged in
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        SystemUserDAO systemUserDAO = systemUserRepo.findByEmail(authentication.getPrincipal().username)
+        if(!authentication.getPrincipal().equals("anonymousUser")){
+            SystemUserDAO systemUserDAO = systemUserRepo.findByEmail(authentication.getPrincipal().username)
 
-        // send the employee delivery view token to the user who is currently logged in
-        twilioTextUtil.sendEmployeeDeliveryViewTokenLinkSMSWithCustomMessage(
-                systemUserDAO.phone,isDev1, menuid, token, "Employee Delivery View Token for Customer: "+customerVO.name+" and Order #: "+deliveryid+ "              ")
+            // send the employee delivery view token to the user who is currently logged in
+            twilioTextUtil.sendEmployeeDeliveryViewTokenLinkSMSWithCustomMessage(
+                    systemUserDAO.phone,isDev1, menuid, token, "Employee Delivery View Token for Customer: "+customerVO.name+" and Order #: "+deliveryid+ "              ")
+        } else{
+            System.out.println("Order came in, but we are not sending token to logged in user because the order came in from a sms token link. ")
+        }
 
         //model.addAttribute("successMessage","Delivery token sent to :"+systemUserDAO.phone+" valid for "+tokenlength+" hours.  ")
     }

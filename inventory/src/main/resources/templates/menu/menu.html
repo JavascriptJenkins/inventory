@@ -1225,6 +1225,63 @@
 
     </script>
 
+    <script>
+        $(document).ready(function () {
+            function validateDeliveryFields() {
+                const address1Valid = $('#address1').val().trim().length > 0;
+                const cityValid = $('#city').val().trim().length >= 3;
+                const stateValid = $('#state').val() !== '';
+                const zipcodeValid = /^\d{5}$/.test($('#zipcode').val());
+                const deliveryNotesValid = $('#deliveryNotes').val().trim().length > 5;
+
+                // Ensure all fields are valid
+                return address1Valid && cityValid && stateValid && zipcodeValid && deliveryNotesValid;
+            }
+
+            function updateConfirmOrderButtonState() {
+                const isDeliveryChecked = $('#deliveryCheckbox').is(':checked');
+                const isPickupChecked = $('#pickupCheckbox').is(':checked');
+                const confirmOrderButton = $('#confirmOrder');
+
+                // If Delivery is checked, validate all fields
+                if (isDeliveryChecked) {
+                    confirmOrderButton.prop('disabled', !validateDeliveryFields());
+                }
+                // If Pickup is checked, enable the button
+                else if (isPickupChecked) {
+                    confirmOrderButton.prop('disabled', false);
+                }
+                // Otherwise, disable the button
+                else {
+                    confirmOrderButton.prop('disabled', true);
+                }
+            }
+
+            // Attach the validation logic to the change event of checkboxes
+            $('#deliveryCheckbox, #pickupCheckbox').on('change', function () {
+                // Ensure only one checkbox is checked at a time
+                if ($(this).is('#deliveryCheckbox') && $(this).is(':checked')) {
+                    $('#pickupCheckbox').prop('checked', false);
+                    $('#deliveryFields').show(); // Show delivery fields
+                } else if ($(this).is('#pickupCheckbox') && $(this).is(':checked')) {
+                    $('#deliveryCheckbox').prop('checked', false);
+                    $('#deliveryFields').hide(); // Hide delivery fields
+                }
+
+                // Update button state
+                updateConfirmOrderButtonState();
+            });
+
+            // Attach validation logic to input events for delivery fields
+            $('#address1, #city, #state, #zipcode, #deliveryNotes').on('input change', function () {
+                updateConfirmOrderButtonState();
+            });
+
+            // Set the initial state of the Confirm Order button and delivery fields
+            updateConfirmOrderButtonState();
+            $('#deliveryFields').hide(); // Hide delivery fields by default
+        });
+    </script>
 
 
 </div> <!-- main container ends -->
