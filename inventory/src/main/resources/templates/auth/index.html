@@ -596,7 +596,12 @@
                     closeButton.style.fontSize = '20px';
                     closeButton.style.cursor = 'pointer';
                     closeButton.style.color = '#999';
-                    closeButton.addEventListener('click', () => popupOverlay.remove());
+
+                    // Add event listener to close button
+                    closeButton.addEventListener('click', function () {
+                        popupOverlay.remove();
+                        reloadContainingContent(); // Call the reload function on close
+                    });
 
                     // Append close button and popup box
                     popupBox.appendChild(closeButton);
@@ -606,7 +611,17 @@
                     document.body.appendChild(popupOverlay);
                 });
             });
+
+            // Function to reload containing content
+            function reloadContainingContent() {
+                console.log('Reloading containing content...');
+                // Example: Re-fetch content from the server or reset the state
+                // Replace with your specific logic
+                document.location.reload(); // Full page reload (simplest approach)
+            }
         });
+
+
     </script>
 
     <script>
