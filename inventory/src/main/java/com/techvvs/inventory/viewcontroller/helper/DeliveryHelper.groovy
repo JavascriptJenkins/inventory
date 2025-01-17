@@ -794,7 +794,7 @@ class DeliveryHelper {
        // model.addAttribute("currentpagesize", pageSize);
 
         // run first page request
-        Pageable pageable = PageRequest.of(currentPage, pageSize, Sort.by(Sort.Direction.ASC, "createTimeStamp"));
+        Pageable pageable = PageRequest.of(currentPage, pageSize, Sort.by(Sort.Direction.DESC, "createTimeStamp"));
         Page<DeliveryVO> pageOfDelivery = runPageRequestWithOptionalCustomerid(pageable, customerid)
 
         int totalPages = pageOfDelivery.getTotalPages();

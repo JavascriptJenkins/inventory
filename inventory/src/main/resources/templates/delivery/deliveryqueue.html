@@ -288,8 +288,8 @@
             <th>Status</th>
         </tr>
         </thead>
-        <tbody>
-        <tr th:each="delivery : ${deliveryPage.content}">
+        <tbody id="tableBody">
+        <tr class="delivery-row"  th:each="delivery : ${deliveryPage.content}">
             <td th:text="${delivery.deliveryid}"></td>
             <td th:text="${delivery.transaction.customervo.name}"></td>
             <td th:text="${delivery.name}"></td>
@@ -359,7 +359,6 @@
 
 <script>
     $(document).ready(function () {
-        // Function to filter table rows
         function filterTable() {
             const searchValue = $('#searchInput').val().toLowerCase();
             let visibleCount = 0;
@@ -367,14 +366,13 @@
             $('.delivery-row').each(function () {
                 const rowText = $(this).text().toLowerCase();
                 if (rowText.includes(searchValue)) {
-                    $(this).removeClass('d-none'); // Show matching rows
+                    $(this).removeClass('d-none');
                     visibleCount++;
                 } else {
-                    $(this).addClass('d-none'); // Hide non-matching rows
+                    $(this).addClass('d-none');
                 }
             });
 
-            // Show "No items found" message if no rows are visible
             if (visibleCount === 0) {
                 if (!$('#noResultsRow').length) {
                     $('#tableBody').append('<tr id="noResultsRow"><td colspan="4" class="text-center">No matching deliveries found.</td></tr>');
@@ -384,14 +382,17 @@
             }
         }
 
+
         // Event listener for input changes
         $('#searchInput').on('input', filterTable);
 
         // Clear button functionality
         $('#clearSearch').on('click', function () {
             $('#searchInput').val('');
-            filterTable(); // Reset the table display
+            $('.delivery-row').removeClass('d-none');
+            $('#noResultsRow').remove();
         });
+
     });
 </script>
 
