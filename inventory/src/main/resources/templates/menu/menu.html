@@ -579,10 +579,10 @@
                     <p><strong>Total:</strong> $<span id="cartReviewTotal">0.00</span></p>
                     <hr>
 
-                    <!-- Delivery or Pickup Selection -->
+                    <!-- Delivery or Curbside Pickup Selection -->
                     <div>
                         <label><input type="checkbox" id="deliveryCheckbox" name="type" value="delivery"> Delivery</label>
-                        <label><input type="checkbox" id="pickupCheckbox" name="type" value="pickup"> Pickup</label>
+                        <label><input type="checkbox" id="pickupCheckbox" name="type" value="pickup"> Curbside Pickup</label>
                     </div>
 
                     <!-- Address Fields -->
@@ -904,8 +904,10 @@
                 selectedLocation = 0;
             }
 
+            const isDelivery = $('#deliveryCheckbox').is(':checked');
+
             // Validate inputs
-            if (deliveryNotes.length <= 5) {
+            if (deliveryNotes.length <= 5 && isDelivery) {
                 alert('Please select a valid delivery location and ensure delivery notes are more than 5 characters.');
                 return;
             }
