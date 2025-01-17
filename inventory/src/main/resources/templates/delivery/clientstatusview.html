@@ -283,7 +283,7 @@
         <div class="modal-content p-4">
             <div class="modal-header">
                 <!-- Floating Glowing Back Button -->
-                <a class="back-button"
+                <a th:if="${showbackbutton != null && showbackbutton == 'yes'}" class="back-button"
                    th:href="@{/delivery/queue(page=${backButtonPage}, size=${backButtonSize}, customerid=${backButtonCustomerId})}">
                     &#8592; <!-- Left Arrow Icon -->
                 </a>
@@ -427,35 +427,52 @@
         const spinner = document.getElementById('loadingSpinner');
 
         // Ensure the spinner is hidden on page load
-        spinner.style.display = 'none';
+        if (spinner) {
+            spinner.style.display = 'none';
+        }
 
         // Function to display the spinner
         const showSpinner = () => {
-            spinner.style.display = 'flex';
+            if (spinner) {
+                spinner.style.display = 'flex';
+            }
+        };
+
+        // Function to safely add event listener
+        const addEventListenerIfExists = (elementId, event, handler) => {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.addEventListener(event, handler);
+            } else {
+                console.warn(`Element with ID "${elementId}" does not exist.`);
+            }
         };
 
         // Add event listeners to the buttons
-        document.getElementById('prepButton').addEventListener('click', () => {
+        addEventListenerIfExists('prepButton', 'click', () => {
             showSpinner();
-            document.getElementById('prepForm').submit();
+            const form = document.getElementById('prepForm');
+            if (form) form.submit();
         });
 
-        document.getElementById('dispatchButton').addEventListener('click', () => {
+        addEventListenerIfExists('dispatchButton', 'click', () => {
             showSpinner();
-            document.getElementById('dispatchForm').submit();
+            const form = document.getElementById('dispatchForm');
+            if (form) form.submit();
         });
 
-        document.getElementById('enrouteButton').addEventListener('click', () => {
+        addEventListenerIfExists('enrouteButton', 'click', () => {
             showSpinner();
-            document.getElementById('enrouteForm').submit();
+            const form = document.getElementById('enrouteForm');
+            if (form) form.submit();
         });
 
-        document.getElementById('completeButton').addEventListener('click', () => {
+        addEventListenerIfExists('completeButton', 'click', () => {
             showSpinner();
-            document.getElementById('completeForm').submit();
+            const form = document.getElementById('completeForm');
+            if (form) form.submit();
         });
     });
-
 </script>
 
 
@@ -519,7 +536,7 @@
                  const hiddendeliveryIDElement = document.getElementById('hiddenDeliveryId');
                 const deliveryid = hiddendeliveryIDElement.getAttribute('data-deliveryid');
 
-                const response = await fetch(`/delivery/item/ajax/status?deliverytoken=${deliveryToken}&menuid=${menuid}&deliveryid=${deliveryid}`);
+                const response = await fetch(`/delivery/item/ajax/status?deliverytoken=${deliveryToken}&menuid=${menuid}&deliveryid=${deliveryid}&isstatus=yes`);
                 const data = await response.json();
 
                 if (data !== undefined) {

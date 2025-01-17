@@ -426,6 +426,7 @@ public class DeliveryViewController {
             @RequestParam("deliveryid") Optional<String> deliveryid,
             @RequestParam("menuid") Optional<String> menuid,
             @RequestParam("customerid") Optional<String> customerid,
+            @RequestParam("isstatus") Optional<String> isstatus,
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size
     ){
@@ -437,7 +438,7 @@ public class DeliveryViewController {
 
         // todo: split all these internal user paths into a method
         // this is path for an internal user using a non-sms token to get access
-        if(deliveryid.isPresent() && menuid.isPresent()){
+        if(deliveryid.isPresent() && menuid.isPresent() && isstatus.present && "no".equals(isstatus.get())){
             deliveryHelper.loadDeliveryByCustomParametersForInternalUser(
                     deliverytoken.get(), Integer.valueOf(deliveryid.get()), Integer.valueOf(menuid.get()), model)
             model.addAttribute("showbackbutton", "yes") // give internal users the back button

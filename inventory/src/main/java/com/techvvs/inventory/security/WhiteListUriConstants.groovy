@@ -50,8 +50,8 @@ class WhiteListUriConstants {
     public static final String DOCUMENT_PRODUCT_33 = "/document/product/**";
     public static final String DOCUMENT_DOCUMENTS = "/document/documents";
     public static final String DOCUMENT_DOCUMENTS_33 = "/document/documents/**";
-
-
+    public static final String DELIVERY_ITEM_33 = "/delivery/item/**";
+    public static final String DELIVERY_ITEM = "/delivery/item"
 
 
 
