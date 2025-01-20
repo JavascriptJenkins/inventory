@@ -1215,6 +1215,12 @@
                     deliveryNotesValid = $('#deliveryNotes').val() !== null && $('#deliveryNotes').val().length > 5;
                 }
 
+                if(isDelivery && isLocationSelected){
+                   console.log('validating WITH location selected');
+                  deliveryNotesValid = $('#deliveryNotes').val() !== null && $('#deliveryNotes').val().length > 5;
+                  console.log('deliveryNotesValid: '+deliveryNotesValid)
+                }
+
                 // Combine all validation checks
                 const allValid = !isDelivery || (address1Valid && cityValid && stateValid && zipcodeValid && deliveryNotesValid);
 
@@ -1278,6 +1284,28 @@
             $('#closeCartReview').on('click', function () {
                 $('#cartReviewModal').fadeOut();
             });
+
+            // Enable Confirm Order when Pickup is selected
+            $('#pickupCheckbox').on('change', function () {
+                const isChecked = $(this).is(':checked');
+                $('#confirmOrder').prop('disabled', !isChecked);
+
+                // Ensure Delivery checkbox is unchecked
+                if (isChecked) {
+                    $('#deliveryCheckbox').prop('checked', false);
+                    $('#deliveryFields').hide(); // Hide delivery fields if visible
+                }
+            });
+
+            // Reset Confirm Order button state on Delivery checkbox change
+            $('#deliveryCheckbox').on('change', function () {
+                if ($(this).is(':checked')) {
+                    $('#pickupCheckbox').prop('checked', false);
+                    validateForm();
+
+<!--                    $('#confirmOrder').prop('disabled', true); // Disable for Delivery until fields are valid-->
+                }
+            });
         });
 
 
@@ -1306,6 +1334,11 @@
                     stateValid = $('#state').val() !== null && $('#state').val() !== '';
                     zipcodeValid = $('#zipcode').val() !== null && /^\d{5}$/.test($('#zipcode').val());
                     deliveryNotesValid = $('#deliveryNotes').val() !== null && $('#deliveryNotes').val().trim().length > 5;
+                }
+                if(isDelivery && isLocationSelected){
+                   console.log('validating WITH location selected');
+                  deliveryNotesValid = $('#deliveryNotes').val() !== null && $('#deliveryNotes').val().length > 5;
+                  console.log('deliveryNotesValid: '+deliveryNotesValid)
                 }
                 // Ensure all fields are valid
                 return address1Valid && cityValid && stateValid && zipcodeValid && deliveryNotesValid;
@@ -1359,25 +1392,7 @@
 
     <script>
         $(document).ready(function () {
-            // Enable Confirm Order when Pickup is selected
-            $('#pickupCheckbox').on('change', function () {
-                const isChecked = $(this).is(':checked');
-                $('#confirmOrder').prop('disabled', !isChecked);
 
-                // Ensure Delivery checkbox is unchecked
-                if (isChecked) {
-                    $('#deliveryCheckbox').prop('checked', false);
-                    $('#deliveryFields').hide(); // Hide delivery fields if visible
-                }
-            });
-
-            // Reset Confirm Order button state on Delivery checkbox change
-            $('#deliveryCheckbox').on('change', function () {
-                if ($(this).is(':checked')) {
-                    $('#pickupCheckbox').prop('checked', false);
-                    $('#confirmOrder').prop('disabled', true); // Disable for Delivery until fields are valid
-                }
-            });
         });
 
     </script>
