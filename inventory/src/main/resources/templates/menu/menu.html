@@ -581,30 +581,65 @@
 
                     <!-- Delivery or Curbside Pickup Selection -->
                     <div>
-                        <label><input type="checkbox" id="deliveryCheckbox" name="type" value="delivery"> Delivery</label>
-                        <label><input type="checkbox" id="pickupCheckbox" name="type" value="pickup"> Curbside Pickup</label>
+                        <label>
+                            <input type="checkbox" id="deliveryCheckbox" name="type" value="delivery"> Delivery
+                        </label>
+                        <label>
+                            <input type="checkbox" id="pickupCheckbox" name="type" value="pickup"> Curbside Pickup
+                        </label>
                     </div>
+
 
                     <!-- Address Fields -->
                     <div id="deliveryFields" style="display: none;">
+                        <!-- Conditional Rendering Based on customer.locationlist -->
+                        <div th:if="${customer.locationlist != null && customer.locationlist.size() > 0}">
+                            <!-- Dropdown for Existing Locations -->
+                            <div id="locationDropdown" style="display: block;">
+                                <label for="locationSelect">Select Location:</label>
+                                <select id="locationSelect" name="locationid" class="form-select">
+                                    <option value="0" disabled selected>Select Location</option>
+                                    <option th:each="location : ${customer.locationlist}"
+                                            th:value="${location.locationid}"
+                                            th:text="${location.name}"></option>
+                                </select>
+<!--                                <button id="newLocationButton" class="btn btn-primary mt-2">New Location</button>-->
+                            </div>
+
+                            <script>
+                                $(document).ready(function () {
+                                    // Bind change event to the location dropdown
+                                    $('#locationSelect').on('change', function () {
+                                        const isLocationSelected = $(this).val() !== null && $(this).val() !== '0';
+
+                                        // Enable or disable the Confirm Order button based on the selected value
+                                        $('#confirmOrder').prop('disabled', !isLocationSelected);
+                                    });
+                                });
+                            </script>
+
+
+                        </div>
+
+
                         <div>
-                            <label for="address1">Address 1</label>
-                            <input type="text" id="address1" name="address1" class="form-control">
+                            <label for="address1" class="address-field">Address 1</label>
+                            <input type="text" id="address1" name="address1" class="form-control address-field">
                             <span class="validation-icon"></span>
                         </div>
                         <div>
-                            <label for="address2">Address 2</label>
-                            <input type="text" id="address2" name="address2" class="form-control">
+                            <label for="address2" class="address-field">Address 2</label>
+                            <input type="text" id="address2" name="address2" class="form-control address-field">
                             <span class="validation-icon"></span>
                         </div>
                         <div>
-                            <label for="city">City</label>
-                            <input type="text" id="city" name="city" class="form-control">
+                            <label for="city" class="address-field">City</label>
+                            <input type="text" id="city" name="city" class="form-control address-field">
                             <span class="validation-icon"></span>
                         </div>
                         <div>
-                            <label for="state">State</label>
-                            <select id="state" name="state" class="form-select">
+                            <label for="state" class="address-field">State</label>
+                            <select id="state" name="state" class="form-select address-field">
                                 <option value="">Select State</option>
                                 <option value="AL">Alabama (AL)</option>
                                 <option value="AK">Alaska (AK)</option>
@@ -661,8 +696,8 @@
                             <span class="validation-icon"></span>
                         </div>
                         <div>
-                            <label for="zipcode">Zipcode</label>
-                            <input type="text" id="zipcode" name="zipcode" class="form-control" maxlength="5">
+                            <label for="zipcode" class="address-field">Zipcode</label>
+                            <input type="text" id="zipcode" name="zipcode" class="form-control address-field" maxlength="5">
                             <span class="validation-icon"></span>
                         </div>
                         <div>
@@ -670,6 +705,7 @@
                             <textarea id="deliveryNotes" name="deliverynotes" class="form-control"></textarea>
                             <span class="validation-icon"></span>
                         </div>
+
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -1154,17 +1190,37 @@
                 }
             }
 
-            function validateForm() {
-                const isDelivery = $('#deliveryCheckbox').is(':checked');
-                const address1Valid = $('#address1').val().length > 0;
-                const cityValid = $('#city').val().length >= 3;
-                const stateValid = $('#state').val() !== '';
-                const zipcodeValid = /^\d{5}$/.test($('#zipcode').val());
-                const deliveryNotesValid = $('#deliveryNotes').val().length > 5;
+function validateForm() {
+    const isDelivery = $('#deliveryCheckbox').is(':checked');
+    const isLocationDropdownVisible = $('#locationDropdown').is(':visible');
 
-                const allValid = !isDelivery || (address1Valid && cityValid && stateValid && zipcodeValid && deliveryNotesValid);
-                $('#confirmOrder').prop('disabled', !allValid);
-            }
+    // Declare variables outside the if block
+    let address1Valid = true;
+    let cityValid = true;
+    let stateValid = true;
+    let zipcodeValid = true;
+    let deliveryNotesValid = true;
+
+    const isLocationSelected = $('#locationSelect').val() !== null && $('#locationSelect').val() !== '0';
+
+
+    // Validate fields only if Delivery is checked and the location dropdown is not visible
+    if (isDelivery && !isLocationDropdownVisible) {
+        address1Valid = $('#address1').val() !== null && $('#address1').val().length > 0;
+        cityValid = $('#city').val() !== null && $('#city').val().length >= 3;
+        stateValid = $('#state').val() !== null && $('#state').val() !== '';
+        zipcodeValid = $('#zipcode').val() !== null && /^\d{5}$/.test($('#zipcode').val());
+        deliveryNotesValid = $('#deliveryNotes').val() !== null && $('#deliveryNotes').val().length > 5;
+    }
+
+    // Combine all validation checks
+    const allValid = !isDelivery || (address1Valid && cityValid && stateValid && zipcodeValid && deliveryNotesValid);
+
+    // Enable or disable the Confirm Order button based on validation
+    $('#confirmOrder').prop('disabled', !allValid);
+
+}
+
 
             // Toggle Delivery Fields
             $('#deliveryCheckbox').on('change', function () {
@@ -1228,15 +1284,30 @@
     <script>
         $(document).ready(function () {
             function validateDeliveryFields() {
-                const address1Valid = $('#address1').val().trim().length > 0;
-                const cityValid = $('#city').val().trim().length >= 3;
-                const stateValid = $('#state').val() !== '';
-                const zipcodeValid = /^\d{5}$/.test($('#zipcode').val());
-                const deliveryNotesValid = $('#deliveryNotes').val().trim().length > 5;
 
+                const isDelivery = $('#deliveryCheckbox').is(':checked');
+                const isLocationDropdownVisible = $('#locationDropdown').is(':visible');
+
+
+                // Declare variables outside the if block
+                let address1Valid = true;
+                let cityValid = true;
+                let stateValid = true;
+                let zipcodeValid = true;
+                let deliveryNotesValid = true;
+
+                // Validate fields only if Delivery is checked and the location dropdown is not visible
+                if (isDelivery && !isLocationDropdownVisible) {
+                    address1Valid = $('#address1').val() !== null && $('#address1').val().trim().length > 0;
+                    cityValid = $('#city').val() !== null && $('#city').val().trim().length >= 3;
+                    stateValid = $('#state').val() !== null && $('#state').val() !== '';
+                    zipcodeValid = $('#zipcode').val() !== null && /^\d{5}$/.test($('#zipcode').val());
+                    deliveryNotesValid = $('#deliveryNotes').val() !== null && $('#deliveryNotes').val().trim().length > 5;
+                }
                 // Ensure all fields are valid
                 return address1Valid && cityValid && stateValid && zipcodeValid && deliveryNotesValid;
             }
+
 
             function updateConfirmOrderButtonState() {
                 const isDeliveryChecked = $('#deliveryCheckbox').is(':checked');
@@ -1283,6 +1354,87 @@
         });
     </script>
 
+    <script>
+        $(document).ready(function () {
+            // Enable Confirm Order when Pickup is selected
+            $('#pickupCheckbox').on('change', function () {
+                const isChecked = $(this).is(':checked');
+                $('#confirmOrder').prop('disabled', !isChecked);
+
+                // Ensure Delivery checkbox is unchecked
+                if (isChecked) {
+                    $('#deliveryCheckbox').prop('checked', false);
+                    $('#deliveryFields').hide(); // Hide delivery fields if visible
+                }
+            });
+
+            // Reset Confirm Order button state on Delivery checkbox change
+            $('#deliveryCheckbox').on('change', function () {
+                if ($(this).is(':checked')) {
+                    $('#pickupCheckbox').prop('checked', false);
+                    $('#confirmOrder').prop('disabled', true); // Disable for Delivery until fields are valid
+                }
+            });
+        });
+
+    </script>
+
+    <script>
+        $(document).ready(function () {
+            // Add a common class to all address fields
+            const addressFieldsClass = '.address-field';
+
+            // Bind change event to the location dropdown
+            $('#locationSelect').on('change', function () {
+                const isLocationSelected = $(this).val() !== null && $(this).val() !== '0';
+
+                // Declare newLocationButton variable
+                let newLocationButton = $('#newLocationButton');
+
+                // Check if the "New Location" button already exists
+                if (newLocationButton.length === 0) {
+                    // Add the "New Location" button dynamically
+                    newLocationButton = $('<button>')
+                        .attr('id', 'newLocationButton')
+                        .addClass('btn btn-primary mt-2') // Add Bootstrap styles
+                        .text('New Location')
+                        .hide(); // Initially hidden
+
+                    // Append the button to the DOM, right after the dropdown
+                    $('#locationDropdown').append(newLocationButton);
+
+                    // Bind click event to the button
+                    newLocationButton.on('click', function () {
+                        $('#locationSelect').val('0'); // Reset dropdown to default value
+                        $(addressFieldsClass).show(); // Show address fields
+
+                        // Reset validation styles and icons
+                        $(addressFieldsClass).each(function () {
+                            $(this).val(''); // Clear input value
+                            $(this).css('border-color', ''); // Remove border styling
+                            $(this).siblings('.validation-icon').html('').css('color', ''); // Remove validation icons
+                        });
+
+                        $('#confirmOrder').prop('disabled', true); // Disable the Confirm Order button
+
+                    });
+                }
+
+                // Hide or show address fields and button based on the dropdown value
+                if (isLocationSelected) {
+                    $(addressFieldsClass).hide(); // Hide address fields
+                    newLocationButton.fadeIn(); // Show the "New Location" button
+                } else {
+                    $(addressFieldsClass).show(); // Show address fields
+                    newLocationButton.fadeOut(); // Hide the button
+                }
+
+                // Validate delivery notes
+                const deliveryNotesLength = $('#deliveryNotes').val().length;
+                $('#confirmOrder').prop('disabled', deliveryNotesLength <= 5);
+            });
+        });
+    </script>
 
 </div> <!-- main container ends -->
 </div> <!-- wrapping it here to hide after the order is complete -->

@@ -107,8 +107,7 @@ public class MenuViewController {
 
 
 
-        // fetch all customers from database and bind them to model
-        checkoutHelper.getAllCustomers(model)
+
         //techvvsAuthService.checkuserauth(model)
         return "menu/menu.html";
     }

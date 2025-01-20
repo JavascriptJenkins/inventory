@@ -802,6 +802,7 @@ class MenuHelper {
     // we need to bind these because initially they come from the user navigating from a phone SMS message with them in the URI
     void bindHiddenValues(Model model, String shoppingtoken, String menuid){
 
+        model.addAttribute("customer", customerRepo.findById(Integer.valueOf(jwtTokenProvider.getCustomerIdFromToken(shoppingtoken))).get())
         model.addAttribute("shoppingtoken", shoppingtoken)
         model.addAttribute("menuid", menuid)
     }
