@@ -1190,36 +1190,38 @@
                 }
             }
 
-function validateForm() {
-    const isDelivery = $('#deliveryCheckbox').is(':checked');
-    const isLocationDropdownVisible = $('#locationDropdown').is(':visible');
+            function validateForm() {
+                const isDelivery = $('#deliveryCheckbox').is(':checked');
+                const isLocationDropdownVisible = $('#locationDropdown').is(':visible');
 
-    // Declare variables outside the if block
-    let address1Valid = true;
-    let cityValid = true;
-    let stateValid = true;
-    let zipcodeValid = true;
-    let deliveryNotesValid = true;
+                // Declare variables outside the if block
+                let address1Valid = true;
+                let cityValid = true;
+                let stateValid = true;
+                let zipcodeValid = true;
+                let deliveryNotesValid = true;
 
-    const isLocationSelected = $('#locationSelect').val() !== null && $('#locationSelect').val() !== '0';
+                const isLocationSelected = $('#locationSelect').val() !== null && $('#locationSelect').val() !== '0';
 
 
-    // Validate fields only if Delivery is checked and the location dropdown is not visible
-    if (isDelivery && !isLocationDropdownVisible) {
-        address1Valid = $('#address1').val() !== null && $('#address1').val().length > 0;
-        cityValid = $('#city').val() !== null && $('#city').val().length >= 3;
-        stateValid = $('#state').val() !== null && $('#state').val() !== '';
-        zipcodeValid = $('#zipcode').val() !== null && /^\d{5}$/.test($('#zipcode').val());
-        deliveryNotesValid = $('#deliveryNotes').val() !== null && $('#deliveryNotes').val().length > 5;
-    }
+                // Validate fields only if Delivery is checked and the location is not selected
+                if (isDelivery && !isLocationSelected) {
+                    console.log('validating with location not selected');
+                    address1Valid = $('#address1').val() !== null && $('#address1').val().length > 0;
+                    cityValid = $('#city').val() !== null && $('#city').val().length >= 3;
+                    console.log('cityValid: '+cityValid);
+                    stateValid = $('#state').val() !== null && $('#state').val() !== '';
+                    zipcodeValid = $('#zipcode').val() !== null && /^\d{5}$/.test($('#zipcode').val());
+                    deliveryNotesValid = $('#deliveryNotes').val() !== null && $('#deliveryNotes').val().length > 5;
+                }
 
-    // Combine all validation checks
-    const allValid = !isDelivery || (address1Valid && cityValid && stateValid && zipcodeValid && deliveryNotesValid);
+                // Combine all validation checks
+                const allValid = !isDelivery || (address1Valid && cityValid && stateValid && zipcodeValid && deliveryNotesValid);
 
-    // Enable or disable the Confirm Order button based on validation
-    $('#confirmOrder').prop('disabled', !allValid);
+                // Enable or disable the Confirm Order button based on validation
+                $('#confirmOrder').prop('disabled', !allValid);
 
-}
+            }
 
 
             // Toggle Delivery Fields
@@ -1287,6 +1289,7 @@ function validateForm() {
 
                 const isDelivery = $('#deliveryCheckbox').is(':checked');
                 const isLocationDropdownVisible = $('#locationDropdown').is(':visible');
+                const isLocationSelected = $('#locationSelect').val() !== null && $('#locationSelect').val() !== '0';
 
 
                 // Declare variables outside the if block
@@ -1297,7 +1300,7 @@ function validateForm() {
                 let deliveryNotesValid = true;
 
                 // Validate fields only if Delivery is checked and the location dropdown is not visible
-                if (isDelivery && !isLocationDropdownVisible) {
+                if (isDelivery && !isLocationSelected) {
                     address1Valid = $('#address1').val() !== null && $('#address1').val().trim().length > 0;
                     cityValid = $('#city').val() !== null && $('#city').val().trim().length >= 3;
                     stateValid = $('#state').val() !== null && $('#state').val() !== '';
