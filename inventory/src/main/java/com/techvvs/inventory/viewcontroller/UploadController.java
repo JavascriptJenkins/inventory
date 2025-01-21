@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.thymeleaf.exceptions.TemplateInputException;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
@@ -203,6 +204,16 @@ public class UploadController {
         techvvsAuthService.checkuserauth(model);
         return "/service/xlsxbatch.html";
     }
+
+
+    @ExceptionHandler(TemplateInputException.class)
+    public String handleTemplateInputException(TemplateInputException ex, Model model) {
+        System.out.println("CAUGHT THE EXCEPTION ON THE CONTROLLER. ");
+        // Log and redirect to a fallback page
+        model.addAttribute("error", "Template not found.");
+        return "error/fallback";
+    }
+
 
     // todo: we probably don't need the isqrmedia one here but whatever who cares fix it later
     @PostMapping("/media/upload")

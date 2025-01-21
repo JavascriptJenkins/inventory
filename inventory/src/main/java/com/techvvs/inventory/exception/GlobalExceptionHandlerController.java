@@ -28,17 +28,17 @@ public class GlobalExceptionHandlerController {
 //    };
 //  }
 
-  @ExceptionHandler(TemplateInputException.class)
-  public String handleTemplateInputException(TemplateInputException ex, Model model) {
-    // Log the exception (optional)
-    System.err.println("TemplateInputException occurred: " + ex.getMessage());
-
-    // Add custom error messages or details to the model if needed
-    model.addAttribute("error", "The requested page could not be found or is unavailable.");
-
-    // Route to a fallback error page
-    return "/service/xlsxbatch.html"; // Replace with your actual fallback page path
-  }
+//  @ExceptionHandler(TemplateInputException.class)
+//  public String handleTemplateInputException(TemplateInputException ex, Model model) {
+//    // Log the exception (optional)
+//    System.err.println("TemplateInputException occurred: " + ex.getMessage());
+//
+//    // Add custom error messages or details to the model if needed
+//    model.addAttribute("error", "The requested page could not be found or is unavailable.");
+//
+//    // Route to a fallback error page
+//    return "/service/xlsxbatch.html"; // Replace with your actual fallback page path
+//  }
 
   @ExceptionHandler(CustomException.class)
   public void handleCustomException(HttpServletResponse res, CustomException ex) throws IOException {
