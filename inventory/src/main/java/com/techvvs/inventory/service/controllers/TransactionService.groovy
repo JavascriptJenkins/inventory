@@ -251,26 +251,20 @@ class TransactionService {
     }
 
     LocationVO setLocation(String deliverynotes, int locationid, LocationVO locationVO, String type, CustomerVO customerVO) {
-        if(locationid > 0){
+        if(locationid > 0) {
             // this means user chose a location on the dropdown and we grab that from the database
             return locationRepo.findById(locationid).get()
         } else {
             CustomerVO detachedVO = customerVO
-            LocationTypeVO locationTypeVO = locationTypeRepo.findByName(appConstants.ADHOC_CUSTOMER_DELIVERY).get()
+            LocationTypeVO locationTypeVO = null
+            if("delivery".equals(type)) {
+                locationTypeVO = locationTypeRepo.findByName(appConstants.ADHOC_CUSTOMER_DELIVERY).get()
 
-            LocationVO newlocation = locationRepo.save(new LocationVO(
-                    name: deliverynotes ? deliverynotes.substring(0, Math.min(25, deliverynotes.length())) : "", // we are setting the location name to first 25 characters of the delivery notes
-                    description: deliverynotes,
-                    locationtype: locationTypeVO,
-                    notes: deliverynotes,
-                    address1: locationVO.address1,
-                    address2: locationVO.address2 != null ? locationVO.address2 : "",
-                    city: locationVO.city,
-                    state: locationVO.state,
-                    zipcode: locationVO.zipcode,
-                    updateTimeStamp: LocalDateTime.now(),
-                    createTimeStamp: LocalDateTime.now()
-            ))
+            } else if("pickup".equals(type)) {
+                locationTypeVO = locationTypeRepo.findByName(appConstants.ADHOC_CUSTOMER_PICKUP).get()
+            }
+
+            LocationVO newlocation = locationRepo.save(createLocationBasedOnOrderType(type, locationTypeVO, locationVO, deliverynotes))
 
             // save the locationid relationship to the customer
             detachedVO.locationlist.add(newlocation)
@@ -278,6 +272,42 @@ class TransactionService {
             customerRepo.save(detachedVO)
             return newlocation
         }
+    }
+
+    LocationVO createLocationBasedOnOrderType(String type, LocationTypeVO locationTypeVO, LocationVO locationVO, String deliverynotes){
+        switch (type) {
+            case "delivery":
+                return new LocationVO(
+                        name: deliverynotes ? deliverynotes.substring(0, Math.min(25, deliverynotes.length())) : "", // we are setting the location name to first 25 characters of the delivery notes
+                        description: deliverynotes,
+                        locationtype: locationTypeVO,
+                        notes: deliverynotes,
+                        address1: locationVO.address1,
+                        address2: locationVO.address2 != null ? locationVO.address2 : "",
+                        city: locationVO.city,
+                        state: locationVO.state,
+                        zipcode: locationVO.zipcode,
+                        updateTimeStamp: LocalDateTime.now(),
+                        createTimeStamp: LocalDateTime.now()
+                )
+            case "pickup":
+                return new LocationVO(
+                        name: "Default Pickup Location", // we are setting the location name to first 25 characters of the delivery notes
+                        description: "Default Notes For Pickup Location",
+                        locationtype: locationTypeVO,
+                        notes: deliverynotes,
+                        address1: "default address 1",
+                        address2: "default address 2",
+                        city: "default city",
+                        state: "default state",
+                        zipcode: "default zip",
+                        updateTimeStamp: LocalDateTime.now(),
+                        createTimeStamp: LocalDateTime.now()
+                )
+            default:
+                return new LocationVO()
+        }
+
     }
 
     List<PackageVO>  createNewPackage(TransactionVO transactionVO, DeliveryVO deliveryVO){

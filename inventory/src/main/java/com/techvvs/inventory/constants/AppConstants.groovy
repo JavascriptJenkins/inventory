@@ -94,6 +94,7 @@ String VIEW_INVOICE = "view"
     public String B2B_DISTRO = "B2B.DISTRO"
     public String B2C_RETAIL = "B2C.RETAIL"
     public String ADHOC_CUSTOMER_DELIVERY = "ADHOC.CUSTOMER.DELIVERY"
+    public String ADHOC_CUSTOMER_PICKUP = "ADHOC.CUSTOMER.PICKUP"
 
     // Package Types
     public String LARGE_BOX = "LARGE.BOX"

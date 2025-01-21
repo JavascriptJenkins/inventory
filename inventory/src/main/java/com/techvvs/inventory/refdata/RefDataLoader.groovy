@@ -277,6 +277,17 @@ class RefDataLoader {
             locationTypeRepo.save(locationType3);
         }
 
+        if(locationTypeRepo.findByName(appConstants.ADHOC_CUSTOMER_PICKUP).present){
+            // nothing
+        } else {
+            LocationTypeVO locationType4 = new LocationTypeVO();
+            locationType4.setName("ADHOC.CUSTOMER.PICKUP");
+            locationType4.setDescription("adhoc order from a customer for curbside pickup fulfillment");
+            locationType4.setCreateTimeStamp(LocalDateTime.now());
+            locationType4.setUpdateTimeStamp(LocalDateTime.now());
+            locationTypeRepo.save(locationType4);
+        }
+
 
         System.out.println("Location Type ref data loaded");
 

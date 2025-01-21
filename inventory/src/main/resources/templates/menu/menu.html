@@ -701,7 +701,7 @@
                             <span class="validation-icon"></span>
                         </div>
                         <div>
-                            <label for="deliveryNotes">Best time for delivery</label>
+                            <label for="deliveryNotes">Describe exact Location</label>
                             <textarea id="deliveryNotes" name="deliverynotes" class="form-control"></textarea>
                             <span class="validation-icon"></span>
                         </div>
@@ -931,16 +931,21 @@
 
         // Handle Confirm Order click
         $('#confirmOrder').on('click', function () {
-            const dropdown = $('#deliveryLocationSelect');
-            let selectedLocation = dropdown.val();
-            const deliveryNotes = $('#deliveryNotes').val().trim();
+            const isDelivery = $('#deliveryCheckbox').is(':checked');
+            const isLocationDropdownVisible = $('#locationDropdown').is(':visible');
+            const isLocationSelected = $('#locationSelect').val() !== null && $('#locationSelect').val() !== '0';
+
+            let selectedLocation = '0';
+            if(isDelivery && isLocationDropdownVisible && isLocationSelected){
+                selectedLocation = $('#locationSelect').val();
+            }
 
             // Default selectedLocation to 0 if undefined or invalid
             if (selectedLocation === undefined || selectedLocation === 'default') {
                 selectedLocation = 0;
             }
 
-            const isDelivery = $('#deliveryCheckbox').is(':checked');
+            const deliveryNotes = $('#deliveryNotes').val().trim();
 
             // Validate inputs
             if (deliveryNotes.length <= 5 && isDelivery) {
