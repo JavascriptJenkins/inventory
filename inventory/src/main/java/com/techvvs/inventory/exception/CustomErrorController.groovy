@@ -1,4 +1,7 @@
 package com.techvvs.inventory.exception
+
+import com.techvvs.inventory.service.auth.TechvvsAuthService
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.web.servlet.error.ErrorController
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
@@ -10,6 +13,8 @@ import javax.servlet.http.HttpServletRequest;
 @Controller
 public class CustomErrorController implements ErrorController {
 
+    @Autowired
+    TechvvsAuthService techvvsAuthService
 
     @RequestMapping("/error")
     public String handleError(HttpServletRequest request, Model model) {
@@ -23,6 +28,11 @@ public class CustomErrorController implements ErrorController {
         // Log the error (optional)
         if (throwable != null) {
             System.err.println("Error occurred: " + throwable.getMessage());
+        }
+
+        // catch the stupid bs error when we upload an xlsx file
+        if(throwable.getMessage().contains("xlsxbatch")){
+            techvvsAuthService.checkuserauth(model) // we have to re-inject auth
         }
 
         // Add error details to the model
