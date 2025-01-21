@@ -30,7 +30,7 @@ public class CustomErrorController implements ErrorController {
         model.addAttribute("errorMessage", throwable != null ? throwable.getMessage() : "Unknown error");
 
         // Return the name of a custom error template
-        return "/service/xlsxbatch.html"; // Replace with your actual template path
+        return "service/xlsxbatch.html"; // Replace with your actual template path
     }
 
 
