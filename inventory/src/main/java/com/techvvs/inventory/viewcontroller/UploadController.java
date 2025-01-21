@@ -206,13 +206,13 @@ public class UploadController {
     }
 
 
-    @ExceptionHandler(TemplateInputException.class)
-    public String handleTemplateInputException(TemplateInputException ex, Model model) {
-        System.out.println("CAUGHT THE EXCEPTION ON THE CONTROLLER. ");
-        // Log and redirect to a fallback page
-        model.addAttribute("error", "Template not found.");
-        return "error/fallback";
-    }
+//    @ExceptionHandler(TemplateInputException.class)
+//    public String handleTemplateInputException(TemplateInputException ex, Model model) {
+//        System.out.println("CAUGHT THE EXCEPTION ON THE CONTROLLER. ");
+//        // Log and redirect to a fallback page
+//        model.addAttribute("error", "Template not found.");
+//        return "error/fallback";
+//    }
 
 
     // todo: we probably don't need the isqrmedia one here but whatever who cares fix it later
