@@ -861,6 +861,30 @@ class MenuHelper {
         return cartVO.cartid
     }
 
+    @Transactional
+    CustomerVO emptyWholeCartForCustomer(
+            CustomerVO customerVO,
+            int menuid
+
+    ){
+
+        MenuVO menuVO = menuRepo.findById(menuid).get()
+
+        List<CartVO> listcarts = cartRepo.findAllByMenuAndCustomer(menuVO,customerVO)
+
+        listcarts.each { cart ->
+            if (cart.isprocessed == 0) {
+                cart = emptyCart(cart) // Modify the cart object
+                cart = emptyCart(cart) // Empty the products from the cart
+                cart.setIsprocessed(1) // Mark the cart as processed and save it
+                cartRepo.save(cart)
+            }
+        }
+
+        return customerVO
+    }
+
+
 
     @Transactional
     TransactionVO checkoutCart(
