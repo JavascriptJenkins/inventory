@@ -105,8 +105,62 @@
             box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
         }
     </style>
+    <style>
+        /* Full-page spinner overlay */
+        #spinner-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 9999;
+            display: flex; /* Use flexbox for centering */
+            justify-content: center; /* Center horizontally */
+            align-items: center; /* Center vertically */
+        }
+
+        /* Spinner */
+        .spinner {
+            border: 8px solid rgba(255, 255, 255, 0.3);
+            border-top: 8px solid #ffffff;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+
+    <script>
+        $(document).ready(function () {
+            // Ensure spinner is hidden on page load
+            $("#spinner-overlay").hide();
+
+            // Show spinner on form submission
+            $("form").on("submit", function () {
+                $("#spinner-overlay").fadeIn();
+            });
+        });
+    </script>
+
+
+
 </head>
 <body>
+<div id="spinner-overlay">
+    <div class="spinner"></div>
+</div>
+
 <div th:insert="fragments/adminnavbar.html :: adminnavbarfragment"> </div>
 <div class="container">
     <div class="header-dark">
