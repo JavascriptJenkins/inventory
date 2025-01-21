@@ -59,7 +59,6 @@ class MenuGenerator {
                 name: batchVO.name+"-"+"default-menu",
                 menu_product_list: expandedlist,
                 isdefault: 1,
-                amount: 0.00,
                 notes: "Default Menu",
                 createTimeStamp: LocalDateTime.now(),
                 updateTimeStamp: LocalDateTime.now()
