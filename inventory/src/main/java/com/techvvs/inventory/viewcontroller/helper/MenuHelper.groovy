@@ -20,6 +20,7 @@ import com.techvvs.inventory.model.SystemUserDAO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.security.JwtTokenProvider
 import com.techvvs.inventory.security.Role
+import com.techvvs.inventory.service.controllers.CustomerService
 import com.techvvs.inventory.service.controllers.ProductService
 import com.techvvs.inventory.service.controllers.TransactionService
 import com.techvvs.inventory.service.transactional.CartDeleteService
@@ -71,6 +72,9 @@ class MenuHelper {
 
     @Autowired
     CustomerRepo customerRepo
+
+    @Autowired
+    CustomerService customerService
 
     @Autowired
     TwilioTextUtil twilioTextUtil
@@ -340,23 +344,23 @@ class MenuHelper {
     }
 
 
-//    MenuVO hydrateTransientQuantitiesForDisplay(MenuVO menuVO){
-//
-//        // cycle thru here and if the productid is the same then update the quantity
-//        ProductVO previous = new ProductVO(barcode: 0)
-//        for(ProductVO productVO : menuVO.menu_product_list){
-//            if(productVO.displayquantity == null){
-//                productVO.displayquantity = 1
-//            }
-//            if(productVO.barcode == previous.barcode){
-//                productVO.displayquantity = productVO.displayquantity + 1
-//            }
-//            previous = productVO
-//        }
-//
-//        return menuVO
-//
-//    }
+    MenuVO hydrateTransientQuantitiesForDisplay(MenuVO menuVO){
+
+        // cycle thru here and if the productid is the same then update the quantity
+        ProductVO previous = new ProductVO(barcode: 0)
+        for(ProductVO productVO : menuVO.menu_product_list){
+            if(productVO.displayquantity == null){
+                productVO.displayquantity = 1
+            }
+            if(productVO.barcode == previous.barcode){
+                productVO.displayquantity = productVO.displayquantity + 1
+            }
+            previous = productVO
+        }
+
+        return menuVO
+
+    }
 
     // todo: this needs to fill a transient field that holds the path to an image?
     MenuVO loadMenu(String menuid, Model model){
@@ -518,8 +522,8 @@ class MenuHelper {
 
         CustomerVO customerVO = customerRepo.findByCustomerid(Integer.valueOf(customerid)).get()
 
-        //generate a token
-        String token = jwtTokenProvider.createMenuShoppingToken(customerVO.email, roles, Integer.valueOf(tokenlength), menuid, customerid)
+        // save the token as the customer's active shopping token
+        customerVO = customerService.saveActiveShoppingToken(customerVO, roles, tokenlength, menuid, customerid)
 
         boolean isDev1 = "dev1".equals(environment.getProperty("spring.profiles.active"));
 
@@ -530,17 +534,17 @@ class MenuHelper {
 
         if(systemUserDAO.phone.equals(String.valueOf(numberfromui))){
             // if the phone number entered is the same as the logged in user, just send a single token out
-            twilioTextUtil.sendShoppingTokenLinkSMS(phonenumber,isDev1, menuid, token)
+            twilioTextUtil.sendShoppingTokenLinkSMS(phonenumber,isDev1, menuid, customerVO.shoppingtoken)
         } else {
             // send a copy of the token to the system user logged in number and also to the customer phone number
-            twilioTextUtil.sendShoppingTokenLinkSMS(phonenumber,isDev1, menuid, token)
+            twilioTextUtil.sendShoppingTokenLinkSMS(phonenumber,isDev1, menuid, customerVO.shoppingtoken)
 
             twilioTextUtil.sendShoppingTokenLinkSMSWithCustomMessage(
-                    systemUserDAO.phone,isDev1, menuid, token, "Menu for Customer: "+customerVO.name+"              ")
+                    systemUserDAO.phone,isDev1, menuid, customerVO.shoppingtoken, "Menu for Customer: "+customerVO.name+"              ")
         }
 
 
-        twilioTextUtil.sendShoppingTokenLinkSMS(phonenumber,isDev1, menuid, token)
+        twilioTextUtil.sendShoppingTokenLinkSMS(phonenumber,isDev1, menuid, customerVO.shoppingtoken)
 
         model.addAttribute("successMessage","Shopping token sent to :"+phonenumber+" valid for "+tokenlength+" hours.  ")
     }

@@ -51,6 +51,13 @@ class CustomerVO implements Serializable {
     DeliveryVO delivery
 
     @JsonProperty
+    @Column(name = "shoppingtoken", length = 1024)
+    String shoppingtoken // This stores a customer's currently active shoppingtoken
+
+    @Transient
+    Integer shoppingtokenexpired
+
+    @JsonProperty
     @ElementCollection(fetch = FetchType.LAZY)
     List<LocationVO> locationlist = new ArrayList<LocationVO>()
 

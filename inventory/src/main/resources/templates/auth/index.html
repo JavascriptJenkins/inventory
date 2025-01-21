@@ -168,6 +168,26 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             position: relative;
         }
+        .btn-hover {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            text-decoration: none;
+            color: #000;
+            background-color: #ffc107; /* Yellow color */
+            border: 2px solid #ffc107;
+            border-radius: 5px;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .btn-hover:hover {
+            background-color: #ffd700; /* Slightly darker yellow */
+            color: #fff; /* Text turns white */
+            border-color: #ffd700;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+        }
     </style>
 
 
@@ -185,6 +205,15 @@
     </div>
 
     <br>
+
+    <!-- New Button Added Here -->
+    <div class="mb-3">
+        <a href="/menu/shoppingtoken/active" class="btn-hover">
+            View Active Shopping Tokens
+        </a>
+    </div>
+    <!-- End of New Button -->
+
     <div class="alert alert-info" role="alert">Select a Menu option to get started.</div>
     <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
     <div class="alert alert-info" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>

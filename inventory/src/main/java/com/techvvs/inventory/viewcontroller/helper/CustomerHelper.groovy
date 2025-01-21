@@ -3,16 +3,19 @@ package com.techvvs.inventory.viewcontroller.helper
 import com.techvvs.inventory.constants.MessageConstants
 import com.techvvs.inventory.jparepo.CustomerRepo
 import com.techvvs.inventory.model.CustomerVO
+import com.techvvs.inventory.security.JwtTokenProvider
 import com.techvvs.inventory.validation.StringSecurityValidator
 import com.techvvs.inventory.validation.generic.ObjectValidator
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
 import org.springframework.ui.Model
 
 import java.time.LocalDateTime
+import java.util.stream.Collectors
 
 @Component
 class CustomerHelper {
@@ -26,6 +29,9 @@ class CustomerHelper {
 
     @Autowired
     ObjectValidator objectValidator
+
+    @Autowired
+    JwtTokenProvider jwtTokenProvider
 
 
     void loadBlankCustomer(Model model) {
@@ -87,6 +93,29 @@ class CustomerHelper {
         model.addAttribute("page", currentPage);
         model.addAttribute("size", pageOfCustomer.getTotalPages());
         model.addAttribute("customerPage", pageOfCustomer);
+    }
+
+    void hydrateDisplayDataForActiveTokenPage(Model model) {
+        Page<CustomerVO> pageOfCustomer = model.getAttribute("customerPage") as Page<CustomerVO>
+        for(CustomerVO customer : pageOfCustomer) {
+            if(jwtTokenProvider.validateTokenSimple(customer.shoppingtoken)) {
+                customer.shoppingtokenexpired = 0
+            } else {
+                customer.shoppingtokenexpired = 1
+            }
+        }
+        //String smsUrl = baseuri+"/menu/shop?shoppingtoken=" + shoppingtoken + "&menuid=" + menuid;
+
+        // Sort the list in memory based on `shoppingtokenexpired`
+        List<CustomerVO> sortedCustomers = pageOfCustomer.getContent()
+                .stream()
+                .sorted(Comparator.comparingInt { it.shoppingtokenexpired })
+                .collect(Collectors.toList())
+
+        // Replace the page content with the sorted list
+        Page<CustomerVO> sortedPage = new PageImpl<>(sortedCustomers, pageOfCustomer.getPageable(), pageOfCustomer.getTotalElements())
+        model.addAttribute("customerPage", sortedPage)
+
     }
 
     CustomerVO findCustomerById(Integer customerid) {

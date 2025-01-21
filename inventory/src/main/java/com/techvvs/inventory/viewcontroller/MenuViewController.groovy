@@ -4,15 +4,14 @@ import com.techvvs.inventory.model.BatchVO
 import com.techvvs.inventory.model.CartVO
 import com.techvvs.inventory.model.LocationVO
 import com.techvvs.inventory.model.MenuVO
-import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.TransactionVO
-import com.techvvs.inventory.qrcode.impl.QrCodeGenerator
 import com.techvvs.inventory.security.JwtTokenProvider
 import com.techvvs.inventory.security.Role
 import com.techvvs.inventory.service.auth.TechvvsAuthService
 import com.techvvs.inventory.service.transactional.CartDeleteService
 import com.techvvs.inventory.viewcontroller.helper.BatchControllerHelper
 import com.techvvs.inventory.viewcontroller.helper.CheckoutHelper
+import com.techvvs.inventory.viewcontroller.helper.CustomerHelper
 import com.techvvs.inventory.viewcontroller.helper.MenuHelper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Controller
@@ -42,10 +41,13 @@ public class MenuViewController {
 
     @Autowired
     JwtTokenProvider jwtTokenProvider
+
+    @Autowired
+    CustomerHelper customerHelper
     
 
     // todo: modify this to parse user cookie from request and check user permissions
-    //default home mapping
+    // todo: modify this to check for existence of
     @GetMapping
     String viewNewForm(
             @ModelAttribute( "menu" ) MenuVO menuVO,
@@ -96,6 +98,9 @@ public class MenuViewController {
         if(shoppingtoken.isPresent()) {
             menuHelper.loadCartByCustomerIdAndMenuId(shoppingtoken.get(), model)
         }
+
+        // overwrite the menuid.... redundant but we have to do it now!
+        menuid = Optional.of(jwtTokenProvider.getMenuIdFromToken(shoppingtoken.get()))
 
 
         if(menuid.isPresent() && shoppingtoken.isPresent()) {
@@ -433,6 +438,24 @@ public class MenuViewController {
 
 
         return "auth/index.html";
+    }
+
+    // This returns a list of active shopping tokens so we can copy the token link, and open in a new browser
+    // so we can simulate shopping as a customer and see their view/have their permissions
+    @GetMapping("/shoppingtoken/active")
+    String getActiveShoppingTokens(
+            Model model,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size
+    ){
+
+        techvvsAuthService.checkuserauth(model)
+        //checkoutHelper.getAllCustomers(model)
+        customerHelper.addPaginatedData(model, page)
+        customerHelper.hydrateDisplayDataForActiveTokenPage(model)
+
+
+        return "menu/activeshoppingtokens.html";
     }
 
     @PostMapping("/shoppingtoken/send")
