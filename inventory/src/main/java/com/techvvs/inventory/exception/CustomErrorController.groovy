@@ -31,13 +31,15 @@ public class CustomErrorController implements ErrorController {
         }
 
         // catch the stupid bs error when we upload an xlsx file
-        if(throwable.getMessage().contains("xlsxbatch")){
+        if(throwable.getMessage().contains("xlsxbatch") && throwable.getMessage().contains("TemplateInputException")){
             techvvsAuthService.checkuserauth(model) // we have to re-inject auth
+            model.addAttribute("successMessage", "New Batch has been loaded into the System! Navigate Home->Browse Batches to view it");
+        } else {
+            // Add error details to the model
+            model.addAttribute("statusCode", statusCode);
+            model.addAttribute("errorMessage", throwable != null ? throwable.getMessage() : "Unknown error");
         }
 
-        // Add error details to the model
-        model.addAttribute("statusCode", statusCode);
-        model.addAttribute("errorMessage", throwable != null ? throwable.getMessage() : "Unknown error");
 
         // Return the name of a custom error template
         return "service/xlsxbatch.html"; // Replace with your actual template path
