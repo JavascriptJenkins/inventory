@@ -94,8 +94,13 @@ public class MenuViewController {
             @RequestParam("size") Optional<String> size,
             @ModelAttribute( "cart" ) CartVO cartVO
     ){
-        // this needs to do a search on the customerid and see if there is cart pending with this exact menu id
+        boolean tokenused = true;
         if(shoppingtoken.isPresent()) {
+            tokenused = techvvsAuthService.isTokenUsed(shoppingtoken.get())
+        }
+
+        // this needs to do a search on the customerid and see if there is cart pending with this exact menu id
+        if(shoppingtoken.isPresent() && !tokenused) {
             menuHelper.loadCartByCustomerIdAndMenuId(shoppingtoken.get(), model)
         }
 
@@ -103,7 +108,7 @@ public class MenuViewController {
         menuid = Optional.of(jwtTokenProvider.getMenuIdFromToken(shoppingtoken.get()))
 
 
-        if(menuid.isPresent() && shoppingtoken.isPresent()) {
+        if(menuid.isPresent() && shoppingtoken.isPresent() && !tokenused) {
             menuHelper.loadMenuWithToken(menuid.get(), model, shoppingtoken.get())
             // hydrate hidden values for passing into the post methods like token etc
             menuHelper.bindHiddenValues(model, shoppingtoken.get(), menuid.get())
@@ -131,12 +136,15 @@ public class MenuViewController {
             @RequestParam("size") Optional<String> size,
             @ModelAttribute( "cart" ) CartVO cartVO
     ){
-
+        boolean tokenused = true;
+        if(shoppingtoken.isPresent()) {
+            tokenused = techvvsAuthService.isTokenUsed(shoppingtoken.get())
+        }
 
 
         // pass in the cartid and menuid and productid and quantityselected into a method to add to the cart
         if(cartid.isPresent() && menuid.isPresent() && productid.isPresent() && quantityselected.isPresent()
-        && menuHelper.checkQuantity(Integer.valueOf(productid.get()), Integer.valueOf(quantityselected.get()), model)
+        && menuHelper.checkQuantity(Integer.valueOf(productid.get()), Integer.valueOf(quantityselected.get()), model) && !tokenused
         ) {
 
             String customerid = jwtTokenProvider.getCustomerIdFromToken(shoppingtoken.get())
@@ -148,7 +156,7 @@ public class MenuViewController {
             loadDataOnError(menuid, shoppingtoken, cartid, model)
         }
 
-        processRestOfStuff(menuid, shoppingtoken, model)
+        processRestOfStuff(menuid, shoppingtoken, model, tokenused)
 
 
         return "menu/menu.html";
@@ -167,10 +175,13 @@ public class MenuViewController {
             @ModelAttribute( "cart" ) CartVO cartVO
     ){
 
-
+        boolean tokenused = true;
+        if(shoppingtoken.isPresent()) {
+            tokenused = techvvsAuthService.isTokenUsed(shoppingtoken.get())
+        }
 
         // pass in the cartid and menuid and productid and quantityselected into a method to add to the cart
-        if(cartid.isPresent() && menuid.isPresent() && productid.isPresent() && quantityselected.isPresent()) {
+        if(cartid.isPresent() && menuid.isPresent() && productid.isPresent() && quantityselected.isPresent() && !tokenused) {
             String customerid = jwtTokenProvider.getCustomerIdFromToken(shoppingtoken.get())
             int savedcartid = menuHelper.removeProductFromCart(Integer.valueOf(cartid.get()), Integer.valueOf(menuid.get()), Integer.valueOf(productid.get()), Integer.valueOf(quantityselected.get()), Integer.valueOf(customerid), model, shoppingtoken.get())
             menuHelper.loadCart(savedcartid, model)
@@ -180,7 +191,7 @@ public class MenuViewController {
                 loadDataOnError(menuid, shoppingtoken, cartid, model)
         }
 
-        processRestOfStuff(menuid, shoppingtoken, model)
+        processRestOfStuff(menuid, shoppingtoken, model, tokenused)
         return "menu/menu.html";
     }
 
@@ -196,10 +207,13 @@ public class MenuViewController {
             @RequestParam("size") Optional<String> size,
             @ModelAttribute( "cart" ) CartVO cartVO
     ){
-
+        boolean tokenused = true;
+        if(shoppingtoken.isPresent()) {
+            tokenused = techvvsAuthService.isTokenUsed(shoppingtoken.get())
+        }
 
         // first we need to check if we have all required items
-        if(shoppingtoken.present && cartid.present && menuid.present){
+        if(shoppingtoken.present && cartid.present && menuid.present && !tokenused){
             // empty the cart
             int emptiedcartid = menuHelper.emptyWholeCart(Integer.valueOf(cartid.get()), Integer.valueOf(menuid.get()), model, shoppingtoken.get())
             menuHelper.loadCart(emptiedcartid, model)
@@ -210,7 +224,7 @@ public class MenuViewController {
             loadDataOnError(menuid, shoppingtoken, cartid, model)
         }
 
-        processRestOfStuff(menuid, shoppingtoken, model)
+        processRestOfStuff(menuid, shoppingtoken, model, tokenused)
         return "menu/menu.html";
     }
 
@@ -236,11 +250,17 @@ public class MenuViewController {
             @ModelAttribute( "cart" ) CartVO cartVO
     ){
 
+        boolean tokenused = true;
+        if(shoppingtoken.isPresent()) {
+            tokenused = techvvsAuthService.isTokenUsed(shoppingtoken.get())
+        }
+
         // first we need to check if we have all required items
         if(shoppingtoken.present && cartid.present && menuid.present && locationid.present && deliverynotes.present
 
             && type.present // if type is present and is "delivery" and locationid is "0" then we have a new incoming location
 
+            && !tokenused
         ){
 
             LocationVO locationVO = prepLocationObject(address1, address2, city, state, zipcode, type, locationid, model)
@@ -276,7 +296,7 @@ public class MenuViewController {
 
 
         // pass in the cartid and menuid and productid and quantityselected into a method to add to the cart
-        if(cartid.isPresent() && menuid.isPresent() && productid.isPresent() && quantityselected.isPresent()) {
+        if(cartid.isPresent() && menuid.isPresent() && productid.isPresent() && quantityselected.isPresent() && !tokenused) {
             String customerid = jwtTokenProvider.getCustomerIdFromToken(shoppingtoken.get())
             int savedcartid = menuHelper.removeProductFromCart(Integer.valueOf(cartid.get()), Integer.valueOf(menuid.get()), Integer.valueOf(productid.get()), Integer.valueOf(quantityselected.get()), Integer.valueOf(customerid), model, shoppingtoken.get())
             menuHelper.loadCart(savedcartid, model)
@@ -284,7 +304,7 @@ public class MenuViewController {
             menuHelper.bindHiddenValues(model, shoppingtoken.get(), menuid.get())
         }
 
-        processRestOfStuff(menuid, shoppingtoken, model)
+        processRestOfStuff(menuid, shoppingtoken, model, tokenused)
         return "menu/menu.html";
     }
 
@@ -327,8 +347,8 @@ public class MenuViewController {
     }
 
 
-    void processRestOfStuff(Optional<String> menuid, Optional<String> shoppingtoken, Model model) {
-        if(menuid.isPresent() && shoppingtoken.isPresent()) {
+    void processRestOfStuff(Optional<String> menuid, Optional<String> shoppingtoken, Model model, boolean istokenused) {
+        if(menuid.isPresent() && shoppingtoken.isPresent() && !istokenused) {
             // load the product menu to be displayed back to the user
             menuHelper.loadMenuWithToken(menuid.get(), model, shoppingtoken.get())
         }

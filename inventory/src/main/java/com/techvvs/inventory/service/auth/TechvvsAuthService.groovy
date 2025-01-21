@@ -1,5 +1,7 @@
 package com.techvvs.inventory.service.auth
 
+import com.techvvs.inventory.jparepo.TokenRepo
+import com.techvvs.inventory.model.TokenDAO
 import com.techvvs.inventory.security.JwtTokenProvider
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.core.Authentication
@@ -17,6 +19,9 @@ class TechvvsAuthService {
 
     @Autowired
     JwtTokenProvider jwtTokenProvider
+
+    @Autowired
+    TokenRepo tokenRepo
 
     void checkuserauth(Model model){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -52,6 +57,21 @@ class TechvvsAuthService {
             }
         }
         return token;
+    }
+
+    boolean isTokenUsed(String token){
+        Optional<TokenDAO> tokenDao = tokenRepo.findByToken(token)
+        if(tokenDao.isEmpty()){
+            return true // this should never happen but if it does just return true
+        }
+        if (tokenDao.present && tokenDao.get().tokenused == 1) {
+            return true
+        }
+        if(tokenDao.present && tokenDao.get().tokenused == 0){
+            return false
+        }
+
+        return true
     }
 
 
