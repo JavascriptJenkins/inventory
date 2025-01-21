@@ -111,6 +111,35 @@
             });
         }
     </script>
+    <script>
+        function parseJwt(token) {
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1])); // Decode the payload
+                if (payload.exp) {
+                    const expirationDate = new Date(payload.exp * 1000); // Convert UNIX timestamp to milliseconds
+                    return expirationDate.toLocaleString(); // Format as a readable date/time
+                }
+                return 'No Expiration';
+            } catch (error) {
+                return 'Invalid Token';
+            }
+        }
+
+        function setExpirationValues() {
+            const rows = document.querySelectorAll('tr[data-shoppingtoken]');
+            rows.forEach(row => {
+                const token = row.getAttribute('data-shoppingtoken');
+                const expirationCell = row.querySelector('.expiration-cell');
+                if (token) {
+                    expirationCell.textContent = parseJwt(token);
+                } else {
+                    expirationCell.textContent = 'No Token';
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', setExpirationValues);
+    </script>
 </head>
 <body>
 <div class="container">
@@ -120,16 +149,23 @@
         Back To Menu Admin
     </a>
 
+    <!-- Refresh Button -->
+    <a href="/menu/shoppingtoken/active" class="back-button">
+        <i class="fas fa-sync-alt"></i>
+        Refresh
+    </a>
+
     <h1 class="glowing-text mt-4">Active Shopping Tokens</h1>
     <table class="table table-striped table-dark table-bordered mt-3">
         <thead>
         <tr>
             <th>Name</th>
             <th>Actions</th>
+            <th>Expiration</th>
         </tr>
         </thead>
         <tbody>
-        <tr th:each="customer : ${customerPage.content}">
+        <tr th:each="customer : ${customerPage.content}" th:data-shoppingtoken="${customer.shoppingtoken}">
             <td th:text="${customer.name}"></td>
             <td>
                 <button class="btn btn-copy"
@@ -139,9 +175,11 @@
                     Copy Token
                 </button>
             </td>
+            <td class="expiration-cell"></td>
         </tr>
         </tbody>
     </table>
+
 
     <nav th:if="${customerPage.totalPages > 1}">
         <ul class="pagination">
