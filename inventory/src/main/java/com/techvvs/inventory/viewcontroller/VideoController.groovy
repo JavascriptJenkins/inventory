@@ -150,6 +150,7 @@ class VideoController {
             Model model,
             @RequestParam("menuid") Optional<String> menuid,
             @RequestParam("productid") Optional<String> productid,
+            @RequestParam("shoppingtoken") Optional<String> shoppingtoken,
             @RequestParam("page") Optional<String> page,
             @RequestParam("size") Optional<String> size
     ){
@@ -169,6 +170,7 @@ class VideoController {
 
         model.addAttribute("menuid", menuid.orElse("0"));// bind this for the back button
         model.addAttribute("productid", productid.orElse("0"));// bind this for the back button
+        model.addAttribute("shoppingtoken", shoppingtoken.orElse("0"));// bind this for the back button
 
         // fetch all customers from database and bind them to model
         //checkoutHelper.getAllCustomers(model)

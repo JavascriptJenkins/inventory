@@ -38,8 +38,8 @@ class DocumentController {
     public ResponseEntity<Resource> getImage(
             @PathVariable String productid,
             @PathVariable String filename,
-            @PathVariable Optional<String> token
-
+            @PathVariable Optional<String> token,
+            @PathVariable Optional<String> shoppingtoken
     ) {
 
         Path file = Paths.get(appConstants.UPLOAD_DIR+"media/product/"+productid+"/documents").resolve(filename);
@@ -58,6 +58,7 @@ class DocumentController {
             Model model,
             @RequestParam("menuid") Optional<String> menuid,
             @RequestParam("productid") Optional<String> productid,
+            @PathVariable Optional<String> shoppingtoken,
             @RequestParam("page") Optional<String> page,
             @RequestParam("size") Optional<String> size
     ){
@@ -77,6 +78,7 @@ class DocumentController {
 
         model.addAttribute("menuid", menuid.orElse("0"));// bind this for the back button
         model.addAttribute("productid", productid.orElse("0"));// bind this for the back button
+        model.addAttribute("shoppingtoken", shoppingtoken.orElse("0"));// bind this for the back button
 
         // fetch all customers from database and bind them to model
         //checkoutHelper.getAllCustomers(model)

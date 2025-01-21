@@ -97,6 +97,7 @@ public class MenuViewController {
         boolean tokenused = true;
         if(shoppingtoken.isPresent()) {
             tokenused = techvvsAuthService.isTokenUsed(shoppingtoken.get())
+            model.addAttribute("shoppingtoken", shoppingtoken)
         }
 
         // this needs to do a search on the customerid and see if there is cart pending with this exact menu id
@@ -139,6 +140,7 @@ public class MenuViewController {
         boolean tokenused = true;
         if(shoppingtoken.isPresent()) {
             tokenused = techvvsAuthService.isTokenUsed(shoppingtoken.get())
+            model.addAttribute("shoppingtoken", shoppingtoken)
         }
 
 
@@ -178,6 +180,7 @@ public class MenuViewController {
         boolean tokenused = true;
         if(shoppingtoken.isPresent()) {
             tokenused = techvvsAuthService.isTokenUsed(shoppingtoken.get())
+            model.addAttribute("shoppingtoken", shoppingtoken)
         }
 
         // pass in the cartid and menuid and productid and quantityselected into a method to add to the cart
@@ -210,6 +213,7 @@ public class MenuViewController {
         boolean tokenused = true;
         if(shoppingtoken.isPresent()) {
             tokenused = techvvsAuthService.isTokenUsed(shoppingtoken.get())
+            model.addAttribute("shoppingtoken", shoppingtoken)
         }
 
         // first we need to check if we have all required items
@@ -253,6 +257,7 @@ public class MenuViewController {
         boolean tokenused = true;
         if(shoppingtoken.isPresent()) {
             tokenused = techvvsAuthService.isTokenUsed(shoppingtoken.get())
+            model.addAttribute("shoppingtoken", shoppingtoken)
         }
 
         // first we need to check if we have all required items
