@@ -254,6 +254,14 @@ public class MenuViewController {
             @ModelAttribute( "cart" ) CartVO cartVO
     ){
 
+        System.out.println("DEBUG LOGGING START: ")
+        System.out.println("shoppingtoken: "+shoppingtoken)
+        System.out.println("cartid: "+cartid)
+        System.out.println("deliverynotes: "+deliverynotes)
+        System.out.println("deliverynotes.present: "+deliverynotes.present)
+
+        System.out.println("DEBUG LOGGING END")
+
         boolean tokenused = true;
         if(shoppingtoken.isPresent()) {
             tokenused = techvvsAuthService.isTokenUsed(shoppingtoken.get())
