@@ -278,6 +278,7 @@ public class MenuViewController {
 
             LocationVO locationVO = prepLocationObject(address1, address2, city, state, zipcode, type, locationid, model)
 
+            System.out.println("BUGFIX DEBUG: 2")
             // now we will checkout this cart and turn it into a transaction
             TransactionVO transactionVO = menuHelper.checkoutCart(
                     Integer.valueOf(cartid.get()),
@@ -331,6 +332,7 @@ public class MenuViewController {
             Optional<String> locationid,
             Model model
     ){
+        System.out.println("BUGFIX DEBUG: 1")
         LocationVO locationVO
         if(type.get().equals("delivery") && locationid.get().equals("0")) {
             // this means it's users first time ordering and we have to create their first location

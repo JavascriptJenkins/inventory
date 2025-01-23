@@ -179,13 +179,13 @@ class TransactionService {
     TransactionVO processCartGenerateNewTransactionForDelivery(CartVO cartVO, int locationid, String deliverynotes, LocationVO locationVO, type) {
 
         Double taxpercentage = environment.getProperty("tax.percentage", Double.class)
-
+        System.out.println("BUGFIX DEBUG: 5")
         double originalprice = cartService.calculateTotalPriceOfProductList(cartVO.product_cart_list)
 
         double totalwithtax = 0.00
 
         totalwithtax = formattingUtil.calculateTotalWithTax(originalprice, taxpercentage, 0.00)
-
+        System.out.println("BUGFIX DEBUG: 6")
         ArrayList<ProductVO> newlist = cartVO.product_cart_list
 
         TransactionVO newtransaction = new TransactionVO(
@@ -206,7 +206,7 @@ class TransactionService {
         )
 
         newtransaction = transactionRepo.save(newtransaction)
-
+        System.out.println("BUGFIX DEBUG: 7")
         // only save the cart after transaction is created
         productService.saveProductAssociations(newtransaction)
 
@@ -215,7 +215,7 @@ class TransactionService {
         cartVO.updateTimeStamp = LocalDateTime.now()
         cartVO = cartRepo.save(newtransaction.cart)
 
-
+        System.out.println("BUGFIX DEBUG: 8")
         // create a delivery instance for the transaction so it will show up in the delivery que
         DeliveryVO deliveryVO = new DeliveryVO(
                 transaction: newtransaction,
@@ -235,11 +235,12 @@ class TransactionService {
 
         )
         deliveryVO = deliveryRepo.save(deliveryVO)
+        System.out.println("BUGFIX DEBUG: 9")
 
         // now set the delivery qr link on the delivery object
         deliveryVO.deliveryqrlink = qrCodeGenerator.buildQrLinkForDeliveryItem(String.valueOf(deliveryVO.deliveryid))
         deliveryVO.package_list = createNewPackage(newtransaction, deliveryVO)
-
+        System.out.println("BUGFIX DEBUG: 10")
         deliveryVO = deliveryRepo.save(deliveryVO)
 
         // todo: should we text the user the delivery qr link upon creation?   will just display in work que ui for now

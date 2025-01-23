@@ -901,9 +901,10 @@ class MenuHelper {
             return false
         }
 
+        System.out.println("BUGFIX DEBUG: 3")
         // get the existing cart
         CartVO cartVO = cartRepo.findById(cartid).get()
-
+        System.out.println("BUGFIX DEBUG: 4")
         // generate a new transaction
         TransactionVO transactionVO = transactionService.processCartGenerateNewTransactionForDelivery(cartVO, locationid, deliverynotes, locationVO, type)
 
