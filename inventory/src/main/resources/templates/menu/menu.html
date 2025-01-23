@@ -946,7 +946,7 @@
                 selectedLocation = 0;
             }
 
-            const deliveryNotes = $('#deliveryNotes').val().trim();
+            let deliveryNotes = $('#deliveryNotes').val().trim();
 
             // Validate inputs
             if (deliveryNotes.length <= 5 && isDelivery) {
