@@ -32,8 +32,26 @@ class WhiteListUriConstants {
     public static final String FILE_PUBLIC_DOWNLOAD_2 = "/file/publicdownload";
     public static final String FILE_QR_MEDIA_ZIP_DOWNLOAD = "/file/qrzipmediadownload/**";
     public static final String FILE_QR_MEDIA_ZIP_DOWNLOAD_33 = "/file/qrzipmediadownload";
-
-
+    public static final String MENU_SHOP_URI = "/menu/shop/**";
+    public static final String MENU_SHOP_URI_33 = "/menu/shop";
+    public static final String MENU_URI = "/menu/**";
+    public static final String MENU_URI_33 = "/menu/";
+    public static final String IMAGE_IMAGES = "/image/images/";
+    public static final String IMAGE_IMAGES_33 = "/image/images/**";
+    public static final String VIDEO_VIDEOS = "/video/videos/";
+    public static final String VIDEO_VIDEOS_33 = "/video/videos/**";
+    public static final String VIDEO_PRODUCT = "/video/product";
+    public static final String VIDEO_PRODUCT_33 = "/video/product/**";
+    public static final String PHOTO_PRODUCT = "/photo/product";
+    public static final String PHOTO_PRODUCT_33 = "/photo/product/**";
+    public static final String PHOTO_PHOTO = "/photo/photos";
+    public static final String PHOTO_PHOTO_33 = "/photo/photos/**";
+    public static final String DOCUMENT_PRODUCT = "/document/product";
+    public static final String DOCUMENT_PRODUCT_33 = "/document/product/**";
+    public static final String DOCUMENT_DOCUMENTS = "/document/documents";
+    public static final String DOCUMENT_DOCUMENTS_33 = "/document/documents/**";
+    public static final String DELIVERY_ITEM_33 = "/delivery/item/**";
+    public static final String DELIVERY_ITEM = "/delivery/item"
 
 
 

@@ -1,7 +1,10 @@
 package com.techvvs.inventory.viewcontroller;
 
 import com.techvvs.inventory.model.MenuVO;
+import com.techvvs.inventory.model.ProductTypeVO;
+import com.techvvs.inventory.model.ProductVO;
 import com.techvvs.inventory.service.auth.TechvvsAuthService;
+import com.techvvs.inventory.viewcontroller.helper.CheckoutHelper;
 import com.techvvs.inventory.viewcontroller.helper.MenuHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -11,7 +14,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 @RequestMapping("/dashboard")
 @Controller
@@ -25,6 +30,9 @@ public class HomeViewController {
 
     @Autowired
     TechvvsAuthService techvvsAuthService;
+
+    @Autowired
+    CheckoutHelper checkoutHelper;
 
 
 
@@ -40,6 +48,15 @@ public class HomeViewController {
 
         // bind the menu options here
         menuHelper.findMenus(model, page, size);
+//
+//        Set<ProductTypeVO> uniqueProductTypes = new HashSet<>();
+//
+//        for (ProductVO productVO : menuVO.getMenu_product_list()) {
+//            uniqueProductTypes.add(productVO.getProducttypeid());
+//        }
+//        model.addAttribute("uniqueProductTypes", uniqueProductTypes); // Pass unique types to the template
+
+        checkoutHelper.getAllCustomers(model);
 
         techvvsAuthService.checkuserauth(model);
         model.addAttribute("menu",menuVO);

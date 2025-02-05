@@ -490,7 +490,7 @@ class BatchControllerHelper {
 
             String datetime = formattingUtil.getDateTimeForFileSystem()
 
-            String filename = createMediaExcelFile(appConstants.PARENT_LEVEL_DIR+batchVO.batchnumber+appConstants.BATCH_PRICE_SHEETS_DIR+batchVO.name+"_"+datetime+"_pa_"+String.valueOf(priceadjustment)+".xlsx", batchVO, priceadjustment)
+            String filename = createMediaExcelFile(appConstants.PARENT_LEVEL_DIR+batchVO.batchnumber+appConstants.BATCH_PRICE_SHEETS_DIR+batchVO.name.replaceAll(" ", "_")+"_"+datetime+"_pa_"+String.valueOf(priceadjustment)+".xlsx", batchVO, priceadjustment)
 
             boolean isDev1 = "dev1".equals(env.getProperty("spring.profiles.active"));
 
@@ -535,6 +535,21 @@ class BatchControllerHelper {
         row.createCell(3).setCellValue("Barcode")
         sheet.setColumnWidth(4,10000)
         row.createCell(4).setCellValue("Media")
+
+
+        // Set the hyperlink (URL)
+        CreationHelper createHelper2 = workbook.getCreationHelper();
+        Hyperlink hyperlink2 = createHelper2.createHyperlink(HyperlinkType.URL);
+        hyperlink2.setAddress(baseqrdomain+"/menu/batch?batchid="+batchVO.batchid);
+
+        Cell qrcell2 = row.createCell(5)
+
+        // Set the hyperlink to the cell
+        qrcell2.setHyperlink(hyperlink2);
+        qrcell2.setCellValue("Menu Link");  // Displayed text for the link
+
+        sheet.setColumnWidth(5,10000)
+        row.createCell(5).setCellValue("Menu Link")
 
 
 

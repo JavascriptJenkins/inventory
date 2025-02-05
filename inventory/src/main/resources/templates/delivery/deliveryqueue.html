@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Delivery Queue</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"> <!-- Add Font Awesome -->
+
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .table-bordered {
+            border: 2px solid transparent;
+            border-image: linear-gradient(90deg, #0f2027, #203a43, #2c5364) 1;
+            box-shadow: 0px 0px 15px rgba(0, 255, 255, 0.5);
+        }
+
+        .table-bordered th, .table-bordered td {
+            border: 2px solid transparent;
+            border-image: linear-gradient(90deg, #0f2027, #203a43, #2c5364) 1;
+            color: #00ffff;
+            text-shadow: 0px 0px 10px #00ffff;
+        }
+
+        .status-text {
+            font-size: 1.2em;
+        }
+
+        /* Themed Form Controls */
+        .form-select, .form-control, .btn {
+            border: 2px solid transparent;
+            border-image: linear-gradient(90deg, #0f2027, #203a43, #2c5364) 1;
+            color: #00ffff;
+            background-color: #121212;
+            text-shadow: 0px 0px 10px #00ffff;
+            transition: all 0.3s ease;
+        }
+
+    .form-select:focus, .form-control:focus, .btn:focus {
+        border-color: #00ffff;
+        box-shadow: 0px 0px 10px #00ffff;
+    }
+            /* Button Hover Effects */
+    .btn-secondary:hover {
+        background-color: #203a43;
+        color: #ffffff;
+        box-shadow: 0px 0px 15px rgba(0, 255, 255, 0.7);
+    }
+
+    /* Consistent Label Spacing */
+    .form-label {
+        margin-bottom: 5px;
+        color: #00ffff;
+        text-shadow: 0px 0px 10px #00ffff;
+    }
+
+    /* Adjust for Alignment */
+    .align-items-center .form-control,
+    .align-items-center .form-select,
+    .align-items-center .btn {
+        height: calc(2.5rem + 2px); /* Ensure consistent height across all elements */
+    }
+    </style>
+    <style>
+        .pagination {
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .pagination .page-item .page-link {
+            border: 2px solid transparent;
+            border-image: linear-gradient(90deg, #0f2027, #203a43, #2c5364) 1;
+            color: #00ffff;
+            text-shadow: 0px 0px 10px #00ffff;
+            background-color: transparent;
+            transition: all 0.3s ease;
+        }
+
+        .pagination .page-item .page-link:hover {
+            background-color: #203a43;
+            color: #ffffff;
+            box-shadow: 0px 0px 15px rgba(0, 255, 255, 0.7);
+        }
+
+        .pagination .page-item.active .page-link {
+            background-color: #2c5364;
+            color: #ffffff;
+            border: 2px solid transparent;
+            border-image: linear-gradient(90deg, #0f2027, #203a43, #2c5364) 1;
+            box-shadow: 0px 0px 15px rgba(0, 255, 255, 0.7);
+        }
+    </style>
+    <style>
+        /* Base style for the status icon links */
+        .status-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            font-weight: bold;
+            text-align: center;
+            font-size: 0.8em;
+            margin: auto;
+            text-shadow: 0px 0px 8px rgba(255, 255, 255, 0.7);
+            box-shadow: 0px 0px 15px rgba(0, 255, 255, 0.7);
+            text-decoration: none; /* Remove default underline for links */
+            color: inherit; /* Use the icon's color for the link */
+        }
+
+        /* Neon colors for statuses */
+        .status-created {
+            background-color: #0d6efd;
+            color: #80dfff;
+        }
+
+        .status-prep {
+            background-color: #fd7e14;
+            color: #ffe0b3;
+        }
+
+        .status-dispatch {
+            background-color: #6f42c1;
+            color: #d9b3ff;
+        }
+
+        .status-enroute {
+            background-color: #ffc107;
+            color: #fff5cc;
+        }
+
+        .status-complete {
+            background-color: #28a745;
+            color: #99ffcc;
+        }
+
+        .status-canceled {
+            background-color: #dc3545;
+            color: #ffb3b3;
+        }
+
+        /* Pulsing effect for active statuses */
+        .pulsing-status-0 { animation: pulse 2s infinite; }
+        .pulsing-status-1 { animation: pulse 1.5s infinite; }
+        .pulsing-status-2 { animation: pulse 1.2s infinite; }
+        .pulsing-status-3 { animation: pulse 0.8s infinite; }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0px 0px 15px rgba(0, 255, 255, 0.7);
+            }
+            50% {
+                box-shadow: 0px 0px 40px rgba(0, 255, 255, 1);
+            }
+        }
+
+        /* Hover effect */
+        .status-icon:hover {
+            transform: scale(1.1); /* Slight zoom on hover */
+            box-shadow: 0px 0px 30px rgba(255, 255, 255, 1); /* Intensified glow */
+            transition: all 0.3s ease-in-out;
+        }
+
+        /* Click effect */
+        .status-icon:active {
+            transform: scale(0.95); /* Slight shrink on click */
+            box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.8); /* Reduced glow */
+        }
+    </style>
+    <style>
+        /* Floating Back Button */
+        .back-button {
+            position: absolute;
+            left: 15px;
+            top: 15px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            background-color: #0d6efd; /* Neon Blue */
+            color: #ffffff;
+            font-size: 2rem; /* Large arrow size */
+            font-weight: bold;
+            border-radius: 50%;
+            box-shadow: 0px 0px 15px rgba(0, 255, 255, 0.7); /* Glowing effect */
+            text-decoration: none;
+            text-align: center;
+            z-index: 1000; /* Ensure it stays above other elements */
+            transition: all 0.3s ease;
+        }
+
+        /* Hover effect for the Back Button */
+        .back-button:hover {
+            background-color: #00bfff; /* Brighter blue on hover */
+            box-shadow: 0px 0px 30px rgba(0, 255, 255, 1); /* Intensified glow */
+            transform: scale(1.1); /* Slight zoom on hover */
+        }
+
+        /* Click effect for the Back Button */
+        .back-button:active {
+            background-color: #0056b3; /* Slightly darker on click */
+            box-shadow: 0px 0px 10px rgba(0, 255, 255, 0.5); /* Reduced glow */
+            transform: scale(0.95); /* Slight shrink on click */
+        }
+    </style>
+
+    <style>
+        /* Center the header */
+        .status-text {
+            text-align: center;
+        }
+
+        /* Glowing effect specifically for the header */
+        .glowing-text {
+            color: #00ffff; /* Match the neon blue color in the table */
+            text-shadow: 0px 0px 10px #00ffff, 0px 0px 20px #00ffff, 0px 0px 30px rgba(0, 255, 255, 0.7);
+            font-size: 2.5rem; /* Increase size for emphasis */
+            font-weight: bold;
+            animation: header-pulse 2s infinite; /* Use a unique keyframe animation */
+        }
+
+        /* Header-specific pulsing animation */
+        @keyframes header-pulse {
+            0%, 100% {
+                text-shadow: 0px 0px 10px #00ffff, 0px 0px 20px #00ffff, 0px 0px 30px rgba(0, 255, 255, 0.7);
+            }
+            50% {
+                text-shadow: 0px 0px 20px #00ffff, 0px 0px 40px #00ffff, 0px 0px 60px rgba(0, 255, 255, 1);
+            }
+        }
+    </style>
+
+
+
+
+</head>
+<body>
+<input type="hidden" th:data-current-pagination-page="${page}" th:value="${page}" id="currentPageId">
+<input type="hidden" th:data-current-pagination-size="${size}" th:value="${size}" id="currentSizeId">
+<div class="container mt-4">
+    <!-- Floating Back Button -->
+    <a href="/dashboard/index" class="back-button" data-bs-toggle="tooltip" title="Back to Dashboard">
+        <i class="fas fa-arrow-left"></i> <!-- Updated arrow icon -->
+       </a>
+
+    <!-- Centered and Pulsing Header -->
+    <h1 class="status-text glowing-text">Delivery Queue</h1>
+    <!-- Search Bar -->
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <label for="recordSize" class="form-label">Display Records:</label>
+            <select id="recordSize" class="form-select">
+                <option value="5">5 Records</option>
+                <option value="10">10 Records</option>
+                <option value="100">100 Records</option>
+                <option value="1000">1000 Records</option>
+                <option value="10000">10000 Records</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label for="customerselectid" class="form-label">Filter:</label>
+            <select id="customerselectid" class="form-select">
+                <option value="0">Filter by customer</option>
+                <option th:each="customer : ${customers}" th:data-customerid="${customer.customerid}" th:value="${customer.customerid}" th:text="${customer.name}" th:selected="${customer.customerid == customerid}"></option>
+            </select>
+        </div>
+        <div class="col-md-4 search-bar">
+            <div class="d-flex">
+                <input type="text" id="searchInput" class="form-control me-2" placeholder="Search Deliveries...">
+                <button id="clearSearch" class="btn btn-secondary">Clear</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table Content -->
+    <table class="table table-striped table-dark table-bordered mt-3">
+        <thead>
+        <tr>
+            <th>Delivery ID</th>
+            <th>Customer Name</th>
+            <th>Order Name</th>
+            <th>Status</th>
+        </tr>
+        </thead>
+        <tbody id="tableBody">
+        <tr class="delivery-row"  th:each="delivery : ${deliveryPage.content}">
+            <td th:text="${delivery.deliveryid}"></td>
+            <td th:text="${delivery.transaction.customervo.name}"></td>
+            <td th:text="${delivery.name}"></td>
+            <td>
+                <div class="status-icon-container" th:switch="${delivery.status}">
+                    <!-- Dynamic anchor tag wrapping the icon -->
+                    <a th:case="0"
+                       class="status-icon status-created pulsing-status-0"
+                       th:href="@{/delivery/item(deliveryid=${delivery.deliveryid}, menuid=${delivery.transaction.cart.menu.menuid}, deliverytoken=${deliverytoken}, customerid=${customerid}, size=${size}, page=${page})}">
+                        CREATED
+                    </a>
+
+                    <a th:case="1"
+                       class="status-icon status-prep pulsing-status-1"
+                       th:href="@{/delivery/item(deliveryid=${delivery.deliveryid}, menuid=${delivery.transaction.cart.menu.menuid}, deliverytoken=${deliverytoken}, customerid=${customerid}, size=${size}, page=${page})}">
+                        PREP
+                    </a>
+                    <a th:case="2"
+                       class="status-icon status-dispatch pulsing-status-2"
+                       th:href="@{/delivery/item(deliveryid=${delivery.deliveryid}, menuid=${delivery.transaction.cart.menu.menuid}, deliverytoken=${deliverytoken}, customerid=${customerid}, size=${size}, page=${page})}">
+                        DISPATCH
+                    </a>
+                    <a th:case="3"
+                       class="status-icon status-enroute pulsing-status-3"
+                       th:href="@{/delivery/item(deliveryid=${delivery.deliveryid}, menuid=${delivery.transaction.cart.menu.menuid}, deliverytoken=${deliverytoken}, customerid=${customerid}, size=${size}, page=${page})}">
+                        EN ROUTE
+                    </a>
+                    <a th:case="4"
+                       class="status-icon status-complete"
+                       th:href="@{/delivery/item(deliveryid=${delivery.deliveryid}, menuid=${delivery.transaction.cart.menu.menuid}, deliverytoken=${deliverytoken}, customerid=${customerid}, size=${size}, page=${page})}">
+                        COMPLETE
+                    </a>
+                    <a th:case="5"
+                       class="status-icon status-canceled"
+                       th:href="@{/delivery/item(deliveryid=${delivery.deliveryid}, menuid=${delivery.transaction.cart.menu.menuid}, deliverytoken=${deliverytoken}, customerid=${customerid}, size=${size}, page=${page})}">
+                        CANCELED
+                    </a>
+                </div>
+            </td>
+
+
+
+
+        </tr>
+        </tbody>
+    </table>
+
+    <div class="mt-3 d-flex justify-content-between align-items-center">
+        <p><strong>Total Deliveries:</strong> <span th:text="${deliveryPage.totalElements}"></span></p>
+        <p><strong>Page:</strong> <span th:text="${deliveryPage.number + 1}"></span> of <span th:text="${deliveryPage.totalPages}"></span></p>
+    </div>
+
+    <!-- Pagination Navigation -->
+    <nav th:if="${deliveryPage.totalPages > 0}">
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:each="pageNumber : ${pageNumbers}">
+                <a class="page-link"
+                   th:href="@{/delivery/queue(size=${size}, page=${pageNumber == 1 ? 0 : pageNumber - 1}, customerid=${customerid})}"
+                   th:text="${pageNumber}"
+                   th:classappend="${pageNumber == deliveryPage.number + 1} ? ' active'">
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+
+<script>
+    $(document).ready(function () {
+        function filterTable() {
+            const searchValue = $('#searchInput').val().toLowerCase();
+            let visibleCount = 0;
+
+            $('.delivery-row').each(function () {
+                const rowText = $(this).text().toLowerCase();
+                if (rowText.includes(searchValue)) {
+                    $(this).removeClass('d-none');
+                    visibleCount++;
+                } else {
+                    $(this).addClass('d-none');
+                }
+            });
+
+            if (visibleCount === 0) {
+                if (!$('#noResultsRow').length) {
+                    $('#tableBody').append('<tr id="noResultsRow"><td colspan="4" class="text-center">No matching deliveries found.</td></tr>');
+                }
+            } else {
+                $('#noResultsRow').remove();
+            }
+        }
+
+
+        // Event listener for input changes
+        $('#searchInput').on('input', filterTable);
+
+        // Clear button functionality
+        $('#clearSearch').on('click', function () {
+            $('#searchInput').val('');
+            $('.delivery-row').removeClass('d-none');
+            $('#noResultsRow').remove();
+        });
+
+    });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Get the element containing the current pagination size
+        const element = document.getElementById('currentSizeId');
+        if (!element) {
+            console.error('Element with ID "currentSizeId" not found.');
+            return;
+        }
+
+        // Get the value of the current pagination size
+        const currentPageSize = $(element).attr('data-current-pagination-size');
+        if (!currentPageSize) {
+            console.error('Current pagination size is not set in the element "currentSizeId".');
+            return;
+        }
+
+        console.log('currentPageSize:', currentPageSize);
+
+        // Get the record size dropdown
+        const recordSizeDropdown = document.getElementById('recordSize');
+        if (!recordSizeDropdown) {
+            console.error('Element with ID "recordSize" not found.');
+            return;
+        }
+
+        // Ensure the dropdown has an option with the matching value
+        const matchingOption = Array.from(recordSizeDropdown.options).find(
+            option => option.value === currentPageSize
+        );
+
+        if (matchingOption) {
+            // Set the value of the dropdown
+            recordSizeDropdown.value = currentPageSize;
+            console.log(`Dropdown value set to: ${recordSizeDropdown.value}`);
+        } else {
+            console.error(`No matching option found in dropdown for value: ${currentPageSize}`);
+        }
+    });
+</script>
+
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const customerSelect = document.getElementById('customerselectid');
+            const currentPageElement = document.getElementById('currentPageId');
+            const currentSizeElement = document.getElementById('currentSizeId');
+
+            if (customerSelect && currentPageElement && currentSizeElement) {
+                customerSelect.addEventListener('change', function () {
+                    const selectedCustomerId = customerSelect.value;
+                    const currentPage = currentPageElement.dataset.currentPaginationPage;
+                    const currentSize = currentSizeElement.dataset.currentPaginationSize;
+
+                    if (selectedCustomerId && currentPage && currentSize) {
+                        // Build the query string
+                        const queryParams = new URLSearchParams({
+                            customerid: selectedCustomerId,
+                            page: currentPage,
+                            size: currentSize
+                        }).toString();
+
+                        // Redirect to the new URL
+                        window.location.href = `/delivery/queue?${queryParams}`;
+                    } else {
+                        console.error('Missing required data for redirection.');
+                    }
+                });
+            } else {
+                console.error('Required elements not found.');
+            }
+        });
+</script>
+
+
+
+</body>
+</html>

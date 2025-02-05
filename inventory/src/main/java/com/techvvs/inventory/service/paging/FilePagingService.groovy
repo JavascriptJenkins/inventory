@@ -30,6 +30,15 @@ class FilePagingService {
         return filePage;
     }
 
+    Page<FileVO> getFilePageForProductUploadMedia(ProductVO productVO, Integer page, Integer size, String selected) {
+        Page<FileVO> filePage = techvvsFileHelper.getPagedFilesByDirectoryForProductMediaUploads(
+                Paths.get(selected).toString(),
+                page,
+                size
+        );
+        return filePage;
+    }
+
 
     Page<FileVO> getFilePage(BatchVO batchVO, Integer page, Integer size, String selected) {
         Page<FileVO> filePage = techvvsFileHelper.getPagedFilesByDirectory(

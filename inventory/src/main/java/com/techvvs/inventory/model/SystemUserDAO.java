@@ -20,13 +20,11 @@ public class SystemUserDAO {
     @Column(name="password")
     String password;
 
-    @Nullable
     @Column(name="name")
     String name;
 
-    @Nullable
-    @Column(name="project")
-    String project;
+    @Column(name="tenant")
+    String tenant;
 
     @Transient
     String password2;
@@ -49,6 +47,7 @@ public class SystemUserDAO {
     LocalDateTime updatedtimestamp;
     @JsonProperty
     LocalDateTime createtimestamp;
+
 
     public String getPassword() {
         return password;
@@ -130,12 +129,12 @@ public class SystemUserDAO {
         this.name = name;
     }
 
-    public String getProject() {
-        return project;
+    public String getTenant() {
+        return tenant;
     }
 
-    public void setProject(@Nullable String project) {
-        this.project = project;
+    public void setTenant( String tenant) {
+        this.tenant = tenant;
     }
 
 

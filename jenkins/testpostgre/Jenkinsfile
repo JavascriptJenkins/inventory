@@ -30,7 +30,7 @@ pipeline {
         string(name: 'SPRING_DATABASE_ACTION', defaultValue: 'update', description: 'this value will control create-drop, update, etc')
         string(name: 'MAX_FILE_SIZE', defaultValue: '500MB', description: 'key for signing tokens')
         string(name: 'MAX_REQ_SIZE', defaultValue: '500MB', description: 'key for signing tokens')
-        string(name: 'BASE_QR_DOMAIN', defaultValue: '', description: 'this will get set to the hostname... ')
+        string(name: 'BASE_QR_DOMAIN', defaultValue: 'https://qr.jenkins.codes', description: 'this will get set to the hostname... ')
 
     }
 
@@ -71,7 +71,7 @@ pipeline {
 
                     // Set the IP address as an environment variable for use in later stages
                     env.HOSTNAME = hostname
-                    env.BASE_QR_DOMAIN = hostname
+                    //env.BASE_QR_DOMAIN = hostname
                     env.DB_URI = postgresql_db_uri
                 }
             }
@@ -149,8 +149,8 @@ pipeline {
                             }
 
                             // Replace the qr ddomain if provided
-                            env.BASE_QR_DOMAIN="https://${env.TENANT_NAME}${env.BASE_DOMAIN}"
-                            echo "Updated BASE_QR_DOMAIN: ${env.BASE_QR_DOMAIN}"
+//                             env.BASE_QR_DOMAIN="https://${env.TENANT_NAME}${env.BASE_DOMAIN}"
+                            echo "BASE_QR_DOMAIN: ${env.BASE_QR_DOMAIN}"
                             sh "sed -i 's|^base\\.qr\\.domain=.*|base.qr.domain=${env.BASE_QR_DOMAIN}|' src/main/resources/application.properties"
 
 
@@ -160,13 +160,14 @@ pipeline {
                             sh "sed -i 's/^security\\.jwt\\.token\\.secret-key=.*/security.jwt.token.secret-key=${JWT_SECRET_KEY}/' src/main/resources/application.properties"
 
 
-                            if (env.TENANT_ENV.contains('prod')) {
+                            if (env.TENANT_ENV.contains('prod') && !env.TENANT_ENV.contains('highland')) {
                                 echo "Environment contains 'prod'. This is a production environment."
                                 // Update production-specific settings
                                 sh """
                                     sed -i 's/^spring\\.datasource\\.password=.*/spring.datasource.password=${POSTGRE_PROD_DB_PASSWORD}/' src/main/resources/application.properties
                                 """
-                            } else if (env.TENANT_ENV.contains('test')) {
+                            } else if (env.TENANT_ENV.contains('test') || env.TENANT_ENV.contains('highland')) {
+                                
                                 echo "Environment contains 'test'. This is a testing environment."
                                 // Update test-specific settings
                                 sh """

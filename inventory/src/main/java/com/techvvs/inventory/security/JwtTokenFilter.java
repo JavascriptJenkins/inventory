@@ -141,10 +141,30 @@ public class JwtTokenFilter extends OncePerRequestFilter implements CsrfTokenRep
               FILE_SMS_DOWNLOAD_33.equals(path) ||
               FILE_QR_MEDIA_ZIP_DOWNLOAD.equals(path) ||
               FILE_QR_MEDIA_ZIP_DOWNLOAD_33.equals(path) ||
+              VIDEO_VIDEOS.equals(path) ||
+              VIDEO_VIDEOS_33.equals(path) ||
+              VIDEO_PRODUCT.equals(path) ||
+              VIDEO_PRODUCT_33.equals(path) ||
+              PHOTO_PRODUCT.equals(path) ||
+              PHOTO_PRODUCT_33.equals(path) ||
+              PHOTO_PHOTO.equals(path) ||
+              PHOTO_PHOTO_33.equals(path) ||
+              DOCUMENT_PRODUCT.equals(path) ||
+              DOCUMENT_PRODUCT_33.equals(path) ||
+              DOCUMENT_DOCUMENTS.equals(path) ||
+              DOCUMENT_DOCUMENTS_33.equals(path) ||
+              IMAGE_IMAGES.equals(path) ||
+              IMAGE_IMAGES_33.equals(path) ||
+              MENU_URI_33.equals(path) ||
+              MENU_URI.equals(path) ||
+              MENU_SHOP_URI.equals(path) ||
+              MENU_SHOP_URI_33.equals(path) ||
               FILE_SMS_DOWNLOAD_2.equals(path) ||
               FILE_SMS_DOWNLOAD_22.equals(path) ||
               FILE_PUBLIC_DOWNLOAD.equals(path) ||
-              FILE_PUBLIC_DOWNLOAD_2.equals(path))
+              FILE_PUBLIC_DOWNLOAD_2.equals(path) ||
+              DELIVERY_ITEM.equals(path) ||
+              DELIVERY_ITEM_33.equals(path))
       {
           filterChain.doFilter(httpServletRequest, httpServletResponse);
           return;

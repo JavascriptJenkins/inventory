@@ -37,6 +37,11 @@ class DiscountVO implements Serializable {
     TransactionVO transaction
 
     @JsonProperty
+    @ManyToOne(cascade=CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name="menuid")
+    MenuVO menu
+
+    @JsonProperty
     @ManyToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name="producttypeid")
     ProductTypeVO producttype

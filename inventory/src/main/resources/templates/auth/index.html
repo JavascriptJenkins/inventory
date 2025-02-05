@@ -130,6 +130,67 @@
             background-color: #6c757d;
         }
     </style>
+    <style>
+        /* Style for the success message */
+        .alert-success {
+            background-color: #d4edda !important;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        /* Expandable row highlight */
+        .expandable-row td {
+            background-color: #e9ecef;
+        }
+    </style>
+
+    <style>
+        .custom-popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .popup-box {
+            background-color: #fff;
+            color: #333;
+            width: 50%;
+            max-width: 600px;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+        .btn-hover {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            text-decoration: none;
+            color: #000;
+            background-color: #ffc107; /* Yellow color */
+            border: 2px solid #ffc107;
+            border-radius: 5px;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .btn-hover:hover {
+            background-color: #ffd700; /* Slightly darker yellow */
+            color: #fff; /* Text turns white */
+            border-color: #ffd700;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+
+
 </head>
 <body>
 
@@ -144,35 +205,540 @@
     </div>
 
     <br>
-    <div class="alert alert-info" role="alert">Select a Menu option to get started.</div>
 
-    <table class="table table-hover table-striped table-dark">
-        <thead>
-        <tr>
-            <th scope="col">Menu ID</th>
-            <th scope="col">Menu Name</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="menu, iStat : ${menuPage.content}"
-            th:style="${iStat.odd}? 'font-weight: bold;'"
-            th:alt-title="${iStat.even}? 'even' : 'odd'">
-            <td>
-                <a th:href="@{/menu?menuid=__${menu.menuid}__&cartid=0}"
-                   th:text="${menu.menuid}"
-                   class="btn btn-secondary btn-sm">
-                </a>
-            </td>
-            <td th:text="${menu.name}"></td>
-        </tr>
-        </tbody>
-    </table>
+    <!-- New Button Added Here -->
+    <div class="mb-3">
+        <a href="/menu/shoppingtoken/active" class="btn-hover">
+            View Active Shopping Tokens
+        </a>
+    </div>
+    <!-- End of New Button -->
+
+    <div class="alert alert-info" role="alert">Select a Menu option to get started.</div>
+    <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
+    <div class="alert alert-info" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
+
+    <form id="priceChangeForm" method="POST" th:action="@{/menu/pricechange}">
+        <table class="table table-hover table-striped table-dark">
+            <thead>
+            <tr>
+                <th scope="col">Menu ID</th>
+                <th scope="col">Menu Name</th>
+                <th scope="col">Discount</th>
+<!--                <th scope="col">Amount</th>-->
+                <th scope="col">Product Type</th>
+                <th scope="col">Actions</th>
+                <th scope="col">Expand</th>
+                <th scope="col">Send Menu</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="menu, iStat : ${menuPage.content}" th:data-menuid="${menu.menuid}">
+                <td>
+                    <a th:href="@{/menu?menuid=__${menu.menuid}__&cartid=0}"
+                       th:text="${menu.menuid}"
+                       class="btn btn-secondary btn-sm">
+                    </a>
+                </td>
+                <td th:text="${menu.name}"></td>
+<!--                <td th:text="${menu.amount}"></td>-->
+
+                <!-- Amount Dropdown -->
+                <td>
+                    <select class="form-select amount-dropdown">
+                        <option value="0.00" selected>0.00</option>
+                        <option value="50.00">50.00</option>
+                        <option value="100.00">100.00</option>
+                        <option value="150.00">150.00</option>
+                        <option value="200.00">200.00</option>
+                        <option value="250.00">250.00</option>
+                        <option value="300.00">300.00</option>
+                        <option value="350.00">350.00</option>
+                        <option value="400.00">400.00</option>
+                        <option value="450.00">450.00</option>
+                        <option value="500.00">500.00</option>
+                    </select>
+                </td>
+
+                <!-- Product Type Dropdown -->
+                <td>
+                    <select class="form-select product-type-dropdown">
+                        <option value="" disabled selected>Select Product Type</option>
+                        <option th:each="product : ${menu.menu_product_list}"
+                                th:value="${product.producttypeid.producttypeid}"
+                                th:text="${product.producttypeid.name}">
+                        </option>
+                    </select>
+                </td>
+
+                <!-- Actions -->
+                <td>
+                    <button type="button" class="btn btn-primary amt-change-btn">Amt Change</button>
+                    <button type="button" class="btn btn-success submit-btn">Submit</button>
+                    <div class="form-check form-check-inline">
+                        <input type="checkbox" class="form-check-input new-menu-checkbox" id="newMenuCheck">
+                        <label class="form-check-label" for="newMenuCheck">New Menu</label>
+                    </div>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-outline-primary expand-btn"
+                            th:data-menuid="${menu.menuid}">
+                        <i class="bi bi-plus-lg"></i>
+                    </button>
+                </td>
+                <!-- Add the new "Send Menu" button -->
+                <td>
+                    <button type="button" class="btn btn-warning send-menu-btn" th:data-menuid="${menu.menuid}" th:data-menuname="${menu.name}">
+                        Send Menu
+                    </button>
+                </td>
+            </tr>
+
+
+
+            </tbody>
+        </table>
+    </form>
+
+
+<!--    <div th:each="menu, iStat : ${menuPage.content}" th:data-menuid="${menu.menuid}" th:id="menuid-hidden-element-278" style="display: none;">-->
+    <div th:each="menu, iStat : ${menuPage2.content}" th:data-menuid="${menu.menuid}" th:id="${'menuid-hidden-element-'+menu.menuid}" style="display: none;">
+        <h3>Menu Details</h3>
+        <p>This is the content for Menu ID <span th:text="${menu.menuid}"></span></p>
+        <p th:text="${menu.name}"></p>
+        <!-- Iterate through the nested discount_list -->
+        <div th:if="${menu.discount_list}">
+            <h4 class="header-small">Discounts</h4>
+            <table class="table table-hover table-striped table-dark">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Amount</th>
+                    <th>Name</th>
+                    <th>Discount Description</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="discount : ${menu.discount_list}">
+                    <td th:text="${discount.discountid}"></td>
+                    <td th:text="${discount.discountamount}"></td>
+                    <td th:text="${discount.name}"></td>
+                    <td th:text="${discount.description}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+
+    </div>
+
+    <!-- Hidden Popup Form -->
+    <div id="popupForm" class="custom-popup-overlay" style="display: none;">
+        <div class="popup-box">
+            <h4 id="popupMenuName" class="text-center mb-4">Send Menu</h4>
+            <form id="shoppingTokenForm" action="/menu/shoppingtoken/send" method="POST">
+                <div class="row g-3">
+                    <!-- Customer Dropdown -->
+                    <div class="col-md-12">
+                        <label for="customerSelect" class="form-label required">Customer</label>
+                        <select id="customerSelect" name="customerId" class="form-select">
+                            <option value="" selected>Select Customer</option>
+                            <option th:each="customer : ${customers}" th:value="${customer.customerid}" th:text="${customer.name}"></option>
+                        </select>
+                    </div>
+
+                    <!-- Token Length Dropdown -->
+                    <div class="col-md-12">
+                        <label for="tokenLengthSelect" class="form-label required">Token Length (Hours)</label>
+                        <select id="tokenLengthSelect" name="tokenLength" class="form-select">
+                            <option value="" selected>Select Hour Amt</option>
+                            <option th:each="hour : ${#numbers.sequence(1,36)}" th:value="${hour}" th:text="${hour}"></option>
+                        </select>
+                    </div>
+
+                    <!-- Phone Number Input -->
+                    <div class="col-md-12">
+                        <label for="phoneNumber" class="form-label required">Phone Number</label>
+                        <input type="text" id="phoneNumber" name="phoneNumber" class="form-control" maxlength="10" placeholder="Enter 10-digit phone number">
+                    </div>
+
+                    <!-- Submit and Close Buttons -->
+                    <div class="col-12 d-flex justify-content-between">
+                        <button type="submit" id="submitBtn" class="btn btn-primary" disabled>Submit</button>
+                        <button type="button" class="btn btn-secondary" id="closePopupBtn">Close</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+
+
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const popupForm = document.getElementById('popupForm');
+            const popupMenuName = document.getElementById('popupMenuName');
+            const closePopupBtn = document.getElementById('closePopupBtn');
+            const customerSelect = document.getElementById('customerSelect');
+            const tokenLengthSelect = document.getElementById('tokenLengthSelect');
+            const phoneNumberInput = document.getElementById('phoneNumber');
+            const submitBtn = document.getElementById('submitBtn');
+
+            // Show popup on "Send Menu" button click
+            document.querySelectorAll('.send-menu-btn').forEach(button => {
+                button.addEventListener('click', function () {
+                    const menuid = this.getAttribute('data-menuid');
+                    const menuname = this.getAttribute('data-menuname');
+
+                    // Populate dynamic data
+                    popupMenuName.textContent = `Send Menu: ${menuname}`;
+                    popupForm.style.display = 'flex';
+                });
+            });
+
+            // Close popup
+            closePopupBtn.addEventListener('click', function () {
+                popupForm.style.display = 'none';
+            });
+
+            // Validate inputs
+            phoneNumberInput.addEventListener('input', function () {
+                const phoneValue = phoneNumberInput.value;
+                const isValid = /^\d{10}$/.test(phoneValue);
+                phoneNumberInput.style.borderColor = isValid ? 'green' : 'red';
+                toggleSubmitButton();
+            });
+
+            [customerSelect, tokenLengthSelect].forEach(select => {
+                select.addEventListener('change', toggleSubmitButton);
+            });
+
+            function toggleSubmitButton() {
+                const isCustomerSelected = customerSelect.value !== '';
+                const isTokenLengthSelected = tokenLengthSelect.value !== '';
+                const isPhoneNumberValid = /^\d{10}$/.test(phoneNumberInput.value);
+                submitBtn.disabled = !(isCustomerSelected && isTokenLengthSelected && isPhoneNumberValid);
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Iterate through each Product Type dropdown
+            document.querySelectorAll('.product-type-dropdown').forEach(function (dropdown) {
+                const seenValues = new Set(); // Use a Set to track unique producttypeid values
+                const options = Array.from(dropdown.options); // Convert dropdown options to an array
+
+                // Filter duplicate options
+                options.forEach(option => {
+                    if (seenValues.has(option.value) && option.value !== "") {
+                        option.remove(); // Remove duplicates
+                    } else {
+                        seenValues.add(option.value); // Add value to Set
+                    }
+                });
+            });
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Iterate through each table row
+            document.querySelectorAll('tr').forEach(row => {
+                const productTypeDropdown = row.querySelector('.product-type-dropdown');
+                const submitButton = row.querySelector('.submit-btn');
+
+                // Safely check if both elements exist
+                if (productTypeDropdown && submitButton) {
+                    // Initially disable the Submit button
+                    submitButton.disabled = true;
+
+                    // Add an event listener to monitor changes in the dropdown
+                    productTypeDropdown.addEventListener('change', function () {
+                        if (productTypeDropdown.value && productTypeDropdown.value !== "") {
+                            // Enable the button if a valid option is selected
+                            submitButton.disabled = false;
+                        } else {
+                            // Disable the button if the default is selected
+                            submitButton.disabled = true;
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Update URI when Product Type dropdown value changes
+            document.querySelectorAll('.product-type-dropdown').forEach(function (dropdown) {
+                dropdown.addEventListener('change', function () {
+                    const selectedValue = dropdown.value; // Get the selected product type ID
+                    if (selectedValue) {
+                        // Parse the current URL and update the 'producttype' parameter
+                        const url = new URL(window.location.href);
+                        url.searchParams.set('producttype', selectedValue);
+
+                        // Update the browser's URL without reloading the page
+                        window.history.replaceState({}, '', url);
+                    }
+                });
+            });
+        });
+    </script>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const amtChangeValues1 = ["0.00", "50.00", "100.00", "150.00", "200.00", "250.00", "300.00", "350.00", "400.00", "450.00", "500.00"];
+            const amtChangeValues2 = ["0.00", ".25", ".50", ".75", "1.00", "1.25", "2.00", "3.00", "4.00", "5.00", "6.00", "7.00", "8.00", "9.00", "10.00", "11.00", "12.00", "13.00", "14.00", "15.00", "16.00", "17.00", "18.00", "19.00", "20.00"];
+
+            // Initialize dropdowns
+            document.querySelectorAll('.amount-dropdown').forEach(dropdown => {
+                dropdown.innerHTML = "";
+                amtChangeValues1.forEach(value => {
+                    const option = document.createElement('option');
+                    option.value = value;
+                    option.textContent = value;
+                    if (value === "0.00") option.selected = true;
+                    dropdown.appendChild(option);
+                });
+            });
+
+            // Toggle dropdown values
+            document.querySelectorAll('.amt-change-btn').forEach(button => {
+                button.addEventListener('click', function () {
+                    const row = button.closest('tr');
+                    const dropdown = row.querySelector('.amount-dropdown');
+                    const currentValues = Array.from(dropdown.options).map(opt => opt.value);
+
+                    const newValues = currentValues.includes("50.00") ? amtChangeValues2 : amtChangeValues1;
+                    dropdown.innerHTML = "";
+                    newValues.forEach(value => {
+                        const option = document.createElement('option');
+                        option.value = value;
+                        option.textContent = value;
+                        if (value === "0.00") option.selected = true;
+                        dropdown.appendChild(option);
+                    });
+                });
+            });
+
+            // Submit button handler
+            document.querySelectorAll('.submit-btn').forEach(button => {
+                button.addEventListener('click', function () {
+                    const row = button.closest('tr');
+                    const menuid = row.dataset.menuid;
+                    const dropdownValue = row.querySelector('.amount-dropdown').value;
+                    const productTypeDropdown = row.querySelector('.product-type-dropdown');
+                    const productTypeValue = productTypeDropdown ? productTypeDropdown.value : null;
+                    const isNew = row.querySelector('.new-menu-checkbox').checked;
+
+                    const form = document.getElementById('priceChangeForm');
+                    let actionUri = `/menu/pricechange?menuid=${menuid}&amount=${dropdownValue}`;
+
+                    // Add producttype to the URI if selected
+                    if (productTypeValue) {
+                        actionUri += `&producttype=${productTypeValue}`;
+                    }
+
+                    if (isNew) {
+                        const userInput = prompt("Enter menu name:");
+                        if (!userInput) {
+                            alert("Menu name cannot be empty.");
+                            return;
+                        }
+                        const sanitizedInput = userInput
+                            .replace(/[\s-]+/g, "_")
+                            .replace(/[^a-zA-Z0-9_]/g, "");
+                        if (sanitizedInput === "") {
+                            alert("Invalid menu name. Please enter a valid name.");
+                            return;
+                        }
+                        actionUri += `&isnew=yes&newname=${sanitizedInput}`;
+                    }
+
+                    form.action = actionUri;
+                    form.submit();
+                });
+            });
+        });
+    </script>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Add event listener to all expand buttons
+            document.querySelectorAll('.expand-btn').forEach(button => {
+                button.addEventListener('click', function () {
+                    // Retrieve menuid from the button's data attribute
+                    const menuid = this.getAttribute('data-menuid');
+                    const hiddenElementId = `menuid-hidden-element-${menuid}`;
+
+                    // Fetch content from the pre-existing hidden div
+                    const hiddenElement = document.getElementById(hiddenElementId);
+                    if (!hiddenElement) {
+                        alert('Content not found for Menu ID: ' + menuid);
+                        return;
+                    }
+                    const content = hiddenElement.innerHTML;
+
+                    // Remove any existing popup
+                    const existingPopup = document.querySelector('.custom-popup-overlay');
+                    if (existingPopup) existingPopup.remove();
+
+                    // Create popup overlay
+                    const popupOverlay = document.createElement('div');
+                    popupOverlay.classList.add('custom-popup-overlay');
+                    popupOverlay.style.position = 'fixed';
+                    popupOverlay.style.top = '0';
+                    popupOverlay.style.left = '0';
+                    popupOverlay.style.width = '100%';
+                    popupOverlay.style.height = '100%';
+                    popupOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+                    popupOverlay.style.display = 'flex';
+                    popupOverlay.style.alignItems = 'center';
+                    popupOverlay.style.justifyContent = 'center';
+                    popupOverlay.style.zIndex = '9999';
+
+                    // Create popup box
+                    const popupBox = document.createElement('div');
+                    popupBox.style.backgroundColor = '#fff';
+                    popupBox.style.color = '#333';
+                    popupBox.style.width = '50%';
+                    popupBox.style.maxWidth = '600px';
+                    popupBox.style.padding = '20px';
+                    popupBox.style.borderRadius = '8px';
+                    popupBox.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
+                    popupBox.style.position = 'relative';
+
+                    // Add content to the popup
+                    popupBox.innerHTML = content;
+
+                    // Add close button
+                    const closeButton = document.createElement('span');
+                    closeButton.textContent = '×';
+                    closeButton.style.position = 'absolute';
+                    closeButton.style.top = '10px';
+                    closeButton.style.right = '15px';
+                    closeButton.style.fontSize = '20px';
+                    closeButton.style.cursor = 'pointer';
+                    closeButton.style.color = '#999';
+
+                    // Add event listener to close button
+                    closeButton.addEventListener('click', function () {
+                        popupOverlay.remove();
+                        reloadContainingContent(); // Call the reload function on close
+                    });
+
+                    // Append close button and popup box
+                    popupBox.appendChild(closeButton);
+                    popupOverlay.appendChild(popupBox);
+
+                    // Append popup overlay to body
+                    document.body.appendChild(popupOverlay);
+                });
+            });
+
+            // Function to reload containing content
+            function reloadContainingContent() {
+                console.log('Reloading containing content...');
+                // Example: Re-fetch content from the server or reset the state
+                // Replace with your specific logic
+                document.location.reload(); // Full page reload (simplest approach)
+            }
+        });
+
+
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const popupForm = document.getElementById('shoppingTokenForm'); // Correct form ID
+            const popupMenuName = document.getElementById('popupMenuName');
+            const closePopupBtn = document.getElementById('closePopupBtn');
+            const customerSelect = document.getElementById('customerSelect');
+            const tokenLengthSelect = document.getElementById('tokenLengthSelect');
+            const phoneNumberInput = document.getElementById('phoneNumber');
+            const submitBtn = document.getElementById('submitBtn');
+
+            let currentMenuId = null; // To store the correct menu ID for the popup
+
+            // Show popup on "Send Menu" button click
+            document.querySelectorAll('.send-menu-btn').forEach(button => {
+                button.addEventListener('click', function () {
+                    currentMenuId = this.getAttribute('data-menuid'); // Set the correct menu ID
+                    const menuname = this.getAttribute('data-menuname');
+
+                    // Populate dynamic data
+                    popupMenuName.textContent = `Send Menu: ${menuname}`;
+                    popupForm.style.display = 'flex';
+                });
+            });
+
+            // Close popup
+            closePopupBtn.addEventListener('click', function () {
+                popupForm.style.display = 'none';
+                currentMenuId = null; // Clear the menu ID when the popup is closed
+            });
+
+            // Validate inputs
+            phoneNumberInput.addEventListener('input', function () {
+                const phoneValue = phoneNumberInput.value;
+                const isValid = /^\d{10}$/.test(phoneValue);
+                phoneNumberInput.style.borderColor = isValid ? 'green' : 'red';
+                toggleSubmitButton();
+            });
+
+            [customerSelect, tokenLengthSelect].forEach(select => {
+                select.addEventListener('change', toggleSubmitButton);
+            });
+
+            function toggleSubmitButton() {
+                const isCustomerSelected = customerSelect.value !== '';
+                const isTokenLengthSelected = tokenLengthSelect.value !== '';
+                const isPhoneNumberValid = /^\d{10}$/.test(phoneNumberInput.value);
+                submitBtn.disabled = !(isCustomerSelected && isTokenLengthSelected && isPhoneNumberValid);
+            }
+
+            // Handle submit button click
+            submitBtn.addEventListener('click', function (event) {
+                event.preventDefault(); // Prevent default form submission
+
+                const customerId = customerSelect.value;
+                const tokenLength = tokenLengthSelect.value;
+                const phoneNumber = phoneNumberInput.value;
+
+                if (!currentMenuId || !customerId || !tokenLength || !phoneNumber) {
+                    alert('All fields must be completed.');
+                    return;
+                }
+
+                // Construct the dynamic URI
+                const actionUri = `/menu/shoppingtoken/send?menuid=${encodeURIComponent(currentMenuId)}`
+                    + `&customerid=${encodeURIComponent(customerId)}`
+                    + `&phonenumber=${encodeURIComponent(phoneNumber)}`
+                    + `&tokenlength=${encodeURIComponent(tokenLength)}`;
+
+                // Safely submit the form
+                popupForm.setAttribute('action', actionUri);
+                popupForm.submit(); // Explicitly call the submit method of the form element
+            });
+        });
+
+    </script>
+
+
+
+
+
 
     <nav th:if="${menuPage.totalPages > 0}">
         <ul class="pagination">
             <li class="page-item" th:each="pageNumber : ${pageNumbers}">
                 <a class="page-link"
-                   th:href="@{/menu?size=__${#lists.size(menuPage.content)}__&page=__${pageNumber}__}"
+                   th:href="@{/dashboard/index?size=__${#lists.size(menuPage.content)}__&page=__${pageNumber}__}"
                    th:text="${pageNumber}"
                    th:classappend="${pageNumber==menuPage.number + 1} ? 'active'">
                 </a>

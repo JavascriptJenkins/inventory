@@ -1,13 +1,24 @@
 package com.techvvs.inventory.service.controllers
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.jparepo.CartRepo
+import com.techvvs.inventory.jparepo.CustomerRepo
+import com.techvvs.inventory.jparepo.DeliveryRepo
 import com.techvvs.inventory.jparepo.DiscountRepo
+import com.techvvs.inventory.jparepo.LocationRepo
+import com.techvvs.inventory.jparepo.LocationTypeRepo
 import com.techvvs.inventory.jparepo.PackageRepo
+import com.techvvs.inventory.jparepo.PackageTypeRepo
 import com.techvvs.inventory.jparepo.ProductTypeRepo
 import com.techvvs.inventory.jparepo.TransactionRepo
 import com.techvvs.inventory.model.CartVO
+import com.techvvs.inventory.model.CustomerVO
+import com.techvvs.inventory.model.DeliveryVO
 import com.techvvs.inventory.model.DiscountVO
+import com.techvvs.inventory.model.LocationTypeVO
+import com.techvvs.inventory.model.LocationVO
+import com.techvvs.inventory.model.PackageTypeVO
 import com.techvvs.inventory.model.PackageVO
 import com.techvvs.inventory.model.PaymentVO
 import com.techvvs.inventory.model.ProductTypeVO
@@ -16,15 +27,18 @@ import com.techvvs.inventory.model.ReturnVO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.model.nonpersist.Totals
 import com.techvvs.inventory.printers.PrinterService
+import com.techvvs.inventory.qrcode.impl.QrCodeGenerator
 import com.techvvs.inventory.service.transactional.CheckoutService
 import com.techvvs.inventory.util.FormattingUtil
 import com.techvvs.inventory.util.TechvvsAppUtil
+import com.techvvs.inventory.util.TwilioTextUtil
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
 
 import javax.persistence.EntityNotFoundException
 import javax.transaction.Transactional
+import java.security.SecureRandom
 import java.time.LocalDateTime
 
 
@@ -72,6 +86,27 @@ class TransactionService {
 
     @Autowired
     DiscountService discountService
+
+    @Autowired
+    QrCodeGenerator qrCodeGenerator
+
+    @Autowired
+    DeliveryRepo deliveryRepo
+
+    @Autowired
+    LocationRepo locationRepo
+
+    @Autowired
+    LocationTypeRepo locationTypeRepo
+
+    @Autowired
+    PackageTypeRepo packageTypeRepo
+
+    @Autowired
+    CustomerRepo customerRepo
+
+    @Autowired
+    TwilioTextUtil twilioTextUtil
 
 
     @Transactional
@@ -138,6 +173,185 @@ class TransactionService {
 
     }
 
+
+    // todo: holy crap this method is ridiculous.  god willing inshallah it shall be refactored
+    @Transactional
+    TransactionVO processCartGenerateNewTransactionForDelivery(CartVO cartVO, int locationid, String deliverynotes, LocationVO locationVO, type) {
+
+        Double taxpercentage = environment.getProperty("tax.percentage", Double.class)
+        System.out.println("BUGFIX DEBUG: 5")
+        double originalprice = cartService.calculateTotalPriceOfProductList(cartVO.product_cart_list)
+
+        double totalwithtax = 0.00
+
+        totalwithtax = formattingUtil.calculateTotalWithTax(originalprice, taxpercentage, 0.00)
+        System.out.println("BUGFIX DEBUG: 6")
+        ArrayList<ProductVO> newlist = cartVO.product_cart_list
+
+        TransactionVO newtransaction = new TransactionVO(
+
+                product_list: newlist,
+                cart: cartVO,
+                updateTimeStamp: LocalDateTime.now(),
+                createTimeStamp: LocalDateTime.now(),
+                customervo: cartVO.customer,
+                total: cartVO.total,
+                originalprice: originalprice,
+                totalwithtax: totalwithtax,
+//                totalwithtax: cartVO.total,
+                paid: 0.00,
+                taxpercentage: techvvsAppUtil.dev1 ? 0 : 0, // we are not going to set a tax percentage here in non dev environments
+                isprocessed: 0
+
+        )
+
+        newtransaction = transactionRepo.save(newtransaction)
+        System.out.println("BUGFIX DEBUG: 7")
+        // only save the cart after transaction is created
+        productService.saveProductAssociations(newtransaction)
+
+        // save the cart with processed=1
+        cartVO.isprocessed = 1
+        cartVO.updateTimeStamp = LocalDateTime.now()
+        cartVO = cartRepo.save(newtransaction.cart)
+
+        System.out.println("BUGFIX DEBUG: 8")
+        // create a delivery instance for the transaction so it will show up in the delivery que
+        DeliveryVO deliveryVO = new DeliveryVO(
+                transaction: newtransaction,
+                name: cartVO.customer.name+" | Order " + " | " +newtransaction.transactionid,
+                description: "typical order description",
+                deliverybarcode: productService.generateBarcodeForSplitProduct(generateEightDigitNumber()),
+                deliveryqrlink: "", // this contains the deliveryid, has to be set after the delivery is created
+                location: setLocation(deliverynotes, locationid, locationVO, type, cartVO.customer),
+                notes: deliverynotes,
+                iscanceled: 0,
+                isprocessed: 0,
+                ispickup: "delivery".equals(type) ? 0 : 1,
+                status: appConstants.DELIVERY_STATUS_CREATED,
+                total: newtransaction.total,
+                updateTimeStamp: LocalDateTime.now(),
+                createTimeStamp: LocalDateTime.now()
+
+        )
+        deliveryVO = deliveryRepo.save(deliveryVO)
+        System.out.println("BUGFIX DEBUG: 9")
+
+        // now set the delivery qr link on the delivery object
+        deliveryVO.deliveryqrlink = qrCodeGenerator.buildQrLinkForDeliveryItem(String.valueOf(deliveryVO.deliveryid))
+        deliveryVO.package_list = createNewPackage(newtransaction, deliveryVO)
+        System.out.println("BUGFIX DEBUG: 10")
+        deliveryVO = deliveryRepo.save(deliveryVO)
+
+        // todo: should we text the user the delivery qr link upon creation?   will just display in work que ui for now
+
+        newtransaction.delivery = deliveryVO // binding this here just so the upstream methods will have it and we don't have to do another fetch to the database
+
+        return newtransaction
+
+    }
+
+    LocationVO setLocation(String deliverynotes, int locationid, LocationVO locationVO, String type, CustomerVO customerVO) {
+        if(locationid > 0) {
+            // this means user chose a location on the dropdown and we grab that from the database
+            return locationRepo.findById(locationid).get()
+        } else {
+            CustomerVO detachedVO = customerVO
+            LocationTypeVO locationTypeVO = null
+            if("delivery".equals(type)) {
+                locationTypeVO = locationTypeRepo.findByName(appConstants.ADHOC_CUSTOMER_DELIVERY).get()
+
+            } else if("pickup".equals(type)) {
+                locationTypeVO = locationTypeRepo.findByName(appConstants.ADHOC_CUSTOMER_PICKUP).get()
+            }
+
+            LocationVO newlocation = locationRepo.save(createLocationBasedOnOrderType(type, locationTypeVO, locationVO, deliverynotes))
+
+            // save the locationid relationship to the customer
+            detachedVO.locationlist.add(newlocation)
+
+            customerRepo.save(detachedVO)
+            return newlocation
+        }
+    }
+
+    LocationVO createLocationBasedOnOrderType(String type, LocationTypeVO locationTypeVO, LocationVO locationVO, String deliverynotes){
+        switch (type) {
+            case "delivery":
+                return new LocationVO(
+                        name: deliverynotes ? deliverynotes.substring(0, Math.min(25, deliverynotes.length())) : "", // we are setting the location name to first 25 characters of the delivery notes
+                        description: deliverynotes,
+                        locationtype: locationTypeVO,
+                        notes: deliverynotes,
+                        address1: locationVO.address1,
+                        address2: locationVO.address2 != null ? locationVO.address2 : "",
+                        city: locationVO.city,
+                        state: locationVO.state,
+                        zipcode: locationVO.zipcode,
+                        updateTimeStamp: LocalDateTime.now(),
+                        createTimeStamp: LocalDateTime.now()
+                )
+            case "pickup":
+                return new LocationVO(
+                        name: "Default Pickup Location", // we are setting the location name to first 25 characters of the delivery notes
+                        description: "Default Notes For Pickup Location",
+                        locationtype: locationTypeVO,
+                        notes: deliverynotes,
+                        address1: "default address 1",
+                        address2: "default address 2",
+                        city: "default city",
+                        state: "default state",
+                        zipcode: "default zip",
+                        updateTimeStamp: LocalDateTime.now(),
+                        createTimeStamp: LocalDateTime.now()
+                )
+            default:
+                return new LocationVO()
+        }
+
+    }
+
+    List<PackageVO>  createNewPackage(TransactionVO transactionVO, DeliveryVO deliveryVO){
+        PackageTypeVO packageTypeVO = packageTypeRepo.findByName(appConstants.SMALL_BOX).get()
+        List<ProductVO> detachedList = new ArrayList<>(transactionVO.product_list);
+
+        PackageVO packageVO = packageRepo.save(new PackageVO(
+                name: transactionVO.customervo.name + " | Package | " + transactionVO.transactionid,
+                description: "this package is going out for delivery or pickup in a package locker. ",
+                packagebarcode: productService.generateBarcodeForSplitProduct(generateEightDigitNumber()), // we are not going to use this in this customer fulfillment delivery flow.  no reason to track multiple barcodes rn. in the future we might use this for tracking code
+                packagetype: packageTypeVO,
+                customer: transactionVO.customervo,
+                transaction: transactionVO,
+                weight: 0.00,
+                bagcolor: "normal",
+                delivery: deliveryVO,
+                product_package_list: detachedList,
+                total: transactionVO.total,
+                isprocessed: 0,
+                updateTimeStamp: LocalDateTime.now(),
+                createTimeStamp: LocalDateTime.now(),
+        ))
+
+        List<PackageVO> newlist = new ArrayList<PackageVO>()
+        newlist.add(packageVO)
+
+        return newlist
+    }
+
+//    int generateSixDigitNumber() {
+//        // Initialize SecureRandom
+//        SecureRandom secureRandom = new SecureRandom()
+//        // Generate a random number between 100000 and 999999 (inclusive)
+//        return Integer.valueOf(100000 + secureRandom.nextInt(900000))
+//    }
+
+    int generateEightDigitNumber() {
+        // Initialize SecureRandom
+        SecureRandom secureRandom = new SecureRandom();
+
+        // Generate a random number between 10000000 and 99999999 (inclusive)
+        return 10000000 + secureRandom.nextInt(90000000);
+    }
 
     // todo: i don't think i need this, keep it just in case we need a method that adds a list of packages to a transaction....
     @Transactional

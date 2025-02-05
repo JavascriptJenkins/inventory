@@ -57,9 +57,9 @@ class XlsxImporter {
         boolean qrMediasuccess = batchControllerHelper.generateAllMediaQrcodesForBatch(String.valueOf(batchVO.batchnumber))
         boolean barcodemanifestsuccess = batchControllerHelper.generateBarcodeManifestForBatch(String.valueOf(batchVO.batchnumber))
 
-//        if(barcodesuccess && qrsuccess){
-     //       menuGenerator.generateDefaultMenuFromBatch(batchVO)
-//        }
+        if(barcodesuccess && qrsuccess){
+            menuGenerator.generateDefaultMenuFromBatch(batchVO)
+        }
 
 
     }

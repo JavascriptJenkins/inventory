@@ -14,5 +14,6 @@ public interface CustomerRepo extends JpaRepository<CustomerVO, Integer> {
     void deleteByName(String name);
 
     List<CustomerVO> findAll();
+    Optional<CustomerVO> findByCustomerid(Integer customerid);
 
 }

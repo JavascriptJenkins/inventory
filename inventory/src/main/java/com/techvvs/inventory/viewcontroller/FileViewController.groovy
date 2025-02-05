@@ -13,6 +13,7 @@ import com.techvvs.inventory.viewcontroller.constants.ControllerConstants
 import com.techvvs.inventory.viewcontroller.helper.BatchControllerHelper
 import com.techvvs.inventory.viewcontroller.helper.FileViewHelper
 import com.techvvs.inventory.viewcontroller.helper.TransactionHelper
+import com.techvvs.inventory.xlsx.impl.MenuGenerator
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.stereotype.Controller
@@ -39,6 +40,9 @@ public class FileViewController {
 
     @Autowired
     BatchControllerHelper batchControllerHelper;
+
+    @Autowired
+    MenuGenerator menuGenerator
 
     @Autowired
     FileViewHelper fileViewHelper
@@ -133,6 +137,9 @@ public class FileViewController {
         // todo: make a seperate button for this
         batchControllerHelper.generateBarcodeManifestForBatch(String.valueOf(batchVO.batchnumber))
         batchControllerHelper.generateAllBarcodesForBatch(String.valueOf(batchVO.batchnumber))
+
+        menuGenerator.generateDefaultMenuFromBatch(batchVO)
+
 
         Page<FileVO> filePage = filePagingService.getFilePage(batchVO, page.get(), size.get(), appConstants.BARCODES_EPSON_64_DIR)
         filePagingService.bindPageAttributesToModel(model, filePage, page, size);

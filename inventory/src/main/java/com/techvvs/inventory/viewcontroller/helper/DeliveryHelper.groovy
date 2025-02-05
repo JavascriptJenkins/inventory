@@ -1,17 +1,26 @@
 package com.techvvs.inventory.viewcontroller.helper
 
+import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.jparepo.CrateRepo
 import com.techvvs.inventory.jparepo.CustomerRepo
 import com.techvvs.inventory.jparepo.DeliveryRepo
+import com.techvvs.inventory.jparepo.MenuRepo
 import com.techvvs.inventory.jparepo.PackageRepo
 import com.techvvs.inventory.model.*
+import com.techvvs.inventory.security.JwtTokenProvider
+import com.techvvs.inventory.security.Role
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
+import org.springframework.security.core.GrantedAuthority
 import org.springframework.stereotype.Component
 import org.springframework.ui.Model
+
+import javax.transaction.Transactional
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 // helper class to make sure actual checkout controller code stays clean n tidy
 @Component
@@ -31,6 +40,15 @@ class DeliveryHelper {
 
     @Autowired
     ProductHelper productHelper
+
+    @Autowired
+    JwtTokenProvider jwtTokenProvider
+
+    @Autowired
+    MenuRepo menuRepo
+
+    @Autowired
+    AppConstants appConstants
 
     // method to get all customers from db
     void getAllCustomers(Model model){
@@ -89,7 +107,20 @@ class DeliveryHelper {
     }
 
     Page<DeliveryVO> runPageRequest(Pageable pageable) {
+
         return deliveryRepo.findAllByIsprocessed(0,pageable);
+    }
+
+
+    Page<DeliveryVO> runPageRequestWithOptionalCustomerid(Pageable pageable, Optional<Integer> customerid) {
+        Page<DeliveryVO> pageOfDelivery
+        // this means someone selected a value on the ui and we need to run a filtered query
+        if(customerid.isPresent() && customerid.get() > 0) {
+            pageOfDelivery = deliveryRepo.findByTransaction_Customervo_customerid(customerid.get(),pageable);
+        } else {
+            pageOfDelivery = deliveryRepo.findAll(pageable);
+        }
+        return pageOfDelivery
     }
 
     // This will calculate display value for the total number of packages in a delivery
@@ -476,5 +507,319 @@ class DeliveryHelper {
         model.addAttribute("cratesize", pageSize);
         model.addAttribute("pageOfCrateInDelivery", pageOfCrateInDelivery);
     }
+
+
+    void loadDeliveryByDeliveryToken(String deliverytoken, Model model){
+        String deliveryid = jwtTokenProvider.getDeliveryIdFromToken(deliverytoken)
+        String menuid = jwtTokenProvider.getMenuIdFromToken(deliverytoken)
+        List<String> authorities = jwtTokenProvider.extractAuthorities(deliverytoken)
+        Optional<DeliveryVO> deliveryVO = deliveryRepo.findById(Integer.valueOf(deliveryid))
+
+        // process the products here for display
+        if(deliveryVO.present){
+            model.addAttribute("delivery", deliveryVO.get())
+            hydrateTransientQuantitiesForDisplayForClientStatusView(deliveryVO.get(), menuid)
+        } else {
+            // return empty object to ui if we don't find one
+            model.addAttribute("delivery", new DeliveryVO(deliveryid:0))
+        }
+
+        if(hasRole(authorities, String.valueOf(Role.ROLE_DELIVERY_EMPLOYEE_VIEW_TOKEN))){
+
+            // write code here to add certain attributes to the model that will enable the user to click certain buttons
+            model.addAttribute("DeliveryEmployeeViewActivated", "yes")
+        }
+
+    }
+
+    void loadDeliveryByCustomParametersForInternalUser(String deliverytoken, int deliveryid, int menuid, Model model){
+        List<String> authorities = jwtTokenProvider.extractAuthorities(deliverytoken) // passing internal token in here
+        Optional<DeliveryVO> deliveryVO = deliveryRepo.findById(Integer.valueOf(deliveryid))
+
+        // process the products here for display
+        if(deliveryVO.present){
+            model.addAttribute("delivery", deliveryVO.get())
+            hydrateTransientQuantitiesForDisplayForClientStatusView(deliveryVO.get(), String.valueOf(menuid))
+        } else {
+            // return empty object to ui if we don't find one
+            model.addAttribute("delivery", new DeliveryVO(deliveryid:0))
+        }
+
+        if(hasRole(authorities, String.valueOf(Role.ROLE_DELIVERY_EMPLOYEE_VIEW_TOKEN))){
+
+            // write code here to add certain attributes to the model that will enable the user to click certain buttons
+            model.addAttribute("DeliveryEmployeeViewActivated", "yes")
+        }
+
+    }
+
+    void changeStatusToPrep(String deliverytoken, Model model){
+        String deliveryid = jwtTokenProvider.getDeliveryIdFromToken(deliverytoken)
+        Optional<DeliveryVO> deliveryVO = deliveryRepo.findById(Integer.valueOf(deliveryid))
+
+        // process the products here for display
+        if(deliveryVO.present){
+            // change the status of the delivery
+            deliveryVO.get().setStatus(appConstants.DELIVERY_STATUS_PREPPING)
+            deliveryRepo.save(deliveryVO.get())
+        }
+    }
+    void changeStatusToPrepForInternalUser(String deliveryid){
+        Optional<DeliveryVO> deliveryVO = deliveryRepo.findById(Integer.valueOf(deliveryid))
+
+        // process the products here for display
+        if(deliveryVO.present){
+            // change the status of the delivery
+            deliveryVO.get().setStatus(appConstants.DELIVERY_STATUS_PREPPING)
+            deliveryRepo.save(deliveryVO.get())
+        }
+    }
+
+    void changeStatusToDispatch(String deliverytoken, Model model){
+        String deliveryid = jwtTokenProvider.getDeliveryIdFromToken(deliverytoken)
+        Optional<DeliveryVO> deliveryVO = deliveryRepo.findById(Integer.valueOf(deliveryid))
+
+        // process the products here for display
+        if(deliveryVO.present){
+            // change the status of the delivery
+            deliveryVO.get().setStatus(appConstants.DELIVERY_STATUS_READY_FOR_DISPATCH)
+            deliveryRepo.save(deliveryVO.get())
+        }
+    }
+
+    void changeStatusToDispatchForInternalUser(String deliveryid){
+        Optional<DeliveryVO> deliveryVO = deliveryRepo.findById(Integer.valueOf(deliveryid))
+
+        // process the products here for display
+        if(deliveryVO.present){
+            // change the status of the delivery
+            deliveryVO.get().setStatus(appConstants.DELIVERY_STATUS_READY_FOR_DISPATCH)
+            deliveryRepo.save(deliveryVO.get())
+        }
+    }
+
+    void changeStatusToEnroute(String deliverytoken, Model model){
+        String deliveryid = jwtTokenProvider.getDeliveryIdFromToken(deliverytoken)
+        Optional<DeliveryVO> deliveryVO = deliveryRepo.findById(Integer.valueOf(deliveryid))
+
+        // process the products here for display
+        if(deliveryVO.present){
+            // change the status of the delivery
+            deliveryVO.get().setStatus(appConstants.DELIVERY_STATUS_EN_ROUTE)
+            deliveryRepo.save(deliveryVO.get())
+        }
+    }
+
+    void changeStatusToEnrouteForInternalUser(String deliveryid){
+        Optional<DeliveryVO> deliveryVO = deliveryRepo.findById(Integer.valueOf(deliveryid))
+
+        // process the products here for display
+        if(deliveryVO.present){
+            // change the status of the delivery
+            deliveryVO.get().setStatus(appConstants.DELIVERY_STATUS_EN_ROUTE)
+            deliveryRepo.save(deliveryVO.get())
+        }
+    }
+    void changeStatusToComplete(String deliverytoken, Model model){
+        String deliveryid = jwtTokenProvider.getDeliveryIdFromToken(deliverytoken)
+        Optional<DeliveryVO> deliveryVO = deliveryRepo.findById(Integer.valueOf(deliveryid))
+
+        // process the products here for display
+        if(deliveryVO.present){
+            // change the status of the delivery
+            deliveryVO.get().setStatus(appConstants.DELIVERY_STATUS_DELIVERED)
+            deliveryRepo.save(deliveryVO.get())
+        }
+    }
+
+    void changeStatusToCompleteForInternalUser(String deliveryid){
+        Optional<DeliveryVO> deliveryVO = deliveryRepo.findById(Integer.valueOf(deliveryid))
+
+        // process the products here for display
+        if(deliveryVO.present){
+            // change the status of the delivery
+            deliveryVO.get().setStatus(appConstants.DELIVERY_STATUS_DELIVERED)
+            deliveryRepo.save(deliveryVO.get())
+        }
+    }
+
+    boolean hasRole(List authorities, String roleToCheck) {
+        println "Authorities: ${authorities}"
+        println "Role to check: ${roleToCheck}"
+
+        return authorities.any { authority ->
+            def valueToCompare = authority instanceof GrantedAuthority ? authority.authority : authority.toString()
+            valueToCompare == roleToCheck
+        }
+    }
+
+
+
+    int returnDeliveryStatus(String deliverytoken, Model model){
+        String deliveryid = jwtTokenProvider.getDeliveryIdFromToken(deliverytoken)
+        Optional<DeliveryVO> deliveryVO = deliveryRepo.findById(Integer.valueOf(deliveryid))
+
+        // process the products here for display
+
+        if(deliveryVO.present){
+            return deliveryVO.get().status
+        } else {
+            return 0
+        }
+
+
+    }
+
+    int returnDeliveryStatusForInternalUser(String deliveryid){
+        Optional<DeliveryVO> deliveryVO = deliveryRepo.findById(Integer.valueOf(deliveryid))
+
+        // process the products here for display
+
+        if(deliveryVO.present){
+            return deliveryVO.get().status
+        } else {
+            return 0
+        }
+
+
+    }
+
+
+    // we need to bind these because initially they come from the user navigating from a phone SMS message with them in the URI
+    void bindHiddenValues(Model model, String deliverytoken){
+        model.addAttribute("deliverytoken", deliverytoken)
+    }
+
+
+
+    DeliveryVO hydrateTransientQuantitiesForDisplayForClientStatusView(DeliveryVO deliveryVO, String menuid){
+
+        MenuVO menuVO = menuRepo.findById(Integer.valueOf(menuid)).get()
+
+        deliveryVO.displayquantitytotal = 0
+        deliveryVO.package_list.product_package_list.sort { a, b -> a.price <=> b.price }
+        Map<Integer, ProductVO> productMap = new HashMap<>();
+
+        for(PackageVO packageVO : deliveryVO.package_list){
+            for(ProductVO productInDelivery : packageVO.product_package_list){
+                if(productInDelivery.displayquantity == null){
+                    productInDelivery.displayquantity = 1
+                } else {
+                    productInDelivery.displayquantity = productInDelivery.displayquantity + 1
+                }
+
+                // apply discount on by product_type to the total
+                applyDiscountByProductTypeForDelivery(Optional.of(deliveryVO), productInDelivery, menuVO)
+
+                // in the future, we can apply a per product discount here
+                deliveryVO.displayquantitytotal += 1 // increment up the displayquantitytotal for every product
+                productMap.put(productInDelivery.getProduct_id(), productInDelivery)
+            }
+        }
+
+        deliveryVO.progressWidth = calculateProgressWidth(deliveryVO)
+        deliveryVO.allproductsinpackages = new ArrayList<>(productMap.values());
+
+        deliveryVO.displayCreateDateTimeStamp = deliveryVO.createTimeStamp
+                .atZone(ZoneId.of("America/Chicago"))
+                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm a"));
+
+        deliveryVO.displayUpdateDateTimeStamp = deliveryVO.updateTimeStamp
+                .atZone(ZoneId.of("America/Chicago"))
+                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm a"));
+
+
+        return deliveryVO
+    }
+
+    int calculateProgressWidth(DeliveryVO deliveryVO){
+        switch (deliveryVO.status){
+            case appConstants.DELIVERY_STATUS_CREATED:
+                return 20
+            case appConstants.DELIVERY_STATUS_PREPPING:
+                return 40
+            case appConstants.DELIVERY_STATUS_READY_FOR_DISPATCH:
+                return 60
+            case appConstants.DELIVERY_STATUS_EN_ROUTE:
+                return 80
+            case appConstants.DELIVERY_STATUS_DELIVERED:
+                return 100
+            default:
+                return 0
+        }
+    }
+
+    // NOTE: this using optional to process discounts is sweet.  Use this pattern again.
+    void applyDiscountByProductTypeForDelivery(Optional<DeliveryVO> deliveryVO,ProductVO productVO, MenuVO menuVO) {
+        // need to check for product.menu, if it exists, cycle thru the discount list on menu and apply it to the total
+        boolean priceset = false
+        if (deliveryVO.present){
+            for(DiscountVO discountVO : menuVO.discount_list) {
+                if (productVO.getProducttypeid().producttypeid == discountVO.producttype.producttypeid) {
+                    deliveryVO.get().total = Math.max(0,deliveryVO.get().total - discountVO.discountamount)
+                    // this will subtract the discount amount for every product in the cart
+                    productVO.displayprice = Math.max(0,productVO.price - discountVO.discountamount)
+                    priceset = true
+                }
+                if(!priceset){
+                    productVO.displayprice = productVO.price
+                }
+            }
+        }
+    }
+
+
+    @Transactional
+    void findAllDeliveries(Model model,
+                             Optional<Integer> page,
+                             Optional<Integer> size,
+                             Optional<Integer> customerid
+    ) {
+
+        // START PAGINATION
+        // https://www.baeldung.com/spring-data-jpa-pagination-sorting
+        //pagination
+        int currentPage = page.orElse(0);    // Default to first page
+        int pageSize = size.orElse(1000);       // Default page size to 1000
+
+        if(
+                currentPage > pageSize ||
+                        customerid.isPresent() && currentPage > pageSize
+        ){
+            currentPage = 0;
+        }
+
+        pageSize = pageSize < 5 ? 5 : pageSize; // make sure it's not less than 5
+
+       // model.addAttribute("currentpagesize", pageSize);
+
+        // run first page request
+        Pageable pageable = PageRequest.of(currentPage, pageSize, Sort.by(Sort.Direction.DESC, "createTimeStamp"));
+        Page<DeliveryVO> pageOfDelivery = runPageRequestWithOptionalCustomerid(pageable, customerid)
+
+        int totalPages = pageOfDelivery.getTotalPages();
+        int contentsize = pageOfDelivery.getContent().size()
+
+
+        if(contentsize == 0){
+            // we detect contentsize of 0 then we'll just take the first page of data and show it
+            pageable = PageRequest.of(0, pageSize, Sort.by(Sort.Direction.ASC, "createTimeStamp"));
+            pageOfDelivery = runPageRequestWithOptionalCustomerid(pageable, customerid)
+        }
+
+        List<Integer> pageNumbers = new ArrayList<>();
+        for (int i = 1; i <= totalPages; i++) {
+            pageNumbers.add(i);
+        }
+
+
+        model.addAttribute("pageNumbers", pageNumbers);
+        model.addAttribute("page", currentPage);
+        model.addAttribute("size", pageSize);
+        model.addAttribute("deliveryPage", pageOfDelivery);
+        model.addAttribute("customerid", customerid.orElse(0));
+        // END PAGINATION
+    }
+
 
 }

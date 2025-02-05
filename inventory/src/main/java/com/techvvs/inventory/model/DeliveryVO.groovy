@@ -21,11 +21,20 @@ class DeliveryVO implements Serializable{
     String description;
     @JsonProperty
     String deliverybarcode
+    @JsonProperty
+    String deliveryqrlink
+    @JsonProperty
+    String notes
 
     @JsonProperty
     @OneToOne(cascade= CascadeType.ALL, fetch  = FetchType.EAGER)
     @JoinColumn(name="locationid")
     LocationVO location
+
+    @JsonProperty
+    @OneToOne(cascade= CascadeType.ALL, fetch  = FetchType.EAGER)
+    @JoinColumn(name="lockerid")
+    LockerVO locker
 
     @JsonProperty
     @OneToOne(cascade=CascadeType.ALL, fetch = FetchType.LAZY)
@@ -48,6 +57,9 @@ class DeliveryVO implements Serializable{
     int isprocessed;
 
     @JsonProperty
+    int ispickup = 0
+
+    @JsonProperty
     int status;
 
     @JsonProperty
@@ -56,10 +68,15 @@ class DeliveryVO implements Serializable{
     @Transient
     PackageVO packageinscope
 
+    @Transient
+    List<ProductVO> allproductsinpackages
+
 
     @Transient
     CrateVO crateinscope
 
+    @Transient
+    int progressWidth
 
     @Transient
     int displayquantitytotal
@@ -73,6 +90,12 @@ class DeliveryVO implements Serializable{
     // transient field for passing barcode on checkout page back to controller
     @Transient
     String barcode
+
+    @Transient
+    String displayCreateDateTimeStamp
+
+    @Transient
+    String displayUpdateDateTimeStamp
 
     // generic fields below
     @JsonProperty

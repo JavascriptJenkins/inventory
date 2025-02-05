@@ -66,6 +66,7 @@ pipeline {
                     // Load multiple credentials simultaneously
                     withCredentials([
                          string(credentialsId: 'POSTGRE_TEST_DB_PASSWORD', variable: 'POSTGRE_TEST_DB_PASSWORD'),
+                         string(credentialsId: 'POSTGRE_ALPHA_DB_PASSWORD', variable: 'POSTGRE_ALPHA_DB_PASSWORD'),
                          string(credentialsId: 'POSTGRE_PROD_DB_PASSWORD', variable: 'POSTGRE_PROD_DB_PASSWORD')
                     ]){
 
@@ -73,7 +74,9 @@ pipeline {
 
                     sshagent(credentials: ['id_ed2_techvvs']) {
                         // Determine the database password based on the environment
-                        def dbPassword = env.TENANT_ENV.contains('prod') ? env.POSTGRE_PROD_DB_PASSWORD : env.POSTGRE_TEST_DB_PASSWORD
+                        def dbPassword = env.TENANT_ENV.contains('highland') ? env.POSTGRE_ALPHA_DB_PASSWORD :
+                                         env.TENANT_ENV.contains('prod') ? env.POSTGRE_PROD_DB_PASSWORD :
+                                         env.POSTGRE_TEST_DB_PASSWORD
 
                         // Set the PostgreSQL command based on the environment
                         def updateCommand = """

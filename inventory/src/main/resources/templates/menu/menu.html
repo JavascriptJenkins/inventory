@@ -7,47 +7,1474 @@
     <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-kQtW33rZJAHjgefvhyyzcGF3C5TFyBQBA13V1RKPf4uH+bwyzQxZ6CmMZHmNBEfJ" crossorigin="anonymous"></script>
-    <link rel="stylesheet" type="text/css" media="all" href="/css/table.css" th:href="@{/css/table.css}" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
 
     <style>
-        .required:after {
-            content: " *";
-            color: red;
+        /* Modernized green background with transparency */
+        body {
+            background-color: rgba(34, 139, 34, 0.1); /* Light transparent green */
+        }
+
+        /* Rounded corners for cards */
+        .menu-item .card {
+            border-radius: 15px; /* Rounded corners */
+            background-color: rgba(34, 139, 34, 0.8); /* Green with transparency */
+            border: none; /* Remove border */
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+        }
+
+        .menu-item .card:hover {
+            transform: scale(1.05); /* Slightly enlarge on hover */
+            box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.3); /* Enhanced shadow on hover */
+            transition: all 0.3s ease;
+        }
+
+        /* Card title and text */
+        .card-title,
+        .card-text {
+            color: #ffffff !important; /* White text for readability */
+        }
+
+        /* Image styling */
+        .card-img-top {
+            height: 150px;
+            object-fit: cover;
+            border-top-left-radius: 15px;
+            border-top-right-radius: 15px;
+            border: 5px solid rgba(0, 50, 0, 0.8); /* Even darker green border */
+
+        }
+
+        /* Placeholder for no photo */
+        .no-photo {
+            height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #dcdcdc;
+            background-color: rgba(0, 100, 0, 0.5); /* Darker green */
+            border-top-left-radius: 15px;
+            border-top-right-radius: 15px;
+            font-size: 0.9em;
+            font-style: italic;
+        }
+
+        /* Proper spacing between items */
+        .row-cols-md-5 > .menu-item {
+            margin: 15px 0;
+        }
+
+        /* Adjust spacing for the search bar */
+        .search-bar {
+            margin: 20px auto;
+            width: 60%;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Header style with rounded corners and shadow */
+        .menu-header {
+            background-color: rgba(34, 139, 34, 0.9); /* Green with transparency */
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.3);
+            font-size: 1.5rem;
+            text-align: center;
+            margin-bottom: 20px;
         }
     </style>
 
+    <style>
+        body {
+            background-color: rgba(34, 139, 34, 0.1);
+        }
 
+        /* Floating arrow smoothness */
+        .floating-arrow {
+            position: fixed;
+            top: 50%;
+            right: 0;
+            z-index: 1000;
+            font-size: 2rem;
+            background: rgba(34, 139, 34, 0.8);
+            color: white;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 5px 0 0 5px;
+            transition: opacity 0.3s ease, transform 0.3s ease; /* Smooth transitions */
+        }
+
+        .floating-arrow:hover {
+            transform: scale(1.1); /* Slight enlargement on hover */
+        }
+
+        .floating-arrow.hidden {
+            opacity: 0;
+            pointer-events: none; /* Disable interaction when hidden */
+        }
+
+        .cart-section {
+            position: fixed;
+            top: 0;
+            right: -100%; /* Initially hidden */
+            width: 20%;
+            height: 100%;
+            background: white;
+            border-left: 2px solid #ddd;
+            z-index: 999;
+            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            transition: right 0.5s cubic-bezier(0.4, 0.0, 0.2, 1); /* Smooth ease-out */
+        }
+
+        .cart-section.open {
+            right: 0; /* Slide in from the right */
+        }
+
+        .cart-header {
+            background: rgba(34, 139, 34, 0.8);
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-size: 1.5rem;
+            position: sticky;
+            top: 0;
+        }
+
+        .cart-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .cart-controls button {
+            background: rgba(34, 139, 34, 0.8);
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+        }
+
+        .cart-footer {
+            position: sticky;
+            bottom: 0;
+            background: rgba(34, 139, 34, 0.8);
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+        #cartReviewModal .modal-dialog {
+            max-width: 500px;
+        }
+        #cartReviewContent {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            background: #f9f9f9;
+        }
+
+        .hovering-timer {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            z-index: 1000;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hovering-timer.green {
+            background: #28a745; /* Green for more than 1 hour */
+        }
+
+        .hovering-timer.yellow {
+            background: #ffc107; /* Yellow for less than 1 hour */
+        }
+
+        .hovering-timer.red {
+            background: #dc3545; /* Red for less than 30 minutes */
+        }
+
+        .floating-button {
+            position: fixed;
+            top: 60px; /* Adjust to appear below the timer */
+            left: 10px;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .floating-button button {
+            background: #dc3545; /* Red for empty cart */
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .floating-button button:hover {
+            background: #b02a37; /* Darker red on hover */
+        }
+
+
+        .floating-confirmation {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            color: black;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            text-align: center;
+            width: 300px;
+        }
+
+        .floating-confirmation p {
+            margin-bottom: 15px;
+        }
+
+        .confirmation-buttons {
+            display: flex;
+            justify-content: space-between;
+        }
+        .invisible {
+            opacity: 0; /* Make invisible */
+            pointer-events: none; /* Disable interaction */
+        }
+
+
+    </style>
+
+
+    <script>
+        $(document).ready(function () {
+            // Fade-in animation for menu items
+            $('.menu-item').each(function (index) {
+                $(this).delay(index * 150).queue(function () {
+                    $(this).addClass('fade-in').dequeue();
+                });
+            });
+
+            // Function to filter menu items
+            function filterMenuItems() {
+                const searchValue = $('#searchInput').val().toLowerCase();
+                let visibleCount = 0;
+
+                $('.menu-item').each(function () {
+                    const productName = $(this).find('.card-title').text().toLowerCase();
+                    const quantity = $(this).find('.card-text:nth-child(2)').text().toLowerCase();
+                    const price = $(this).find('.card-text:nth-child(3)').text().toLowerCase();
+
+                    if (productName.includes(searchValue) || quantity.includes(searchValue) || price.includes(searchValue)) {
+                        $(this).removeClass('d-none'); // Make item visible
+                        visibleCount++;
+                    } else {
+                        $(this).addClass('d-none'); // Hide item completely
+                    }
+                });
+
+                // Show or hide the "No items found" message
+                if (visibleCount === 0) {
+                    $('.no-items').fadeIn();
+                } else {
+                    $('.no-items').fadeOut();
+                }
+            }
+
+            $('#searchInput').on('input', filterMenuItems);
+
+            // Clear button functionality
+            $('#clearSearch').on('click', function () {
+                $('#searchInput').val('');
+                filterMenuItems();
+            });
+        });
+    </script>
 </head>
 <body>
+
+<!-- Conditional rendering based on 'ordercomplete' attribute -->
+<div th:if="${ordercomplete == null}">
+
 <div class="container">
-    <br>
-    <div style="margin-top: 20px" class="alert alert-primary" role="alert">Hey it's a menu!</div>
-    <br>
+    <!-- Modernized menu header -->
+    <div class="menu-header">Menu</div>
+
+    <!-- Search bar -->
+    <div class="search-bar">
+        <input type="text" id="searchInput" class="form-control" placeholder="Search Menu...">
+        <button id="clearSearch" class="btn btn-secondary">Clear</button>
+    </div>
+
+    <!-- "No items found" message -->
+    <div class="no-items">No items found matching your search.</div>
+
     <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
     <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
-    <div class="alert alert-primary" role="alert" th:if="${primaryMessage}" th:text="${primaryMessage}">Success</div>
 
 
-            <table class="table" id="productTable">
-                <thead>
-                <tr>
-                    <th>Product Name</th>
-                    <th>Quantity</th>
-                    <th>Price</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="product : ${menu.menu_product_list}">
+    <!-- Menu grid -->
+    <div class="row row-cols-1 row-cols-md-5 g-3" id="menuGrid">
+        <div class="col menu-item" th:each="product : ${menu.menu_product_list}">
+            <div class="card h-100">
+                <!-- Card image -->
+                <div th:if="${product.primaryphoto}">
+                    <img th:src="${product.primaryphoto}" class="card-img-top" alt="Product Image">
+                </div>
+                <!-- No photo placeholder -->
+                <div th:if="${product.primaryphoto == null}" class="no-photo">No photo found</div>
+                <!-- Card body -->
+                <!-- todo: attach the shopping token to the buttons here and make sure back button works too when user is there so they can navigate back to menu  -->
+                <div class="card-body">
+                    <h5 class="card-title" th:text="${product.name}">Product Name</h5>
+                    <p class="card-text"><strong>Quantity:</strong> <span th:text="${product.quantityremaining}"></span></p>
+                    <p class="card-text"><strong>Price:</strong> $<span th:text="${product.displayprice}"></span></p>
 
-                        <td th:text="${product.name}"></td>
-                        <td th:text="${product.quantityremaining}"></td>
-                        <td th:text="${product.price}"></td>
-                </tr>
-                </tbody>
-            </table>
+                    <!-- Link to video for the product, passing productid and menuid -->
+                    <a th:href="@{/video/product(productid=${product.product_id}, menuid=${menu.menuid}, shoppingtoken=${shoppingtoken})}"
+                       class="btn btn-sm btn-primary mt-2">Videos</a>
+                    <!-- Link to video for the product, passing productid and menuid -->
+                    <a th:href="@{/photo/product(productid=${product.product_id}, menuid=${menu.menuid}, shoppingtoken=${shoppingtoken})}"
+                       class="btn btn-sm btn-primary mt-2">Photos</a>
+                    <!-- Link to video for the product, passing productid and menuid -->
+                    <a th:href="@{/document/product(productid=${product.product_id}, menuid=${menu.menuid}, shoppingtoken=${shoppingtoken})}"
+                       class="btn btn-sm btn-primary mt-2">Documents</a>
+                    <!-- Modify Add to Cart Buttons -->
+                    <a href="javascript:void(0);"
+                       class="btn btn-sm btn-warning mt-2 add-to-cart-btn"
+                       th:data-product-id="${product.product_id}"
+                       th:data-cart-id="${cartid}"
+                       th:data-shopping-token-id="${shoppingtoken}"
+                       th:data-menu-id="${menuid}"
+                       th:data-product-name="${product.name}"
+                       th:data-product-price="${product.displayprice}"
+                       th:disabled="${cart.isprocessed == 1}"
+                       th:classappend="${cart.isprocessed == 1} ? 'disabled' : ''">
+                        Add to Cart
+                    </a>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- MENU GRID ENDS -->
+
+    <!-- ADD TO CART Popup Modal -->
+    <!-- Popup Modal -->
+    <!-- Popup Modal -->
+    <div id="addToCartModal" class="modal" tabindex="-1" style="display: none;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 id="modalProductName" class="modal-title">Add to Cart</h5>
+                    <button type="button" class="btn-close close-modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="modalProductPrice" class="text-muted"></p> <!-- Product price will be displayed here -->
+                    <label for="quantitySelect" class="form-label">Select Quantity:</label>
+                    <select id="quantitySelect" class="form-select">
+                        <option value="">Select Amount</option>
+                        <script>
+                            for (let i = 1; i <= 100; i++) {
+                                document.write(`<option value="${i}">${i}</option>`);
+                            }
+                        </script>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button id="submitQuantity" class="btn btn-primary" disabled>Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
 
+    <script>
+        $(document).ready(function () {
+            let currentProductId;
+
+            // Show modal on "Add to Cart" button click
+            $('.add-to-cart-btn').on('click', function () {
+                currentProductId = $(this).data('product-id');
+
+                // Get product name and price from the button's data attributes
+                const productName = $(this).data('product-name');
+                const productPrice = $(this).data('product-price');
+
+                // Update modal with product details
+                $('#modalProductName').text(`Add ${productName} to Cart`);
+                $('#modalProductPrice').text(`Price: $${productPrice}`);
+
+                // Reset dropdown and disable Confirm button
+                $('#quantitySelect').val('');
+                $('#submitQuantity').prop('disabled', true);
+
+                // Show the modal
+                $('#addToCartModal').fadeIn();
+            });
+
+            // Close modal
+            $('.close-modal').on('click', function () {
+                $('#addToCartModal').fadeOut();
+            });
+
+            // Enable Confirm button when a valid quantity is selected
+            $('#quantitySelect').on('change', function () {
+                const selectedValue = $(this).val();
+                $('#submitQuantity').prop('disabled', !selectedValue);
+            });
+
+            // Handle Confirm button click
+            $('#submitQuantity').on('click', function () {
+                const selectedQuantity = $('#quantitySelect').val();
+
+                // Ensure quantity is selected
+                if (!selectedQuantity) {
+                    alert('Please select a quantity!');
+                    return;
+                }
+
+                // Fetch parameters from URL
+                let urlParams = new URLSearchParams(window.location.search);
+                let shoppingToken = urlParams.get('shoppingtoken');
+                let menuId = urlParams.get('menuid');
+                let cartId = urlParams.get('cartid');
+
+                // Check for missing values and fallback to button attributes
+                if (!shoppingToken || !menuId || !cartId) {
+                    const addToCartButton = $('.add-to-cart-btn').first(); // Example fallback to the first button
+                    shoppingToken = shoppingToken || addToCartButton.data('shopping-token-id');
+                    menuId = menuId || addToCartButton.data('menu-id');
+                    cartId = cartId || addToCartButton.data('cart-id');
+                }
+
+                // Validate necessary parameters
+                if (!shoppingToken || !menuId || !currentProductId) {
+                    alert('Missing required parameters!');
+                    return;
+                }
+
+                // Default cartId if null, undefined, or '0'
+                cartId = cartId && cartId !== '0' ? cartId : '0';
+
+                // Create a form dynamically for submission
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/menu/shop/product/cart/add';
+
+                // Append parameters as hidden fields
+                const fields = [
+                    { name: 'shoppingtoken', value: shoppingToken },
+                    { name: 'menuid', value: menuId },
+                    { name: 'productid', value: currentProductId },
+                    { name: 'quantityselected', value: selectedQuantity },
+                    { name: 'cartid', value: cartId },
+                ];
+
+                fields.forEach(field => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = field.name;
+                    input.value = field.value;
+                    form.appendChild(input);
+                });
+
+                // Append form to body and submit
+                document.body.appendChild(form);
+                form.submit();
+            });
+        });
+
+
+    </script>
+
+
+
+
+    <!-- ADD TO CART Popup Modal ENDS -->
+
+
+    <!-- Floating Arrow -->
+    <div id="cartToggle"
+         class="floating-arrow bi bi-arrow-right"
+         th:classappend="${cart.product_cart_list == null or #lists.isEmpty(cart.product_cart_list)} ? '' : 'invisible'">
+    </div>
+
+    <!-- Cart Section -->
+    <div id="cartSection" class="cart-section"
+         th:classappend="${cart.product_cart_list != null and !#lists.isEmpty(cart.product_cart_list)} ? 'open'">
+        <div class="cart-header">
+            <div id="cartClose" class="floating-arrow bi bi-arrow-left" style="position: relative; display: block; margin: auto;"></div>
+            <span style="display: block; margin-top: 10px;">Shopping Cart</span>
+        </div>
+
+        <div id="cartRows">
+            <div th:each="product : ${cart.product_cart_list}" class="cart-row"
+                 th:data-product-id="${product.product_id}"
+                 th:data-cart-id="${cartid}"
+                 th:data-shopping-token-id="${shoppingtoken}"
+                 th:data-menu-id="${menuid}"
+                 th:data-product-name="${product.name}"
+                 th:data-product-price="${product.displayprice}"
+            >
+                <span th:text="${product.name}">Product Name</span>
+                <span>
+                <button class="cart-controls" onclick="updateQuantity('decrease', this)"                 th:disabled="${cart.isprocessed == 1}"
+                        th:classappend="${cart.isprocessed == 1} ? 'disabled' : ''">-</button>
+                <span th:text="${product.displayquantity}"></span>
+                <button class="cart-controls" onclick="updateQuantity('increase', this)"                 th:disabled="${cart.isprocessed == 1}"
+                        th:classappend="${cart.isprocessed == 1} ? 'disabled' : ''">+</button>
+            </span>
+                <span th:text="${product.displayprice}">$0.00</span>
+            </div>
+        </div>
+
+        <div class="cart-footer">
+            <div id="totalDiv">
+                <strong>Total:</strong> <span th:data-total="${cart.total}" th:text="${cart.total}">$0.00</span>
+            </div>
+            <!-- Replace Submit Cart Button Based on cart.isprocessed -->
+            <div th:if="${cart.isprocessed == 1}">
+                <p class="text-muted">This cart has already been processed.</p>
+            </div>
+            <div th:if="${cart.isprocessed != 1}">
+                <button id="submitCartButton" class="btn btn-light mt-2" type="button">Submit Cart</button>
+            </div>
+            <form id="cartForm" th:action="@{/menu/shop/checkout}" method="post"></form>
+        </div>
+    </div>
+    <!-- CART SECTION ENDS -->
+
+    <!-- Cart Review Modal -->
+    <!-- Update the Cart Review Modal -->
+    <div id="cartReviewModal" class="modal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Review Your Cart</h5>
+                    <button type="button" class="btn-close" id="closeCartReview" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Here are the products in your cart:</p>
+                    <div id="cartReviewContent"></div>
+                    <hr>
+                    <p><strong>Total:</strong> $<span id="cartReviewTotal">0.00</span></p>
+                    <hr>
+
+                    <!-- Delivery or Curbside Pickup Selection -->
+                    <div>
+                        <label>
+                            <input type="checkbox" id="deliveryCheckbox" name="type" value="delivery"> Delivery
+                        </label>
+                        <label>
+                            <input type="checkbox" id="pickupCheckbox" name="type" value="pickup"> Curbside Pickup
+                        </label>
+                    </div>
+
+
+                    <!-- Address Fields -->
+                    <div id="deliveryFields" style="display: none;">
+                        <!-- Conditional Rendering Based on customer.locationlist -->
+                        <div th:if="${customer.locationlist != null && customer.locationlist.size() > 0}">
+                            <!-- Dropdown for Existing Locations -->
+                            <div id="locationDropdown" style="display: block;">
+                                <label for="locationSelect">Select Location:</label>
+                                <select id="locationSelect" name="locationid" class="form-select">
+                                    <option value="0" disabled selected>Select Location</option>
+                                    <option th:each="location : ${customer.locationlist}"
+                                            th:value="${location.locationid}"
+                                            th:text="${location.name}"></option>
+                                </select>
+<!--                                <button id="newLocationButton" class="btn btn-primary mt-2">New Location</button>-->
+                            </div>
+
+                            <script>
+                                $(document).ready(function () {
+                                    // Bind change event to the location dropdown
+                                    $('#locationSelect').on('change', function () {
+                                        const isLocationSelected = $(this).val() !== null && $(this).val() !== '0';
+
+                                        // Enable or disable the Confirm Order button based on the selected value
+                                        $('#confirmOrder').prop('disabled', !isLocationSelected);
+                                    });
+                                });
+                            </script>
+
+
+                        </div>
+
+
+                        <div>
+                            <label for="address1" class="address-field">Address 1</label>
+                            <input type="text" id="address1" name="address1" class="form-control address-field">
+                            <span class="validation-icon"></span>
+                        </div>
+                        <div>
+                            <label for="address2" class="address-field">Address 2</label>
+                            <input type="text" id="address2" name="address2" class="form-control address-field">
+                            <span class="validation-icon"></span>
+                        </div>
+                        <div>
+                            <label for="city" class="address-field">City</label>
+                            <input type="text" id="city" name="city" class="form-control address-field">
+                            <span class="validation-icon"></span>
+                        </div>
+                        <div>
+                            <label for="state" class="address-field">State</label>
+                            <select id="state" name="state" class="form-select address-field">
+                                <option value="">Select State</option>
+                                <option value="AL">Alabama (AL)</option>
+                                <option value="AK">Alaska (AK)</option>
+                                <option value="AZ">Arizona (AZ)</option>
+                                <option value="AR">Arkansas (AR)</option>
+                                <option value="CA">California (CA)</option>
+                                <option value="CO">Colorado (CO)</option>
+                                <option value="CT">Connecticut (CT)</option>
+                                <option value="DE">Delaware (DE)</option>
+                                <option value="FL">Florida (FL)</option>
+                                <option value="GA">Georgia (GA)</option>
+                                <option value="HI">Hawaii (HI)</option>
+                                <option value="ID">Idaho (ID)</option>
+                                <option value="IL">Illinois (IL)</option>
+                                <option value="IN">Indiana (IN)</option>
+                                <option value="IA">Iowa (IA)</option>
+                                <option value="KS">Kansas (KS)</option>
+                                <option value="KY">Kentucky (KY)</option>
+                                <option value="LA">Louisiana (LA)</option>
+                                <option value="ME">Maine (ME)</option>
+                                <option value="MD">Maryland (MD)</option>
+                                <option value="MA">Massachusetts (MA)</option>
+                                <option value="MI">Michigan (MI)</option>
+                                <option value="MN">Minnesota (MN)</option>
+                                <option value="MS">Mississippi (MS)</option>
+                                <option value="MO">Missouri (MO)</option>
+                                <option value="MT">Montana (MT)</option>
+                                <option value="NE">Nebraska (NE)</option>
+                                <option value="NV">Nevada (NV)</option>
+                                <option value="NH">New Hampshire (NH)</option>
+                                <option value="NJ">New Jersey (NJ)</option>
+                                <option value="NM">New Mexico (NM)</option>
+                                <option value="NY">New York (NY)</option>
+                                <option value="NC">North Carolina (NC)</option>
+                                <option value="ND">North Dakota (ND)</option>
+                                <option value="OH">Ohio (OH)</option>
+                                <option value="OK">Oklahoma (OK)</option>
+                                <option value="OR">Oregon (OR)</option>
+                                <option value="PA">Pennsylvania (PA)</option>
+                                <option value="RI">Rhode Island (RI)</option>
+                                <option value="SC">South Carolina (SC)</option>
+                                <option value="SD">South Dakota (SD)</option>
+                                <option value="TN">Tennessee (TN)</option>
+                                <option value="TX">Texas (TX)</option>
+                                <option value="UT">Utah (UT)</option>
+                                <option value="VT">Vermont (VT)</option>
+                                <option value="VA">Virginia (VA)</option>
+                                <option value="WA">Washington (WA)</option>
+                                <option value="WV">West Virginia (WV)</option>
+                                <option value="WI">Wisconsin (WI)</option>
+                                <option value="WY">Wyoming (WY)</option>
+                            </select>
+
+                            <span class="validation-icon"></span>
+                        </div>
+                        <div>
+                            <label for="zipcode" class="address-field">Zipcode</label>
+                            <input type="text" id="zipcode" name="zipcode" class="form-control address-field" maxlength="5">
+                            <span class="validation-icon"></span>
+                        </div>
+                        <div>
+                            <label for="deliveryNotes">Describe exact Location</label>
+                            <textarea id="deliveryNotes" name="deliverynotes" class="form-control"></textarea>
+                            <span class="validation-icon"></span>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" id="cancelOrder">Cancel</button>
+                    <button type="button" id="confirmOrder" class="btn btn-primary" disabled>Confirm Order</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- End Cart Review Modal -->
+
+    <div id="shoppingTokenTimer" class="hovering-timer">
+        Shopping Time Left:&nbsp; <span id="timeDisplay"></span>
+    </div>
+    <!-- Conditional Empty Cart Button or Message -->
+    <div id="emptyCartButton" th:if="${cart.isprocessed != 1}" class="floating-button">
+        <button class="btn btn-danger">Empty Cart</button>
+    </div>
+    <div th:if="${cart.isprocessed == 1}" class="floating-button">
+        <p class="text-muted">This cart has already been processed and cannot be emptied.</p>
+    </div>
+
+
+    <div id="emptyCartConfirmation" class="floating-confirmation" style="display: none;">
+        <p>Are you sure you want to empty your cart?</p>
+        <p>Cart will be emptied automatically when the shopping token expires.</p>
+        <div class="confirmation-buttons">
+            <button id="confirmEmptyCart" class="btn btn-danger">Yes, Empty Cart</button>
+            <button id="cancelEmptyCart" class="btn btn-secondary">Cancel</button>
+        </div>
+    </div>
+
+
+    <script>
+        // JavaScript for toggle animations
+        $(document).ready(function () {
+            const cartToggle = $('#cartToggle');
+            const cartClose = $('#cartClose');
+            const cartSection = $('#cartSection');
+
+            cartToggle.click(function () {
+                cartSection.addClass('open');
+                cartToggle.fadeOut(300); // Smooth fade out for the arrow
+            });
+
+            cartClose.click(function () {
+                cartSection.removeClass('open');
+                cartToggle.fadeIn(300); // Smooth fade in for the arrow
+            });
+        });
+
+        function updateQuantity(action, button) {
+            // Get parent row to retrieve necessary data
+            const cartRow = button.closest('.cart-row');
+            const productId = $(cartRow).attr('data-product-id'); // Assuming each row has data-product-id attribute
+            let cartId = $(cartRow).attr('data-cart-id'); // Get the cartId from the row
+            const shoppingToken = $(cartRow).attr('data-shopping-token-id');
+            const menuId = $(cartRow).attr('data-menu-id');
+
+            if (!shoppingToken || !menuId || !productId) {
+                alert('Missing required parameters!');
+                return;
+            }
+
+            // Default cartId to 0 if it's null, undefined, or equal to 0
+            cartId = cartId && cartId !== '0' ? cartId : '0';
+
+            // Determine endpoint based on action
+            const endpoint =
+                action === 'increase'
+                    ? '/menu/shop/product/cart/add'
+                    : '/menu/shop/product/cart/subtract';
+
+            // Quantity selected is always 1 for both actions
+            const quantitySelected = 1;
+
+            // Create a form dynamically
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = endpoint;
+
+            // Append parameters as hidden fields
+            const fields = [
+                { name: 'shoppingtoken', value: shoppingToken },
+                { name: 'menuid', value: menuId },
+                { name: 'productid', value: productId },
+                { name: 'cartid', value: cartId },
+                { name: 'quantityselected', value: quantitySelected },
+            ];
+
+            fields.forEach(field => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = field.name;
+                input.value = field.value;
+                form.appendChild(input);
+            });
+
+            // Append form to body and submit
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+
+    </script>
+
+    <script>
+        $(document).ready(function () {
+            const cartToggle = $('#cartToggle');
+            const cartClose = $('#cartClose');
+            const cartSection = $('#cartSection');
+
+            // Handle opening the cart
+            cartToggle.click(function () {
+                cartSection.addClass('open');
+                cartToggle.addClass('invisible'); // Hide the arrow
+            });
+
+            // Handle closing the cart
+            cartClose.click(function () {
+                cartSection.removeClass('open');
+                cartToggle.removeClass('invisible'); // Show the arrow
+            });
+        });
+
+
+        $(document).ready(function () {
+            const cartForm = $('#cartForm');
+
+            cartForm.submit(function (event) {
+                event.preventDefault(); // Prevent the default form submission
+
+                // Select any one product row to extract the necessary parameters
+                const firstCartRow = $('#cartRows .cart-row').first();
+
+                if (!firstCartRow.length) {
+                    alert('No products found in the cart!');
+                    return;
+                }
+
+                // Fetch parameters from the first product row
+                const shoppingToken = firstCartRow.data('shopping-token-id');
+                const menuId = firstCartRow.data('menu-id');
+                let cartId = firstCartRow.data('cart-id');
+
+                // Default cartId to 0 if null or undefined
+                cartId = cartId && cartId !== '0' ? cartId : '0';
+
+                // Validate necessary parameters
+                if (!shoppingToken || !menuId) {
+                    alert('Missing required parameters!');
+                    return;
+                }
+
+                // Construct a form dynamically (like the other methods)
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/menu/shop/checkout'; // Adjust to your backend endpoint
+
+                // Add necessary parameters to the form
+                const fields = [
+                    { name: 'shoppingtoken', value: shoppingToken },
+                    { name: 'menuid', value: menuId },
+                    { name: 'cartid', value: cartId },
+                ];
+
+                fields.forEach(field => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = field.name;
+                    input.value = field.value;
+                    form.appendChild(input);
+                });
+
+                // Append the form to the document body and submit it
+                document.body.appendChild(form);
+                form.submit();
+            });
+        });
+
+
+        // Intercept "Submit Cart" button click
+        $('#submitCartButton').on('click', function (event) {
+            event.preventDefault(); // Prevent default form submission
+
+            // Populate the cart modal with current cart rows
+            const cartContent = $('#cartRows').html(); // Clone cart content
+            if (!cartContent.trim()) {
+                alert('Your cart is empty! Please add items before submitting.');
+                return;
+            }
+
+            // Get the total value using the id of totalDiv
+            const total = $('#totalDiv span').attr('data-total'); // Locate the span inside #totalDiv and fetch data-total
+            const formattedTotal = parseFloat(total) || 0; // Ensure it's a valid number
+
+            // Update the modal with cart content and total
+            $('#cartReviewContent').html(cartContent);
+            $('#cartReviewTotal').text(formattedTotal.toFixed(2));
+
+            // Display the cart review modal
+            $('#cartReviewModal').fadeIn();
+
+            // Disable the confirm order button initially
+            $('#confirmOrder').prop('disabled', true);
+
+            // Enable the confirm order button when the user types more than 5 characters in the delivery notes
+            $('#deliveryNotes').on('input', function () {
+                const deliveryNotesLength = $(this).val().length;
+                $('#confirmOrder').prop('disabled', deliveryNotesLength <= 5);
+            });
+        });
+
+        // Close cart review modal
+        $('#closeCartReview, #cancelOrder').on('click', function () {
+            $('#cartReviewModal').fadeOut();
+        });
+
+
+
+        // Handle Confirm Order click
+        $('#confirmOrder').on('click', function () {
+            const isDelivery = $('#deliveryCheckbox').is(':checked');
+            const isLocationDropdownVisible = $('#locationDropdown').is(':visible');
+            const isLocationSelected = $('#locationSelect').val() !== null && $('#locationSelect').val() !== '0';
+
+            let selectedLocation = '0';
+            if(isDelivery && isLocationDropdownVisible && isLocationSelected){
+                selectedLocation = $('#locationSelect').val();
+            }
+
+            // Default selectedLocation to 0 if undefined or invalid
+            if (selectedLocation === undefined || selectedLocation === 'default') {
+                selectedLocation = 0;
+            }
+
+            let deliveryNotes = $('#deliveryNotes').val().trim();
+
+            // Validate inputs
+            if (deliveryNotes.length <= 5 && isDelivery) {
+                alert('Please select a valid delivery location and ensure delivery notes are more than 5 characters.');
+                return;
+            }
+
+<!--            // need to set this to a blank string explicitly for pickup so it processes right....-->
+<!--            if(!isDelivery){-->
+<!--                deliveryNotes = " ";-->
+<!--            }-->
+
+            // Fetch parameters from the cart
+            const firstCartRow = $('#cartRows .cart-row').first();
+            const shoppingToken = firstCartRow.attr('data-shopping-token-id');
+            const menuId = firstCartRow.attr('data-menu-id');
+            let cartId = firstCartRow.attr('data-cart-id');
+            console.log('cartid: '+cartId);
+
+            // Default cartId to 0 if null, undefined, or invalid
+            cartId = cartId && cartId !== '0' ? cartId : '0';
+
+            // Validate necessary parameters
+            if (!shoppingToken || !menuId || !cartId) {
+                alert('Missing required cart parameters! Please try again.');
+                return;
+            }
+
+            // Create a form dynamically for the POST call
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/menu/shop/checkout'; // Adjust to your backend endpoint
+
+            // get the values from the form on cart review
+            let type = $('#deliveryCheckbox').is(':checked') ? 'delivery' : 'pickup';
+            let address1 = $('#address1').val();
+            let address2 = $('#address2').val();
+            let city = $('#city').val();
+            let state = $('#state').val();
+            let zipcode = $('#zipcode').val();
+
+            // Append necessary parameters as hidden input fields
+            const fields = [
+                { name: 'shoppingtoken', value: shoppingToken },
+                { name: 'menuid', value: menuId },
+                { name: 'cartid', value: cartId },
+                { name: 'deliverynotes', value: deliveryNotes },
+                { name: 'locationid', value: selectedLocation },
+                { name: 'type', value: type },
+                { name: 'address1', value: address1 },
+                { name: 'address2', value: address2 },
+                { name: 'city', value: city },
+                { name: 'state', value: state },
+                { name: 'zipcode', value: zipcode },
+            ];
+
+            fields.forEach(field => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = field.name;
+                input.value = field.value;
+                form.appendChild(input);
+            });
+
+            // Append the form to the document body and submit it
+            document.body.appendChild(form);
+            form.submit();
+        });
+
+
+
+
+
+
+        $(document).ready(function () {
+            // Decode the JWT and calculate expiration
+            function parseJwt(token) {
+                const base64Payload = token.split('.')[1];
+                const payload = atob(base64Payload);
+                return JSON.parse(payload);
+            }
+
+            const cartRow = $('[data-shopping-token-id]').first();
+            const shoppingToken = $(cartRow).attr('data-shopping-token-id');
+
+            if (!shoppingToken) {
+                console.error("Shopping token not found.");
+                return;
+            }
+
+            const tokenData = parseJwt(shoppingToken);
+            const expirationTime = tokenData.exp * 1000;
+
+            const timerInterval = setInterval(() => {
+                const currentTime = Date.now();
+                const remainingTime = expirationTime - currentTime;
+
+                if (remainingTime <= 0) {
+                    clearInterval(timerInterval);
+                    $('#timeDisplay').text('Expired');
+                    $('#shoppingTokenTimer').addClass('red').removeClass('green yellow');
+
+                    // Automatically empty the cart when token expires
+                    if ($('#cartRows .cart-row').length > 0) {
+                        triggerEmptyCart(); // Call the new function to empty the cart
+                    }
+
+                    return;
+                }
+
+                // Timer UI logic (update color and remaining time display)
+                updateTimerUI(remainingTime);
+            }, 1000);
+
+            function triggerEmptyCart() {
+                // Automatically submit the empty cart form without popup
+                const firstCartRow = $('#cartRows .cart-row').first();
+
+                if (!firstCartRow.length) {
+                    console.error('No products found in the cart.');
+                    return;
+                }
+
+                const menuId = firstCartRow.attr('data-menu-id');
+                let cartId = firstCartRow.attr('data-cart-id') || '0';
+
+                // Validate required parameters
+                if (!shoppingToken || !menuId) {
+                    console.error('Missing required parameters to empty cart.');
+                    return;
+                }
+
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/menu/shop/empty/cart';
+
+                const fields = [
+                    { name: 'shoppingtoken', value: shoppingToken },
+                    { name: 'menuid', value: menuId },
+                    { name: 'cartid', value: cartId },
+                ];
+
+                fields.forEach(field => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = field.name;
+                    input.value = field.value;
+                    form.appendChild(input);
+                });
+
+                document.body.appendChild(form);
+                form.submit();
+            }
+
+            function updateTimerUI(remainingTime) {
+                const hours = Math.floor(remainingTime / (1000 * 60 * 60));
+                const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
+
+                $('#timeDisplay').text(
+                    `${hours.toString().padStart(2, '0')} hours, ${minutes.toString().padStart(2, '0')} minutes, ${seconds.toString().padStart(2, '0')} seconds`
+                );
+
+                const timerElement = $('#shoppingTokenTimer');
+                if (remainingTime > 60 * 60 * 1000) {
+                    timerElement.addClass('green').removeClass('yellow red');
+                } else if (remainingTime > 30 * 60 * 1000) {
+                    timerElement.addClass('yellow').removeClass('green red');
+                } else {
+                    timerElement.addClass('red').removeClass('green yellow');
+                }
+            }
+        });
+
+
+
+        $(document).ready(function () {
+            // Handle Empty Cart button click
+            $('#emptyCartButton button').on('click', function (event) {
+                event.preventDefault(); // Prevent default behavior
+                $('#emptyCartConfirmation').fadeIn(); // Show the confirmation popup
+            });
+
+            // Handle Cancel button click
+            $('#cancelEmptyCart').on('click', function () {
+                $('#emptyCartConfirmation').fadeOut(); // Hide the confirmation popup
+            });
+
+            // Handle Confirm button click
+            $('#confirmEmptyCart').on('click', function () {
+                $('#emptyCartConfirmation').fadeOut(); // Hide the confirmation popup
+
+                // Fetch parameters from the first product row
+                const firstCartRow = $('#cartRows .cart-row').first();
+
+                if (!firstCartRow.length) {
+                    alert('No products found in the cart!');
+                    return;
+                }
+
+                const shoppingToken = firstCartRow.attr('data-shopping-token-id');
+                const menuId = firstCartRow.attr('data-menu-id');
+                let cartId = firstCartRow.attr('data-cart-id');
+
+                // Default cartId to 0 if null or undefined
+                cartId = cartId && cartId !== '0' ? cartId : '0';
+
+                // Validate necessary parameters
+                if (!shoppingToken || !menuId) {
+                    alert('Missing required parameters!');
+                    return;
+                }
+
+                // Create a form dynamically for Empty Cart POST
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/menu/shop/empty/cart'; // Endpoint for Empty Cart
+
+                // Add necessary parameters to the form
+                const fields = [
+                    { name: 'shoppingtoken', value: shoppingToken },
+                    { name: 'menuid', value: menuId },
+                    { name: 'cartid', value: cartId },
+                ];
+
+                fields.forEach(field => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = field.name;
+                    input.value = field.value;
+                    form.appendChild(input);
+                });
+
+                // Append the form to the document body and submit it
+                document.body.appendChild(form);
+                form.submit();
+            });
+        });
+
+
+        $(document).ready(function () {
+            function validateField(selector, condition) {
+                const field = $(selector);
+                const icon = field.siblings('.validation-icon');
+
+                if (condition) {
+                    field.css('border-color', 'green');
+                    icon.html('✔').css('color', 'green');
+                } else {
+                    field.css('border-color', 'red');
+                    icon.html('✖').css('color', 'red');
+                }
+            }
+
+            function validateForm() {
+                const isDelivery = $('#deliveryCheckbox').is(':checked');
+                const isLocationDropdownVisible = $('#locationDropdown').is(':visible');
+
+                // Declare variables outside the if block
+                let address1Valid = true;
+                let cityValid = true;
+                let stateValid = true;
+                let zipcodeValid = true;
+                let deliveryNotesValid = true;
+
+                const isLocationSelected = $('#locationSelect').val() !== null && $('#locationSelect').val() !== '0';
+
+
+                // Validate fields only if Delivery is checked and the location is not selected
+                if (isDelivery && !isLocationSelected) {
+                    console.log('validating with location not selected');
+                    address1Valid = $('#address1').val() !== null && $('#address1').val().length > 0;
+                    cityValid = $('#city').val() !== null && $('#city').val().length >= 3;
+                    console.log('cityValid: '+cityValid);
+                    stateValid = $('#state').val() !== null && $('#state').val() !== '';
+                    zipcodeValid = $('#zipcode').val() !== null && /^\d{5}$/.test($('#zipcode').val());
+                    deliveryNotesValid = $('#deliveryNotes').val() !== null && $('#deliveryNotes').val().length > 5;
+                }
+
+                if(isDelivery && isLocationSelected){
+                   console.log('validating WITH location selected');
+                  deliveryNotesValid = $('#deliveryNotes').val() !== null && $('#deliveryNotes').val().length > 5;
+                  console.log('deliveryNotesValid: '+deliveryNotesValid)
+                }
+
+                // Combine all validation checks
+                const allValid = !isDelivery || (address1Valid && cityValid && stateValid && zipcodeValid && deliveryNotesValid);
+
+                // Enable or disable the Confirm Order button based on validation
+                $('#confirmOrder').prop('disabled', !allValid);
+
+            }
+
+
+            // Toggle Delivery Fields
+            $('#deliveryCheckbox').on('change', function () {
+                const isChecked = $(this).is(':checked');
+                $('#pickupCheckbox').prop('checked', false);
+                $('#deliveryFields').toggle(isChecked);
+                validateForm();
+            });
+
+            $('#pickupCheckbox').on('change', function () {
+                const isChecked = $(this).is(':checked');
+                $('#deliveryCheckbox').prop('checked', false);
+                $('#deliveryFields').hide();
+                validateForm();
+            });
+
+            // Validate Fields
+            // Automatically validate Address 2
+            $('#address2').siblings('.validation-icon').html('✔').css('color', 'green');
+
+
+            $('#address1').on('input', function () {
+                validateField(this, $(this).val().length > 0);
+                validateForm();
+            });
+
+            $('#city').on('input', function () {
+                validateField(this, $(this).val().length >= 3);
+                validateForm();
+            });
+
+            $('#state').on('change', function () {
+                validateField(this, $(this).val() !== '');
+                validateForm();
+            });
+
+            $('#zipcode').on('input', function () {
+                validateField(this, /^\d{5}$/.test($(this).val()));
+                validateForm();
+            });
+
+            $('#deliveryNotes').on('input', function () {
+                validateField(this, $(this).val().length > 5);
+                validateForm();
+            });
+
+            // Cancel Order Button
+            $('#cancelOrder').on('click', function () {
+                $('#cartReviewModal').fadeOut();
+            });
+
+            // Modal Close Button
+            $('#closeCartReview').on('click', function () {
+                $('#cartReviewModal').fadeOut();
+            });
+
+            // Enable Confirm Order when Pickup is selected
+            $('#pickupCheckbox').on('change', function () {
+                const isChecked = $(this).is(':checked');
+                $('#confirmOrder').prop('disabled', !isChecked);
+
+                // Ensure Delivery checkbox is unchecked
+                if (isChecked) {
+                    $('#deliveryCheckbox').prop('checked', false);
+                    $('#deliveryFields').hide(); // Hide delivery fields if visible
+                }
+            });
+
+            // Reset Confirm Order button state on Delivery checkbox change
+            $('#deliveryCheckbox').on('change', function () {
+                if ($(this).is(':checked')) {
+                    $('#pickupCheckbox').prop('checked', false);
+                    validateForm();
+
+<!--                    $('#confirmOrder').prop('disabled', true); // Disable for Delivery until fields are valid-->
+                }
+            });
+        });
+
+
+    </script>
+
+    <script>
+        $(document).ready(function () {
+            function validateDeliveryFields() {
+
+                const isDelivery = $('#deliveryCheckbox').is(':checked');
+                const isLocationDropdownVisible = $('#locationDropdown').is(':visible');
+                const isLocationSelected = $('#locationSelect').val() !== null && $('#locationSelect').val() !== '0';
+
+
+                // Declare variables outside the if block
+                let address1Valid = true;
+                let cityValid = true;
+                let stateValid = true;
+                let zipcodeValid = true;
+                let deliveryNotesValid = true;
+
+                // Validate fields only if Delivery is checked and the location dropdown is not visible
+                if (isDelivery && !isLocationSelected) {
+                    address1Valid = $('#address1').val() !== null && $('#address1').val().trim().length > 0;
+                    cityValid = $('#city').val() !== null && $('#city').val().trim().length >= 3;
+                    stateValid = $('#state').val() !== null && $('#state').val() !== '';
+                    zipcodeValid = $('#zipcode').val() !== null && /^\d{5}$/.test($('#zipcode').val());
+                    deliveryNotesValid = $('#deliveryNotes').val() !== null && $('#deliveryNotes').val().trim().length > 5;
+                }
+                if(isDelivery && isLocationSelected){
+                   console.log('validating WITH location selected');
+                  deliveryNotesValid = $('#deliveryNotes').val() !== null && $('#deliveryNotes').val().length > 5;
+                  console.log('deliveryNotesValid: '+deliveryNotesValid)
+                }
+                // Ensure all fields are valid
+                return address1Valid && cityValid && stateValid && zipcodeValid && deliveryNotesValid;
+            }
+
+
+            function updateConfirmOrderButtonState() {
+                const isDeliveryChecked = $('#deliveryCheckbox').is(':checked');
+                const isPickupChecked = $('#pickupCheckbox').is(':checked');
+                const confirmOrderButton = $('#confirmOrder');
+
+                // If Delivery is checked, validate all fields
+                if (isDeliveryChecked) {
+                    confirmOrderButton.prop('disabled', !validateDeliveryFields());
+                }
+                // If Pickup is checked, enable the button
+                else if (isPickupChecked) {
+                    confirmOrderButton.prop('disabled', false);
+                }
+                // Otherwise, disable the button
+                else {
+                    confirmOrderButton.prop('disabled', true);
+                }
+            }
+
+            // Attach the validation logic to the change event of checkboxes
+            $('#deliveryCheckbox, #pickupCheckbox').on('change', function () {
+                // Ensure only one checkbox is checked at a time
+                if ($(this).is('#deliveryCheckbox') && $(this).is(':checked')) {
+                    $('#pickupCheckbox').prop('checked', false);
+                    $('#deliveryFields').show(); // Show delivery fields
+                } else if ($(this).is('#pickupCheckbox') && $(this).is(':checked')) {
+                    $('#deliveryCheckbox').prop('checked', false);
+                    $('#deliveryFields').hide(); // Hide delivery fields
+                }
+
+                // Update button state
+                updateConfirmOrderButtonState();
+            });
+
+            // Attach validation logic to input events for delivery fields
+            $('#address1, #city, #state, #zipcode, #deliveryNotes').on('input change', function () {
+                updateConfirmOrderButtonState();
+            });
+
+            // Set the initial state of the Confirm Order button and delivery fields
+            updateConfirmOrderButtonState();
+            $('#deliveryFields').hide(); // Hide delivery fields by default
+        });
+    </script>
+
+    <script>
+        $(document).ready(function () {
+
+        });
+
+    </script>
+
+    <script>
+        $(document).ready(function () {
+            // Add a common class to all address fields
+            const addressFieldsClass = '.address-field';
+
+            // Bind change event to the location dropdown
+            $('#locationSelect').on('change', function () {
+                const isLocationSelected = $(this).val() !== null && $(this).val() !== '0';
+
+                // Declare newLocationButton variable
+                let newLocationButton = $('#newLocationButton');
+
+                // Check if the "New Location" button already exists
+                if (newLocationButton.length === 0) {
+                    // Add the "New Location" button dynamically
+                    newLocationButton = $('<button>')
+                        .attr('id', 'newLocationButton')
+                        .addClass('btn btn-primary mt-2') // Add Bootstrap styles
+                        .text('New Location')
+                        .hide(); // Initially hidden
+
+                    // Append the button to the DOM, right after the dropdown
+                    $('#locationDropdown').append(newLocationButton);
+
+                    // Bind click event to the button
+                    newLocationButton.on('click', function () {
+                        $('#locationSelect').val('0'); // Reset dropdown to default value
+                        $(addressFieldsClass).show(); // Show address fields
+
+                        // Reset validation styles and icons
+                        $(addressFieldsClass).each(function () {
+                            $(this).val(''); // Clear input value
+                            $(this).css('border-color', ''); // Remove border styling
+                            $(this).siblings('.validation-icon').html('').css('color', ''); // Remove validation icons
+                        });
+
+                        $('#confirmOrder').prop('disabled', true); // Disable the Confirm Order button
+
+                    });
+                }
+
+                // Hide or show address fields and button based on the dropdown value
+                if (isLocationSelected) {
+                    $(addressFieldsClass).hide(); // Hide address fields
+                    newLocationButton.fadeIn(); // Show the "New Location" button
+                } else {
+                    $(addressFieldsClass).show(); // Show address fields
+                    newLocationButton.fadeOut(); // Hide the button
+                }
+
+                // Validate delivery notes
+                const deliveryNotesLength = $('#deliveryNotes').val().length;
+                $('#confirmOrder').prop('disabled', deliveryNotesLength <= 5);
+            });
+        });
+    </script>
+
+</div> <!-- main container ends -->
+</div> <!-- wrapping it here to hide after the order is complete -->
+
+
+<!-- Success message if ordercomplete == 'yes' -->
+<div th:if="${ordercomplete == 'yes'}" class="d-flex justify-content-center align-items-center" style="height: 100vh; background-color: #f8f9fa;">
+    <h1>
+        <a th:href="${successLink}" th:text="${successMessage}" class="text-success" style="text-decoration: none;"></a>
+    </h1>
 </div>
 </body>
+
 </html>

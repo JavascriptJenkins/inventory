@@ -1,6 +1,7 @@
 package com.techvvs.inventory.barcode.impl
 
 import com.techvvs.inventory.barcode.service.BarcodeService
+import com.techvvs.inventory.jparepo.ProductRepo
 import com.techvvs.inventory.model.ProductVO
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -11,6 +12,9 @@ class BarcodeHelper {
 
     @Autowired
     BarcodeService barcodeService
+
+    @Autowired
+    ProductRepo productRepo
 
     static <T> List<Set<T>> removeItemsInChunksOf50(LinkedHashSet<T> originalSet) {
         List<Set<T>> chunks = new ArrayList<>();
@@ -82,6 +86,29 @@ class BarcodeHelper {
 
         return barcodeData;
     }
+
+    // todo: add a check here to make sure barcodes are unique before adding....
+    void addBarcodeToProduct(ProductVO productVO, String barcodedata){
+
+        Optional<ProductVO> existingproduct = productRepo.findById(productVO.getProduct_id())
+
+        // if we have an existing barcode do NOT overwrite it.
+        if(existingproduct.get().barcode != null && existingproduct.get().barcode.length() > 0){
+            // do nothing
+        } else {
+
+            // probably don't need to do this....
+            if(barcodedata.length() == 11){
+                barcodedata = barcodedata.padLeft(12,'0')
+            }
+
+            productVO.setBarcode(barcodedata)
+            productRepo.save(productVO)
+        }
+
+    }
+
+
 
     Random random = new Random()
 

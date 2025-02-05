@@ -1,16 +1,47 @@
 package com.techvvs.inventory.viewcontroller.helper
 
+import com.techvvs.inventory.barcode.service.BarcodeService
+import com.techvvs.inventory.constants.AppConstants
+import com.techvvs.inventory.jparepo.CartRepo
+import com.techvvs.inventory.jparepo.CustomerRepo
+import com.techvvs.inventory.jparepo.DiscountRepo
 import com.techvvs.inventory.jparepo.MenuRepo
+import com.techvvs.inventory.jparepo.ProductRepo
+import com.techvvs.inventory.jparepo.ProductTypeRepo
+import com.techvvs.inventory.jparepo.SystemUserRepo
 import com.techvvs.inventory.model.CartVO
+import com.techvvs.inventory.model.CustomerVO
+import com.techvvs.inventory.model.DiscountVO
+import com.techvvs.inventory.model.LocationVO
 import com.techvvs.inventory.model.MenuVO
+import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.ProductVO
+import com.techvvs.inventory.model.SystemUserDAO
+import com.techvvs.inventory.model.TransactionVO
+import com.techvvs.inventory.security.JwtTokenProvider
+import com.techvvs.inventory.security.Role
+import com.techvvs.inventory.service.controllers.CustomerService
+import com.techvvs.inventory.service.controllers.ProductService
+import com.techvvs.inventory.service.controllers.TransactionService
 import com.techvvs.inventory.service.transactional.CartDeleteService
+import com.techvvs.inventory.util.TwilioTextUtil
+import io.jsonwebtoken.Claims
+import io.jsonwebtoken.Jwt
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.core.env.Environment
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
+import org.springframework.security.core.Authentication
+import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.core.parameters.P
 import org.springframework.stereotype.Component
 import org.springframework.ui.Model
+
+import javax.persistence.EntityNotFoundException
+import javax.transaction.Transactional
+import java.time.LocalDateTime
 
 @Component
 class MenuHelper {
@@ -19,7 +50,248 @@ class MenuHelper {
     MenuRepo menuRepo
 
     @Autowired
+    ProductTypeRepo productTypeRepo
+
+    @Autowired
     CartDeleteService cartDeleteService
+
+    @Autowired
+    Environment environment
+
+    @Autowired
+    AppConstants appConstants
+
+    @Autowired
+    BarcodeService barcodeService
+
+    @Autowired
+    DiscountRepo discountRepo
+
+    @Autowired
+    JwtTokenProvider jwtTokenProvider
+
+    @Autowired
+    CustomerRepo customerRepo
+
+    @Autowired
+    CustomerService customerService
+
+    @Autowired
+    TwilioTextUtil twilioTextUtil
+
+    @Autowired
+    CheckoutHelper checkoutHelper
+
+    @Autowired
+    ProductService productService
+
+    @Autowired
+    CartRepo cartRepo
+
+    @Autowired
+    ProductRepo productRepo
+
+    @Autowired
+    TransactionService transactionService
+
+    @Autowired
+    SystemUserRepo systemUserRepo
+
+    @Transactional
+    MenuVO changePrice(
+            double newpriceadjustment,
+            int existingmenuid,
+            Model model,
+            int producttypeid
+    ) {
+        try {
+            MenuVO existingmenu = menuRepo.findById(existingmenuid).orElseThrow({
+                new IllegalArgumentException("Menu not found")
+            })
+
+            boolean isamountvalid = checkIsAmountValid(newpriceadjustment, producttypeid, existingmenu.menu_product_list, model);
+
+            if (!isamountvalid) {
+                return new MenuVO(menuid: 0); // return early if discount will set the price all the way to 0.
+            }
+
+            ProductTypeVO productTypeVO = productTypeRepo.findById(producttypeid).orElseThrow({
+                new IllegalArgumentException("Product type not found")
+            })
+
+            DiscountVO updatedDiscountVO = null;
+
+            // Check for existing discount
+            for (DiscountVO discountVO : existingmenu.getDiscount_list()) {
+                if (discountVO.getProducttype().getProducttypeid() == productTypeVO.getProducttypeid()) {
+                    discountVO.setUpdateTimeStamp(LocalDateTime.now());
+                    discountVO.setDiscountamount(newpriceadjustment);
+                    updatedDiscountVO = discountRepo.save(discountVO);
+                    break;
+                }
+            }
+
+            // If no existing discount, create a new one
+            if (updatedDiscountVO == null) {
+                DiscountVO newDiscountVO = new DiscountVO();
+                newDiscountVO.setDiscountamount(newpriceadjustment);
+                newDiscountVO.setName(productTypeVO.getName());
+                newDiscountVO.setDescription("Menu Price Adjustment");
+                newDiscountVO.setProducttype(productTypeVO);
+                newDiscountVO.setMenu(existingmenu);
+                newDiscountVO.setIsactive(1);
+                newDiscountVO.setUpdateTimeStamp(LocalDateTime.now());
+                newDiscountVO.setCreateTimeStamp(LocalDateTime.now());
+
+                updatedDiscountVO = discountRepo.save(newDiscountVO);
+
+                // Synchronize both sides of the relationship
+                existingmenu.getDiscount_list().add(updatedDiscountVO);
+            }
+
+            existingmenu.setUpdateTimeStamp(LocalDateTime.now());
+            existingmenu = menuRepo.save(existingmenu); // Save the updated menu
+
+            model.addAttribute("successMessage", "Success: Updated menu: " + existingmenu.getName() + " | with price adjustment: " + newpriceadjustment + " | product type: " + productTypeVO.getName());
+
+            return existingmenu;
+
+        } catch (Exception e) {
+            System.out.println("Caught Exception: " + e.getMessage());
+            model.addAttribute("errorMessage", "Error: Problem creating new menu in changePrice.");
+            return new MenuVO(menuid: 0);
+        }
+    }
+
+
+    @Transactional
+    MenuVO createNewMenu(
+            double newpriceadjustment,
+            int existingmenuid,
+            String name,
+            Model model,
+            int producttypeid // create the initial menu with a discount on this product type
+
+    ){
+
+
+        try{
+            MenuVO existingmenu = menuRepo.findById(existingmenuid).get()
+
+
+            boolean isamountvalid = checkIsAmountValid(newpriceadjustment, producttypeid, existingmenu.menu_product_list, model)
+
+            if(!isamountvalid){
+                return new MenuVO(menuid: 0) // return early if discount will set the price all the way to 0.
+            }
+
+            // Create a new list by detaching the 'menu' ownership temporarily
+            List<ProductVO> expandedlist = new ArrayList<>()
+            Iterator<ProductVO> iterator = existingmenu.menu_product_list.iterator()
+
+            while (iterator.hasNext()) {
+                ProductVO product = iterator.next()
+                product.menu_list = null // Temporarily detach from the old menu list
+                expandedlist.add(product)
+            }
+
+            // Create the new MenuVO and assign the expanded list
+            MenuVO newmenu = new MenuVO(
+                    name: name.replaceAll(" ", "_"),
+                    menu_product_list: expandedlist,
+                    isdefault: 0,
+                    discount_list: null,
+                    notes: "new menu created with price adjustment: " + newpriceadjustment,
+                    createTimeStamp: LocalDateTime.now(),
+                    updateTimeStamp: LocalDateTime.now()
+            )
+
+            // Save the new menu
+            newmenu = menuRepo.save(newmenu)
+            if(newmenu.discount_list == null){
+                newmenu.discount_list = new ArrayList<>()
+            }
+
+
+            /* Now, make a new discount entry in the discount table that is tied to the menu that was just created */
+            ProductTypeVO productTypeVO = productTypeRepo.findById(producttypeid).get()
+
+            DiscountVO discountVO = new DiscountVO(
+                    discountamount: newpriceadjustment,
+                    name: productTypeVO.name,
+                    description: "Menu Price Adjustment",
+                    producttype: productTypeVO,
+                    menu: newmenu,
+                    isactive: 1,
+                    updateTimeStamp: LocalDateTime.now(),
+                    createTimeStamp: LocalDateTime.now(),
+            )
+
+            discountVO = discountRepo.save(discountVO)
+
+            newmenu.discount_list.add(discountVO)
+
+            newmenu.updateTimeStamp = LocalDateTime.now()
+            newmenu = menuRepo.save(newmenu)
+
+
+            model.addAttribute("successMessage", "Success: Created new menu with price adjustment: " + newpriceadjustment)
+
+            return newmenu
+
+        } catch (Exception e){
+            System.out.println("Caught Exception: "+e.getMessage())
+            model.addAttribute("errorMessage", "Error: Problem creating new menu in createNewMenu. ")
+            return new MenuVO(menuid: 0)
+        }
+
+
+
+    }
+
+    @Transactional
+    TransactionVO checkForExistingDiscountOfSameProducttype(
+            TransactionVO transactionVO,
+            String transactionid,
+            Integer producttypeid
+    ) {
+        List<DiscountVO> discountsCopy = new ArrayList<>(transactionVO.getDiscount_list());
+
+        for (DiscountVO existingOldDiscount : discountsCopy) {
+            if (existingOldDiscount.getProducttype().getProducttypeid().equals(producttypeid)
+                    && existingOldDiscount.getIsactive() == 1) {
+
+                // Deactivate the matching discount
+                existingOldDiscount.setIsactive(0);
+                existingOldDiscount.setUpdateTimeStamp(LocalDateTime.now());
+                discountRepo.save(existingOldDiscount);
+
+                // Re-fetch the transaction to ensure the latest state is loaded
+                transactionVO = transactionRepo.findById(Integer.valueOf(transactionid)).orElseThrow({ new EntityNotFoundException("Transaction not found: " + transactionid) });
+
+                // Recalculate totals by crediting back the removed discount
+                transactionVO = removeDiscountFromTransactionReCalcTotals(transactionVO, existingOldDiscount, transactionVO.originalprice, transactionVO.total);
+            }
+        }
+
+        return transactionVO;
+    }
+
+
+    boolean checkIsAmountValid(double newpriceadjustment, int producttypeid, List<ProductVO> productVOS, Model model){
+        for(ProductVO productVO : productVOS){
+            // when we find a match check the price to make sure we don't set it below 0
+            if(productVO.producttypeid.producttypeid == producttypeid){
+                double priceafterdiscount = Math.max(0.00, productVO.price - newpriceadjustment)
+                if(priceafterdiscount == Double.valueOf(0.00)){
+                    model.addAttribute("errorMessage", "Price after discount on: "+productVO.name+" must be greater than 0")
+                    return false
+                }
+            }
+        }
+        return true
+
+    }
 
 
     void findMenus(Model model, Optional<Integer> page, Optional<Integer> size){
@@ -31,9 +303,9 @@ class MenuHelper {
         int pageSize = 5;
         Pageable pageable;
         if(currentPage == 0){
-            pageable = PageRequest.of(0 , pageSize);
+            pageable = PageRequest.of(0 , pageSize, Sort.by(Sort.Direction.DESC, "menuid"));
         } else {
-            pageable = PageRequest.of(currentPage - 1, pageSize);
+            pageable = PageRequest.of(currentPage - 1, pageSize, Sort.by(Sort.Direction.DESC, "menuid"));
         }
 
         Page<MenuVO> pageOfMenu = menuRepo.findAll(pageable);
@@ -52,6 +324,7 @@ class MenuHelper {
         model.addAttribute("page", currentPage);
         model.addAttribute("size", pageOfMenu.getTotalPages());
         model.addAttribute("menuPage", pageOfMenu);
+        model.addAttribute("menuPage2", pageOfMenu);// need 2 menuPages so thymeleaf can page it twice with :each
         // END PAGINATION
 
 
@@ -89,6 +362,7 @@ class MenuHelper {
 
     }
 
+    // todo: this needs to fill a transient field that holds the path to an image?
     MenuVO loadMenu(String menuid, Model model){
 
         MenuVO menuVO = new MenuVO()
@@ -107,14 +381,83 @@ class MenuHelper {
             menuVO = hydrateTransientQuantitiesForDisplay(menuVO)
 
             List<ProductVO> uniqueproducts = ProductVO.getUniqueProducts(menuVO.menu_product_list)
+            // cycle through every unique product and build the uri for the primary photo
+            for(ProductVO productVO : uniqueproducts){
+                productVO.setPrimaryphoto(appConstants.UPLOAD_DIR_IMAGES+productVO.product_id)
+                productVO.setVideodir(appConstants.UPLOAD_DIR_IMAGES+productVO.product_id)
+            }
+
 
             menuVO.menu_product_list = uniqueproducts
+
+            ProductVO.sortProductsByPrice(menuVO.menu_product_list)
 
             model.addAttribute("menu", menuVO)
             return menuVO
         }
     }
 
+
+    boolean validateShoppingToken(String menuid, String token, Model model){
+        // check to see if token is valid
+        if(!jwtTokenProvider.validateShoppingToken(token, menuid)){
+            model.addAttribute("errorMessage", "Invalid shopping token")
+            return false
+        }
+        return true
+    }
+
+    // todo: this needs to fill a transient field that holds the path to an image?
+    MenuVO loadMenuWithToken(String menuid, Model model, String token){
+
+        if(!validateShoppingToken(menuid, token, model)){
+            return null // should do something other than this but whatever
+        }
+
+        // if token was validated, then we can load the menu
+
+        MenuVO menuVO = new MenuVO()
+        // if cartid == 0 then load normally, otherwise load the existing transaction
+        if(menuid == "0"){
+            // do nothing
+            // if it is the first time loading the page
+            if(menuVO.menu_product_list == null){
+                // menuVO.setTotal(0) // set total to 0 initially
+            }
+            model.addAttribute("menu", menuVO);
+            return menuVO
+
+        } else {
+            menuVO = getExistingMenu(menuid)
+            //menuVO = hydrateTransientQuantitiesForDisplay(menuVO)
+
+            List<ProductVO> uniqueproducts = ProductVO.getUniqueProducts(menuVO.menu_product_list)
+            // cycle through every unique product and build the uri for the primary photo
+            for(ProductVO productVO : uniqueproducts){
+                productVO.setPrimaryphoto(appConstants.UPLOAD_DIR_IMAGES+productVO.product_id)
+                productVO.setVideodir(appConstants.UPLOAD_DIR_IMAGES+productVO.product_id)
+                // apply discount to these products so price displays on ui correctly
+                checkoutHelper.applyDiscountByProductTypeForMenu(Optional.of(menuVO), productVO)
+            }
+
+
+
+            menuVO.menu_product_list = uniqueproducts
+
+            // now that we have the unique products, find all discounts with this menuid and apply them to prices
+            //List<DiscountVO> discountVOS = discountRepo.findAllByMenu(menuVO)
+            menuVO.setDisplayPrice() // this sets the displayprice on the products
+
+            ProductVO.sortProductsByDisplayPrice(menuVO.menu_product_list)
+
+//            menuVO.menu_product_list.each { item ->
+//                item.price = item.displayprice // set all prices to the displayprice
+//            }
+
+            model.addAttribute("menu", menuVO)
+            return menuVO
+        }
+    }
 
 
     CartVO validateCartVO(CartVO cartVO, Model model){
@@ -164,6 +507,410 @@ class MenuHelper {
 
         return cartVO
     }
-    
-    
+
+    void sendShoppingToken(
+
+                            String menuid,
+                           String customerid,
+                           String phonenumber,
+                           String tokenlength,
+                           Model model
+
+    ){
+
+        List<Role> roles = Arrays.asList(Role.ROLE_CLIENT, Role.ROLE_SHOPPING_TOKEN);
+
+        CustomerVO customerVO = customerRepo.findByCustomerid(Integer.valueOf(customerid)).get()
+
+        // save the token as the customer's active shopping token
+        customerVO = customerService.saveActiveShoppingToken(customerVO, roles, tokenlength, menuid, customerid)
+
+        boolean isDev1 = "dev1".equals(environment.getProperty("spring.profiles.active"));
+
+        BigInteger numberfromui = new BigInteger("1" + phonenumber);
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        SystemUserDAO systemUserDAO = systemUserRepo.findByEmail(authentication.getPrincipal().username)
+
+        if(systemUserDAO.phone.equals(String.valueOf(numberfromui))){
+            // if the phone number entered is the same as the logged in user, just send a single token out
+            twilioTextUtil.sendShoppingTokenLinkSMS(phonenumber,isDev1, menuid, customerVO.shoppingtoken)
+        } else {
+            // send a copy of the token to the system user logged in number and also to the customer phone number
+            twilioTextUtil.sendShoppingTokenLinkSMS(phonenumber,isDev1, menuid, customerVO.shoppingtoken)
+
+            twilioTextUtil.sendShoppingTokenLinkSMSWithCustomMessage(
+                    systemUserDAO.phone,isDev1, menuid, customerVO.shoppingtoken, "Menu for Customer: "+customerVO.name+"              ")
+        }
+
+
+        twilioTextUtil.sendShoppingTokenLinkSMS(phonenumber,isDev1, menuid, customerVO.shoppingtoken)
+
+        model.addAttribute("successMessage","Shopping token sent to :"+phonenumber+" valid for "+tokenlength+" hours.  ")
+    }
+
+    void sendEmployeeDeliveryViewToken(
+
+            String menuid,
+            String customerid,
+            String tokenlength,
+            int deliveryid,
+            Model model
+
+    ){
+
+        List<Role> roles = Arrays.asList(Role.ROLE_CLIENT, Role.ROLE_DELIVERY_EMPLOYEE_VIEW_TOKEN);
+
+        CustomerVO customerVO = customerRepo.findByCustomerid(Integer.valueOf(customerid)).get()
+
+        //generate a token
+        String token = jwtTokenProvider.createEmployeeDeliveryViewToken(customerVO.email, roles, Integer.valueOf(tokenlength), menuid, customerid, String.valueOf(deliveryid))
+
+        boolean isDev1 = "dev1".equals(environment.getProperty("spring.profiles.active"));
+
+        // pull the user who is currently logged in
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if(!authentication.getPrincipal().equals("anonymousUser")){
+            SystemUserDAO systemUserDAO = systemUserRepo.findByEmail(authentication.getPrincipal().username)
+
+            // send the employee delivery view token to the user who is currently logged in
+            twilioTextUtil.sendEmployeeDeliveryViewTokenLinkSMSWithCustomMessage(
+                    systemUserDAO.phone,isDev1, menuid, token, "Employee Delivery View Token for Customer: "+customerVO.name+" and Order #: "+deliveryid+ "              ")
+        } else{
+            System.out.println("Order came in, but we are not sending token to logged in user because the order came in from a sms token link. ")
+        }
+
+        //model.addAttribute("successMessage","Delivery token sent to :"+systemUserDAO.phone+" valid for "+tokenlength+" hours.  ")
+    }
+
+
+    @Transactional
+    int addProductToCart(
+            Integer cartid,
+            Integer menuid,
+            Integer productid,
+            Integer quantityselected,
+            Integer customerid,
+            Model model,
+            String token
+    ){
+
+        if(!validateShoppingToken(String.valueOf(menuid), token, model)){
+            return 0
+        }
+
+
+
+        CustomerVO customerVO = customerRepo.findById(customerid).get()
+        MenuVO menuVO = menuRepo.findById(menuid).get()
+
+        // check to see if we need to make a new cart or not
+        CartVO cartVO
+        if(cartid == null || cartid == 0){
+
+            List<CartVO> listcarts = cartRepo.findAllByMenuAndCustomer(menuVO,customerVO)
+            boolean found = false
+            for(CartVO cart : listcarts){
+                if(cart.isprocessed == 0){
+                    found = true
+                    cartVO = cart
+                    break
+                }
+            }
+
+            if(!found){
+                //create a new cart
+                cartVO = cartRepo.save(new CartVO(
+                        menu: menuVO,
+                        customer: customerVO,
+                        updateTimeStamp: LocalDateTime.now(),
+                        createTimeStamp: LocalDateTime.now(),
+                        isprocessed: 0
+                ))
+            }
+
+
+        } else {
+            // get the existing cart
+            cartVO = cartRepo.findById(cartid).get()
+        }
+
+
+        // now that we have correct cart loaded for the customer, we can add the product
+        cartVO = productService.addProductToCart(cartVO, quantityselected, model, String.valueOf(productid), String.valueOf(menuid))
+        return cartVO.cartid
+    }
+
+    @Transactional
+    int removeProductFromCart(
+            Integer cartid,
+            Integer menuid,
+            Integer productid,
+            Integer quantityselected,
+            Integer customerid,
+            Model model,
+            String token
+    ){
+
+        if(!validateShoppingToken(String.valueOf(menuid), token, model)){
+            return 0
+        }
+
+
+
+        CustomerVO customerVO = customerRepo.findById(customerid).get()
+        MenuVO menuVO = menuRepo.findById(menuid).get()
+
+        // check to see if we need to make a new cart or not
+        CartVO cartVO
+        if(cartid == null || cartid == 0){
+
+            Optional<CartVO> existingcart = cartRepo.findByMenuAndCustomer(menuVO,customerVO)
+
+            if(existingcart.empty){
+
+                return 0
+
+            } else {
+                // this should never execute - in here as a safety measure to make sure we never have more
+                // than a single cart per customerid and menuid combination
+                cartVO = cartRepo.findById(cartid).get()
+                deleteProductFromCart(cartVO, productid)
+            }
+
+        } else {
+            // get the existing cart
+            cartVO = cartRepo.findById(cartid).get()
+            // delete it from cart
+            cartVO = deleteProductFromCart(cartVO, productid)
+        }
+
+        return cartVO.cartid
+    }
+
+    @Transactional
+    CartVO deleteProductFromCart(CartVO cartVO, int product_id){
+
+        CartVO carttoremove = new CartVO(cartid: 0)
+        // we are only removing one product at a time
+        for(ProductVO productVO : cartVO.product_cart_list){
+            if(productVO.product_id == product_id){
+                cartVO.product_cart_list.remove(productVO)
+                cartVO.total = Math.max(0, cartVO.total - productVO.price) // subtract the price from the cart total
+
+                productVO.quantityremaining = productVO.quantityremaining + 1
+                // remove the cart association from the product
+                for(CartVO existingCart : productVO.cart_list){
+                    if(existingCart.cartid == cartVO.cartid){
+                        carttoremove = existingCart
+                    }
+                }
+                productVO.cart_list.remove(carttoremove)
+
+                productVO.updateTimeStamp = LocalDateTime.now()
+                productRepo.save(productVO)
+                break
+            }
+        }
+
+        cartVO.updateTimeStamp = LocalDateTime.now()
+        cartVO = cartRepo.save(cartVO)
+
+
+        return cartVO
+
+    }
+
+    @Transactional
+    CartVO emptyCart(CartVO cartVO) {
+
+        CartVO carttoremove = new CartVO(cartid: 0);
+
+        // Use an iterator to safely modify the list while iterating
+        Iterator<ProductVO> iterator = cartVO.product_cart_list.iterator();
+        while (iterator.hasNext()) {
+            ProductVO productVO = iterator.next();
+
+            // Remove the product from the cart
+            iterator.remove();
+            cartVO.total = Math.max(0, cartVO.total - productVO.price); // Subtract the price from the cart total
+
+            // Update the product quantity remaining
+            productVO.quantityremaining = productVO.quantityremaining + 1;
+
+            // Remove the cart association from the product
+            for (CartVO existingCart : productVO.cart_list) {
+                if (existingCart.cartid == cartVO.cartid) {
+                    carttoremove = existingCart;
+                }
+            }
+            productVO.cart_list.remove(carttoremove);
+
+            // Update timestamps and save product
+            productVO.updateTimeStamp = LocalDateTime.now();
+            productRepo.save(productVO);
+        }
+
+        // Update and save the cart
+        cartVO.updateTimeStamp = LocalDateTime.now();
+        cartVO = cartRepo.save(cartVO);
+
+        return cartVO;
+    }
+
+
+    void loadCart(int cartid, Model model){
+        if(cartid != 0){
+            CartVO cartVO = cartRepo.findById(cartid).get()
+            // sort the items in the cartVO
+            checkoutHelper.hydrateTransientQuantitiesForDisplay(cartVO)
+
+            model.addAttribute("cart", cartVO)
+            model.addAttribute("cartid", cartVO.cartid) // bind this for uri param
+        } else {
+            model.addAttribute("cart", new CartVO(cartid: 0))
+        }
+
+    }
+
+    void loadCartByCustomerIdAndMenuId(String shoppingtoken, Model model){
+        String customerid = jwtTokenProvider.getCustomerIdFromToken(shoppingtoken)
+        String menuid = jwtTokenProvider.getMenuIdFromToken(shoppingtoken)
+        CustomerVO customerVO = customerRepo.findByCustomerid(Integer.valueOf(customerid)).get()
+        MenuVO menuVO = menuRepo.findById(Integer.valueOf(menuid)).get()
+
+
+        // The System is assuming we will only ever have a single cart per menu and customer combination
+        List<CartVO> cartlist = cartRepo.findAllByMenuAndCustomer(menuVO, customerVO)
+
+        boolean cartidset = false
+        // we are assuming here we will only ever have a single cart per user that is not processed
+        for(CartVO cart : cartlist){
+            if(cart.isprocessed == 0){
+                // here we need to format the items inside the cart to consolidate them for proper display on ui
+                checkoutHelper.hydrateTransientQuantitiesForDisplay(cart)
+
+                model.addAttribute("cart", cart)
+                model.addAttribute("cartid", cart.cartid) // bind this for uri param
+                cartidset = true
+            } else{
+                if(!cartidset) {
+                    model.addAttribute("cartid", 0) // bind this for uri param
+                }
+            }
+        }
+
+    }
+
+
+    // we need to bind these because initially they come from the user navigating from a phone SMS message with them in the URI
+    void bindHiddenValues(Model model, String shoppingtoken, String menuid){
+
+        model.addAttribute("customer", customerRepo.findById(Integer.valueOf(jwtTokenProvider.getCustomerIdFromToken(shoppingtoken))).get())
+        model.addAttribute("shoppingtoken", shoppingtoken)
+        model.addAttribute("menuid", menuid)
+    }
+
+
+
+    @Transactional
+    boolean checkQuantity(Integer productid, Integer quantityselected, Model model) {
+        // Retrieve the product from the repository
+        Optional<ProductVO> productVO = productRepo.findById(productid);
+
+        // Check if the product exists
+        if (productVO.isPresent()) {
+            // Get the quantity remaining for the product
+            ProductVO product = productVO.get();
+
+            // Check if the quantity remaining is sufficient
+            if (product.quantityremaining >= quantityselected) {
+                return true; // Quantity is sufficient
+            } else {
+                // Add an error message for insufficient quantity
+                model.addAttribute("errorMessage", "Insufficient quantity available");
+                return false;
+            }
+        } else {
+            // Add an error message if the product does not exist
+            model.addAttribute("errorMessage", "Product does not exist");
+            return false;
+        }
+    }
+
+
+    @Transactional
+    int emptyWholeCart(
+            Integer cartid,
+            Integer menuid,
+            Model model,
+            String token
+    ){
+
+        // not validating here
+//        if(!validateShoppingToken(String.valueOf(menuid), token, model)){
+//            return 0
+//        }
+
+        // get the existing cart
+        CartVO cartVO = cartRepo.findById(cartid).get()
+        // delete it from cart
+        cartVO = emptyCart(cartVO)
+
+
+        return cartVO.cartid
+    }
+
+    @Transactional
+    CustomerVO emptyWholeCartForCustomer(
+            CustomerVO customerVO,
+            int menuid
+
+    ){
+
+        MenuVO menuVO = menuRepo.findById(menuid).get()
+
+        List<CartVO> listcarts = cartRepo.findAllByMenuAndCustomer(menuVO,customerVO)
+
+        listcarts.each { cart ->
+            if (cart.isprocessed == 0) {
+                cart = emptyCart(cart) // Modify the cart object
+                cart = emptyCart(cart) // Empty the products from the cart
+                cart.setIsprocessed(1) // Mark the cart as processed and save it
+                cartRepo.save(cart)
+            }
+        }
+
+        return customerVO
+    }
+
+
+
+    @Transactional
+    TransactionVO checkoutCart(
+            Integer cartid,
+            Integer menuid,
+            Integer locationid,
+            String  deliverynotes,
+            String token,
+            LocationVO locationVO,
+            String type,
+            Model model
+    ){
+        if(!validateShoppingToken(String.valueOf(menuid), token, model)){
+            return false
+        }
+
+        System.out.println("BUGFIX DEBUG: 3")
+        // get the existing cart
+        CartVO cartVO = cartRepo.findById(cartid).get()
+        System.out.println("BUGFIX DEBUG: 4")
+        // generate a new transaction
+        TransactionVO transactionVO = transactionService.processCartGenerateNewTransactionForDelivery(cartVO, locationid, deliverynotes, locationVO, type)
+
+        return transactionVO
+    }
+
+
+
 }

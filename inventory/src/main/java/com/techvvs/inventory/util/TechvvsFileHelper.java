@@ -124,6 +124,7 @@ public class TechvvsFileHelper {
 
                     fileVO.setCreateTimeStamp(creationDate);
                     fileVO.setFilename(file.getName());
+                    fileVO.setFilepath(file.getPath());
                     fileVO.setDirectory(file.getParent()); // .\topdir\2011253\barcodes\all
                     fileList.add(fileVO);
                 }
@@ -141,6 +142,24 @@ public class TechvvsFileHelper {
 
 
     public Page<FileVO> getPagedFilesByDirectory(String directoryPath, int page, int size) {
+
+        if(page != 0){
+            page = page - 1;
+        }
+
+        List<FileVO> fileList = getFilesByDirectory(directoryPath);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "createTimeStamp"));
+        // Apply sorting manually to the fileList
+        if (pageable.getSort().isSorted()) {
+            fileList.sort(Comparator.comparing(FileVO::getCreateTimeStamp)); // Sorting by createTimeStamp field
+        }
+        int start = Math.min((int) pageable.getOffset(), fileList.size());
+        int end = Math.min((start + pageable.getPageSize()), fileList.size());
+        List<FileVO> pagedFiles = fileList.subList(start, end);
+        return new PageImpl<>(pagedFiles, pageable, fileList.size());
+    }
+
+    public Page<FileVO> getPagedFilesByDirectoryForProductMediaUploads(String directoryPath, int page, int size) {
 
         if(page != 0){
             page = page - 1;

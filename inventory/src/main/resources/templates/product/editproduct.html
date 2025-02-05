@@ -151,6 +151,51 @@
             });
         });
     </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('uploadForm');
+            const originalAction = form.getAttribute('action');
+
+            // Select all checkboxes inside the form
+            const checkboxes = Array.from(document.querySelectorAll('#uploadForm .form-check-input'));
+
+            // Map of checkboxes to query parameters
+            const actionParams = {
+                isPrimaryCheckbox: 'primary=yes',
+                isVideoCheckbox: 'video=yes',
+                isDocumentCheckbox: 'document=yes',
+                isPhotoCheckbox: 'photo=yes'
+            };
+
+            // Update form action and ensure only one checkbox is selected
+            function updateFormAction(event) {
+                // Uncheck all other checkboxes
+                checkboxes.forEach(checkbox => {
+                    if (checkbox !== event.target) {
+                        checkbox.checked = false;
+                    }
+                });
+
+                // Determine the new action based on the selected checkbox
+                const checkedCheckbox = checkboxes.find(checkbox => checkbox.checked);
+                if (checkedCheckbox) {
+                    const param = actionParams[checkedCheckbox.id];
+                    form.setAttribute('action', `${originalAction}?${param}`);
+                } else {
+                    form.setAttribute('action', originalAction); // Reset to original action
+                }
+
+                console.log('Form action updated to:', form.getAttribute('action'));
+            }
+
+            // Attach event listeners to each checkbox
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', updateFormAction);
+            });
+        });
+    </script>
+
+
 </head>
 <body>
 
@@ -336,9 +381,20 @@
                 </div>
             </div>
 
+            <!-- NOTE: this is not nessesary on other pages.  this page is just coded like crap -->
+            <!-- pass all these hidden attributes so the data stays on page after uploading the file -->
+            <input type="hidden" th:field="*{product_id}">
             <input type="hidden" th:field="*{updateTimeStamp}">
             <input type="hidden" th:field="*{createTimeStamp}">
-            <input type="hidden" th:field="*{product_id}">
+            <input type="hidden" th:field="*{salePrice}">
+            <input type="hidden" th:field="*{vendor}">
+            <input type="hidden" th:field="*{vendorquantity}">
+            <input type="hidden" th:field="*{weight}">
+            <input type="hidden" th:field="*{marginPercent}">
+            <input type="hidden" th:field="*{laborCostPricePerUnit}">
+            <input type="hidden" th:field="*{crate}">
+            <input type="hidden" th:field="*{crateposition}">
+            <input type="hidden" th:field="*{bagcolor}">
 
             <button style="margin-top:5px;" type="submit" class="btn btn-primary">Submit Edit</button>
             <input type="hidden" th:field="*{batch}">
@@ -348,28 +404,42 @@
     <br>
     <br>
 
-    <!-- Show list of uploaded files -->
     <div th:if="${filePage != null}">
-        <div class="alert alert-primary" role="alert">Files Previously Uploaded</div>
-        <table class="table table-hover table-striped table-dark">
-            <thead>
-            <tr>
-                <th scope="col">File Name</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="file, iStat : ${filePage.content}"
-                th:style="${iStat.odd}? 'font-weight: bold;'"
-                th:alt-title="${iStat.even}? 'even' : 'odd'">
-                <td><span id="filenamespanid" th:text="${file.filename}" th:data-filename="${file.filename}"></span>
-                    <!-- todo: put a download button here that hits inappdownload -->
-<!--                    <div class="text-end">-->
-<!--                        -->
-<!--                    </div>-->
-                </td>
-            </tr>
-            </tbody>
-        </table>
+        <div th:if="${filePage.totalElements > 0}">
+            <div class="alert alert-primary" role="alert">Files Previously Uploaded</div>
+            <table class="table table-hover table-striped table-dark">
+                <thead>
+                <tr>
+                    <th scope="col">File Name</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="file : ${filePage.content}">
+                    <td>
+                        <span th:text="${file.filename}"></span>
+
+                        <!-- Display the primary photo only if the filename contains 'primary' and cap size at 300x300 -->
+                        <img
+                                th:if="${file.filename != null and file.filename.contains('primary')}"
+                                th:src="${product.primaryphoto}"
+                                class="card-img-top"
+                                alt="Product Image"
+                                style="max-width: 300px; max-height: 300px;">
+
+                        <!-- Correct the download link with the proper Thymeleaf syntax -->
+                        <a th:href="@{/download/{filename}(filename=${file.filename})}" class="btn btn-primary btn-sm disabled" aria-disabled="true">Download</a>
+                    </td>
+
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div th:if="${filePage.totalElements == 0}">
+            <div class="alert alert-warning" role="alert">No files uploaded yet.</div>
+        </div>
+    </div>
+
+
         <nav th:if="${filePage != null && filePage.totalPages > 0}">
             <ul class="pagination justify-content-center">
                 <li class="page-item" th:each="pageNumber : ${pageNumbers}">
@@ -384,11 +454,32 @@
 
     </div>
 
-    <div style="margin-bottom: 5px;" class="mx-auto">
+    <div style="margin-bottom: 5px;" class="container mt-4 ">
         <div class="alert alert-info" role="alert">Upload a file
             <!-- pass the product object to the upload file controller to get the correct ID to save it under -->
-            <form method="post" th:object="${product}" th:action="@{/file/media/upload}" enctype="multipart/form-data">
+            <form id="uploadForm" method="post" th:object="${product}" th:action="@{/file/media/upload}" enctype="multipart/form-data">
                 <div class="form-group">
+
+                    <div class="d-flex flex-wrap justify-content-start align-items-center gap-3">
+                        <div class="form-check">
+                            <input type="checkbox" id="isPrimaryCheckbox" class="form-check-input">
+                            <label for="isPrimaryCheckbox" class="form-check-label">Set as Primary (.jpg only)</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" id="isVideoCheckbox" class="form-check-input">
+                            <label for="isVideoCheckbox" class="form-check-label">Video File (.mp4/.mov only)</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" id="isDocumentCheckbox" class="form-check-input">
+                            <label for="isDocumentCheckbox" class="form-check-label">Document File (.pdf only)</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" id="isPhotoCheckbox" class="form-check-input">
+                            <label for="isPhotoCheckbox" class="form-check-label">Photo File (.jpg only)</label>
+                        </div>
+                    </div>
+
+
                     <div th:if="${disableupload}">
                         <input type="file" disabled="disabled" name="file" class="form-control-file">
                     </div>
@@ -405,7 +496,6 @@
                     <input type="hidden" th:field="*{description}">
                     <input type="hidden" th:field="*{quantity}">
                     <input type="hidden" th:field="*{price}">
-                    <input type="hidden" th:field="*{description}">
                     <input type="hidden" th:field="*{notes}">
                     <input type="hidden" th:field="*{updateTimeStamp}">
                     <input type="hidden" th:field="*{createTimeStamp}">

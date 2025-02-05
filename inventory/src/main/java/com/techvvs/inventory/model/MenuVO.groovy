@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 
 import javax.persistence.CascadeType
+import javax.persistence.ElementCollection
 import javax.persistence.Entity
 import javax.persistence.FetchType
 import javax.persistence.GeneratedValue
@@ -37,7 +38,11 @@ class MenuVO implements Serializable {
             joinColumns = @JoinColumn(name = "menuid"),
             inverseJoinColumns = @JoinColumn(name = "productid")
     )
-    List<ProductVO> menu_product_list
+    List<ProductVO> menu_product_list = new ArrayList<>()
+
+    @JsonProperty
+    @ElementCollection(fetch = FetchType.LAZY)
+    List<DiscountVO> discount_list = new ArrayList<DiscountVO>()
 
     @JsonProperty
     Integer isdefault;
@@ -59,6 +64,20 @@ class MenuVO implements Serializable {
 
     @JsonProperty
     LocalDateTime createTimeStamp;
+
+    /**
+     * Apply discounts to the products in the menu_product_list.
+     * @param discountVOs A list of DiscountVO objects to apply.
+     */
+    void setDisplayPrice() {
+        menu_product_list.each { product ->
+            if(product.displayprice != null && product.displayprice != product.price){
+                // do nothing
+            } else {
+                product.displayprice = product.price // if there is no discount applied, set display price to normal price
+            }
+        }
+    }
 
 
 

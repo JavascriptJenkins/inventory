@@ -8,6 +8,8 @@ import com.techvvs.inventory.jparepo.TransactionRepo
 import com.techvvs.inventory.model.BatchVO
 import com.techvvs.inventory.model.CartVO
 import com.techvvs.inventory.model.CustomerVO
+import com.techvvs.inventory.model.DiscountVO
+import com.techvvs.inventory.model.MenuVO
 import com.techvvs.inventory.model.PackageVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.TransactionVO
@@ -134,6 +136,12 @@ class CheckoutHelper {
 
             cartVO.originalprice += productincart.price // hydrate the originalprice before any discounts
 
+            // apply discount on by product_type to the total
+            applyDiscountByProductTypeForCart(Optional.of(cartVO), productincart)
+
+            // in the future, we can apply a per product discount here
+
+
             productMap.put(productincart.getProduct_id(), productincart)
         }
         cartVO.product_cart_list = new ArrayList<>(productMap.values());
@@ -142,6 +150,32 @@ class CheckoutHelper {
         }
         return cartVO
 
+    }
+
+    // NOTE: this using optional to process discounts is sweet.  Use this pattern again.
+    void applyDiscountByProductTypeForCart(Optional<CartVO> cartVO,ProductVO productVO) {
+        // need to check for product.menu, if it exists, cycle thru the discount list on menu and apply it to the total
+        if (cartVO.present){
+            for(DiscountVO discountVO : cartVO.get().menu.discount_list) {
+                if (productVO.getProducttypeid().producttypeid == discountVO.producttype.producttypeid) {
+                    cartVO.get().total = Math.max(0,cartVO.get().total - discountVO.discountamount)
+                    // this will subtract the discount amount for every product in the cart
+                }
+            }
+        }
+    }
+
+    // NOTE: this using optional to process discounts is sweet.  Use this pattern again.
+    void applyDiscountByProductTypeForMenu(Optional<MenuVO> menuVO, ProductVO productVO) {
+        // discount the individual product in the menu so the price displays to the user correctly
+        if (menuVO.present){
+            for(DiscountVO discountVO : menuVO.get().discount_list) {
+                if (productVO.getProducttypeid().producttypeid == discountVO.producttype.producttypeid) {
+                    //productVO.price = Math.max(0,productVO.price - discountVO.discountamount)
+                    productVO.displayprice = Math.max(0,productVO.price - discountVO.discountamount)
+                }
+            }
+        }
     }
 
 

@@ -42,7 +42,7 @@ class BatchVO implements Serializable {
 
     @JsonProperty
     @ElementCollection(fetch = FetchType.EAGER)
-    Set<MenuVO> menu_set
+    Set<MenuVO> menu_set = new HashSet<>()
 
     @JsonProperty
     @OneToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)

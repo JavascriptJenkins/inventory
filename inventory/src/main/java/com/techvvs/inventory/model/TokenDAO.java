@@ -14,7 +14,7 @@ public class TokenDAO {
     @Column(name="id")
     Integer id;
 
-    @Column(name="token")
+    @Column(name="token", length = 1024)
     String token;
 
     @Column(name="usermetadata")

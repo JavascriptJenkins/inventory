@@ -11,6 +11,11 @@ class AppConstants {
 
     public String UPLOAD_DIR_MEDIA = "./uploads/media/";
     public String UPLOAD_DIR_PRODUCT = "/product/";
+    public String UPLOAD_DIR_PRODUCT_PRIMARY = "/primaryphoto/";
+    public String UPLOAD_DIR_PRODUCT_VIDEOS = "/videos/";
+    public String UPLOAD_DIR_PRODUCT_DOCUMENTS = "/documents/";
+    public String UPLOAD_DIR_PRODUCT_PHOTOS = "/photos/";
+    public String UPLOAD_DIR_IMAGES = "/image/images/";
 
     // todo: depricate this upload dir?
     String UPLOAD_DIR = "./uploads/";
@@ -67,14 +72,54 @@ String VIEW_INVOICE = "view"
 
     //delivery constants below
     int DELIVERY_STATUS_CREATED = 0
-    int DELIVERY_STATUS_EN_ROUTE = 1
-    int DELIVERY_STATUS_DELIVERED = 2
-    int DELIVERY_STATUS_CANCELED = 3
+    int DELIVERY_STATUS_PREPPING = 1
+    int DELIVERY_STATUS_READY_FOR_DISPATCH = 2
+    int DELIVERY_STATUS_EN_ROUTE = 3
+    int DELIVERY_STATUS_DELIVERED = 4
+    int DELIVERY_STATUS_CANCELED = 5
 
 
     // tenants
     String TENANT_HIGHLAND = "highland"
     String TENANT_TEST1 = "test1"
     String TENANT_TEST = "test"
+
+
+    // TOKEN TYPES
+    public String MENU_SHOPPING_TOKEN = "MENU_SHOPPING_TOKEN"
+    public String DELIVERY_VIEW_TOKEN = "DELIVERY_VIEW_TOKEN"
+
+
+    // Location Types
+    public String B2B_DISTRO = "B2B.DISTRO"
+    public String B2C_RETAIL = "B2C.RETAIL"
+    public String ADHOC_CUSTOMER_DELIVERY = "ADHOC.CUSTOMER.DELIVERY"
+    public String ADHOC_CUSTOMER_PICKUP = "ADHOC.CUSTOMER.PICKUP"
+
+    // Package Types
+    public String LARGE_BOX = "LARGE.BOX"
+    public String SMALL_BOX = "SMALL.BOX"
+
+    // Locker Names
+    public String LOCKER_1 = "LOCKER.1"
+    public String LOCKER_2 = "LOCKER.1"
+    public String LOCKER_3 = "LOCKER.1"
+    public String LOCKER_4 = "LOCKER.1"
+    public String LOCKER_5 = "LOCKER.1"
+    public String LOCKER_6 = "LOCKER.1"
+    public String LOCKER_7 = "LOCKER.1"
+    public String LOCKER_8 = "LOCKER.1"
+    public String LOCKER_9 = "LOCKER.1"
+    public String LOCKER_10 = "LOCKER.1"
+    public String LOCKER_11 = "LOCKER.1"
+    public String LOCKER_12 = "LOCKER.1"
+    public String LOCKER_13 = "LOCKER.1"
+    public String LOCKER_14 = "LOCKER.1"
+    public String LOCKER_15 = "LOCKER.1"
+    public String LOCKER_16 = "LOCKER.1"
+    public String LOCKER_17 = "LOCKER.1"
+    public String LOCKER_18 = "LOCKER.1"
+    public String LOCKER_19 = "LOCKER.1"
+    public String LOCKER_20 = "LOCKER.1"
 
 }

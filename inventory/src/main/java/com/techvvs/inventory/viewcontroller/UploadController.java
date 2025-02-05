@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.thymeleaf.exceptions.TemplateInputException;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
@@ -204,10 +205,26 @@ public class UploadController {
         return "/service/xlsxbatch.html";
     }
 
+
+//    @ExceptionHandler(TemplateInputException.class)
+//    public String handleTemplateInputException(TemplateInputException ex, Model model) {
+//        System.out.println("CAUGHT THE EXCEPTION ON THE CONTROLLER. ");
+//        // Log and redirect to a fallback page
+//        model.addAttribute("error", "Template not found.");
+//        return "error/fallback";
+//    }
+
+
+    // todo: we probably don't need the isqrmedia one here but whatever who cares fix it later
     @PostMapping("/media/upload")
     public String uploadMediaFile(Model model,
                                   @ModelAttribute("product") ProductVO productVO,
                                   @RequestParam("file") MultipartFile file,
+                                  @RequestParam("primary") Optional<String> isprimary,
+                                  @RequestParam("video") Optional<String> isvideo,
+                                  @RequestParam("document") Optional<String> isdocument,
+                                  @RequestParam("photo") Optional<String> isphoto,
+                                  @RequestParam("qrmedia") Optional<String> isqrmedia,
                                   RedirectAttributes attributes) {
 
         System.out.println("Starting file upload...");
@@ -230,12 +247,58 @@ public class UploadController {
         boolean success = false;
 
         try {
-            // Create the directory structure
-            Path targetDirectory = Paths.get(
-                    appConstants.UPLOAD_DIR_MEDIA,
-                    appConstants.UPLOAD_DIR_PRODUCT,
-                    String.valueOf(productVO.getProduct_id())
-            );
+            Path targetDirectory;
+            if(isprimary.isPresent() && isprimary.get().equals("yes")){
+                checkForImageExtension(sanitizedFileName); // make sure it's a jpg or jpeg
+                targetDirectory = Paths.get(
+                        appConstants.UPLOAD_DIR_MEDIA,
+                        appConstants.UPLOAD_DIR_PRODUCT,
+                        String.valueOf(productVO.getProduct_id()),
+                        appConstants.UPLOAD_DIR_PRODUCT_PRIMARY
+                );
+                sanitizedFileName = "primary.jpg";
+
+            } else if(isvideo.isPresent() && isvideo.get().equals("yes")){
+                checkForVideoExtension(sanitizedFileName);
+
+                targetDirectory = Paths.get(
+                        appConstants.UPLOAD_DIR_MEDIA,
+                        appConstants.UPLOAD_DIR_PRODUCT,
+                        String.valueOf(productVO.getProduct_id()),
+                        appConstants.UPLOAD_DIR_PRODUCT_VIDEOS
+                );
+            } else if(isdocument.isPresent() && isdocument.get().equals("yes")){
+                checkForPdfExtension(sanitizedFileName); //
+
+                targetDirectory = Paths.get(
+                        appConstants.UPLOAD_DIR_MEDIA,
+                        appConstants.UPLOAD_DIR_PRODUCT,
+                        String.valueOf(productVO.getProduct_id()),
+                        appConstants.UPLOAD_DIR_PRODUCT_DOCUMENTS
+                );
+            } else if(isphoto.isPresent() && isphoto.get().equals("yes")){
+                checkForImageExtension(sanitizedFileName); // make sure it's a jpg or jpeg
+                targetDirectory = Paths.get(
+                        appConstants.UPLOAD_DIR_MEDIA,
+                        appConstants.UPLOAD_DIR_PRODUCT,
+                        String.valueOf(productVO.getProduct_id()),
+                        appConstants.UPLOAD_DIR_PRODUCT_PHOTOS
+                );
+            }  else if(isqrmedia.isPresent() && isqrmedia.get().equals("yes")){
+                targetDirectory = Paths.get(
+                        appConstants.UPLOAD_DIR_MEDIA,
+                        appConstants.UPLOAD_DIR_PRODUCT,
+                        String.valueOf(productVO.getProduct_id())
+                );
+            } else {
+                // default is upload the media to the qr directory
+                targetDirectory = Paths.get(
+                        appConstants.UPLOAD_DIR_MEDIA,
+                        appConstants.UPLOAD_DIR_PRODUCT,
+                        String.valueOf(productVO.getProduct_id())
+                );
+            }
+
             Files.createDirectories(targetDirectory);
 
             // Save the file
@@ -278,6 +341,48 @@ public class UploadController {
         List<BatchTypeVO> batchTypeVOS = batchTypeRepo.findAll();
         model.addAttribute("batchtypes", batchTypeVOS);
     }
+
+    String checkForImageExtension(String sanitizedFileName) throws IOException {
+
+        // Check if the file ends with .jpg, .jpeg, or .png
+        if (sanitizedFileName.toLowerCase().endsWith(".jpg")) {
+            return sanitizedFileName;
+        }
+
+        if (sanitizedFileName.toLowerCase().endsWith(".jpeg")) {
+            // Replace .jpeg with .jpg
+            return sanitizedFileName.substring(0, sanitizedFileName.length() - 5) + ".jpg";
+        }
+
+        if (sanitizedFileName.toLowerCase().endsWith(".png")) {
+            return sanitizedFileName;
+        }
+
+        // Throw exception if it does not end with .jpg, .jpeg, or .png
+        throw new IOException("Sanitized file name must end with .jpg, .jpeg, or .png: " + sanitizedFileName);
+    }
+
+    String checkForVideoExtension(String sanitizedFileName) throws IOException {
+
+        if (sanitizedFileName.toLowerCase().endsWith(".mp4") || sanitizedFileName.toLowerCase().endsWith(".mov")) {
+            return sanitizedFileName;
+        }
+
+        // If the extension is not valid, throw an exception
+        throw new IOException("Sanitized file name must end with .mp4 or .mov: " + sanitizedFileName);
+    }
+
+    String checkForPdfExtension(String sanitizedFileName) throws IOException {
+
+        if (sanitizedFileName.toLowerCase().endsWith(".pdf")) {
+            return sanitizedFileName;
+        }
+
+        // If the extension is not valid, throw an exception
+        throw new IOException("Sanitized file name must end with .pdf: " + sanitizedFileName);
+    }
+
+
 
     void bindProductTypes(Model model){
         // get all the batchtype objects and bind them to select dropdown
