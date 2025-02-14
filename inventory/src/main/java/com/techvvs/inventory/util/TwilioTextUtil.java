@@ -266,8 +266,12 @@ public class TwilioTextUtil {
             if (!isDev1) {
 
                 String baseuri = env.getProperty("base.qr.domain");
+
+                // need to encode the jwt for links over sms so the periods don't screw things up
+                String encodedSmsToken = URLEncoder.encode(shoppingtoken, StandardCharsets.UTF_8);
+
                 // Construct the URL including custom JWT and filename
-                String smsUrl = baseuri+"/menu/shop?shoppingtoken=" + shoppingtoken + "&menuid=" + menuid;
+                String smsUrl = baseuri+"/menu/shop?shoppingtoken=" + encodedSmsToken + "&menuid=" + menuid;
 
                 result = sendDownloadLinkCustomPhoneNumber(phonenumber, message+smsUrl, isDev1);
             } else {
