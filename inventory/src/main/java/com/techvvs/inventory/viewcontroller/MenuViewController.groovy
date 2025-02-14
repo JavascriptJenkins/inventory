@@ -60,6 +60,7 @@ public class MenuViewController {
             @ModelAttribute( "cart" ) CartVO cartVO
     ){
 
+        techvvsAuthService.checkuserauth(model)
 
 
         if(menuid.isPresent())  {
