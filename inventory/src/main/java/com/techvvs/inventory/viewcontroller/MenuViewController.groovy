@@ -113,6 +113,7 @@ public class MenuViewController {
         // overwrite the menuid.... redundant but we have to do it now!
         menuid = Optional.of(jwtTokenProvider.getMenuIdFromToken(shoppingtoken.get()))
 
+        System.out.println("DEBUGGGGG: shoppingtoken.get(): "+shoppingtoken.get())
         List<String> authorities = jwtTokenProvider.extractAuthorities(shoppingtoken.get())
         if(jwtTokenProvider.hasRole(authorities, String.valueOf(Role.ROLE_MEDIA_ONLY))){
             model.addAttribute("MediaOnlyView", "yes") // this will remove the add to cart button and only allow clients to view media on the menu

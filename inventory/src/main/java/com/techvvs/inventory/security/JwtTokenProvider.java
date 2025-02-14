@@ -526,15 +526,28 @@ public class JwtTokenProvider {
 
 
   public static boolean hasRole(List<?> authorities, String roleToCheck) {
+    if (authorities == null || roleToCheck == null) {
+      return false; // Prevents NullPointerException
+    }
+
     System.out.println("Authorities: " + authorities);
     System.out.println("Role to check: " + roleToCheck);
 
-    return authorities.stream().anyMatch(authority -> {
-      String valueToCompare = (authority instanceof org.springframework.security.core.GrantedAuthority)
-              ? ((org.springframework.security.core.GrantedAuthority) authority).getAuthority()
-              : authority.toString();
-      return valueToCompare.equals(roleToCheck);
-    });
+    for (Object authority : authorities) {
+      String valueToCompare;
+
+      if (authority instanceof GrantedAuthority) {
+        valueToCompare = ((GrantedAuthority) authority).getAuthority();
+      } else {
+        valueToCompare = authority.toString();
+      }
+
+      if (roleToCheck.equals(valueToCompare)) {
+        return true; // Found matching role, return true
+      }
+    }
+
+    return false; // No match found
   }
 
 }
