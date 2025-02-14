@@ -133,14 +133,16 @@ public class MenuViewController {
     }
 
 
-    boolean hasRole(List authorities, String roleToCheck) {
-        println "Authorities: ${authorities}"
-        println "Role to check: ${roleToCheck}"
+    public static boolean hasRole(List<?> authorities, String roleToCheck) {
+        System.out.println("Authorities: " + authorities);
+        System.out.println("Role to check: " + roleToCheck);
 
-        return authorities.any { authority ->
-            def valueToCompare = authority instanceof GrantedAuthority ? authority.authority : authority.toString()
-            valueToCompare == roleToCheck
-        }
+        return authorities.stream().anyMatch(authority -> {
+            String valueToCompare = (authority instanceof GrantedAuthority)
+                    ? ((GrantedAuthority) authority).getAuthority()
+                    : authority.toString();
+            return valueToCompare.equals(roleToCheck);
+        });
     }
 
     // allow user to shop menu with shopping token
