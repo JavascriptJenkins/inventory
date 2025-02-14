@@ -20,6 +20,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
 
@@ -223,7 +224,7 @@ public class TwilioTextUtil {
                 String baseuri = env.getProperty("base.qr.domain");
 
                 // need to encode the jwt for links over sms so the periods don't screw things up
-                String encodedSmsToken = URLEncoder.encode(shoppingtoken, StandardCharsets.UTF_8);
+                String encodedSmsToken = encodeJwt(shoppingtoken);
 
                 // Construct the URL including custom JWT and filename
                 String smsUrl = baseuri+"/menu/shop?shoppingtoken=" + encodedSmsToken + "&menuid=" + menuid;
@@ -243,6 +244,10 @@ public class TwilioTextUtil {
         }
 
         return "success";
+    }
+
+    public static String encodeJwt(String jwt) {
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(jwt.getBytes());
     }
 
     public String sendShoppingTokenLinkSMSWithCustomMessage(String phonenumber,
@@ -268,7 +273,7 @@ public class TwilioTextUtil {
                 String baseuri = env.getProperty("base.qr.domain");
 
                 // need to encode the jwt for links over sms so the periods don't screw things up
-                String encodedSmsToken = URLEncoder.encode(shoppingtoken, StandardCharsets.UTF_8);
+                String encodedSmsToken = encodeJwt(shoppingtoken);
 
                 // Construct the URL including custom JWT and filename
                 String smsUrl = baseuri+"/menu/shop?shoppingtoken=" + encodedSmsToken + "&menuid=" + menuid;
