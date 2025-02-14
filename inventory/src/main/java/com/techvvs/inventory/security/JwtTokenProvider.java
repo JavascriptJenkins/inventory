@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -494,24 +495,6 @@ public class JwtTokenProvider {
     return authorities;
   }
 
-  public static boolean hasRole(List<Object> authorities, String roleToCheck) {
-    System.out.println("Authorities: " + authorities);
-    System.out.println("Role to check: " + roleToCheck);
-
-    for (Object authority : authorities) {
-      String valueToCompare;
-      if (authority instanceof GrantedAuthority) {
-        valueToCompare = ((GrantedAuthority) authority).getAuthority();
-      } else {
-        valueToCompare = authority.toString();
-      }
-      if (valueToCompare.equals(roleToCheck)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   // Example usage
   interface GrantedAuthority {
     String getAuthority();
@@ -539,6 +522,19 @@ public class JwtTokenProvider {
 
     SecurityContextHolder.getContext().setAuthentication(null); // clear the internal auth
     SecurityContextHolder.clearContext();
+  }
+
+
+  public static boolean hasRole(List<?> authorities, String roleToCheck) {
+    System.out.println("Authorities: " + authorities);
+    System.out.println("Role to check: " + roleToCheck);
+
+    return authorities.stream().anyMatch(authority -> {
+      String valueToCompare = (authority instanceof org.springframework.security.core.GrantedAuthority)
+              ? ((org.springframework.security.core.GrantedAuthority) authority).getAuthority()
+              : authority.toString();
+      return valueToCompare.equals(roleToCheck);
+    });
   }
 
 }

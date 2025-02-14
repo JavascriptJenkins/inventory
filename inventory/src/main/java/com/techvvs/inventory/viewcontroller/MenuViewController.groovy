@@ -114,7 +114,7 @@ public class MenuViewController {
         menuid = Optional.of(jwtTokenProvider.getMenuIdFromToken(shoppingtoken.get()))
 
         List<String> authorities = jwtTokenProvider.extractAuthorities(shoppingtoken.get())
-        if(hasRole(authorities, String.valueOf(Role.ROLE_MEDIA_ONLY))){
+        if(jwtTokenProvider.hasRole(authorities, String.valueOf(Role.ROLE_MEDIA_ONLY))){
             model.addAttribute("MediaOnlyView", "yes") // this will remove the add to cart button and only allow clients to view media on the menu
         }
 
@@ -132,18 +132,6 @@ public class MenuViewController {
         return "menu/menu.html";
     }
 
-
-    public static boolean hasRole(List<?> authorities, String roleToCheck) {
-        System.out.println("Authorities: " + authorities);
-        System.out.println("Role to check: " + roleToCheck);
-
-        return authorities.stream().anyMatch(authority -> {
-            String valueToCompare = (authority instanceof GrantedAuthority)
-                    ? ((GrantedAuthority) authority).getAuthority()
-                    : authority.toString();
-            return valueToCompare.equals(roleToCheck);
-        });
-    }
 
     // allow user to shop menu with shopping token
     @PostMapping("/shop/product/cart/add")
