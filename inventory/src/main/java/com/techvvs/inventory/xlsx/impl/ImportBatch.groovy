@@ -69,6 +69,12 @@ class ImportBatch {
                     continue;
                 }
 
+                // Check if row is empty and stop processing completely
+                if (isRowEmpty2(row)) {
+                    System.out.println("Encountered an empty row. Stopping processing.");
+                    break; // <-- This stops processing entirely
+                }
+
                 // now take each row and create a product entry
                 ProductVO productVO = new ProductVO();
 
@@ -161,6 +167,19 @@ class ImportBatch {
         return batchvotoreturn;
     }
 
+// Helper method to check if a row is empty
+    private boolean isRowEmpty2(Row row) {
+        if (row == null) {
+            return true;
+        }
+        for (int i = 0; i < row.getLastCellNum(); i++) {
+            Cell cell = row.getCell(i);
+            if (cell != null && cell.getCellType() != CellType.BLANK) {
+                return false; // Found a non-empty cell
+            }
+        }
+        return true; // All cells are blank
+    }
 
 
 
