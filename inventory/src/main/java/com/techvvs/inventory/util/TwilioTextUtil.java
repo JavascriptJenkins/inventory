@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -220,8 +221,12 @@ public class TwilioTextUtil {
             if (!isDev1) {
 
                 String baseuri = env.getProperty("base.qr.domain");
+
+                // need to encode the jwt for links over sms so the periods don't screw things up
+                String encodedSmsToken = URLEncoder.encode(shoppingtoken, StandardCharsets.UTF_8);
+
                 // Construct the URL including custom JWT and filename
-                String smsUrl = baseuri+"/menu/shop?shoppingtoken=" + shoppingtoken + "&menuid=" + menuid;
+                String smsUrl = baseuri+"/menu/shop?shoppingtoken=" + encodedSmsToken + "&menuid=" + menuid;
 
                 result = sendDownloadLinkCustomPhoneNumber(phonenumber, smsUrl, isDev1);
             } else {
