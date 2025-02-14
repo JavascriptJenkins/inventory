@@ -12,6 +12,7 @@ import org.springframework.ui.Model
 import javax.servlet.http.Cookie
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
+import java.util.regex.Pattern
 
 @Service
 class TechvvsAuthService {
@@ -72,6 +73,18 @@ class TechvvsAuthService {
         }
 
         return true
+    }
+
+    String checkAndDecodeJwtFromBase64(String jwtToCheck) {
+        if (jwtToCheck?.contains('.')) {
+            return jwtToCheck // It's already a JWT, return as-is
+        } else {
+            try {
+                return new String(Base64.urlDecoder.decode(jwtToCheck)) // Decode if it's Base64 encoded
+            } catch (Exception e) {
+                return "Invalid Base64 encoding detected."
+            }
+        }
     }
 
 

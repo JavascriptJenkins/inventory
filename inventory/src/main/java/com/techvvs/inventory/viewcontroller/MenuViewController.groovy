@@ -97,6 +97,9 @@ public class MenuViewController {
     ){
         boolean tokenused = true;
         if(shoppingtoken.isPresent()) {
+            shoppingtoken = Optional.of(
+                    techvvsAuthService.checkAndDecodeJwtFromBase64(shoppingtoken.get())
+            )
             tokenused = techvvsAuthService.isTokenUsed(shoppingtoken.get())
             model.addAttribute("shoppingtoken", shoppingtoken)
         }
@@ -154,6 +157,9 @@ public class MenuViewController {
     ){
         boolean tokenused = true;
         if(shoppingtoken.isPresent()) {
+            shoppingtoken = Optional.of(
+                    techvvsAuthService.checkAndDecodeJwtFromBase64(shoppingtoken.get())
+            )
             tokenused = techvvsAuthService.isTokenUsed(shoppingtoken.get())
             model.addAttribute("shoppingtoken", shoppingtoken)
         }
@@ -194,6 +200,9 @@ public class MenuViewController {
 
         boolean tokenused = true;
         if(shoppingtoken.isPresent()) {
+            shoppingtoken = Optional.of(
+                    techvvsAuthService.checkAndDecodeJwtFromBase64(shoppingtoken.get())
+            )
             tokenused = techvvsAuthService.isTokenUsed(shoppingtoken.get())
             model.addAttribute("shoppingtoken", shoppingtoken)
         }
@@ -227,6 +236,9 @@ public class MenuViewController {
     ){
         boolean tokenused = true;
         if(shoppingtoken.isPresent()) {
+            shoppingtoken = Optional.of(
+                    techvvsAuthService.checkAndDecodeJwtFromBase64(shoppingtoken.get())
+            )
             tokenused = techvvsAuthService.isTokenUsed(shoppingtoken.get())
             model.addAttribute("shoppingtoken", shoppingtoken)
         }
@@ -279,6 +291,9 @@ public class MenuViewController {
 
         boolean tokenused = true;
         if(shoppingtoken.isPresent()) {
+            shoppingtoken = Optional.of(
+                    techvvsAuthService.checkAndDecodeJwtFromBase64(shoppingtoken.get())
+            )
             tokenused = techvvsAuthService.isTokenUsed(shoppingtoken.get())
             model.addAttribute("shoppingtoken", shoppingtoken)
         }
