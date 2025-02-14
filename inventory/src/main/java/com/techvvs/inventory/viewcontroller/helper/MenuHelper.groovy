@@ -34,6 +34,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.security.core.Authentication
+import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.parameters.P
 import org.springframework.stereotype.Component
@@ -514,11 +515,16 @@ class MenuHelper {
                            String customerid,
                            String phonenumber,
                            String tokenlength,
+                           String mediaOnly,
                            Model model
 
     ){
-
-        List<Role> roles = Arrays.asList(Role.ROLE_CLIENT, Role.ROLE_SHOPPING_TOKEN);
+        List<Role> roles
+        if("yes".equals(mediaOnly)){
+            roles = Arrays.asList(Role.ROLE_CLIENT, Role.ROLE_SHOPPING_TOKEN, Role.ROLE_MEDIA_ONLY);
+        } else {
+            roles = Arrays.asList(Role.ROLE_CLIENT, Role.ROLE_SHOPPING_TOKEN);
+        }
 
         CustomerVO customerVO = customerRepo.findByCustomerid(Integer.valueOf(customerid)).get()
 
@@ -599,6 +605,12 @@ class MenuHelper {
             return 0
         }
 
+        // This is a security measure if a malicious actor tries to manipulate the add to cart button in the ui by removing the disabled class on
+        List<String> authorities = jwtTokenProvider.extractAuthorities(token)
+        if(hasRole(authorities, String.valueOf(Role.ROLE_MEDIA_ONLY))){
+            return 0 // this should never get hit unless somebody is maliciously removing the disabled class on the add to cart button in the ui
+        }
+
 
 
         CustomerVO customerVO = customerRepo.findById(customerid).get()
@@ -639,6 +651,16 @@ class MenuHelper {
         // now that we have correct cart loaded for the customer, we can add the product
         cartVO = productService.addProductToCart(cartVO, quantityselected, model, String.valueOf(productid), String.valueOf(menuid))
         return cartVO.cartid
+    }
+
+    boolean hasRole(List authorities, String roleToCheck) {
+        println "Authorities: ${authorities}"
+        println "Role to check: ${roleToCheck}"
+
+        return authorities.any { authority ->
+            def valueToCompare = authority instanceof GrantedAuthority ? authority.authority : authority.toString()
+            valueToCompare == roleToCheck
+        }
     }
 
     @Transactional

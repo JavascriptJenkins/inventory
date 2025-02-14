@@ -436,6 +436,23 @@ public class JwtTokenProvider {
     }
   }
 
+  public String getMediaOnlyValueFromToken(String token) {
+    try {
+      // Parse the token claims
+      Jws<Claims> claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
+
+      // Check if the "custromerid" claim is present and extract the value
+      String menuid = claims.getBody().get("menuid", String.class);
+      if (menuid == null || menuid.isEmpty()) {
+        throw new CustomException("Menu ID is missing in the token", HttpStatus.FORBIDDEN);
+      }
+      return menuid;
+
+    } catch (JwtException | IllegalArgumentException e) {
+      throw new CustomException("Expired or invalid JWT token", HttpStatus.FORBIDDEN);
+    }
+  }
+
   public String getDeliveryIdFromToken(String token) {
     try {
       // Parse the token claims
@@ -475,6 +492,29 @@ public class JwtTokenProvider {
     }
 
     return authorities;
+  }
+
+  public static boolean hasRole(List<Object> authorities, String roleToCheck) {
+    System.out.println("Authorities: " + authorities);
+    System.out.println("Role to check: " + roleToCheck);
+
+    for (Object authority : authorities) {
+      String valueToCompare;
+      if (authority instanceof GrantedAuthority) {
+        valueToCompare = ((GrantedAuthority) authority).getAuthority();
+      } else {
+        valueToCompare = authority.toString();
+      }
+      if (valueToCompare.equals(roleToCheck)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // Example usage
+  interface GrantedAuthority {
+    String getAuthority();
   }
 
 

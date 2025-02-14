@@ -247,6 +247,7 @@
                 <td>
                     <select class="form-select amount-dropdown">
                         <option value="0.00" selected>0.00</option>
+                        <option value="50.00">25.00</option>
                         <option value="50.00">50.00</option>
                         <option value="100.00">100.00</option>
                         <option value="150.00">150.00</option>
@@ -361,6 +362,16 @@
                         <label for="phoneNumber" class="form-label required">Phone Number</label>
                         <input type="text" id="phoneNumber" name="phoneNumber" class="form-control" maxlength="10" placeholder="Enter 10-digit phone number">
                     </div>
+
+                    <!-- Added Checkbox for Media Only -->
+                    <div class="col-md-12">
+                        <div class="form-check">
+                            <input type="checkbox" id="mediaOnlyCheckbox" class="form-check-input">
+                            <label class="form-check-label" for="mediaOnlyCheckbox">Media Only</label>
+                        </div>
+                    </div>
+
+
 
                     <!-- Submit and Close Buttons -->
                     <div class="col-12 d-flex justify-content-between">
@@ -662,6 +673,7 @@
             const tokenLengthSelect = document.getElementById('tokenLengthSelect');
             const phoneNumberInput = document.getElementById('phoneNumber');
             const submitBtn = document.getElementById('submitBtn');
+            const mediaOnlyCheckbox = document.getElementById('mediaOnlyCheckbox');
 
             let currentMenuId = null; // To store the correct menu ID for the popup
 
@@ -709,6 +721,11 @@
                 const customerId = customerSelect.value;
                 const tokenLength = tokenLengthSelect.value;
                 const phoneNumber = phoneNumberInput.value;
+                let mediaOnlyValue = "no";
+
+                if(mediaOnlyCheckbox.checked) {
+                    mediaOnlyValue = "yes";
+                }
 
                 if (!currentMenuId || !customerId || !tokenLength || !phoneNumber) {
                     alert('All fields must be completed.');
@@ -719,6 +736,7 @@
                 const actionUri = `/menu/shoppingtoken/send?menuid=${encodeURIComponent(currentMenuId)}`
                     + `&customerid=${encodeURIComponent(customerId)}`
                     + `&phonenumber=${encodeURIComponent(phoneNumber)}`
+                    + `&mediaOnly=${encodeURIComponent(mediaOnlyValue)}`
                     + `&tokenlength=${encodeURIComponent(tokenLength)}`;
 
                 // Safely submit the form

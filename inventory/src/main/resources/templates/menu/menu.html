@@ -367,8 +367,8 @@
                        th:data-menu-id="${menuid}"
                        th:data-product-name="${product.name}"
                        th:data-product-price="${product.displayprice}"
-                       th:disabled="${cart.isprocessed == 1}"
-                       th:classappend="${cart.isprocessed == 1} ? 'disabled' : ''">
+                       th:disabled="${cart.isprocessed == 1 or (MediaOnlyView != null and MediaOnlyView == 'yes')}"
+                       th:classappend="${(cart.isprocessed == 1 or (MediaOnlyView != null and MediaOnlyView == 'yes')) ? 'disabled' : ''}">
                         Add to Cart
                     </a>
 

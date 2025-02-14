@@ -58,7 +58,7 @@ class DocumentController {
             Model model,
             @RequestParam("menuid") Optional<String> menuid,
             @RequestParam("productid") Optional<String> productid,
-            @PathVariable Optional<String> shoppingtoken,
+            @RequestParam Optional<String> shoppingtoken,
             @RequestParam("page") Optional<String> page,
             @RequestParam("size") Optional<String> size
     ){

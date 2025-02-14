@@ -14,6 +14,7 @@ import com.techvvs.inventory.viewcontroller.helper.CheckoutHelper
 import com.techvvs.inventory.viewcontroller.helper.CustomerHelper
 import com.techvvs.inventory.viewcontroller.helper.MenuHelper
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.security.core.GrantedAuthority
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.*
@@ -108,6 +109,10 @@ public class MenuViewController {
         // overwrite the menuid.... redundant but we have to do it now!
         menuid = Optional.of(jwtTokenProvider.getMenuIdFromToken(shoppingtoken.get()))
 
+        List<String> authorities = jwtTokenProvider.extractAuthorities(shoppingtoken.get())
+        if(hasRole(authorities, String.valueOf(Role.ROLE_MEDIA_ONLY))){
+            model.addAttribute("MediaOnlyView", "yes") // this will remove the add to cart button and only allow clients to view media on the menu
+        }
 
         if(menuid.isPresent() && shoppingtoken.isPresent() && !tokenused) {
             menuHelper.loadMenuWithToken(menuid.get(), model, shoppingtoken.get())
@@ -123,6 +128,16 @@ public class MenuViewController {
         return "menu/menu.html";
     }
 
+
+    boolean hasRole(List authorities, String roleToCheck) {
+        println "Authorities: ${authorities}"
+        println "Role to check: ${roleToCheck}"
+
+        return authorities.any { authority ->
+            def valueToCompare = authority instanceof GrantedAuthority ? authority.authority : authority.toString()
+            valueToCompare == roleToCheck
+        }
+    }
 
     // allow user to shop menu with shopping token
     @PostMapping("/shop/product/cart/add")
@@ -500,6 +515,7 @@ public class MenuViewController {
             @RequestParam("customerid") Optional<String> customerid,
             @RequestParam("phonenumber") Optional<String> phonenumber,
             @RequestParam("tokenlength") Optional<String> tokenlength,
+            @RequestParam("mediaOnly") Optional<String> mediaOnly,
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size
     ){
@@ -507,8 +523,8 @@ public class MenuViewController {
         techvvsAuthService.checkuserauth(model)
 
         // if all values present, send token
-        if(menuid.isPresent() && customerid.isPresent() && phonenumber.isPresent() && tokenlength.isPresent())  {
-            menuHelper.sendShoppingToken(menuid.get(), customerid.get(), phonenumber.get(), tokenlength.get(), model)
+        if(menuid.isPresent() && customerid.isPresent() && phonenumber.isPresent() && tokenlength.isPresent() && mediaOnly.isPresent())  {
+            menuHelper.sendShoppingToken(menuid.get(), customerid.get(), phonenumber.get(), tokenlength.get(), mediaOnly.get(), model)
         } else {
             model.addAttribute("errorMessage", "menuid, customerid, phonenumber, and tokenlength are required")
         }
