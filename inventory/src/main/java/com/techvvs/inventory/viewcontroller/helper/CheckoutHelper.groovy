@@ -155,7 +155,7 @@ class CheckoutHelper {
     // NOTE: this using optional to process discounts is sweet.  Use this pattern again.
     void applyDiscountByProductTypeForCart(Optional<CartVO> cartVO,ProductVO productVO) {
         // need to check for product.menu, if it exists, cycle thru the discount list on menu and apply it to the total
-        if (cartVO.present){
+        if (cartVO.present && cartVO.get().menu != null) {
             for(DiscountVO discountVO : cartVO.get().menu.discount_list) {
                 if (productVO.getProducttypeid().producttypeid == discountVO.producttype.producttypeid) {
                     cartVO.get().total = Math.max(0,cartVO.get().total - discountVO.discountamount)
