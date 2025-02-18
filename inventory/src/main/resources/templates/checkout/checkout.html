@@ -327,6 +327,7 @@
         function copyToClipboard(buttonElement) {
             // Get the value from the data-barcode attribute
             var barcodeValue = buttonElement.getAttribute('data-barcode');
+            var productNameValue = buttonElement.getAttribute('data-productname');
 
             // Copy to clipboard (assuming you've already implemented this logic)
             var tempInput = document.createElement('input');
@@ -337,7 +338,7 @@
             document.body.removeChild(tempInput);
 
             // Provide feedback (optional)
-            alert("Copied: " + barcodeValue);
+            alert("Copied: " + barcodeValue + " | " + productNameValue);
         }
 
     </script>
@@ -484,6 +485,7 @@
                     <button type="button" class="btn btn-dark-custom btn-sm"
                             onclick="copyToClipboard(this)"
                             th:data-barcode="${product.barcode}"
+                            th:data-productname="${product.name}"
                     >
                         Copy
                     </button>
