@@ -172,6 +172,18 @@
         #quantityModeCheckbox:focus + .form-check-label {
             outline: 2px solid white;  /* Add an outline to the label when checkbox is focused */
         }
+
+        .btn-dark-custom {
+            background-color: #343a40;
+            color: #fff;
+            border: 1px solid #343a40;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .btn-dark-custom:hover {
+            background-color: #1d2124; /* Darker shade on hover */
+            color: #f8f9fa; /* Lighter text on hover */
+        }
     </style>
 
     <script>
@@ -183,15 +195,6 @@
                     $('#barcodeInput').focus();
                 }
             });
-
-<!--            const inputField = document.getElementById('barcodeInput');-->
-
-<!--            inputField.addEventListener('keydown', function(event) {-->
-<!--                if (event.key === 'Enter') {-->
-<!--                    const scannedValue = inputField.value.trim();-->
-<!--                    processBarcode(scannedValue);-->
-<!--                }-->
-<!--            });-->
 
         const inputField = document.getElementById('barcodeInput');
         let inputTimeout;
@@ -288,6 +291,57 @@
         }
     </script>
 
+    <!-- CSS for Popup -->
+    <style>
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        .popup-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 300px;
+            text-align: center;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+        .close-popup {
+        color: black;
+            position: absolute;
+            top: 1px;
+            right: 15px;
+            font-size: 40px;
+            cursor: pointer;
+        }
+    </style>
+
+    <script>
+        function copyToClipboard(buttonElement) {
+            // Get the value from the data-barcode attribute
+            var barcodeValue = buttonElement.getAttribute('data-barcode');
+
+            // Copy to clipboard (assuming you've already implemented this logic)
+            var tempInput = document.createElement('input');
+            tempInput.value = barcodeValue;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempInput);
+
+            // Provide feedback (optional)
+            alert("Copied: " + barcodeValue);
+        }
+
+    </script>
+
 </head>
 <body>
 <div th:insert="auth/navbar.html :: navbarfragment"></div>
@@ -324,6 +378,13 @@
                             <label class="form-check-label" for="quantityModeCheckbox">Quantity Mode</label>
                         </div>
                     </div>
+                    <!-- Add this inside the form containing "Quantity Mode" -->
+                    <div class="row" style="margin-bottom: 5px;">
+                        <div class="col-md-6">
+                            <button id="searchProductBtn" class="btn btn-warning">Search For Product</button>
+                        </div>
+                    </div>
+
                 </div>
                 <div class="row" style="margin-bottom: 5px;">
                     <div class="col-md-6" style="margin-bottom: 5px;">
@@ -389,6 +450,131 @@
         <button style="margin-top: 5px;" type="submit" class="btn btn-dark-theme">Review Cart</button>
     </form>
 
+
+    <!-- This table will display with product info based on case insensitive search from popup -->
+    <div class="col-md-8" th:if="${productPage != null && productPage.content.size() > 0}">
+        <table class="table table-hover table-striped table-dark" style="margin-top: 20px">
+            <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Barcode</th>
+                <th scope="col">Product Name</th>
+                <th scope="col">Quantity</th>
+                <th scope="col">Quantity Remaining</th>
+                <th scope="col">Price</th>
+                <th scope="col">Batch Name</th>
+                <th scope="col">Batch ID</th>
+                <th scope="col">Create Date</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="product, iStat : ${productPage.content}"
+                th:style="${iStat.odd}? 'font-weight: bold;'"
+                th:alt-title="${iStat.even}? 'even' : 'odd'">
+                <td th:text="${product.product_id}"></td>
+                <td>
+<!--                    <a th:href="@{/product/editform?productnumber=__${product.productnumber}__&batchnumber=__${product.batch.batchnumber}__}"-->
+<!--                       th:text="${product.barcode}"-->
+<!--                       th:data-barcode="${product.barcode}"-->
+<!--                       id="barcode-${product.productnumber}"-->
+<!--                       class="btn btn-secondary btn-sm">-->
+<!--                    </a>-->
+                    <span th:text="${product.barcode}"></span>
+                    <!-- Button to copy barcode -->
+                    <button type="button" class="btn btn-dark-custom btn-sm"
+                            onclick="copyToClipboard(this)"
+                            th:data-barcode="${product.barcode}"
+                    >
+                        Copy
+                    </button>
+                </td>
+                <td th:text="${product.name}"></td>
+                <td th:text="${product.quantity}"></td>
+                <td th:text="${product.quantityremaining}"></td>
+                <td th:text="${product.price}"></td>
+                <td th:text="${product.batch.name}"></td>
+                <td th:text="${product.batch.batchid}"></td>
+                <td th:text="${product.createTimeStamp}"></td>
+            </tr>
+            </tbody>
+        </table>
+        <nav th:if="${productPage.totalPages > 0}">
+            <ul class="pagination justify-content-center">
+                <li class="page-item" th:each="pageNumber : ${pageNumbers}">
+                    <a class="page-link btn btn-secondary btn-sm mx-1"
+                       th:href="@{/checkout/searchByProductName?size=__${#lists.size(productPage.content) > 5 ? #lists.size(productPage.content) : 5}__&page=__${pageNumber}__&cartid=__${cart != null ? cart.cartid : '0'}__&productnamesearch=__${productNameSearchValue}__}"
+                       th:text="${pageNumber}"
+                       th:classappend="${pageNumber==productPage.number + 1} ? 'active'">
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
 </div>
+
+
+
+
+
+<!-- Custom Popup for Search -->
+<div id="customPopup" class="popup-overlay">
+    <div class="popup-content">
+        <span class="close-popup">&times;</span>
+        <h5 style="color: black;" class="modal-title">Search Product</h5>
+        <form id="searchForProductNameForm" th:action="@{/checkout/searchByProductName?cartid=__${cart.cartid != null ? cart.cartid : '0'}__}" method="post">
+            <input type="text" id="searchInput" name="productnamesearch" class="form-control" placeholder="Enter product name">
+            <button style="margin-top: 10px;" type="submit" id="searchButton" class="btn btn-primary">Search</button>
+        </form>
+    </div>
+</div>
+
+
+<!-- JavaScript to Handle Popup For Search For Product Button -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const popup = document.getElementById("customPopup");
+        const searchBtn = document.getElementById("searchProductBtn");
+        const closeBtn = document.querySelector(".close-popup");
+
+        searchBtn.addEventListener("click", function (e) {
+            e.preventDefault();
+            popup.style.display = "flex";
+        });
+
+        closeBtn.addEventListener("click", function () {
+            popup.style.display = "none";
+            focusInputAfterDelay('#barcodeInput', 100);
+        });
+
+        document.getElementById("searchButton").addEventListener("click", function () {
+            let searchQuery = document.getElementById("searchInput").value.trim();
+<!--            if (searchQuery) {-->
+<!--                alert("Searching for: " + searchQuery); // Replace this with actual search logic-->
+<!--            }-->
+        });
+
+        // Close popup when clicking outside the content
+        window.addEventListener("click", function (e) {
+            if (e.target === popup) {
+                popup.style.display = "none";
+                focusInputAfterDelay('#barcodeInput', 100);
+            }
+        });
+
+
+        function focusInputAfterDelay(selector, delay) {
+            setTimeout(function() {
+                $(selector).focus();
+            }, delay);
+        }
+
+
+    });
+</script>
+
+
+
+
 </body>
 </html>
