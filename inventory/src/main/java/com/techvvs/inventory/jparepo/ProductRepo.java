@@ -23,6 +23,16 @@ public interface ProductRepo extends JpaRepository<ProductVO, Integer> {
 
     Page<ProductVO> findAllByNameContainingAndBatch(String searchTerm, BatchVO batchVO, Pageable pageable);
 
+
+    // case insensitive search that will work with postgresql and also h2 database
+    @Query("SELECT p FROM ProductVO p " +
+            "WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) " +
+            "AND p.quantityremaining > 0")
+    Page<ProductVO> searchProductsIgnoreCase(
+            @Param("searchTerm") String searchTerm,
+            Pageable pageable);
+
+
     List<ProductVO> findAllByDescription(String desc);
 
     Page<ProductVO> findAllByBatch(BatchVO batchVO, Pageable pageable);

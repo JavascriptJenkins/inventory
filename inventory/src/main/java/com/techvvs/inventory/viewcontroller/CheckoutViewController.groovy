@@ -94,8 +94,6 @@ public class CheckoutViewController {
 
         model = checkoutHelper.loadCartForCheckout(cartid, model, cartVO)
 
-        // todo: add a button on the ui to pull the latest transaction for customer (so if someone clicks off page
-        //  you can come back and finish the transaction)
 
         
 
@@ -106,6 +104,71 @@ public class CheckoutViewController {
         return "checkout/checkout.html";
     }
 
+    // do case insensitive search on product name
+    @PostMapping("/searchByProductName")
+    String searchByProductName(
+            @ModelAttribute( "cart" ) CartVO cartVO,
+            Model model,
+            @RequestParam("productnamesearch") Optional<String> productnamesearch,
+            @RequestParam("cartid") String cartid,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size
+
+    ){
+
+
+        model = checkoutHelper.loadCartForCheckout(cartid, model, cartVO)
+
+
+        if(productnamesearch.isPresent()) {
+//            batchControllerHelper.bindFilterProductsLikeSearch(model,productnamesearch.get(), model)
+            batchControllerHelper.bindFilterProductsLikeSearchForCheckoutUI(
+                    model,
+                    page,
+                    size,
+                    productnamesearch.get()
+            )
+        }
+
+
+        // fetch all customers from database and bind them to model
+        checkoutHelper.getAllCustomers(model)
+        techvvsAuthService.checkuserauth(model)
+        return "checkout/checkout.html";
+    }
+
+    // do case insensitive search on product name
+    @GetMapping("/searchByProductName")
+    String searchByProductNameGet(
+            @ModelAttribute( "cart" ) CartVO cartVO,
+            Model model,
+            @RequestParam("productnamesearch") Optional<String> productnamesearch,
+            @RequestParam("cartid") String cartid,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size
+
+    ){
+
+
+        model = checkoutHelper.loadCartForCheckout(cartid, model, cartVO)
+
+
+        if(productnamesearch.isPresent()) {
+//            batchControllerHelper.bindFilterProductsLikeSearch(model,productnamesearch.get(), model)
+            batchControllerHelper.bindFilterProductsLikeSearchForCheckoutUI(
+                    model,
+                    page,
+                    size,
+                    productnamesearch.get()
+            )
+        }
+
+
+        // fetch all customers from database and bind them to model
+        checkoutHelper.getAllCustomers(model)
+        techvvsAuthService.checkuserauth(model)
+        return "checkout/checkout.html";
+    }
     //get the pending carts
     @GetMapping("pendingcarts")
     String viewPendingTransactions(
