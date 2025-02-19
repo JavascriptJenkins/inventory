@@ -70,6 +70,8 @@ class ProductVO implements Serializable, Comparable<ProductVO> {
     Integer marginPercent;
     @JsonProperty
     Double weight
+    @JsonProperty
+    String unitofmeasure;
 
     // for display purposes only
     @Transient
