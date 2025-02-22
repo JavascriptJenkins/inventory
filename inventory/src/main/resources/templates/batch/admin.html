@@ -112,6 +112,7 @@
 
 
 
+<!--    TODO: move this validation into an injectable file -->
     <script>
         function validateInputField(inputId) {
             let input = document.getElementById(inputId);
@@ -131,20 +132,28 @@
             inputId === 'notes'
              || inputId === 'barcode' && !editmode
              || inputId === 'quantityremaining' && !editmode
+             || inputId === 'createTimeStamp' && !editmode
+             || inputId === 'updateTimeStamp' && !editmode
              ) {
                 input.classList.remove('glowing-invalid');
                 input.classList.add('glowing-valid');
             }
+            checkFormValidity(); // Check form validity after each validation
+        }
 
+        function checkFormValidity() {
+            const hasInvalidFields = document.querySelector('.glowing-invalid') !== null;
+            const submitButton = document.querySelector('.btn-secondary');
 
-
-
+            if (submitButton) {
+                submitButton.disabled = hasInvalidFields;
+            }
         }
 
         function validateAllFields() {
             const inputFields = [
                 'barcode', 'name', 'description', 'price', 'cost', 'quantity',
-                'quantityremaining', 'producttypeid', 'notes'
+                'quantityremaining', 'producttypeid', 'notes', 'vendor', 'createTimeStamp', 'updateTimeStamp'
             ];
             inputFields.forEach(validateInputField);
         }
@@ -158,6 +167,7 @@
 
         document.addEventListener("DOMContentLoaded", initializeValidation);
     </script>
+    <!--    TODO: move this validation into an injectable file -->
 
 </head>
 <body>
@@ -173,7 +183,7 @@
     <!-- New Product Edit Section -->
     <div class="tip-box">Modify product attributes.  If a product has been sold, price change is not possible.</div>
 
-    <form th:action="@{/product/update}" method="post" th:object="${product}">
+    <form th:action="@{/batch/admin/product/edit}" method="post" th:object="${product}">
         <div class="row mb-3">
             <div class="col-md-4">
                 <label class="form-label">Barcode </label>
@@ -187,6 +197,24 @@
             <div class="col-md-4">
                 <label class="form-label">Description</label>
                 <input type="text" th:field="*{description}" id="description" class="form-control edit-validation-group" placeholder="Description">
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label class="form-label">Vendor</label>
+                <input type="text" th:field="*{vendor}" id="vendor" class="form-control edit-validation-group" placeholder="Vendor">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Create Time Stamp</label>
+                <input th:if="${product.createTimeStamp != null}" type="text" th:field="*{createTimeStamp}" id="createTimeStamp" class="form-control edit-validation-group" placeholder="createTimeStamp" disabled>
+                <input th:if="${product.createTimeStamp == null}" type="text" id="createTimeStamp" class="form-control" placeholder="Generated upon create" disabled>
+
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Update Time Stamp</label>
+                <input th:if="${product.updateTimeStamp != null}" type="text" th:field="*{updateTimeStamp}" id="updateTimeStamp" class="form-control edit-validation-group" placeholder="updateTimeStamp" disabled>
+                <input th:if="${product.updateTimeStamp == null}" type="text" id="updateTimeStamp" class="form-control" placeholder="Generated upon create" disabled>
+
             </div>
         </div>
         <div class="row mb-3">
@@ -225,6 +253,23 @@
                 <textarea th:field="*{notes}" id="notes" class="form-control" placeholder="Notes"></textarea>
             </div>
         </div>
+        <!-- Need to account for all fields not displayed on the product object, and also editmode-->
+        <input th:if="${product.product_id != null && product.product_id != 0 && editmode}" type="hidden" th:field="*{product_id}">
+        <input th:if="${product.product_id != null && product.product_id != 0 && editmode}" type="hidden" th:field="*{batch}">
+        <input th:if="${product.product_id != null && product.product_id != 0 && editmode}" type="hidden" th:field="*{cart_list}">
+        <input th:if="${product.product_id != null && product.product_id != 0 && editmode}" type="hidden" th:field="*{transaction_list}">
+        <input th:if="${product.product_id != null && product.product_id != 0 && editmode}" type="hidden" th:field="*{package_list}">
+        <input th:if="${product.product_id != null && product.product_id != 0 && editmode}" type="hidden" th:field="*{menu_list}">
+        <input th:if="${product.product_id != null && product.product_id != 0 && editmode}" type="hidden" th:field="*{productnumber}">
+        <input th:if="${product.product_id != null && product.product_id != 0 && editmode}" type="hidden" th:field="*{vendorquantity}">
+        <input th:if="${product.product_id != null && product.product_id != 0 && editmode}" type="hidden" th:field="*{bagcolor}">
+        <input th:if="${product.product_id != null && product.product_id != 0 && editmode}" type="hidden" th:field="*{crate}">
+        <input th:if="${product.product_id != null && product.product_id != 0 && editmode}" type="hidden" th:field="*{crateposition}">
+        <input th:if="${product.product_id != null && product.product_id != 0 && editmode}" type="hidden" th:field="*{salePrice}">
+        <input th:if="${product.product_id != null && product.product_id != 0 && editmode}" type="hidden" th:field="*{laborCostPricePerUnit}">
+        <input th:if="${product.product_id != null && product.product_id != 0 && editmode}" type="hidden" th:field="*{marginPercent}">
+        <input th:if="${product.product_id != null && product.product_id != 0 && editmode}" type="hidden" th:field="*{weight}">
+        <input th:if="${product.product_id != null && product.product_id != 0 && editmode}" type="hidden" th:field="*{unitofmeasure}">
         <button type="submit" class="btn btn-secondary">Save Changes</button>
     </form>
 
