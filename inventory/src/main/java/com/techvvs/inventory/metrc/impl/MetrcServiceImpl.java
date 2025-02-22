@@ -74,4 +74,9 @@ public class MetrcServiceImpl implements MetrcService {
         return metrcAdapter.checkCompliance(entityId);
     }
 
+    @Override
+    public List<MetrcFacilityDto> getFacilities() throws Exception {
+        return metrcAdapter.getFacilities();
+    }
+
 }

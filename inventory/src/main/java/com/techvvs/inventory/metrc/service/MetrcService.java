@@ -19,6 +19,7 @@ public interface MetrcService {
     void acceptIncomingTransfer(String transferId) throws Exception;
     void recordTransportLog(MetrcTransportLogDto transportLogDto) throws Exception;
     MetrcComplianceCheckDto checkCompliance(String entityId) throws Exception;
+    List<MetrcFacilityDto> getFacilities() throws Exception;
 
 
 

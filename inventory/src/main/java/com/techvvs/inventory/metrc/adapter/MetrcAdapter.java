@@ -3,6 +3,7 @@ package com.techvvs.inventory.metrc.adapter;
 import com.techvvs.inventory.metrc.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -16,11 +17,8 @@ public class MetrcAdapter {
 
     private static final Logger logger = LoggerFactory.getLogger(MetrcAdapter.class);
 
-    private final RestTemplate restTemplate;
 
-    public MetrcAdapter(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
-    }
+    RestTemplate restTemplate = new RestTemplate();
 
     public void createProduct(MetrcProductDto productDto) {
         try {
@@ -119,6 +117,11 @@ public class MetrcAdapter {
     public MetrcComplianceCheckDto checkCompliance(String entityId) {
         String apiUrl = "https://api-mn.metrc.com/compliance/v1/check?entityId=" + entityId;
         return restTemplate.getForObject(apiUrl, MetrcComplianceCheckDto.class);
+    }
+
+    public List<MetrcFacilityDto> getFacilities() {
+        String apiUrl = "https://sandbox-api-mn.metrc.com/facilities/v1";
+        return Arrays.asList(restTemplate.getForObject(apiUrl, MetrcFacilityDto[].class));
     }
 
 }

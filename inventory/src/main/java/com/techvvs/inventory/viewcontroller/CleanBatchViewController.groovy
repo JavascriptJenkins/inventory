@@ -3,10 +3,15 @@ package com.techvvs.inventory.viewcontroller
 import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.dao.BatchDao
 import com.techvvs.inventory.jparepo.BatchRepo
+import com.techvvs.inventory.jparepo.ProductRepo
+import com.techvvs.inventory.jparepo.ProductTypeRepo
 import com.techvvs.inventory.model.BatchTypeVO
 import com.techvvs.inventory.model.BatchVO
 import com.techvvs.inventory.model.ProductTypeVO
+import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.modelnonpersist.FileVO
+import com.techvvs.inventory.security.JwtTokenProvider
+import com.techvvs.inventory.security.Role
 import com.techvvs.inventory.service.auth.TechvvsAuthService
 import com.techvvs.inventory.util.FormattingUtil
 import com.techvvs.inventory.util.TechvvsFileHelper
@@ -19,11 +24,14 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.security.core.Authentication
+import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.*
 
+import javax.servlet.http.Cookie
+import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import java.time.LocalDateTime
 
@@ -44,6 +52,9 @@ public class CleanBatchViewController {
     BatchRepo batchRepo;
 
     @Autowired
+    ProductRepo productRepo
+
+    @Autowired
     BatchDao batchDao;
 
     @Autowired
@@ -60,6 +71,12 @@ public class CleanBatchViewController {
     
     @Autowired
     TechvvsAuthService techvvsAuthService
+
+    @Autowired
+    JwtTokenProvider jwtTokenProvider
+
+    @Autowired
+    ProductTypeRepo productTypeRepo
 
 
 
@@ -106,6 +123,194 @@ public class CleanBatchViewController {
         return "batch/xlsxbatch.html";
     }
 
+
+    @GetMapping("/edit")
+    String editBatch(@ModelAttribute( "batch" ) BatchVO batchVO,
+                       Model model,
+
+                       @RequestParam("page") Optional<Integer> page,
+                       @RequestParam("size") Optional<Integer> size ){
+
+        // https://www.baeldung.com/spring-data-jpa-pagination-sorting
+        //pagination
+        int currentPage = page.orElse(0);
+        int pageSize = 5;
+        Pageable pageable;
+        if(currentPage == 0){
+            pageable = PageRequest.of(0 , pageSize, Sort.by(Sort.Direction.ASC, "batchid"));
+        } else {
+            pageable = PageRequest.of(currentPage - 1, pageSize, Sort.by(Sort.Direction.ASC, "batchid"));
+        }
+
+        Page<BatchVO> pageOfBatch = batchRepo.findAll(pageable);
+
+        int totalPages = pageOfBatch.getTotalPages();
+
+        List<Integer> pageNumbers = new ArrayList<>();
+
+        while(totalPages > 0){
+            pageNumbers.add(totalPages);
+            totalPages = totalPages - 1;
+        }
+
+        model.addAttribute("pageNumbers", pageNumbers);
+        model.addAttribute("page", currentPage);
+        model.addAttribute("size", pageOfBatch.getTotalPages());
+        model.addAttribute("batchPage", pageOfBatch);
+        techvvsAuthService.checkuserauth(model)
+        model.addAttribute("batch", new BatchVO());
+        return "batch/managebatch.html";
+    }
+
+
+    // todo: enforce admin rights to view this page
+    // Admin page for editing the batch, removing and adding products and whatnot
+    @GetMapping("/admin")
+    String admin(@ModelAttribute( "batch" ) BatchVO batchVO,
+                 Model model,
+                 @RequestParam("batchid") Optional<Integer> batchid,
+                 @RequestParam("productnamesearch") Optional<String> productnamesearch,
+                 @RequestParam("productid") Optional<Integer> productid,
+                 @RequestParam("page") Optional<Integer> page,
+                 @RequestParam("size") Optional<Integer> size,
+                 HttpServletRequest req){
+
+
+        if(enforceAdminRights(model,req)) {
+            // do nothing, proceed.  We have injected a value into the model for viewing admin buttons on the ui too
+        } else {
+            return "auth/index.html" // return to home page, will send user to logout page if they have expired cookie i think
+        }
+
+        // this batch object will be the batch in scope
+        Optional<BatchVO> batch = Optional.empty()
+        Optional<ProductVO> product = Optional.empty()
+
+        // bind the batch into scope
+        if(batchid.isPresent()){
+            batch = batchRepo.findById(batchid.get());
+            model.addAttribute("batch", batch.get());
+        }
+
+        // bind the batch into scope
+        if(productid.isPresent() && productid.get() != 0 && productid.get() != null) {
+            product = productRepo.findById(productid.get());
+            model.addAttribute("product", product.get());
+            model.addAttribute("editmode", true);
+        } else {
+            model.addAttribute("product", new ProductVO());
+            model.addAttribute("editmode", false);
+        }
+
+        // now go get the list of paginated products in the batch
+
+
+
+        if(productnamesearch.isPresent() && productnamesearch.get() != null && productnamesearch.get() != "" && productnamesearch.get() != "null") {
+            batchControllerHelper.bindFilterProductsLikeSearchForCheckoutUI(
+                    model,
+                    page,
+                    size,
+                    productnamesearch.get()
+            )
+        } else {
+            // default behavior is to bind a list of all the products in the batch to a table for display
+            batchControllerHelper.bindAllProducts(model, page, size, batch.get())
+        }
+
+        bindProductTypes(model)
+        techvvsAuthService.checkuserauth(model)
+        return "batch/admin.html";
+    }
+
+    void bindProductTypes(Model model){
+        // get all the producttype objects and bind them to select dropdown
+        List<ProductTypeVO> productTypeVOS = productTypeRepo.findAll();
+        model.addAttribute("producttypes", productTypeVOS);
+    }
+
+    // todo: enforce admin rights to view this page
+    // Admin page for editing the batch, removing and adding products and whatnot
+    @GetMapping("/admin/selectproduct")
+    String adminSelectProduct(@ModelAttribute( "batch" ) BatchVO batchVO,
+                 Model model,
+                 @RequestParam("batchid") Optional<Integer> batchid,
+                 @RequestParam("productid") Optional<Integer> productid,
+                 @RequestParam("productnamesearch") Optional<String> productnamesearch,
+                 @RequestParam("page") Optional<Integer> page,
+                 @RequestParam("size") Optional<Integer> size,
+                 HttpServletRequest req){
+
+
+        if(enforceAdminRights(model,req)) {
+            // do nothing, proceed.  We have injected a value into the model for viewing admin buttons on the ui too
+        } else {
+            return "auth/index.html" // return to home page, will send user to logout page if they have expired cookie i think
+        }
+
+        // this batch object will be the batch in scope
+        Optional<BatchVO> batch = Optional.empty()
+
+        // bind the batch into scope
+        if(batchid.isPresent()){
+            batch = batchRepo.findById(batchid.get());
+            model.addAttribute("batch", batch.get());
+        }
+
+        // now go get the list of paginated products in the batch
+
+
+
+        if(productnamesearch.isPresent() && productnamesearch.get() != null && productnamesearch.get() != "" && productnamesearch.get() != "null") {
+            batchControllerHelper.bindFilterProductsLikeSearchForCheckoutUI(
+                    model,
+                    page,
+                    size,
+                    productnamesearch.get()
+            )
+        } else {
+            // default behavior is to bind a list of all the products in the batch to a table for display
+            batchControllerHelper.bindAllProducts(model, page, size, batch.get())
+        }
+
+        techvvsAuthService.checkuserauth(model)
+        return "batch/admin.html";
+    }
+
+
+    boolean enforceAdminRights(Model model, HttpServletRequest request) {
+
+        Cookie[] cookies = request.getCookies();
+
+        String token = ""
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("techvvs_token".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                }
+            }
+        } else {
+            return false // return false if cookies is null
+        }
+
+        List<String> authorities = jwtTokenProvider.extractAuthorities(token) // passing internal token in here
+        if(hasRole(authorities, String.valueOf(Role.ROLE_ADMIN))){
+            // write code here to add certain attributes to the model that will enable the user to click certain buttons
+            model.addAttribute("AdminViewActivated", "yes")
+            return true
+        }
+        return false
+    }
+
+    boolean hasRole(List authorities, String roleToCheck) {
+        println "Authorities: ${authorities}"
+        println "Role to check: ${roleToCheck}"
+
+        return authorities.any { authority ->
+            def valueToCompare = authority instanceof GrantedAuthority ? authority.authority : authority.toString()
+            valueToCompare == roleToCheck
+        }
+    }
 
     @GetMapping("/browseBatch")
     String browseBatch(@ModelAttribute( "batch" ) BatchVO batchVO,

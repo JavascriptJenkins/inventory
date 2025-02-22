@@ -347,6 +347,45 @@ class BatchControllerHelper {
         model.addAttribute("producttypelist", productTypeVOS);
     }
 
+
+
+
+    // being used on the batch/admin.html page
+    void bindAllProducts(Model model,
+                         Optional<Integer> page,
+                         Optional<Integer> size,
+                         BatchVO batchVO){
+
+
+        //pagination
+        int currentPage = page.orElse(0);
+        int pageSize = size.isEmpty() ? 5 : size.get();
+        Pageable pageable;
+        if(currentPage == 0){
+            pageable = PageRequest.of(0 , pageSize);
+        } else {
+            pageable = PageRequest.of(currentPage - 1, pageSize);
+        }
+
+
+        // this needs to only find these based on their batchid
+        Page<ProductVO> pageOfProduct = productRepo.findAllByBatch(batchVO,pageable);
+
+        int totalPages = pageOfProduct.getTotalPages();
+
+        List<Integer> pageNumbers = new ArrayList<>();
+
+        while(totalPages > 0){
+            pageNumbers.add(totalPages);
+            totalPages = totalPages - 1;
+        }
+
+        model.addAttribute("pageNumbers", pageNumbers);
+        model.addAttribute("page", currentPage);
+        model.addAttribute("size", pageOfProduct.getTotalPages());
+        model.addAttribute("productPage", pageOfProduct);
+    }
+
     void bindProducts(Model model, Optional<Integer> page,ProductTypeVO productTypeVO, BatchVO batchVO){
 
 
