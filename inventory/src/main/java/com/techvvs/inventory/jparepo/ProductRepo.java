@@ -36,6 +36,10 @@ public interface ProductRepo extends JpaRepository<ProductVO, Integer> {
     List<ProductVO> findAllByDescription(String desc);
 
     Page<ProductVO> findAllByBatch(BatchVO batchVO, Pageable pageable);
+
+    @Query("SELECT p FROM ProductVO p WHERE p.batch = :batchVO AND LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))")
+    Page<ProductVO> searchByBatchAndName(@Param("batchVO") BatchVO batchVO, @Param("name") String name, Pageable pageable);
+
 //    Page<ProductVO> findAllByTransaction(TransactionVO transactionVO, Pageable pageable);
 
     Optional<ProductVO> findByBarcode(String barcode);

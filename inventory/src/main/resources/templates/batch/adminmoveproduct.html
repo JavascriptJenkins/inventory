@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Admin Batch Data</title>
+    <title>Admin Move Product</title>
 
     <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
@@ -152,8 +152,7 @@
 
         function validateAllFields() {
             const inputFields = [
-                'barcode', 'name', 'description', 'price', 'cost', 'quantity',
-                'quantityremaining', 'producttypeid', 'notes', 'vendor', 'createTimeStamp', 'updateTimeStamp', 'batchname', 'batch_type_id'
+                 'batchidforproduct'
             ];
             inputFields.forEach(validateInputField);
         }
@@ -182,7 +181,7 @@
 
     <!-- New Product Edit Section -->
     <div th:if="${!editmode}" class="tip-box">Create a New Batch and First Product by filling out the form.  </div>
-    <div th:if="${editmode}" class="tip-box">Modify product attributes.  If a product has been sold, price change is not possible.</div>
+    <div th:if="${editmode}" class="tip-box">Select a new batch to move your product to.  If this product has been sold already, this will not be possible.</div>
 
     <div id="successDiv" class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">
         Success
@@ -192,95 +191,24 @@
         Error
     </div>
 
-    <form th:action="@{/batch/admin/product/edit}" method="post" th:object="${product}">
-        <div class="row mb-3">
-            <div class="col-md-4">
-                <label class="form-label">Barcode </label>
-                <input th:if="${product.barcode != null}" type="text" th:field="*{barcode}" id="barcode" class="form-control edit-validation-group" placeholder="Barcode" readonly>
-                <input th:if="${product.barcode == null}" type="text" id="barcode" class="form-control" placeholder="Generated upon create" readonly>
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">Name</label>
-                <input type="text" th:field="*{name}" id="name" class="form-control edit-validation-group" placeholder="Product Name">
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">Description</label>
-                <input type="text" th:field="*{description}" id="description" class="form-control edit-validation-group" placeholder="Description">
-            </div>
-        </div>
-        <div class="row mb-3">
-            <div class="col-md-4">
-                <label class="form-label">Vendor</label>
-                <input type="text" th:field="*{vendor}" id="vendor" class="form-control edit-validation-group" placeholder="Vendor">
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">Create Time Stamp</label>
-                <input th:if="${product.createTimeStamp != null}" type="text" th:field="*{createTimeStamp}" id="createTimeStamp" class="form-control edit-validation-group" placeholder="createTimeStamp" readonly>
-                <input th:if="${product.createTimeStamp == null}" type="text" id="createTimeStamp" class="form-control" placeholder="Generated upon create" readonly>
+    <form th:action="@{/batch/admin/product/move?batchid=__${batch.batchid}__}" method="post" th:object="${product}">
 
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">Update Time Stamp</label>
-                <input th:if="${product.updateTimeStamp != null}" type="text" th:field="*{updateTimeStamp}" id="updateTimeStamp" class="form-control edit-validation-group" placeholder="updateTimeStamp" readonly>
-                <input th:if="${product.updateTimeStamp == null}" type="text" id="updateTimeStamp" class="form-control" placeholder="Generated upon create" readonly>
 
-            </div>
-        </div>
         <div class="row mb-3">
-            <div class="col-md-4">
-                <label class="form-label">Price</label>
-                <input type="number" step="0.01" th:field="*{price}" id="price" class="form-control edit-validation-group" placeholder="Price">
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">Cost</label>
-                <input type="number" step="0.01" th:field="*{cost}" id="cost" class="form-control edit-validation-group" placeholder="Cost">
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">Quantity</label>
-                <input type="number" th:field="*{quantity}" id="quantity" class="form-control edit-validation-group" placeholder="Quantity">
-            </div>
-        </div>
-        <div class="row mb-3">
-            <div class="col-md-4">
-                <label class="form-label">Quantity Remaining</label>
-                <input th:if="${product.quantityremaining != null}" type="number" th:field="*{quantityremaining}" id="quantityremaining" class="form-control edit-validation-group" placeholder="Quantity Remaining">
-                <input th:if="${product.quantityremaining == null}" type="number" th:field="*{quantityremaining}" id="quantityremaining" class="form-control" placeholder="Generated upon create" readonly>
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">Product Type</label>
-<!--                <select th:if="${product != null}" th:field="*{producttypeid}" id="producttypeid" class="form-control">-->
-<!--                    <option th:each="producttype : ${producttypes}" th:value="${producttype.producttypeid}" th:text="${producttype.name}"></option>-->
-<!--                </select>-->
 
-                <select class="form-control edit-validation-group" th:field="*{producttypeid}" id="producttypeid" readonly>
-                    <option value="" selected>Select Product Type</option>
-                    <option th:each="producttype : ${producttypes}" th:value="${producttype.producttypeid}" th:text="${producttype.name}"></option>
-                </select>
-            </div>
             <div class="col-md-4">
-                <label class="form-label">Notes</label>
-                <textarea th:field="*{notes}" id="notes" class="form-control" placeholder="Notes"></textarea>
-            </div>
-        </div>
-        <div class="row mb-3">
-            <div class="col-md-4">
-                <label class="form-label">Batch Name</label>
-                <input th:if="${product.batch == null}" type="text" th:field="*{batchname}" id="batchname" class="form-control edit-validation-group" placeholder="Batch Name">
-                <input th:if="${product.batch != null}" type="text" th:field="*{batch.name}" id="batchname" class="form-control edit-validation-group" placeholder="Batch Name" readonly>
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">Batch Type</label>
+                <label class="form-label">Select Target Batch</label>
 
-                <select th:if="${product.batch != null}" class="form-control edit-validation-group" th:field="*{batch_type_id}" id="batch_type_id" readonly>
-                    <option th:each="batchtype : ${batchtypes}" th:value="${batch.batch_type_id.batch_type_id}" th:text="${batch.batch_type_id.name}"></option>
-                </select>
-
-                <select th:if="${product.batch == null}" class="form-control edit-validation-group" th:field="*{batch_type_id}" id="batch_type_id" readonly>
-                    <option value="" selected>Select Batch Type</option>
-                    <option th:each="batchtype : ${batchtypes}" th:value="${batchtype.batch_type_id}" th:text="${batchtype.name}"></option>
+                <label for="batchidforproduct"></label><select class="form-control edit-validation-group" th:field="*{batch.batchid}" id="batchidforproduct" readonly>
+                    <option value="" selected>Select Target Batch</option>
+                    <option th:each="batch : ${batches}"
+                            th:value="${batch.batchid}"
+                            th:text="${batch.name + ' (' + batch.batchid + ') - ' + batch.batchnumber}">
+                    </option>
                 </select>
             </div>
         </div>
+
 
         <!-- set the id of the product to 0 so the backend knows it is a create -->
         <input th:if="${product.product_id == null && !editmode}"
@@ -334,7 +262,6 @@
                 <th scope="col">Batch Name</th>
                 <th scope="col">Batch ID</th>
                 <th scope="col">Create Date</th>
-                <th scope="col">Actions</th>
             </tr>
             </thead>
             <tbody>
@@ -371,14 +298,7 @@
                 <td th:text="${product.batch.name}"></td>
                 <td th:text="${product.batch.batchid}"></td>
                 <td th:text="${product.createTimeStamp}"></td>
-                <td>
-                    <a th:href="@{/batch/admin/move/product?size=1&page=0&batchid=__${batch != null ? batch.batchid : '0'}__&productnamesearch=__${productNameSearchValue == null ? '' : productNameSearchValue}__&productid=__${product.product_id == null ? 0 : product.product_id}__}"
-                       th:data-barcode="${product.barcode}"
-                       id="barcode-${product.barcode}"
-                       class="btn btn-secondary btn-sm">
-                        Move to Different Batch
-                    </a>
-                </td>
+
 
 
             </tr>

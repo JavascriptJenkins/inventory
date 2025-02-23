@@ -25,6 +25,7 @@ import com.techvvs.inventory.validation.ValidateBatch
 import com.techvvs.inventory.viewcontroller.constants.ControllerConstants
 import com.techvvs.inventory.viewcontroller.helper.BatchControllerHelper
 import com.techvvs.inventory.viewcontroller.helper.ProductHelper
+import org.hibernate.engine.jdbc.batch.spi.Batch
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -381,6 +382,12 @@ public class CleanBatchViewController {
         model.addAttribute("batchtypes", batchTypeVOS);
     }
 
+    void bindBatches(Model model){
+        // get all the batchtypes objects and bind them to select dropdown
+        List<BatchVO> batches = batchRepo.findAll();
+        model.addAttribute("batches", batches);
+    }
+
     ProductVO generateTimestampsAndBarcode(ProductVO productVO, BatchVO batchVO){
         productVO.updateTimeStamp = LocalDateTime.now()
         productVO.createTimeStamp = LocalDateTime.now()
@@ -424,6 +431,139 @@ public class CleanBatchViewController {
             valueToCompare == roleToCheck
         }
     }
+
+    // todo: make sure this cannot be done for products that already have started selling...
+    // Admin page for moving products between batches
+    @GetMapping("/admin/move/product")
+    String moveProduct(@ModelAttribute( "batch" ) BatchVO batchVO,
+                 Model model,
+                 @RequestParam("batchid") Optional<Integer> batchid,
+                 @RequestParam("productnamesearch") Optional<String> productnamesearch,
+                 @RequestParam("productid") Optional<Integer> productid,
+                 @RequestParam("page") Optional<Integer> page,
+                 @RequestParam("size") Optional<Integer> size,
+                 HttpServletRequest req){
+
+
+        if(enforceAdminRights(model,req)) {
+            // do nothing, proceed.  We have injected a value into the model for viewing admin buttons on the ui too
+        } else {
+            return "auth/index.html" // return to home page, will send user to logout page if they have expired cookie i think
+        }
+
+        // this batch object will be the batch in scope
+        Optional<BatchVO> batch = Optional.empty()
+        Optional<ProductVO> product = Optional.empty()
+
+        // bind the batch into scope
+        if(batchid.isPresent()){
+            batch = batchRepo.findById(batchid.get());
+            model.addAttribute("batch", batch.get());
+        }
+
+        Optional<String> filtertablename = Optional.empty()
+        // bind the product into scope
+        if(productid.isPresent() && productid.get() != 0 && productid.get() != null) {
+            product = productRepo.findById(productid.get());
+            filtertablename = Optional.of(product.get().name) // this will filter the table below
+            model.addAttribute("product", product.get());
+            model.addAttribute("editmode", true);
+        } else {
+            model.addAttribute("product", new ProductVO());
+            model.addAttribute("editmode", false);
+        }
+
+        // now go get the list of paginated products in the batch
+        if(productnamesearch.isPresent() && productnamesearch.get() != null && productnamesearch.get() != "" && productnamesearch.get() != "null") {
+            batchControllerHelper.bindFilterProductsLikeSearchForCheckoutUI(
+                    model,
+                    page,
+                    size,
+                    productnamesearch.get()
+            )
+        } else if(filtertablename.isPresent() && !filtertablename.isEmpty()) {
+            // default behavior is to bind a list of all the products in the batch to a table for display
+            batchControllerHelper.bindFilterProductsLikeSearchForMoveProductUI(model, page, size, filtertablename.get(), batch.get())
+        } else {
+            // default behavior is to bind a list of all the products in the batch to a table for display
+            batchControllerHelper.bindAllProducts(model, page, size, batch.get())
+        }
+
+        bindBatches(model)
+        bindBatchTypes(model)
+        bindProductTypes(model)
+        techvvsAuthService.checkuserauth(model)
+        return "batch/adminmoveproduct.html";
+    }
+
+
+    // todo: make sure this cannot be done for products that already have started selling...
+    // Admin page for moving products between batches
+    @PostMapping("/admin/product/move")
+    String moveProductPostMapping(@ModelAttribute( "batch" ) BatchVO batchVO,
+                       Model model,
+                       @RequestParam("batchid") Optional<Integer> batchid,
+                       @RequestParam("productnamesearch") Optional<String> productnamesearch,
+                       @RequestParam("productid") Optional<Integer> productid,
+                       @ModelAttribute( "product" ) ProductVO productVO,
+                       @RequestParam("page") Optional<Integer> page,
+                       @RequestParam("size") Optional<Integer> size,
+                       HttpServletRequest req){
+
+
+        if(enforceAdminRights(model,req)) {
+            // do nothing, proceed.  We have injected a value into the model for viewing admin buttons on the ui too
+        } else {
+            return "auth/index.html" // return to home page, will send user to logout page if they have expired cookie i think
+        }
+
+        // this batch object will be the batch in scope
+        Optional<BatchVO> batch = Optional.empty()
+        Optional<ProductVO> product = Optional.empty()
+
+        if(batchid.present){
+            int targetbatchid = productVO.batch.batchid
+            // here we have to parse the incoming productVO and see what the batchid is and move it
+            batch = Optional.of(batchService.moveProductToNewBatch(batchid.get(), productVO))
+            model.addAttribute("successMessage", "Product moved successfully from batch: "+batchid.get() + " to batch: "+targetbatchid)
+        }
+
+        // bind the batch into scope
+        if(batchid.isPresent() && batch.isEmpty()){
+            batch = batchRepo.findById(batchid.get());
+            model.addAttribute("batch", batch.get());
+        }
+
+        // bind the product into scope
+        if(productid.isPresent() && productid.get() != 0 && productid.get() != null) {
+            product = productRepo.findById(productid.get());
+            model.addAttribute("product", product.get());
+            model.addAttribute("editmode", true);
+        } else {
+            model.addAttribute("product", new ProductVO());
+            model.addAttribute("editmode", false);
+        }
+
+        // now go get the list of paginated products in the batch
+        if(productnamesearch.isPresent() && productnamesearch.get() != null && productnamesearch.get() != "" && productnamesearch.get() != "null") {
+            batchControllerHelper.bindFilterProductsLikeSearchForCheckoutUI(
+                    model,
+                    page,
+                    size,
+                    productnamesearch.get()
+            )
+        } else {
+            // default behavior is to bind a list of all the products in the batch to a table for display
+            batchControllerHelper.bindAllProducts(model, page, size, batch.get())
+        }
+
+        bindBatches(model)
+        bindBatchTypes(model)
+        bindProductTypes(model)
+        techvvsAuthService.checkuserauth(model)
+        return "batch/adminmoveproduct.html";
+    }
+
 
     @GetMapping("/browseBatch")
     String browseBatch(@ModelAttribute( "batch" ) BatchVO batchVO,

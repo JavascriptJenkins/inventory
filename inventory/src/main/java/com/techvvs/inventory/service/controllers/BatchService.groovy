@@ -2,6 +2,7 @@ package com.techvvs.inventory.service.controllers
 
 import com.techvvs.inventory.jparepo.BatchRepo
 import com.techvvs.inventory.jparepo.BatchTypeRepo
+import com.techvvs.inventory.jparepo.ProductRepo
 import com.techvvs.inventory.model.BatchTypeVO
 import com.techvvs.inventory.model.BatchVO
 import com.techvvs.inventory.model.ProductVO
@@ -23,6 +24,9 @@ class BatchService {
 
     @Autowired
     BatchControllerHelper batchControllerHelper
+
+    @Autowired
+    ProductRepo productRepo
 
     // todo: do a lookup to make sure batchnumber is unique
     @Transactional
@@ -61,6 +65,57 @@ class BatchService {
         return batchVO;
 
 
+    }
+
+
+    BatchVO moveProductToNewBatch(Integer originalBatchId, ProductVO productVO) {
+
+        // Fetch the original and target batches
+        BatchVO originalBatch = batchRepo.findByBatchid(originalBatchId);
+
+
+        if (originalBatch == null) {
+            throw new IllegalArgumentException("original batch not found.");
+        }
+
+        // Using Iterator to safely remove the product while iterating
+        Iterator<ProductVO> iterator = originalBatch.getProduct_set().iterator();
+        boolean productRemoved = false;
+
+        int targetbatchid = 0
+        ProductVO productToRemove = null
+        while (iterator.hasNext()) {
+            ProductVO product = iterator.next();
+            if (product.getProduct_id().equals(productVO.getProduct_id())) {
+                iterator.remove();  // Remove the product safely
+                productToRemove = product
+                targetbatchid = product.getBatch().getBatchid() // set it to value that came in from the ui
+                productToRemove.batch.batchid = originalBatchId /// need to reset this from the ui
+                productRemoved = true;
+                break;
+            }
+        }
+
+        if (!productRemoved) {
+            throw new IllegalArgumentException("Product not found in the original batch.");
+        }
+
+        productVO = productRepo.save(productToRemove)
+
+        // Save the updated original batch after removal
+        originalBatch = batchRepo.save(originalBatch);
+
+        BatchVO targetBatch = batchRepo.findByBatchid(targetbatchid);
+
+        // Update the product reference to the managed batch entity
+        productVO.setBatch(targetBatch);
+        productRepo.save(productVO); // Save updated product with new batch reference
+
+        // Add the product to the target batch and save
+        targetBatch.getProduct_set().add(productVO);
+        targetBatch = batchRepo.save(targetBatch);
+
+        return originalBatch
     }
 
 

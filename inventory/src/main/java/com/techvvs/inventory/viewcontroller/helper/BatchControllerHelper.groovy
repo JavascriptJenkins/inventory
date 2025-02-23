@@ -814,4 +814,43 @@ class BatchControllerHelper {
         model.addAttribute("productNameSearchValue", name);
     }
 
+    void bindFilterProductsLikeSearchForMoveProductUI(Model model,
+                                                   Optional<Integer> page,
+                                                   Optional<Integer> size,
+                                                   String name,
+                                                      BatchVO batchVO
+    ){
+
+
+        //pagination
+        int currentPage = page.orElse(0);
+        int pageSize = size.isEmpty() ? 5 : size.get();
+        Pageable pageable;
+        if(currentPage == 0){
+            pageable = PageRequest.of(0 , pageSize);
+        } else {
+            pageable = PageRequest.of(currentPage - 1, pageSize);
+        }
+
+        // NOTE: This will only get products where quanityremaining > 0
+        // This is using case insensitive search that works with both h2 and postgresql
+        Page<ProductVO> pageOfProduct = productRepo.searchByBatchAndName(batchVO, name, pageable);
+
+
+        int totalPages = pageOfProduct.getTotalPages();
+
+        List<Integer> pageNumbers = new ArrayList<>();
+
+        while(totalPages > 0){
+            pageNumbers.add(totalPages);
+            totalPages = totalPages - 1;
+        }
+
+        model.addAttribute("pageNumbers", pageNumbers);
+        model.addAttribute("page", currentPage);
+        model.addAttribute("size", pageOfProduct.getTotalPages());
+        model.addAttribute("productPage", pageOfProduct);
+        model.addAttribute("productNameSearchValue", name);
+    }
+
 }
