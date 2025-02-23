@@ -10,6 +10,7 @@ import com.techvvs.inventory.jparepo.PackageRepo
 import com.techvvs.inventory.jparepo.PackageTypeRepo
 import com.techvvs.inventory.jparepo.ProductRepo
 import com.techvvs.inventory.jparepo.ProductTypeRepo
+import com.techvvs.inventory.model.BatchVO
 import com.techvvs.inventory.model.CartVO
 import com.techvvs.inventory.model.CrateVO
 import com.techvvs.inventory.model.CustomerVO
@@ -18,6 +19,8 @@ import com.techvvs.inventory.model.PackageVO
 import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.TransactionVO
+import com.techvvs.inventory.validation.StringSecurityValidator
+import com.techvvs.inventory.validation.generic.ObjectValidator
 import org.apache.commons.math3.stat.descriptive.summary.Product
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -59,6 +62,16 @@ class ProductService {
     @Autowired
     BarcodeHelper barcodeHelper
 
+    @Autowired
+    StringSecurityValidator stringSecurityValidator
+
+    @Autowired
+    ObjectValidator objectValidator
+
+    @Autowired
+    BatchService batchService
+
+
     @Transactional
     void saveProductAssociations(TransactionVO transactionVO) {
 
@@ -88,8 +101,29 @@ class ProductService {
 
     }
 
+    ProductVO validateProductOnAdminBatchPage(ProductVO productVO, Model model, boolean iscreate) {
+
+        // first - validate against security issues
+        stringSecurityValidator.validateStringValues(productVO, model)
+
+        // second - validate all object fields
+        objectValidator.validateForCreateOrEdit(productVO, model, iscreate)
+
+        // third - do any business logic / page specific validation below
+
+
+        return productVO
+    }
+
+    BatchVO createBatchForFirstProductInBatch(String batchname){
+        // create a batch record in the database
+        return batchService.createBatchRecord(batchname);
+    }
+
+
     @Transactional
     ProductVO saveProduct(ProductVO productVO){
+        productVO.updateTimeStamp = LocalDateTime.now()
         return productRepo.save(productVO)
     }
 
@@ -469,6 +503,14 @@ class ProductService {
         return cartVO
     }
 
+
+    @Transactional
+    Optional<ProductVO> createProduct(ProductVO productVO) {
+
+        // implement other logic here from the xlsx page
+        productVO = productRepo.save(productVO)
+        return Optional.of(productVO)
+    }
 
 
 

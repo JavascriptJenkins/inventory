@@ -153,7 +153,7 @@
         function validateAllFields() {
             const inputFields = [
                 'barcode', 'name', 'description', 'price', 'cost', 'quantity',
-                'quantityremaining', 'producttypeid', 'notes', 'vendor', 'createTimeStamp', 'updateTimeStamp'
+                'quantityremaining', 'producttypeid', 'notes', 'vendor', 'createTimeStamp', 'updateTimeStamp', 'batchname', 'batch_type_id'
             ];
             inputFields.forEach(validateInputField);
         }
@@ -181,14 +181,23 @@
     </div>
 
     <!-- New Product Edit Section -->
-    <div class="tip-box">Modify product attributes.  If a product has been sold, price change is not possible.</div>
+    <div th:if="${!editmode}" class="tip-box">Create a New Batch and First Product by filling out the form.  </div>
+    <div th:if="${editmode}" class="tip-box">Modify product attributes.  If a product has been sold, price change is not possible.</div>
+
+    <div id="successDiv" class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">
+        Success
+    </div>
+
+    <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">
+        Error
+    </div>
 
     <form th:action="@{/batch/admin/product/edit}" method="post" th:object="${product}">
         <div class="row mb-3">
             <div class="col-md-4">
                 <label class="form-label">Barcode </label>
-                <input th:if="${product.barcode != null}" type="text" th:field="*{barcode}" id="barcode" class="form-control edit-validation-group" placeholder="Barcode">
-                <input th:if="${product.barcode == null}" type="text" id="barcode" class="form-control" placeholder="Generated upon create" disabled>
+                <input th:if="${product.barcode != null}" type="text" th:field="*{barcode}" id="barcode" class="form-control edit-validation-group" placeholder="Barcode" readonly>
+                <input th:if="${product.barcode == null}" type="text" id="barcode" class="form-control" placeholder="Generated upon create" readonly>
             </div>
             <div class="col-md-4">
                 <label class="form-label">Name</label>
@@ -206,14 +215,14 @@
             </div>
             <div class="col-md-4">
                 <label class="form-label">Create Time Stamp</label>
-                <input th:if="${product.createTimeStamp != null}" type="text" th:field="*{createTimeStamp}" id="createTimeStamp" class="form-control edit-validation-group" placeholder="createTimeStamp" disabled>
-                <input th:if="${product.createTimeStamp == null}" type="text" id="createTimeStamp" class="form-control" placeholder="Generated upon create" disabled>
+                <input th:if="${product.createTimeStamp != null}" type="text" th:field="*{createTimeStamp}" id="createTimeStamp" class="form-control edit-validation-group" placeholder="createTimeStamp" readonly>
+                <input th:if="${product.createTimeStamp == null}" type="text" id="createTimeStamp" class="form-control" placeholder="Generated upon create" readonly>
 
             </div>
             <div class="col-md-4">
                 <label class="form-label">Update Time Stamp</label>
-                <input th:if="${product.updateTimeStamp != null}" type="text" th:field="*{updateTimeStamp}" id="updateTimeStamp" class="form-control edit-validation-group" placeholder="updateTimeStamp" disabled>
-                <input th:if="${product.updateTimeStamp == null}" type="text" id="updateTimeStamp" class="form-control" placeholder="Generated upon create" disabled>
+                <input th:if="${product.updateTimeStamp != null}" type="text" th:field="*{updateTimeStamp}" id="updateTimeStamp" class="form-control edit-validation-group" placeholder="updateTimeStamp" readonly>
+                <input th:if="${product.updateTimeStamp == null}" type="text" id="updateTimeStamp" class="form-control" placeholder="Generated upon create" readonly>
 
             </div>
         </div>
@@ -235,7 +244,7 @@
             <div class="col-md-4">
                 <label class="form-label">Quantity Remaining</label>
                 <input th:if="${product.quantityremaining != null}" type="number" th:field="*{quantityremaining}" id="quantityremaining" class="form-control edit-validation-group" placeholder="Quantity Remaining">
-                <input th:if="${product.quantityremaining == null}" type="number" th:field="*{quantityremaining}" id="quantityremaining" class="form-control" placeholder="Generated upon create" disabled>
+                <input th:if="${product.quantityremaining == null}" type="number" th:field="*{quantityremaining}" id="quantityremaining" class="form-control" placeholder="Generated upon create" readonly>
             </div>
             <div class="col-md-4">
                 <label class="form-label">Product Type</label>
@@ -253,6 +262,32 @@
                 <textarea th:field="*{notes}" id="notes" class="form-control" placeholder="Notes"></textarea>
             </div>
         </div>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label class="form-label">Batch Name</label>
+                <input th:if="${product.batch == null}" type="text" th:field="*{batchname}" id="batchname" class="form-control edit-validation-group" placeholder="Batch Name">
+                <input th:if="${product.batch != null}" type="text" th:field="*{batch.name}" id="batchname" class="form-control edit-validation-group" placeholder="Batch Name" readonly>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Batch Type</label>
+
+                <select th:if="${product.batch != null}" class="form-control edit-validation-group" th:field="*{batch_type_id}" id="batch_type_id" readonly>
+                    <option th:each="batchtype : ${batchtypes}" th:value="${batch.batch_type_id.batch_type_id}" th:text="${batch.batch_type_id.name}"></option>
+                </select>
+
+                <select th:if="${product.batch == null}" class="form-control edit-validation-group" th:field="*{batch_type_id}" id="batch_type_id" readonly>
+                    <option value="" selected>Select Batch Type</option>
+                    <option th:each="batchtype : ${batchtypes}" th:value="${batchtype.batch_type_id}" th:text="${batchtype.name}"></option>
+                </select>
+            </div>
+        </div>
+
+        <!-- set the id of the product to 0 so the backend knows it is a create -->
+        <input th:if="${product.product_id == null && !editmode}"
+               type="hidden"
+               name="product_id"
+               th:attr="value=${product.product_id == null ? 0 : product.product_id}">
+
         <!-- Need to account for all fields not displayed on the product object, and also editmode-->
         <input th:if="${product.product_id != null && product.product_id != 0 && editmode}" type="hidden" th:field="*{product_id}">
         <input th:if="${product.product_id != null && product.product_id != 0 && editmode}" type="hidden" th:field="*{batch}">
@@ -279,8 +314,6 @@
 
     <div class="tip-box">Select a Product by clicking on the Barcode</div>
 
-    <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
-    <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
     <br>
     <br>
 

@@ -97,6 +97,12 @@ class ProductVO implements Serializable, Comparable<ProductVO> {
     @Transient
     Integer quantityselected
 
+    @Transient
+    String batchname
+
+    @Transient
+    Integer batch_type_id
+
     // generic fields below
     @JsonProperty
     LocalDateTime updateTimeStamp;

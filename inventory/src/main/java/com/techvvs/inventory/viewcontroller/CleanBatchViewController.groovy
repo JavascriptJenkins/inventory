@@ -1,8 +1,12 @@
 package com.techvvs.inventory.viewcontroller
 
+import com.google.api.OAuthRequirementsOrBuilder
+import com.techvvs.inventory.barcode.impl.BarcodeGenerator
 import com.techvvs.inventory.constants.AppConstants
+import com.techvvs.inventory.constants.MessageConstants
 import com.techvvs.inventory.dao.BatchDao
 import com.techvvs.inventory.jparepo.BatchRepo
+import com.techvvs.inventory.jparepo.BatchTypeRepo
 import com.techvvs.inventory.jparepo.ProductRepo
 import com.techvvs.inventory.jparepo.ProductTypeRepo
 import com.techvvs.inventory.model.BatchTypeVO
@@ -13,11 +17,14 @@ import com.techvvs.inventory.modelnonpersist.FileVO
 import com.techvvs.inventory.security.JwtTokenProvider
 import com.techvvs.inventory.security.Role
 import com.techvvs.inventory.service.auth.TechvvsAuthService
+import com.techvvs.inventory.service.controllers.BatchService
+import com.techvvs.inventory.service.controllers.ProductService
 import com.techvvs.inventory.util.FormattingUtil
 import com.techvvs.inventory.util.TechvvsFileHelper
 import com.techvvs.inventory.validation.ValidateBatch
 import com.techvvs.inventory.viewcontroller.constants.ControllerConstants
 import com.techvvs.inventory.viewcontroller.helper.BatchControllerHelper
+import com.techvvs.inventory.viewcontroller.helper.ProductHelper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -77,6 +84,21 @@ public class CleanBatchViewController {
 
     @Autowired
     ProductTypeRepo productTypeRepo
+
+    @Autowired
+    BatchTypeRepo batchTypeRepo
+
+    @Autowired
+    ProductService productService
+
+    @Autowired
+    BatchService batchService
+
+    @Autowired
+    BarcodeGenerator barcodeGenerator
+
+    @Autowired
+    ProductHelper productHelper
 
 
 
@@ -218,25 +240,21 @@ public class CleanBatchViewController {
             batchControllerHelper.bindAllProducts(model, page, size, batch.get())
         }
 
+        bindBatchTypes(model)
         bindProductTypes(model)
         techvvsAuthService.checkuserauth(model)
         return "batch/admin.html";
     }
 
-    void bindProductTypes(Model model){
-        // get all the producttype objects and bind them to select dropdown
-        List<ProductTypeVO> productTypeVOS = productTypeRepo.findAll();
-        model.addAttribute("producttypes", productTypeVOS);
-    }
-
-    // todo: enforce admin rights to view this page
-    // Admin page for editing the batch, removing and adding products and whatnot
-    @GetMapping("/admin/selectproduct")
-    String adminSelectProduct(@ModelAttribute( "batch" ) BatchVO batchVO,
+    // This processes products on the batch/admin Administrate Batch Data Page
+    @PostMapping("/admin/product/edit")
+    String adminProductEdit(
+            @ModelAttribute( "batch" ) BatchVO batchVO,
+            @ModelAttribute( "product" ) ProductVO productVO,
                  Model model,
                  @RequestParam("batchid") Optional<Integer> batchid,
-                 @RequestParam("productid") Optional<Integer> productid,
                  @RequestParam("productnamesearch") Optional<String> productnamesearch,
+                 @RequestParam("productid") Optional<Integer> productid,
                  @RequestParam("page") Optional<Integer> page,
                  @RequestParam("size") Optional<Integer> size,
                  HttpServletRequest req){
@@ -250,11 +268,83 @@ public class CleanBatchViewController {
 
         // this batch object will be the batch in scope
         Optional<BatchVO> batch = Optional.empty()
+        Optional<ProductVO> product = Optional.empty()
 
         // bind the batch into scope
         if(batchid.isPresent()){
             batch = batchRepo.findById(batchid.get());
             model.addAttribute("batch", batch.get());
+        }
+
+        // bind the batch into scope
+        if(
+                productid.isPresent()
+                && productid.get() != 0 &&
+                productid.get() != null
+
+        ) {
+            // this means somebody selected a product from the table
+
+            product = productRepo.findById(productid.get());
+            model.addAttribute("product", product.get());
+            model.addAttribute("editmode", true);
+        } else if(productVO != null && productVO.product_id == 0){
+            /* CREATE */
+            product = Optional.of(productService.validateProductOnAdminBatchPage(productVO, model, true))
+
+            // only proceed if there is no error
+            if(model.getAttribute(MessageConstants.ERROR_MSG) == null){
+
+                // create new batch
+                BatchVO newBatch = batchService.createBatchRecord(productVO.batchname, productVO.batch_type_id)
+
+                // generate time stamps and barcode
+                productVO = generateTimestampsAndBarcode(productVO, newBatch)
+
+                // add the batch to the product
+                productVO.setBatch(newBatch);
+
+                // create the product
+                product = productService.createProduct(productVO)
+
+                // add the product to the batch
+                batch = Optional.of(batchService.addProductToBatch(product.get().batch, product.get()))
+
+
+                model.addAttribute("successMessage", "Product and Batch created successfully!")
+            }
+
+
+            model.addAttribute("product", product.get());
+            model.addAttribute("editmode", true);
+        } else if(productVO != null && productVO.product_id > 0){
+            /* UPDATE */
+            // todo: implement product edit/update here.
+            // steps:
+            // validate all the fields (when validating price, make sure no sales have occured of this product)
+            // don't allow updating of the product at all if any sales have occured of the product (except maybe cost, quantity, quantityremaining)
+            // save the product.  (during product save, do the barcode generation etc same way xlsx import does it)
+
+            product = Optional.of(productService.validateProductOnAdminBatchPage(productVO, model, false))
+
+            // only proceed if there is no error
+            if(model.getAttribute(MessageConstants.ERROR_MSG) == null){
+
+//                // create new batch
+//                BatchVO newBatch = batchService.createBatchRecord(productVO.batchname, productVO.batch_type_id)
+
+                // update the product
+                product = Optional.of(productService.saveProduct(product.get()))
+
+                batch = Optional.of(productVO.batch)
+                model.addAttribute("successMessage", "Product updated successfully!")
+            }
+
+            model.addAttribute("product", product.get());
+            model.addAttribute("editmode", true);
+        } else {
+            model.addAttribute("product", new ProductVO());
+            model.addAttribute("editmode", false);
         }
 
         // now go get the list of paginated products in the batch
@@ -273,10 +363,33 @@ public class CleanBatchViewController {
             batchControllerHelper.bindAllProducts(model, page, size, batch.get())
         }
 
+        bindProductTypes(model)
+        bindBatchTypes(model)
         techvvsAuthService.checkuserauth(model)
         return "batch/admin.html";
     }
 
+    void bindProductTypes(Model model){
+        // get all the producttype objects and bind them to select dropdown
+        List<ProductTypeVO> productTypeVOS = productTypeRepo.findAll();
+        model.addAttribute("producttypes", productTypeVOS);
+    }
+
+    void bindBatchTypes(Model model){
+        // get all the batchtypes objects and bind them to select dropdown
+        List<BatchTypeVO> batchTypeVOS = batchTypeRepo.findAll();
+        model.addAttribute("batchtypes", batchTypeVOS);
+    }
+
+    ProductVO generateTimestampsAndBarcode(ProductVO productVO, BatchVO batchVO){
+        productVO.updateTimeStamp = LocalDateTime.now()
+        productVO.createTimeStamp = LocalDateTime.now()
+        productVO.setProductnumber(Integer.valueOf(productHelper.generateProductNumber())); // ensure productnumber is unique
+        productVO.quantityremaining = productVO.quantity
+        ProductVO newSavedProduct = barcodeGenerator.generateAdhocBarcodeForProduct(productVO, batchVO)
+        productVO.barcode = newSavedProduct.barcode
+        return newSavedProduct
+    }
 
     boolean enforceAdminRights(Model model, HttpServletRequest request) {
 

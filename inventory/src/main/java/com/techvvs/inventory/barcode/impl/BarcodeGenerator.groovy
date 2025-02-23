@@ -2,10 +2,12 @@ package com.techvvs.inventory.barcode.impl
 
 import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.jparepo.ProductRepo
+import com.techvvs.inventory.model.BatchVO
 import com.techvvs.inventory.model.PackageVO
 import com.techvvs.inventory.model.ProductVO
 import org.apache.pdfbox.pdmodel.font.PDType0Font
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject
+import org.hibernate.engine.jdbc.batch.spi.Batch
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
@@ -319,6 +321,19 @@ class BarcodeGenerator {
                         + " | " + entity + " Name: " + entityname
         );
         contentStream.endText();
+    }
+
+
+
+    ProductVO generateAdhocBarcodeForProduct(ProductVO productVO, BatchVO batchVO) {
+
+
+        // Generate new barcode data for the product
+        String barcodeData = barcodeHelper.generateBarcodeData(1, 1, batchVO.batchnumber, 1)
+
+        // Add the barcode data to the product in the database
+        return barcodeHelper.addBarcodeToProduct(productVO, barcodeData)
+
     }
 
 

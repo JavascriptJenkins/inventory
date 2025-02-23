@@ -38,7 +38,7 @@ class BatchVO implements Serializable {
 
     @JsonProperty
     @ElementCollection(fetch = FetchType.EAGER)
-    Set<ProductVO> product_set
+    Set<ProductVO> product_set = new HashSet<>()
 
     @JsonProperty
     @ElementCollection(fetch = FetchType.EAGER)

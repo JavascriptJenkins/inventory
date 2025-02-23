@@ -6,6 +6,8 @@ import com.techvvs.inventory.model.ProductVO
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
+import javax.transaction.Transactional
+
 
 @Component
 class BarcodeHelper {
@@ -88,14 +90,23 @@ class BarcodeHelper {
     }
 
     // todo: add a check here to make sure barcodes are unique before adding....
-    void addBarcodeToProduct(ProductVO productVO, String barcodedata){
+    @Transactional
+    ProductVO addBarcodeToProduct(ProductVO productVO, String barcodedata){
 
         Optional<ProductVO> existingproduct = productRepo.findById(productVO.getProduct_id())
 
         // if we have an existing barcode do NOT overwrite it.
-        if(existingproduct.get().barcode != null && existingproduct.get().barcode.length() > 0){
+        if(existingproduct.present && existingproduct.get().barcode != null && existingproduct.get().barcode.length() > 0){
             // do nothing
+            return productVO;
         } else {
+
+            Optional<ProductVO> matchingBarcodeProduct = productRepo.findByBarcode(barcodedata)
+
+            if(matchingBarcodeProduct.present && matchingBarcodeProduct.get().product_id != productVO.product_id){
+                System.out.println("Found matching product with the same barcode.  This should not happen.  Returning early. ")
+                return productVO
+            }
 
             // probably don't need to do this....
             if(barcodedata.length() == 11){
@@ -103,7 +114,7 @@ class BarcodeHelper {
             }
 
             productVO.setBarcode(barcodedata)
-            productRepo.save(productVO)
+            return productRepo.save(productVO)
         }
 
     }
