@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Menu Data</title>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-kQtW33rZJAHjgefvhyyzcGF3C5TFyBQBA13V1RKPf4uH+bwyzQxZ6CmMZHmNBEfJ" crossorigin="anonymous"></script>
+    <link rel="stylesheet" type="text/css" media="all" href="/css/table.css" th:href="@{/css/table.css}" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        .glowing-valid {
+            box-shadow: 0 0 8px 2px #00ffff !important;
+        }
+        .glowing-invalid {
+            box-shadow: 0 0 8px 2px #ff0000 !important;
+        }
+    </style>
+    <style>
+        .table-hover tbody tr:hover {
+            background-color: #e0f7fa;
+        }
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: #f1f8fa;
+        }
+        .table-dark thead {
+            background-color: #343a40;
+            color: #fff;
+        }
+        .btn-secondary {
+            color: #fff;
+            background-color: #343a40;
+            border-color: #343a40;
+        }
+        .btn-secondary:hover {
+            background-color: #23272b;
+            border-color: #1d2124;
+        }
+        .header-dark {
+            background-color: #343a40;
+            color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            margin-bottom: 15px;
+            font-family: 'Roboto', sans-serif;
+            border: 1px solid transparent;
+            border-image: linear-gradient(to right, #c0c0c0, #ffffff);
+            border-image-slice: 1;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .tip-box {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: #00ffff;
+            text-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff, 0 0 15px #00ffff;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: rgba(0, 0, 0, 0.7);
+            margin-bottom: 15px;
+            animation: glow 1.5s infinite alternate;
+        }
+        .btn-dark-custom {
+            background-color: #343a40;
+            color: #fff;
+            border: 1px solid #343a40;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .btn-dark-custom:hover {
+            background-color: #1d2124; /* Darker shade on hover */
+            color: #f8f9fa; /* Lighter text on hover */
+        }
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff, 0 0 15px #00ffff;
+            }
+            to {
+                text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px #00ffff;
+            }
+        }
+    </style>
+
+    <script th:inline="javascript">
+        var editmode = /*[[${editmode}]]*/ false; // Thymeleaf will inject true/false here
+        console.log("Edit Mode:", editmode); // Debug to check if it's injected correctly
+    </script>
+
+
+
+<!--    TODO: move this validation into an injectable file -->
+    <script>
+        function validateInputField(inputId) {
+            let input = document.getElementById(inputId);
+            if (input && input.value.trim().length > 0) {
+                input.classList.remove('glowing-invalid');
+                input.classList.add('glowing-valid');
+            } else {
+                input.classList.remove('glowing-valid');
+                input.classList.add('glowing-invalid');
+            }
+
+            /* NOTE: if we have && !editmode attached to the field,
+            that means it will not be validated upon a creation.
+             This is because we are generating these values on the backend during creation.
+             */
+            if(
+            inputId === 'notes'
+             ) {
+                input.classList.remove('glowing-invalid');
+                input.classList.add('glowing-valid');
+            }
+            checkFormValidity(); // Check form validity after each validation
+        }
+
+        function checkFormValidity() {
+            const hasInvalidFields = document.querySelector('.glowing-invalid') !== null;
+            const submitButton = document.querySelector('.btn-secondary');
+
+            if (submitButton) {
+                submitButton.disabled = hasInvalidFields;
+            }
+        }
+
+        function validateAllFields() {
+            const inputFields = [
+                'menuid', 'name', 'notes'
+            ];
+            inputFields.forEach(validateInputField);
+        }
+
+        function initializeValidation() {
+            document.querySelectorAll('.form-control').forEach(input => {
+                input.addEventListener('input', validateAllFields);
+            });
+            validateAllFields(); // Ensure validation runs on page load
+        }
+
+        document.addEventListener("DOMContentLoaded", initializeValidation);
+    </script>
+    <!--    TODO: move this validation into an injectable file -->
+
+</head>
+<body>
+
+<div th:insert="fragments/adminnavbar.html :: adminnavbarfragment"> </div>
+
+<div class="container">
+
+    <div class="header-dark">
+        <h1>Administrate Menu Data</h1>
+    </div>
+
+    <!-- New Product Edit Section -->
+    <div th:if="${!editmode}" class="tip-box">Create a New Menu by typing in New Menu Name.  </div>
+    <div th:if="${editmode}" class="tip-box">Modify attributes of menu. </div>
+
+    <div id="successDiv" class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">
+        Success
+    </div>
+
+    <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">
+        Error
+    </div>
+
+
+    <form th:action="@{/menu/admin/create}" method="post" th:object="${menu}">
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label class="form-label">Menu ID </label>
+                <input th:if="${menu.menuid != null}" type="text" th:field="*{menuid}" id="menuid" class="form-control edit-validation-group" placeholder="Menu ID" readonly>
+                <input th:if="${menu.menuid == null}" type="text" id="menuid" class="form-control" placeholder="Generated upon create" readonly>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Name</label>
+                <input type="text" th:field="*{name}" id="name" class="form-control edit-validation-group" placeholder="New Menu Name">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Notes</label>
+                <textarea th:field="*{notes}" id="notes" class="form-control" placeholder="Notes"></textarea>
+            </div>
+        </div>
+
+
+        <!-- put any hidden values needed here -->
+        <input type="hidden" name="editmode" th:value="${editmode == null ? false : editmode}">
+        <div class="text-end">
+            <button type="submit" class="btn btn-secondary">Submit</button>
+        </div>
+
+    </form>
+
+    <br>
+    <!-- Need to have a table displaying here for adding and removing things from MENU loaded into scope -->
+    <div th:if="${editmode}" class="row mb-3">
+        <div class="col-md-12">
+
+
+
+        </div>
+    </div>
+
+
+
+    <br>
+
+    <div class="tip-box">Select a Menu by clicking on the Menu ID</div>
+
+    <br>
+    <br>
+
+    <!-- This table will display with product info based on case insensitive search from popup -->
+    <div class="col-md-12" th:if="${menuPage != null && menuPage.content.size() > 0}">
+        <table class="table table-hover table-striped table-dark" style="margin-top: 20px">
+            <thead>
+            <tr>
+                <th scope="col">Menu ID</th>
+                <th scope="col">Menu Name</th>
+                <th scope="col">Product Count</th>
+                <th scope="col">Create Date</th>
+                <th scope="col">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="menu, iStat : ${menuPage.content}"
+                th:style="${iStat.odd}? 'font-weight: bold;'"
+                th:alt-title="${iStat.even}? 'even' : 'odd'">
+                <td>
+                    <a th:href="@{/menu/admin/manage?size=__${1}__&page=__${page == null ? 0 : page}__&menuid=__${menu.menuid == null ? 0 : menu.menuid}__}"
+                       th:data-menuid="${menu.menuid}"
+                       id="menuid-${menu.menuid}"
+                       class="btn btn-secondary btn-sm">
+                        <span th:text="${menu.menuid}"></span>
+                    </a>
+                </td>
+                <td th:text="${menu.name}"></td>
+                <td th:text="${#lists.size(menu.menu_product_list)}"></td>
+                <td th:text="${menu.createTimeStamp}"></td>
+                <td>
+                    DELETE
+                </td>
+
+
+            </tr>
+            </tbody>
+        </table>
+        <nav th:if="${menuPage.totalPages > 0 && !editmode}">
+            <ul class="pagination justify-content-center">
+                <li class="page-item" th:each="pageNumber : ${pageNumbers}">
+                    <a class="page-link btn btn-secondary btn-sm mx-1"
+                       th:href="@{/menu/admin/manage?size=__${#lists.size(menuPage.content) > 5 ? #lists.size(menuPage.content) : 5}__&page=__${pageNumber}__&menuid=__${menu != null ? menu.menuid : '0'}__}"
+                       th:text="${pageNumber}"
+                       th:classappend="${pageNumber==menuPage.number + 1} ? 'active'">
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        <!-- put any hidden values needed here -->
+        <div class="text-end">
+            <a th:href="@{/menu/admin/manage?size=__${5}__&page=__${0}__&batchid=__${batch != null ? batch.batchid : '0'}__&productnamesearch=__${productNameSearchValue == null ? '' : productNameSearchValue}__&productid=__${0}__}"
+               class="btn btn-secondary btn-sm">
+                Select New Item
+            </a>
+        </div>
+    </div>
+
+    <br>
+    <br>
+</div>
+
+</body>
+</html>

@@ -16,6 +16,7 @@ import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.modelnonpersist.FileVO
 import com.techvvs.inventory.security.JwtTokenProvider
 import com.techvvs.inventory.security.Role
+import com.techvvs.inventory.security.rbac.RbacEnforcer
 import com.techvvs.inventory.service.auth.TechvvsAuthService
 import com.techvvs.inventory.service.controllers.BatchService
 import com.techvvs.inventory.service.controllers.ProductService
@@ -100,6 +101,9 @@ public class CleanBatchViewController {
 
     @Autowired
     ProductHelper productHelper
+
+    @Autowired
+    RbacEnforcer rbacEnforcer
 
 
 
@@ -199,7 +203,7 @@ public class CleanBatchViewController {
                  HttpServletRequest req){
 
 
-        if(enforceAdminRights(model,req)) {
+        if(rbacEnforcer.enforceAdminRights(model,req)) {
             // do nothing, proceed.  We have injected a value into the model for viewing admin buttons on the ui too
         } else {
             return "auth/index.html" // return to home page, will send user to logout page if they have expired cookie i think
@@ -261,7 +265,7 @@ public class CleanBatchViewController {
                  HttpServletRequest req){
 
 
-        if(enforceAdminRights(model,req)) {
+        if(rbacEnforcer.enforceAdminRights(model,req)) {
             // do nothing, proceed.  We have injected a value into the model for viewing admin buttons on the ui too
         } else {
             return "auth/index.html" // return to home page, will send user to logout page if they have expired cookie i think
@@ -398,39 +402,7 @@ public class CleanBatchViewController {
         return newSavedProduct
     }
 
-    boolean enforceAdminRights(Model model, HttpServletRequest request) {
 
-        Cookie[] cookies = request.getCookies();
-
-        String token = ""
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if ("techvvs_token".equals(cookie.getName())) {
-                    token = cookie.getValue();
-                }
-            }
-        } else {
-            return false // return false if cookies is null
-        }
-
-        List<String> authorities = jwtTokenProvider.extractAuthorities(token) // passing internal token in here
-        if(hasRole(authorities, String.valueOf(Role.ROLE_ADMIN))){
-            // write code here to add certain attributes to the model that will enable the user to click certain buttons
-            model.addAttribute("AdminViewActivated", "yes")
-            return true
-        }
-        return false
-    }
-
-    boolean hasRole(List authorities, String roleToCheck) {
-        println "Authorities: ${authorities}"
-        println "Role to check: ${roleToCheck}"
-
-        return authorities.any { authority ->
-            def valueToCompare = authority instanceof GrantedAuthority ? authority.authority : authority.toString()
-            valueToCompare == roleToCheck
-        }
-    }
 
     // todo: make sure this cannot be done for products that already have started selling...
     // Admin page for moving products between batches
@@ -445,7 +417,7 @@ public class CleanBatchViewController {
                  HttpServletRequest req){
 
 
-        if(enforceAdminRights(model,req)) {
+        if(rbacEnforcer.enforceAdminRights(model,req)) {
             // do nothing, proceed.  We have injected a value into the model for viewing admin buttons on the ui too
         } else {
             return "auth/index.html" // return to home page, will send user to logout page if they have expired cookie i think
@@ -511,7 +483,7 @@ public class CleanBatchViewController {
                        HttpServletRequest req){
 
 
-        if(enforceAdminRights(model,req)) {
+        if(rbacEnforcer.enforceAdminRights(model,req)) {
             // do nothing, proceed.  We have injected a value into the model for viewing admin buttons on the ui too
         } else {
             return "auth/index.html" // return to home page, will send user to logout page if they have expired cookie i think
