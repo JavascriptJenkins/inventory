@@ -4,7 +4,7 @@ pipeline {
     parameters {
         string(name: 'HOSTNAME', defaultValue: '192.168.1.1', description: 'the host to push the build to')
         choice(name: 'TENANT_NAME', defaultValue: 'www', description: 'The tenant name will be appended to beginning of domain')
-        choice(name: 'BASE_DOMAIN', defaultValue: 'base.domain', description: 'the base domain that will be installed', description: 'domain')
+        choice(name: 'BASE_DOMAIN', defaultValue: 'base.domain', description: 'the base domain that will be installed')
     }
 
     stages {
