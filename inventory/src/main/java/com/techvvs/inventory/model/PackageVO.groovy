@@ -39,6 +39,13 @@ class PackageVO implements Serializable{
     @JsonProperty
     String packagebarcode;
 
+    // This is a many to one relationship because
+    // we could have multiple packages with the same uccbarcode (multiple packages under a single METRC transfer)
+    @JsonProperty
+    @ManyToOne(cascade=CascadeType.REFRESH, fetch = FetchType.LAZY)
+    @JoinColumn(name="uccbarcodeid")
+    UccBarcode uccBarcode
+
     @JsonProperty
     @OneToOne(cascade= CascadeType.REFRESH, fetch = FetchType.EAGER)
     @JoinColumn(name="packagetypeid")

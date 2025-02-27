@@ -187,7 +187,17 @@
         </div>
 
 
-        <!-- put any hidden values needed here -->
+
+        <!-- START: put any hidden values needed here -->
+        <input th:if="${menu.menuid != null && menu.menuid != 0 && editmode}" type="hidden" th:field="*{menu_product_list}">
+        <input th:if="${menu.menuid != null && menu.menuid != 0 && editmode}" type="hidden" th:field="*{discount_list}">
+        <input th:if="${menu.menuid != null && menu.menuid != 0 && editmode}" type="hidden" th:field="*{isdefault}">
+        <input th:if="${menu.menuid != null && menu.menuid != 0 && editmode}" type="hidden" th:field="*{updateTimeStamp}">
+        <input th:if="${menu.menuid != null && menu.menuid != 0 && editmode}" type="hidden" th:field="*{createTimeStamp}">
+        <!-- END: Hidden Values -->
+
+
+
         <input type="hidden" name="editmode" th:value="${editmode == null ? false : editmode}">
         <div class="text-end">
             <button type="submit" class="btn btn-secondary">Submit</button>
@@ -199,7 +209,43 @@
     <!-- Need to have a table displaying here for adding and removing things from MENU loaded into scope -->
     <div th:if="${editmode}" class="row mb-3">
         <div class="col-md-12">
+            <table class="table table-hover table-striped table-dark" style="margin-top: 20px">
+                <thead>
+                <tr>
+                    <th scope="col">Product ID</th>
+                    <th scope="col">Product Name</th>
+                    <th scope="col">Create Date</th>
+                    <th scope="col">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="product, iStat : ${productPage.content}"
+                    th:style="${iStat.odd}? 'font-weight: bold;'"
+                    th:alt-title="${iStat.even}? 'even' : 'odd'">
 
+
+                    <td th:text="${product.product_id}"></td>
+                    <td th:text="${product.name}"></td>
+                    <td th:text="${product.createTimeStamp}"></td>
+                    <td>
+                        DELETE
+                    </td>
+
+
+                </tr>
+                </tbody>
+            </table>
+            <nav th:if="${productPage.totalPages > 0}">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" th:each="pageNumber : ${productpageNumbers}">
+                        <a class="page-link btn btn-secondary btn-sm mx-1"
+                           th:href="@{/menu/admin/manage?productSizeInt=__${#lists.size(productPage.content) > 5 ? #lists.size(productPage.content) : 5}__&productPageInt=__${pageNumber}__&menuid=__${menu != null ? menu.menuid : '0'}__}"
+                           th:text="${pageNumber}"
+                           th:classappend="${pageNumber==productPage.number + 1} ? 'active'">
+                        </a>
+                    </li>
+                </ul>
+            </nav>
 
 
         </div>
@@ -209,13 +255,55 @@
 
     <br>
 
-    <div class="tip-box">Select a Menu by clicking on the Menu ID</div>
+<!--     START: Product Selection Table for adding products to the above table of products bound to menu -->
+    <div class="col-md-12" th:if="${selectionProductPage != null && selectionProductPage.content.size() > 0 && editmode}">
+        <div class="tip-box">Select Products to add to the menu</div>
+        <table class="table table-hover table-striped table-dark" style="margin-top: 20px">
+            <thead>
+            <tr>
+                <th scope="col">Product ID</th>
+                <th scope="col">Product Name</th>
+                <th scope="col">Create Date</th>
+                <th scope="col">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="product, iStat : ${selectionProductPage.content}"
+                th:style="${iStat.odd}? 'font-weight: bold;'"
+                th:alt-title="${iStat.even}? 'even' : 'odd'">
 
-    <br>
-    <br>
 
-    <!-- This table will display with product info based on case insensitive search from popup -->
-    <div class="col-md-12" th:if="${menuPage != null && menuPage.content.size() > 0}">
+                <td th:text="${product.product_id}"></td>
+                <td th:text="${product.name}"></td>
+                <td th:text="${product.createTimeStamp}"></td>
+                <td>
+                    ADD
+                </td>
+
+
+            </tr>
+            </tbody>
+        </table>
+        <nav th:if="${selectionProductPage.totalPages > 0 && editmode}">
+            <ul class="pagination justify-content-center">
+                <li class="page-item" th:each="pageNumber : ${selectionproductpageNumbers}">
+                    <a class="page-link btn btn-secondary btn-sm mx-1"
+                       th:href="@{/menu/admin/manage?selectionproductSizeInt=__${#lists.size(selectionProductPage.content) > 5 ? #lists.size(selectionProductPage.content) : 5}__&selectionproductPageInt=__${pageNumber}__&menuid=__${menu != null ? menu.menuid : '0'}__}"
+                       th:text="${pageNumber}"
+                       th:classappend="${pageNumber==selectionProductPage.number + 1} ? 'active'">
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+    </div>
+    <!-- END: Product Selection Table for adding products to the above table of products bound to menu -->
+
+
+
+    <!-- START: Menu Selection Table -->
+    <div class="col-md-12" th:if="${menuPage != null && menuPage.content.size() > 0 && !editmode}">
+        <div class="tip-box">Select a Menu by clicking on the Menu ID</div>
         <table class="table table-hover table-striped table-dark" style="margin-top: 20px">
             <thead>
             <tr>
@@ -260,15 +348,18 @@
                 </li>
             </ul>
         </nav>
-        <!-- put any hidden values needed here -->
-        <div class="text-end">
-            <a th:href="@{/menu/admin/manage?size=__${5}__&page=__${0}__&batchid=__${batch != null ? batch.batchid : '0'}__&productnamesearch=__${productNameSearchValue == null ? '' : productNameSearchValue}__&productid=__${0}__}"
-               class="btn btn-secondary btn-sm">
-                Select New Item
-            </a>
-        </div>
-    </div>
 
+    </div>
+    <!-- END: Menu Selection Table -->
+
+
+    <!-- Refresh the page so user can select a menu and start adding products to it -->
+    <div class="text-end">
+        <a th:href="@{/menu/admin/manage?size=__${5}__&page=__${0}__&batchid=__${batch != null ? batch.batchid : '0'}__&productnamesearch=__${productNameSearchValue == null ? '' : productNameSearchValue}__&productid=__${0}__}"
+           class="btn btn-secondary btn-sm">
+            REFRESH PAGE
+        </a>
+    </div>
     <br>
     <br>
 </div>

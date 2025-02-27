@@ -45,6 +45,10 @@ class BatchVO implements Serializable {
     Set<MenuVO> menu_set = new HashSet<>()
 
     @JsonProperty
+    @ElementCollection(fetch = FetchType.LAZY)
+    Set<PlantVO> plant_set = new HashSet<>() // maps to concept of "plant group" in metrc
+
+    @JsonProperty
     @OneToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name="batch_type_id")
     BatchTypeVO batch_type_id

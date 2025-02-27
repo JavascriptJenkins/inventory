@@ -18,6 +18,7 @@ import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.SystemUserDAO
 import com.techvvs.inventory.model.TransactionVO
+import com.techvvs.inventory.modelnonpersist.FileVO
 import com.techvvs.inventory.security.JwtTokenProvider
 import com.techvvs.inventory.security.Role
 import com.techvvs.inventory.service.controllers.CustomerService
@@ -30,6 +31,7 @@ import io.jsonwebtoken.Jwt
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
@@ -934,5 +936,88 @@ class MenuHelper {
     }
 
 
+    void addPaginatedListOfProducts(
+            MenuVO menuVO,
+            Model model,
+            Optional<Integer> productpage,
+            Optional<Integer> productsize){
+
+        int page = productpage.orElse(0)
+
+            if(page != 0){
+                page = page - 1;
+            }
+
+            List<ProductVO> productList = menuVO.menu_product_list
+            Pageable pageable = PageRequest.of(page, productsize.orElse(5), Sort.by(Sort.Direction.ASC, "createTimeStamp"));
+            // Apply sorting manually to the fileList
+//            if (pageable.getSort().isSorted()) {
+//                productList.sort(Comparator.comparing(FileVO::getCreateTimeStamp)); // Sorting by createTimeStamp field
+//            }
+            int start = Math.min((int) pageable.getOffset(), productList.size());
+            int end = Math.min((start + pageable.getPageSize()), productList.size());
+            List<ProductVO> pagedProducts = productList.subList(start, end);
+
+
+
+
+        Page<ProductVO> productPage = new PageImpl<>(pagedProducts, pageable, productList.size())
+
+        int totalPages = productPage.getTotalPages(); // for some reason there needs to be a -1 here ... dont ask ...
+
+        List<Integer> pageNumbers = new ArrayList<>();
+
+        while(totalPages > 0){
+            pageNumbers.add(totalPages);
+            totalPages = totalPages - 1;
+        }
+
+
+        model.addAttribute("productpageNumbers", pageNumbers);
+        model.addAttribute("productPage", productPage)
+    }
+
+
+
+    void addPaginatedListOfSelectionProducts(
+            MenuVO menuVO,
+            Model model,
+            Optional<Integer> productpage,
+            Optional<Integer> productsize){
+
+        int page = productpage.orElse(0)
+
+        if(page != 0){
+            page = page - 1;
+        }
+        // todo: should this be filtered at all?  we are pulling all the products in the system here.
+        List<ProductVO> productList = productRepo.findAll()
+        Pageable pageable = PageRequest.of(page, productsize.orElse(5), Sort.by(Sort.Direction.ASC, "createTimeStamp"));
+        // Apply sorting manually to the fileList
+//            if (pageable.getSort().isSorted()) {
+//                productList.sort(Comparator.comparing(FileVO::getCreateTimeStamp)); // Sorting by createTimeStamp field
+//            }
+        int start = Math.min((int) pageable.getOffset(), productList.size());
+        int end = Math.min((start + pageable.getPageSize()), productList.size());
+        List<ProductVO> pagedProducts = productList.subList(start, end);
+
+
+
+
+        Page<ProductVO> productPage = new PageImpl<>(pagedProducts, pageable, productList.size())
+
+        int totalPages = productPage.getTotalPages(); // for some reason there needs to be a -1 here ... dont ask ...
+
+        List<Integer> pageNumbers = new ArrayList<>();
+
+        while(totalPages > 0){
+            pageNumbers.add(totalPages);
+            totalPages = totalPages - 1;
+        }
+
+
+        model.addAttribute("selectionproductpageNumbers", pageNumbers);
+        model.addAttribute("selectionProductPage", productPage)
+    }
 
 }

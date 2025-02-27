@@ -68,6 +68,10 @@ public class MenuAdminViewController {
             @RequestParam("menuid") Optional<Integer> menuid,
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size,
+            @RequestParam("productPageInt") Optional<Integer> productpage,
+            @RequestParam("productSizeInt") Optional<Integer> productsize,
+            @RequestParam("selectionproductPageInt") Optional<Integer> selectionproductpage,
+            @RequestParam("selectionproductSizeInt") Optional<Integer> selectionproductsize,
             HttpServletRequest req
     ){
 
@@ -78,10 +82,12 @@ public class MenuAdminViewController {
             return "auth/index.html" // return to home page, will send user to logout page if they have expired cookie i think
         }
 
-
+        // todo: need to bind the productPage from the menu_product_list
         // load selected menu into scope
         if(menuid.isPresent() && menuid.get() != null && menuid.get() != 0) {
-            menuHelper.loadMenu(String.valueOf(menuid.get()), model)
+            MenuVO boundMenu = menuHelper.loadMenu(String.valueOf(menuid.get()), model)
+            menuHelper.addPaginatedListOfProducts(boundMenu, model, productpage, productsize) // on the menu in scope
+            menuHelper.addPaginatedListOfSelectionProducts(boundMenu, model, selectionproductpage, selectionproductsize) // from the system
             model.addAttribute("editmode", true);
         } else {
             model.addAttribute("menu", new MenuVO(menuid: 0));
