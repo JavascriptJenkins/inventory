@@ -514,5 +514,74 @@ class ProductService {
 
 
 
+    @Transactional
+    boolean addProductsToMenu(Integer menuid, List<Integer> productids) {
+        // Retrieve the MenuVO
+        MenuVO menuVO = menuRepo.findById(menuid).orElse(null)
+        if (menuVO == null) {
+            println "Menu not found for ID: $menuid"
+            return false
+        }
+
+        // Fetch products from the repository
+        List<ProductVO> products = productRepo.findAllById(productids)
+
+        // Add products to menu_product_list if they are not already there
+        products.each { product ->
+            if (!menuVO.menu_product_list.contains(product)) {
+                menuVO.menu_product_list.add(product)
+            }
+        }
+
+        // Save updated MenuVO
+        menuRepo.save(menuVO)
+
+        // Add menu to each product's menu_list
+        products.each { product ->
+            if (!product.menu_list.contains(menuVO)) {
+                product.menu_list.add(menuVO)
+            }
+        }
+
+        // Save updated products
+        productRepo.saveAll(products)
+
+        return true
+    }
+
+    @Transactional
+    boolean removeProductsToMenu(Integer menuid, List<Integer> productids) {
+        // Retrieve the MenuVO
+        MenuVO menuVO = menuRepo.findById(menuid).orElse(null)
+        if (menuVO == null) {
+            println "Menu not found for ID: $menuid"
+            return false
+        }
+
+        // Filter out products from menu_product_list
+        menuVO.menu_product_list.removeIf { ProductVO product -> productids.contains(product.product_id) }
+
+        // Save updated MenuVO
+        menuRepo.save(menuVO)
+
+        // Process each product
+        productids.each { Integer productId ->
+            ProductVO productVO = productRepo.findById(productId).orElse(null)
+            if (productVO != null) {
+                // Remove the menu from the product's menu_list
+                productVO.menu_list.removeIf { MenuVO menu -> menu.menuid == menuid }
+
+                // Save updated ProductVO
+                productRepo.save(productVO)
+            } else {
+                println "Product not found for ID: $productId"
+            }
+        }
+
+        return true
+    }
+
+
+
 
 }

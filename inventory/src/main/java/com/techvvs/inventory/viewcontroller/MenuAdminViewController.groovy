@@ -104,6 +104,97 @@ public class MenuAdminViewController {
     }
 
 
+    @PostMapping("/remove/product")
+    String removeProduct(
+            @ModelAttribute( "menu" ) MenuVO menuVO,
+            Model model,
+            @RequestParam("menuid") Optional<Integer> menuid,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size,
+            @RequestParam("productPageInt") Optional<Integer> productpage,
+            @RequestParam("productSizeInt") Optional<Integer> productsize,
+            @RequestParam("selectionproductPageInt") Optional<Integer> selectionproductpage,
+            @RequestParam("selectionproductSizeInt") Optional<Integer> selectionproductsize,
+            @RequestParam Map<String, String> selectedProducts,
+            HttpServletRequest req
+    ){
+
+        techvvsAuthService.checkuserauth(model)
+        if(rbacEnforcer.enforceAdminRights(model,req)) {
+            // do nothing, proceed.  We have injected a value into the model for viewing admin buttons on the ui too
+        } else {
+            return "auth/index.html" // return to home page, will send user to logout page if they have expired cookie i think
+        }
+
+
+        // load selected menu into scope
+        if(menuid.isPresent() && menuid.get() != null && menuid.get() != 0) {
+            MenuVO boundMenu = menuHelper.loadMenu(String.valueOf(menuid.get()), model)
+            menuHelper.removeSelectedProducts(boundMenu, model, selectedProducts)
+            menuHelper.addPaginatedListOfProducts(boundMenu, model, productpage, productsize) // on the menu in scope
+            menuHelper.addPaginatedListOfSelectionProducts(boundMenu, model, selectionproductpage, selectionproductsize) // from the system
+            model.addAttribute("editmode", true);
+        } else {
+            model.addAttribute("menu", new MenuVO(menuid: 0));
+            model.addAttribute("editmode", false);
+        }
+
+
+
+        // bind all menus here
+        menuService.bindAllMenus(model, page, size)
+
+
+        return "menu/admin.html";
+    }
+
+
+    @PostMapping("/add/product")
+    String addProduct(
+            @ModelAttribute( "menu" ) MenuVO menuVO,
+            Model model,
+            @RequestParam("menuid") Optional<Integer> menuid,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size,
+            @RequestParam("productPageInt") Optional<Integer> productpage,
+            @RequestParam("productSizeInt") Optional<Integer> productsize,
+            @RequestParam("selectionproductPageInt") Optional<Integer> selectionproductpage,
+            @RequestParam("selectionproductSizeInt") Optional<Integer> selectionproductsize,
+            @RequestParam Map<String, String> selectedProducts,
+            HttpServletRequest req
+    ){
+
+        techvvsAuthService.checkuserauth(model)
+        if(rbacEnforcer.enforceAdminRights(model,req)) {
+            // do nothing, proceed.  We have injected a value into the model for viewing admin buttons on the ui too
+        } else {
+            return "auth/index.html" // return to home page, will send user to logout page if they have expired cookie i think
+        }
+
+        // todo: need to bind the productPage from the menu_product_list
+        // load selected menu into scope
+        if(menuid.isPresent() && menuid.get() != null && menuid.get() != 0) {
+            MenuVO boundMenu = menuHelper.loadMenu(String.valueOf(menuid.get()), model)
+            menuHelper.addSelectedProducts(boundMenu, model, selectedProducts)
+            menuHelper.addPaginatedListOfSelectionProducts(boundMenu, model, selectionproductpage, selectionproductsize) // from the system
+            menuHelper.addPaginatedListOfProducts(boundMenu, model, productpage, productsize) // on the menu in scope
+            model.addAttribute("editmode", true);
+        } else {
+            model.addAttribute("menu", new MenuVO(menuid: 0));
+            model.addAttribute("editmode", false);
+        }
+
+
+
+        // bind all menus here
+        menuService.bindAllMenus(model, page, size)
+
+
+        return "menu/admin.html";
+    }
+
+
+
     @PostMapping("/create")
     String createMenu(
             @ModelAttribute( "menu" ) MenuVO menuVO,
