@@ -79,6 +79,18 @@
             content:" *";
             color: red;
         }
+        .responsive-image {
+            max-width: 100%;  /* Adjusts within container */
+            height: auto;     /* Keeps aspect ratio */
+        }
+        .center-image {
+            display: block;
+            margin: auto;
+            width: 200px; /* Adjust as needed */
+            height: auto; /* Maintain aspect ratio */
+        }
+
+
     </style>
 
 </head>
@@ -90,8 +102,15 @@
 
 <div id="maincontainer" class="container">
 
+<!--    <img src="@{/images/red_tulip_adhoc_1.png}" alt="Logo">-->
+<!--    <p>Resolved path: <span th:text="@{/images/red_tulip_adhoc_1.png}"></span></p>-->
+
+    <img th:src="@{/image/images/photos/red_tulip_adhoc_1.png}" class="card-img-top center-image" alt="Product Image">
+
+
+
     <div class="header-dark">
-        <h1>Login to the Inventory TechVVS System</h1>
+        <h1>Login</h1>
     </div>
 
     <form th:action="@{/login/systemuser}" th:object="${systemuser}" method="post">

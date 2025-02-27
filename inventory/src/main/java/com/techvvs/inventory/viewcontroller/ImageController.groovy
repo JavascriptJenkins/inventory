@@ -97,6 +97,73 @@ class ImageController {
 
 
 
+    @GetMapping("/images/photos/{path}")
+    public ResponseEntity<Resource> getImagePhotos(
+            @PathVariable String path,
+            @RequestHeader(value = "If-None-Match", required = false) String ifNoneMatchHeader,
+            @RequestHeader(value = "If-Modified-Since", required = false) String ifModifiedSinceHeader,
+            @PathVariable Optional<String> token) {
+
+        // todo: parse incoming path to avoid attacks on the server....
+
+
+        // Define the possible file types
+        Path jpgFile = Paths.get(appConstants.UPLOAD_DIR + "photos").resolve(path);
+        Path pngFile = Paths.get(appConstants.UPLOAD_DIR + "photos").resolve(path);
+
+        Resource resource;
+        MediaType mediaType;
+        long lastModifiedTime;
+
+        try {
+            if (Files.exists(jpgFile)) {
+                resource = new FileSystemResource(jpgFile);
+                mediaType = MediaType.IMAGE_JPEG;
+                lastModifiedTime = Files.getLastModifiedTime(jpgFile).toMillis();
+            } else if (Files.exists(pngFile)) {
+                resource = new FileSystemResource(pngFile);
+                mediaType = MediaType.IMAGE_PNG;
+                lastModifiedTime = Files.getLastModifiedTime(pngFile).toMillis();
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            }
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+
+        // Generate ETag
+        String eTag = "\"" + DigestUtils.md5DigestAsHex((path + lastModifiedTime).getBytes()) + "\"";
+
+        // Validate If-None-Match
+        if (ifNoneMatchHeader != null && ifNoneMatchHeader.equals(eTag)) {
+            return ResponseEntity.status(HttpStatus.NOT_MODIFIED).build();
+        }
+
+        // Validate If-Modified-Since
+        if (ifModifiedSinceHeader != null) {
+            try {
+                long ifModifiedSince = Instant.from(DateTimeFormatter.RFC_1123_DATE_TIME.parse(ifModifiedSinceHeader)).toEpochMilli();
+                if (ifModifiedSince >= lastModifiedTime) {
+                    return ResponseEntity.status(HttpStatus.NOT_MODIFIED).build();
+                }
+            } catch (DateTimeParseException e) {
+                // Ignore invalid If-Modified-Since headers
+            }
+        }
+
+        // Add caching headers
+        HttpHeaders headers = new HttpHeaders();
+        headers.setCacheControl(CacheControl.maxAge(30, TimeUnit.DAYS).cachePublic());
+        headers.setLastModified(lastModifiedTime);
+        headers.setETag(eTag);
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentType(mediaType)
+                .body(resource);
+    }
+
+
 
 
 }
