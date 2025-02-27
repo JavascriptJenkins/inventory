@@ -79,6 +79,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .antMatchers(VIDEO_VIDEOS_33).permitAll()
             .antMatchers(IMAGE_IMAGES).permitAll()
             .antMatchers(IMAGE_IMAGES_33).permitAll()
+            .antMatchers(IMAGE_IMAGES_PHOTOS).permitAll()
+            .antMatchers(IMAGE_IMAGES_PHOTOS_33).permitAll()
             .antMatchers(VIDEO_PRODUCT).permitAll()
             .antMatchers(VIDEO_PRODUCT_33).permitAll()
             .antMatchers(PHOTO_PRODUCT).permitAll()
