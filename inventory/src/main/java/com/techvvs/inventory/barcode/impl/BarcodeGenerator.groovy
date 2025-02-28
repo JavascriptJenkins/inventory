@@ -324,12 +324,13 @@ class BarcodeGenerator {
     }
 
 
+    Random random = new Random();
 
     ProductVO generateAdhocBarcodeForProduct(ProductVO productVO, BatchVO batchVO) {
 
 
         // Generate new barcode data for the product
-        String barcodeData = barcodeHelper.generateBarcodeData(1, 1, batchVO.batchnumber, 1)
+        String barcodeData = barcodeHelper.generateBarcodeDataForAdhocProduct(random.nextInt(99) + 1, random.nextInt(99) + 1, batchVO.batchnumber, 1)
 
         // Add the barcode data to the product in the database
         return barcodeHelper.addBarcodeToProduct(productVO, barcodeData)

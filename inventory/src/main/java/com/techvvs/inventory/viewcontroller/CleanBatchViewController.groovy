@@ -247,6 +247,7 @@ public class CleanBatchViewController {
 
         bindBatchTypes(model)
         bindProductTypes(model)
+        bindBatches(model)
         techvvsAuthService.checkuserauth(model)
         return "batch/admin.html";
     }
@@ -370,6 +371,7 @@ public class CleanBatchViewController {
 
         bindProductTypes(model)
         bindBatchTypes(model)
+        bindBatches(model)
         techvvsAuthService.checkuserauth(model)
         return "batch/admin.html";
     }

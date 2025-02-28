@@ -89,11 +89,63 @@ class BarcodeHelper {
         return barcodeData;
     }
 
-    // todo: add a check here to make sure barcodes are unique before adding....
+
+    static String generateBarcodeDataForAdhocProduct(int row, int col, int batchnumber, int pagenumber) {
+
+        int length = pagenumber.toString().length()
+
+        // Create base data from batchnumber and pagenumber, ensuring it's exactly 6 characters
+        String baseData = removeLast2Character(String.valueOf(batchnumber),String.valueOf(pagenumber),length);
+
+        baseData = shuffleString(baseData)
+//        // Ensure the baseData is exactly 6 characters long
+//        baseData = baseData.length() > 6 ? baseData.substring(0, 6) : baseData.padLeft(6, '0');
+
+        // If baseData is longer than 6, take the rightmost 6 characters. Otherwise, pad with random digits.
+        baseData = baseData.length() > 6 ?
+                baseData.substring(baseData.length() - 6) :
+                generateRandomPadding(6 - baseData.length()) + baseData
+
+
+        // Create row and column data, ensuring it's exactly 4 characters
+        String rowColData = String.format("%02d%02d", row, col); // Row and column indices padded with leading zeros
+
+        // Combine base data with row and column data
+        String barcodeData = baseData + rowColData;
+
+        // Ensure the barcodeData is exactly 11 characters
+        barcodeData = barcodeData.length() > 11 ? barcodeData.substring(0, 11) : barcodeData.padLeft(11, '0');
+
+        // Calculate and append the checksum
+        int checksum = calculateUPCAChecksum(barcodeData);
+        barcodeData += checksum;
+
+        return barcodeData;
+    }
+
+
+
+    public static String shuffleString(String input) {
+        List<Character> characters = new ArrayList<>();
+        for (char c : input.toCharArray()) {
+            characters.add(c);
+        }
+
+        Collections.shuffle(characters); // Shuffle the characters
+
+        StringBuilder shuffled = new StringBuilder();
+        for (char c : characters) {
+            shuffled.append(c);
+        }
+        return shuffled.toString();
+    }
+
+
+        // todo: add a check here to make sure barcodes are unique before adding....
     @Transactional
     ProductVO addBarcodeToProduct(ProductVO productVO, String barcodedata){
 
-        Optional<ProductVO> existingproduct = productRepo.findById(productVO.getProduct_id())
+        Optional<ProductVO> existingproduct = productRepo.findById(productVO.getProduct_id() == null ? 0 : productVO.getProduct_id())
 
         // if we have an existing barcode do NOT overwrite it.
         if(existingproduct.present && existingproduct.get().barcode != null && existingproduct.get().barcode.length() > 0){

@@ -95,14 +95,14 @@
     <div class="alert alert-primary" role="alert" >Create a new Product entry in the database</div>
     <br>
 
-    <div class="row" style="margin-bottom: 5px;">
+<!--    <div class="row" style="margin-bottom: 5px;">-->
 
-        <div th:if="${hidebarcodemsg != 'true'}" class="col-md-4" style="margin-bottom: 5px;">
-            <div id="hiddencontainerBarcodeInputMsg" class="container" style="display:none">
-                <div id="barcodeinputdiv" class="alert alert-danger" role="alert">Scan a Barcode </div>
-            </div>
-        </div>
-    </div>
+<!--&lt;!&ndash;        <div th:if="${hidebarcodemsg != 'true'}" class="col-md-4" style="margin-bottom: 5px;">&ndash;&gt;-->
+<!--&lt;!&ndash;            <div id="hiddencontainerBarcodeInputMsg" class="container" style="display:none">&ndash;&gt;-->
+<!--&lt;!&ndash;                <div id="barcodeinputdiv" class="alert alert-danger" role="alert">Scan a Barcode </div>&ndash;&gt;-->
+<!--&lt;!&ndash;            </div>&ndash;&gt;-->
+<!--&lt;!&ndash;        </div>&ndash;&gt;-->
+<!--    </div>-->
 
 
     <div th:if="${product.createTimeStamp != null}">
@@ -135,8 +135,9 @@
 
                 <div class="row" style="margin-bottom: 5px;">
                     <div class="col-md-4" style="margin-bottom: 5px;">
-                        <label class="form-label"><b>Barcode</b></label>
-                        <input onkeyup="checkForInput()" id="barcodeinput1" type="text" th:field="*{barcode}" class="form-control" placeholder="barcode" aria-label="barcode" readonly>
+                        <label class="form-label">Barcode </label>
+                        <input th:if="${product.barcode != null}" type="text" th:field="*{barcode}" id="barcode" class="form-control edit-validation-group" placeholder="Barcode" readonly>
+                        <input th:if="${product.barcode == null}" type="text" id="barcode" class="form-control" placeholder="Generated upon create" readonly>
                     </div>
                 </div>
 
@@ -166,10 +167,6 @@
                     <div class="col-md-4" style="margin-bottom: 5px;">
                         <label class="form-label required">Quantity</label>
                         <input type="number" th:field="*{quantity}" class="form-control" placeholder="quantity" aria-label="quantity" readonly>
-                    </div>
-                    <div class="col-md-4" style="margin-bottom: 5px;">
-                        <label class="form-label required">Quantity Remaining</label>
-                        <input type="number" th:field="*{quantityremaining}" class="form-control" placeholder="remaining" aria-label="remaining" readonly>
                     </div>
 
                 </div>
@@ -231,8 +228,22 @@
 
             <div class="row" style="margin-bottom: 5px;">
                 <div class="col-md-4" style="margin-bottom: 5px;">
-                    <label class="form-label"><b>Barcode</b></label>
-                    <input onkeyup="checkForInput()" id="barcodeinput2" type="text" th:field="*{barcode}" class="form-control" placeholder="barcode" aria-label="barcode">
+                    <label class="form-label">Barcode </label>
+                    <input th:if="${product.barcode != null}" type="text" th:field="*{barcode}" id="barcode" class="form-control edit-validation-group" placeholder="Barcode" readonly>
+                    <input th:if="${product.barcode == null}" type="text" id="barcode" class="form-control" placeholder="Generated upon create" readonly>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Create Time Stamp</label>
+                    <input th:if="${product.createTimeStamp != null}" type="text" th:field="*{createTimeStamp}" id="createTimeStamp" class="form-control edit-validation-group" placeholder="createTimeStamp" readonly>
+                    <input th:if="${product.createTimeStamp == null}" type="text" id="createTimeStamp" class="form-control" placeholder="Generated upon create" readonly>
+
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Update Time Stamp</label>
+                    <input th:if="${product.updateTimeStamp != null}" type="text" th:field="*{updateTimeStamp}" id="updateTimeStamp" class="form-control edit-validation-group" placeholder="updateTimeStamp" readonly>
+                    <input th:if="${product.updateTimeStamp == null}" type="text" id="updateTimeStamp" class="form-control" placeholder="Generated upon create" readonly>
+
                 </div>
             </div>
 
@@ -253,11 +264,15 @@
                     <label class="form-label required">Quantity</label>
                     <input type="number" th:field="*{quantity}" class="form-control" placeholder="quantity" aria-label="quantity">
                 </div>
-                <div class="col-md-4" style="margin-bottom: 5px;">
-                    <label class="form-label required">Quantity Remaining</label>
-                    <input type="number" th:field="*{quantityremaining}" class="form-control" placeholder="remaining" aria-label="remaining">
+                <div class="col-md-4">
+                    <label class="form-label">Quantity Remaining</label>
+                    <input th:if="${product.quantityremaining != null}" type="number" th:field="*{quantityremaining}" id="quantityremaining" class="form-control edit-validation-group" placeholder="Quantity Remaining">
+                    <input th:if="${product.quantityremaining == null}" type="number" th:field="*{quantityremaining}" id="quantityremaining" class="form-control" placeholder="Generated upon create" readonly>
                 </div>
-
+                <div class="col-md-4" style="margin-bottom: 5px;">
+                    <label class="form-label">Vendor</label>
+                    <input type="text" th:field="*{vendor}" class="form-control" placeholder="vendor" aria-label="vendor">
+                </div>
             </div>
 
             <div class="row" style="margin-bottom: 5px;">

@@ -1,5 +1,6 @@
 package com.techvvs.inventory.viewcontroller
 
+import com.techvvs.inventory.barcode.impl.BarcodeGenerator
 import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.dao.ProductDao
 import com.techvvs.inventory.jparepo.BatchRepo
@@ -15,6 +16,7 @@ import com.techvvs.inventory.service.paging.FilePagingService
 import com.techvvs.inventory.util.TechvvsFileHelper
 import com.techvvs.inventory.validation.ValidateProduct
 import com.techvvs.inventory.viewcontroller.constants.ControllerConstants
+import com.techvvs.inventory.viewcontroller.helper.ProductHelper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -67,6 +69,12 @@ public class ProductViewController {
 
     @Autowired
     AppConstants appConstants
+
+    @Autowired
+    ProductHelper productHelper
+
+    @Autowired
+    BarcodeGenerator barcodeGenerator
 
 
     SecureRandom secureRandom = new SecureRandom();
@@ -313,10 +321,11 @@ public class ProductViewController {
             model.addAttribute("errorMessage",errorResult);
         } else {
 
+            batchVO = batchRepo.findByBatchid(batchVO.getBatchid())
             productVO.setBatch(batchVO)
 
             // add the product to the database
-            ProductVO result = saveNewProduct(model, productVO)
+            ProductVO result = saveNewProduct(model, productVO, batchVO)
 
             // add the product to the batch
             batchVO = addProductToBatch(batchVO,result)
@@ -349,19 +358,29 @@ public class ProductViewController {
 
     }
 
-    ProductVO saveNewProduct(Model model, ProductVO productVO) {
+    ProductVO saveNewProduct(Model model, ProductVO productVO, BatchVO batchVO) {
 
-        // when creating a new processData entry, set the last attempt visit to now - this may change in future
-        productVO.setCreateTimeStamp(LocalDateTime.now());
-        productVO.setUpdateTimeStamp(LocalDateTime.now());
 
-        //todo: add support for product types on the ui so we can save this product object
+        productVO =  generateTimestampsAndBarcode(productVO, batchVO)
+
+        // the second save saves the barcode i think .... this may be redundant
         ProductVO result = productRepo.save(productVO);
 
         model.addAttribute("successMessage","Record Successfully Saved. ");
         model.addAttribute("product", result);
         return result
 
+    }
+
+
+    ProductVO generateTimestampsAndBarcode(ProductVO productVO, BatchVO batchVO){
+        productVO.updateTimeStamp = LocalDateTime.now()
+        productVO.createTimeStamp = LocalDateTime.now()
+        productVO.setProductnumber(Integer.valueOf(productHelper.generateProductNumber())); // ensure productnumber is unique
+        productVO.quantityremaining = productVO.quantity
+        ProductVO newSavedProduct = barcodeGenerator.generateAdhocBarcodeForProduct(productVO, batchVO)
+        productVO.barcode = newSavedProduct.barcode
+        return newSavedProduct
     }
 
 

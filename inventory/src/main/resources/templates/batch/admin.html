@@ -316,9 +316,13 @@
     <br>
 
     <div class="tip-box">Select a Product by clicking on the Barcode</div>
+    <!-- Header for Products in Scope for Batch -->
+    <div class="d-flex align-items-center bg-dark text-white p-3 rounded mb-3">
+        <i class="bi bi-box-seam me-2" style="font-size: 1.5rem;"></i>
+        <h3 class="mb-0">Products in Scope for Batch: <span th:text="${batch.name}"></span></h3>
+    </div>
 
-    <br>
-    <br>
+
 
     <!-- This table will display with product info based on case insensitive search from popup -->
     <div class="col-md-12" th:if="${productPage != null && productPage.content.size() > 0}">
@@ -395,6 +399,15 @@
                 </li>
             </ul>
         </nav>
+    </div>
+
+    <!-- Refresh the page so user can select a menu and start adding products to it -->
+    <div class="text-end">
+        <a
+                th:href="@{/batch/admin?size=__${#lists.size(productPage.content) > 5 ? #lists.size(productPage.content) : 5}__&page=__${pageNumber == null ? 0 : pageNumber}__&batchid=__${batch != null ? batch.batchid : '0'}__&productnamesearch=__${productNameSearchValue == null ? '' : productNameSearchValue}__}"
+           class="btn btn-secondary btn-sm">
+            REFRESH PAGE
+        </a>
     </div>
 
     <br>
