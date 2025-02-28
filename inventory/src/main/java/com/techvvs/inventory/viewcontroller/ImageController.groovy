@@ -107,7 +107,6 @@ class ImageController {
         // todo: parse incoming path to avoid attacks on the server....
 
 
-        System.out.println("path: " + path)
         // Define the possible file types
         Path jpgFile = Paths.get(appConstants.UPLOAD_DIR + "/photos").resolve(path);
         Path pngFile = Paths.get(appConstants.UPLOAD_DIR + "/photos").resolve(path);
