@@ -16,6 +16,9 @@ import java.util.Optional;
 
 public interface ProductRepo extends JpaRepository<ProductVO, Integer> {
 
+    @Query("SELECT p FROM ProductVO p ORDER BY p.name ASC")
+    List<ProductVO> findAllSortedByName();
+
     List<ProductVO> findAll();
     List<ProductVO> findAllByProductnumber(Integer productnumber);
     List<ProductVO> findAllByName(String name);

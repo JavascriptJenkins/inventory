@@ -991,7 +991,7 @@ class MenuHelper {
             page = page - 1;
         }
         // todo: should this be filtered at all?  we are pulling all the products in the system here.
-        List<ProductVO> productList = productRepo.findAll()
+        List<ProductVO> productList = productRepo.findAllSortedByName()
         Pageable pageable = PageRequest.of(page, productsize.orElse(5), Sort.by(Sort.Direction.ASC, "createTimeStamp"));
         // Apply sorting manually to the fileList
 //            if (pageable.getSort().isSorted()) {

@@ -298,9 +298,20 @@
 
 
         <form action="/menu/admin/add/product" method="post">
-            <button type="submit" class="btn btn-success d-flex align-items-center gap-2" style="font-size: 1.5rem; padding: 10px 20px;">
-                <i class="bi bi-plus-circle"></i> Add To Menu
-            </button>
+            <div class="d-flex justify-content-start gap-3 mb-3">
+                <!-- Add To Menu Button -->
+                <button type="submit" class="btn btn-success d-flex align-items-center gap-2" style="font-size: 1.5rem; padding: 10px 20px;">
+                    <i class="bi bi-plus-circle"></i> Add To Menu
+                </button>
+
+                <!-- Expand Button -->
+                <a
+                        th:href="@{/menu/admin/manage?selectionproductSizeInt=__${#lists.size(selectionProductPage.content) > 5 ? #lists.size(selectionProductPage.content) : 1000}__&selectionproductPageInt=__${pageNumber == null ? 0 : pageNumber}__&menuid=__${menu != null ? menu.menuid : '0'}__}"
+                   class="btn btn-primary d-flex align-items-center gap-2"
+                   style="font-size: 1.5rem; padding: 10px 20px;">
+                    <i class="bi bi-arrows-expand"></i> Expand
+                </a>
+            </div>
 
             <table id="addToMenuTable" class="table table-hover table-striped table-dark" style="margin-top: 20px">
                 <thead>
