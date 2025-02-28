@@ -108,8 +108,8 @@ class ImageController {
 
 
         // Define the possible file types
-        Path jpgFile = Paths.get(appConstants.UPLOAD_DIR + "photos").resolve(path);
-        Path pngFile = Paths.get(appConstants.UPLOAD_DIR + "photos").resolve(path);
+        Path jpgFile = Paths.get(appConstants.UPLOAD_DIR + "/photos").resolve(path);
+        Path pngFile = Paths.get(appConstants.UPLOAD_DIR + "/photos").resolve(path);
 
         Resource resource;
         MediaType mediaType;
