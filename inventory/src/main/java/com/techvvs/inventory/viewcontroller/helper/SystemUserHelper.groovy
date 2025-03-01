@@ -3,6 +3,7 @@ package com.techvvs.inventory.viewcontroller.helper
 import com.techvvs.inventory.constants.MessageConstants
 import com.techvvs.inventory.jparepo.SystemUserRepo
 import com.techvvs.inventory.model.CustomerVO
+import com.techvvs.inventory.model.MenuVO
 import com.techvvs.inventory.model.SystemUserDAO
 import com.techvvs.inventory.security.Role
 import com.techvvs.inventory.validation.StringSecurityValidator
@@ -48,42 +49,43 @@ class SystemUserHelper {
 
 
 
-    void loadAllSystemUsers(Model model) {
-        model.addAttribute("systemuserlist", systemUserRepo.findAll())
+    void loadAllSystemUsers(Model model, Optional<Integer> page, Optional<Integer> size) {
+        bindAllSystemUsers(model, page, size)
+//        model.addAttribute("systemuserlist", systemUserRepo.findAll())
     }
 
-    void addPaginatedData(Model model, Optional<Integer> page) {
-
-        // https://www.baeldung.com/spring-data-jpa-pagination-sorting
-        //pagination
-        int currentPage = page.orElse(0);
-        int pageSize = 5;
-        Pageable pageable;
-        if (currentPage == 0) {
-            pageable = PageRequest.of(0, pageSize);
-        } else {
-            pageable = PageRequest.of(currentPage - 1, pageSize);
-        }
-
-        Page<SystemUserDAO> pageOfSystemUser = systemUserRepo.findAll(pageable)
-
-        //filter out soft deleted systemUserDAO records
-        pageOfSystemUser.filter { it.deleted == 0 }
-
-        int totalPages = pageOfSystemUser.getTotalPages();
-
-        List<Integer> pageNumbers = new ArrayList<>();
-
-        while (totalPages > 0) {
-            pageNumbers.add(totalPages);
-            totalPages = totalPages - 1;
-        }
-
-        model.addAttribute("pageNumbers", pageNumbers);
-        model.addAttribute("page", currentPage);
-        model.addAttribute("size", pageOfSystemUser.getTotalPages());
-        model.addAttribute("systemuserPage", pageOfSystemUser);
-    }
+//    void addPaginatedData(Model model, Optional<Integer> page) {
+//
+//        // https://www.baeldung.com/spring-data-jpa-pagination-sorting
+//        //pagination
+//        int currentPage = page.orElse(0);
+//        int pageSize = 5;
+//        Pageable pageable;
+//        if (currentPage == 0) {
+//            pageable = PageRequest.of(0, pageSize);
+//        } else {
+//            pageable = PageRequest.of(currentPage - 1, pageSize);
+//        }
+//
+//        Page<SystemUserDAO> pageOfSystemUser = systemUserRepo.findAll(pageable)
+//
+//        //filter out soft deleted systemUserDAO records
+//        pageOfSystemUser.filter { it.deleted == 0 }
+//
+//        int totalPages = pageOfSystemUser.getTotalPages();
+//
+//        List<Integer> pageNumbers = new ArrayList<>();
+//
+//        while (totalPages > 0) {
+//            pageNumbers.add(totalPages);
+//            totalPages = totalPages - 1;
+//        }
+//
+//        model.addAttribute("pageNumbers", pageNumbers);
+//        model.addAttribute("page", currentPage);
+//        model.addAttribute("size", pageOfSystemUser.getTotalPages());
+//        model.addAttribute("systemuserPage", pageOfSystemUser);
+//    }
 
     void updateSystemUser(SystemUserDAO systemUserDAO, Model model) {
 
@@ -202,6 +204,41 @@ class SystemUserHelper {
     }
 
 
+
+    // being used on the batch/admin.html page
+    void bindAllSystemUsers(Model model,
+                      Optional<Integer> page,
+                      Optional<Integer> size){
+
+
+        //pagination
+        int currentPage = page.orElse(0);
+        int pageSize = size.isEmpty() ? 5 : size.get();
+        Pageable pageable;
+        if(currentPage == 0){
+            pageable = PageRequest.of(0 , pageSize);
+        } else {
+            pageable = PageRequest.of(currentPage - 1, pageSize);
+        }
+
+
+        // this needs to only find these based on their batchid
+        Page<SystemUserDAO> pageOfSystemUser = systemUserRepo.findAll(pageable);
+
+        int totalPages = pageOfSystemUser.getTotalPages();
+
+        List<Integer> pageNumbers = new ArrayList<>();
+
+        while(totalPages > 0){
+            pageNumbers.add(totalPages);
+            totalPages = totalPages - 1;
+        }
+
+        model.addAttribute("pageNumbers", pageNumbers);
+        model.addAttribute("page", currentPage);
+        model.addAttribute("size", pageOfSystemUser.getTotalPages());
+        model.addAttribute("systemuserPage", pageOfSystemUser);
+    }
 
 
 

@@ -54,14 +54,15 @@ public class SystemUserViewController {
             @RequestParam("size") Optional<Integer> size
     ){
 
-        systemUserHelper.addPaginatedData(model, page)
+//        systemUserHelper.addPaginatedData(model, page)
 
         if(systemuserid.isPresent())  {
             systemUserHelper.loadSystemUser(Integer.valueOf(systemuserid.get()), model)
         }
 
+        systemUserHelper.loadAllSystemUsers(model, page, size)
 
-        systemUserHelper.loadAllSystemUsers(model)
+//        systemUserHelper.loadAllSystemUsers(model)
         return "systemuser/systemuser.html";
     }
 
@@ -74,13 +75,14 @@ public class SystemUserViewController {
             @RequestParam("size") Optional<Integer> size
     ){
 
-        systemUserHelper.addPaginatedData(model, page)
+//        systemUserHelper.addPaginatedData(model, page)
+//        systemUserHelper.loadAllSystemUsers(model, page, size)
 
         if(systemuserid.isPresent())  {
             systemUserHelper.loadSystemUser(Integer.valueOf(systemuserid.get()), model)
         }
+        systemUserHelper.loadAllSystemUsers(model, page, size)
 
-        systemUserHelper.loadAllSystemUsers(model)
         return "systemuser/systemuser.html";
     }
 
@@ -100,11 +102,43 @@ public class SystemUserViewController {
 
         systemUserHelper.updateSystemUser(systemUser, model)
 
-        systemUserHelper.addPaginatedData(model, page)
+//        systemUserHelper.addPaginatedData(model, page)
 
         systemUserHelper.loadSystemUser(Integer.valueOf(systemUser.id), model)
 
-        systemUserHelper.loadAllSystemUsers(model)
+        systemUserHelper.loadAllSystemUsers(model, page, size)
+
+
+        // update the active jwt
+        techvvsAuthService.updateJwtToken(techvvsAuthService.getActiveCookie(request), response)
+
+
+        return "systemuser/systemuser.html";
+    }
+
+
+    // todo: enforce admin rights to edit user here
+    @PostMapping("/systemuser/role/remove")
+    String removeRoleFromSystemUser(
+            @ModelAttribute( "systemuser" ) SystemUserDAO systemUser,
+            Model model,
+            @RequestParam("systemuserid") Optional<String> systemuserid,
+            @RequestParam("role") Optional<String> role,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size,
+            HttpServletRequest request,
+            HttpServletResponse response
+    ){
+        techvvsAuthService.checkuserauth(model)
+
+        systemUserHelper.updateSystemUser(systemUser, model)
+
+//        systemUserHelper.addPaginatedData(model, page)
+
+        systemUserHelper.loadSystemUser(Integer.valueOf(systemUser.id), model)
+
+//        systemUserHelper.loadAllSystemUsers(model)
+        systemUserHelper.loadAllSystemUsers(model, page, size)
 
 
         // update the active jwt

@@ -179,6 +179,9 @@
     </script>
 </head>
 <body>
+
+<div th:insert="fragments/adminnavbar.html :: adminnavbarfragment"> </div>
+
 <div class="container">
     <!-- Header -->
     <div class="header-dark">
@@ -497,7 +500,20 @@
         </script>
 
         </tbody>
+
     </table>
+    <!-- add pagination here -->
+    <nav th:if="${systemuserPage.totalPages > 0}">
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:each="pageNumber : ${pageNumbers}">
+                <a class="page-link btn btn-secondary btn-sm mx-1"
+                   th:href="@{/systemuser?size=__${#lists.size(systemuserPage.content) > 5 ? #lists.size(systemuserPage.content) : 5}__&page=__${pageNumber}__}"
+                   th:text="${pageNumber}"
+                   th:classappend="${pageNumber==systemuserPage.number + 1} ? 'active'">
+                </a>
+            </li>
+        </ul>
+    </nav>
 </div>
 </body>
 </html>
