@@ -183,11 +183,11 @@
                         </select>
 
                         <div class="col-md-4" style="margin-bottom: 5px;">
-                            <label class="form-label required">Batch</label>
+                            <label class="form-label required">Batch33</label>
                             <select class="form-control" th:field="${batch.batchid}"  id="batchid" readonly="">
                                 <!--                        <option value="">select operator</option>-->
                                 <!--                        <option th:each="operator : ${}" th:value="${operator.id}" th:text="${operator.operatorName}"></option>-->
-                                <option th:each="batch : ${batchlist}" th:value="${batch.batchid}" th:text="${batch.name}"></option>
+                                <option th:each="batch : ${batchlist}" th:value="${batch.batchid}" th:selected="${batch.batchid == batchid}" th:text="${batch.name}"></option>
 
                             </select>
                         </div>
@@ -304,14 +304,18 @@
                 <div class="col-md-4" style="margin-bottom: 5px;">
                     <label class="form-label required">Batch</label>
 
-                    <select class="form-control" th:field="${batch.batchid}"  id="batchid">
+                    <select class="form-control">
                         <!--                        <option value="">select operator</option>-->
                         <!--                        <option th:each="operator : ${}" th:value="${operator.id}" th:text="${operator.operatorName}"></option>-->
-                        <option th:each="batch : ${batchlist}" th:value="${batch.batchid}" th:text="${batch.name}"></option>
+                        <option th:each="batch : ${batchlist}"
+                                th:value="${batch.batchid}"
+                                th:text="${batch.name}"
+                                th:selected="${batch.batchid.toString() == batchid.toString()}"
+                        ></option>
 
                     </select>
                 </div>
-<!--                    <select  th:field="*{producttypeid}" class="form-control" placeholder="producttype" aria-label="producttype">-->
+                <!--                    <select  th:field="*{producttypeid}" class="form-control" placeholder="producttype" aria-label="producttype">-->
             </div>
 
 
@@ -356,51 +360,6 @@
             </div>
 
 
-            <div style="margin-bottom: 5px;" class="mx-auto">
-
-                <div class="alert alert-info" role="alert" >Upload a file</div>
-                <!-- pass the product object to the upload file controller to get the correct ID to save it under -->
-                <form method="post" th:object="${product}" th:action="@{/file/media/upload}" enctype="multipart/form-data">
-                    <div class="form-group">
-
-                        <div th:if="${disableupload}">
-                            <input type="file" disabled="disabled" name="file" class="form-control-file">
-                        </div>
-
-                        <div th:if="${disableupload == null}">
-                            <input type="file" name="file" class="form-control-file">
-                        </div>
-
-
-
-                        <!-- pass all these hidden attributes with so the data stays on page after uploading the file -->
-                        <input type="hidden" th:field="*{productnumber}">
-                        <input type="hidden" th:field="*{name}">
-                        <input type="hidden" th:field="*{product_id}">
-                        <input type="hidden" th:field="*{description}">
-                        <input type="hidden" th:field="*{notes}">
-                        <input type="hidden" th:field="*{updateTimeStamp}">
-                        <input type="hidden" th:field="*{createTimeStamp}">
-                    </div>
-                    <br>
-
-
-                    <div th:if="${disableupload}">
-
-                        <button type="submit" disabled="disabled" class="btn btn-primary">Upload File</button>
-                    </div>
-
-                    <!-- if it is first download then it is ok.  second download will throw 403 is upload is performed right after  -->
-                    <div th:if="${disableupload == null}">
-                        <button type="submit" class="btn btn-primary">Upload File</button>
-                    </div>
-                    </div>
-
-
-<!--                    <button type="submit" class="btn btn-primary">Upload File</button>-->
-                </form>
-            </div>
-
 
         </div>
 
@@ -409,8 +368,6 @@
 
 
 
-
-</div>
 
 
 </body>
