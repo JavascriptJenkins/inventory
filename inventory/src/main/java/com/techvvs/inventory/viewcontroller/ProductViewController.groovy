@@ -82,7 +82,11 @@ public class ProductViewController {
 
     //default home mapping
     @GetMapping
-    String viewNewForm(@ModelAttribute( "product" ) ProductVO productVO, Model model){
+    String viewNewForm(
+            @ModelAttribute( "product" ) ProductVO productVO,
+                       Model model,
+                        @RequestParam("batchid") Optional<String> batchid
+    ){
 
 
 
@@ -91,6 +95,9 @@ public class ProductViewController {
             productVOToBind = productVO;
         } else {
             productVOToBind = new ProductVO();
+            if(batchid.isPresent()){
+                productVOToBind.setBatch(batchRepo.findById(Integer.valueOf(batchid.get())).get())
+            }
             productVOToBind.setProductnumber(0);
             productVOToBind.setProductnumber(secureRandom.nextInt(10000000));
             productVOToBind.producttypeid = new ProductTypeVO()
@@ -102,7 +109,7 @@ public class ProductViewController {
         model.addAttribute("product", productVOToBind);
         model.addAttribute("batch", new BatchVO()); // provide a default object for thymeleaf
         bindProductTypes(model)
-        bindBatchList(model) // bind list of batches so we can assign a new product to them?
+        bindBatchList(model, batchid) // bind list of batches so we can assign a new product to them?
         return "product/product.html";
     }
 
@@ -114,9 +121,17 @@ public class ProductViewController {
         model.addAttribute("batch", batchVO);
     }
 
-    void bindBatchList(Model model){
-         List<BatchVO> batchVOS = batchRepo.findAll();
+    void bindBatchList(Model model, Optional<String> batchid){
+
+        if(batchid.isPresent()){
+            model.addAttribute("batchid", batchid.get());
+        }
+
+
+        List<BatchVO> batchVOS = batchRepo.findAll();
         model.addAttribute("batchlist", batchVOS);
+
+
 
     }
 
@@ -321,7 +336,7 @@ public class ProductViewController {
             model.addAttribute("errorMessage",errorResult);
         } else {
 
-            batchVO = batchRepo.findByBatchid(batchVO.getBatchid())
+            batchVO = batchRepo.findByBatchid(productVO.batch.getBatchid())
             productVO.setBatch(batchVO)
 
             // add the product to the database
@@ -336,7 +351,9 @@ public class ProductViewController {
         model.addAttribute("batch",batchVO) // bind the object back to the ui
         techvvsAuthService.checkuserauth(model)
         bindProductTypes(model)
-      //  bindBatches(model)
+        bindBatchList(model, Optional.of(String.valueOf(batchVO.batchid))) // bind list of batches so we can assign a new product to them?
+
+        //  bindBatches(model)
         return "product/product.html";
     }
 

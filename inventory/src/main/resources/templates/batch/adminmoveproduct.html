@@ -67,9 +67,10 @@
         }
         .btn-dark-custom {
             background-color: #343a40;
-            color: #fff;
+            color: white !important;
             border: 1px solid #343a40;
             transition: background-color 0.3s ease, color 0.3s ease;
+            border: 2px solid white !important; /* White outline */
         }
 
         .btn-dark-custom:hover {
@@ -84,6 +85,12 @@
                 text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px #00ffff;
             }
         }
+        a.disabled {
+            pointer-events: none;
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
     </style>
     <script>
         function copyToClipboard(buttonElement) {
@@ -196,7 +203,7 @@
 
         <div class="row mb-3">
 
-            <div class="col-md-4">
+            <div th:if="${successMessage == null}"  class="col-md-4">
                 <label class="form-label">Select Target Batch</label>
 
                 <label for="batchidforproduct"></label><select class="form-control edit-validation-group" th:field="*{batch.batchid}" id="batchidforproduct" readonly>
@@ -206,6 +213,11 @@
                             th:text="${batch.name + ' (' + batch.batchid + ') - ' + batch.batchnumber}">
                     </option>
                 </select>
+            </div>
+            <div th:if="${successMessage != null}"  class="col-md-4">
+                <a th:href="@{/batch/admin?batchid=__${batch.batchid}__}" class="btn btn-primary btn-lg">
+                    Return to Batch
+                </a>
             </div>
         </div>
 
@@ -243,14 +255,15 @@
 
     <br>
 
-    <div class="tip-box">Select a Product by clicking on the Barcode</div>
+    <div th:if="${successMessage == null}" class="tip-box">Product In Scope Below</div>
+    <div th:if="${successMessage != null}" class="tip-box">You have successfully moved the product to different batch. </div>
 
     <br>
     <br>
 
     <!-- This table will display with product info based on case insensitive search from popup -->
     <div class="col-md-12" th:if="${productPage != null && productPage.content.size() > 0}">
-        <table class="table table-hover table-striped table-dark" style="margin-top: 20px">
+        <table th:if="${successMessage == null}" class="table table-hover table-striped table-dark" style="margin-top: 20px">
             <thead>
             <tr>
                 <th scope="col">#</th>
@@ -280,7 +293,7 @@
                        th:text="${product.barcode}"
                        th:data-barcode="${product.barcode}"
                        id="barcode-${product.productnumber}"
-                       class="btn btn-secondary btn-sm">
+                       class="btn btn-secondary btn-sm" th:classappend="disabled">
                     </a>
                     <!-- Button to copy barcode -->
                     <button type="button" class="btn btn-dark-custom btn-sm"
@@ -304,17 +317,17 @@
             </tr>
             </tbody>
         </table>
-        <nav th:if="${productPage.totalPages > 0}">
-            <ul class="pagination justify-content-center">
-                <li class="page-item" th:each="pageNumber : ${pageNumbers}">
-                    <a class="page-link btn btn-secondary btn-sm mx-1"
-                       th:href="@{/batch/admin?size=__${#lists.size(productPage.content) > 5 ? #lists.size(productPage.content) : 5}__&page=__${pageNumber}__&batchid=__${batch != null ? batch.batchid : '0'}__&productnamesearch=__${productNameSearchValue}__}"
-                       th:text="${pageNumber}"
-                       th:classappend="${pageNumber==productPage.number + 1} ? 'active'">
-                    </a>
-                </li>
-            </ul>
-        </nav>
+<!--        <nav th:if="${productPage.totalPages > 0}">-->
+<!--            <ul class="pagination justify-content-center">-->
+<!--                <li class="page-item" th:each="pageNumber : ${pageNumbers}">-->
+<!--                    <a class="page-link btn btn-secondary btn-sm mx-1"-->
+<!--                       th:href="@{/batch/admin?size=__${#lists.size(productPage.content) > 5 ? #lists.size(productPage.content) : 5}__&page=__${pageNumber}__&batchid=__${batch != null ? batch.batchid : '0'}__&productnamesearch=__${productNameSearchValue}__}"-->
+<!--                       th:text="${pageNumber}"-->
+<!--                       th:classappend="${pageNumber==productPage.number + 1} ? 'active'">-->
+<!--                    </a>-->
+<!--                </li>-->
+<!--            </ul>-->
+<!--        </nav>-->
     </div>
 
     <br>

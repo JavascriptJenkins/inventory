@@ -7,7 +7,8 @@ import com.techvvs.inventory.model.BatchTypeVO;
 import com.techvvs.inventory.model.BatchVO
 import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.modelnonpersist.FileVO
-import com.techvvs.inventory.service.auth.TechvvsAuthService;
+import com.techvvs.inventory.service.auth.TechvvsAuthService
+import com.techvvs.inventory.service.controllers.BatchService;
 import com.techvvs.inventory.util.TechvvsFileHelper
 import com.techvvs.inventory.validation.ValidateBatch
 import com.techvvs.inventory.viewcontroller.constants.ControllerConstants
@@ -54,7 +55,9 @@ public class BatchViewController {
     
     @Autowired
     TechvvsAuthService techvvsAuthService
-    
+
+    @Autowired
+    BatchService batchService
 
     //default home mapping
     @GetMapping
@@ -197,7 +200,7 @@ public class BatchViewController {
 
     ){
 
-        model = batchControllerHelper.processModel(model,  batchnumber, editmode, page, null, false , false);
+        model = batchControllerHelper.proces sModel(model,  batchnumber, editmode, page, null, false , false);
         return "service/editbatch.html";
     }
 
@@ -421,13 +424,9 @@ public class BatchViewController {
                                 HttpServletResponse response
     ){
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        System.out.println("----------------------- START AUTH INFO ");
-        System.out.println("authentication.getCredentials: "+authentication.getCredentials());
-        System.out.println("authentication.getPrincipal: "+authentication.getPrincipal());
-        System.out.println("authentication.getAuthorities: "+authentication.getAuthorities());
-        System.out.println("----------------------- END AUTH INFO ");
+        techvvsAuthService.checkuserauth(model)
 
+        //todo: validate the batch has batchnumber created even tho its stupid
         String errorResult = validateBatch.validateNewFormInfo(batchVO);
 
         // Validation
@@ -435,20 +434,15 @@ public class BatchViewController {
             model.addAttribute("disableupload","true"); // if there is an error submitting the new form we keep this disabled
             model.addAttribute("errorMessage",errorResult);
         } else {
+            batchVO.name = batchVO.name.replaceAll(" ","_")// very important to replace spaces with underscores!  otherwise file downloads won't work
 
-            // when creating a new processData entry, set the last attempt visit to now - this may change in future
-            batchVO.setCreateTimeStamp(LocalDateTime.now());
-            batchVO.setUpdateTimeStamp(LocalDateTime.now());
+            // create new batch
+            BatchVO result = batchService.createBatchRecord(batchVO.name, batchVO.batch_type_id.batch_type_id)
 
-
-            //todo: add support for batch types on the ui so we can save this batch object
-            BatchVO result = batchRepo.save(batchVO);
-
-            model.addAttribute("successMessage","Record Successfully Saved. ");
+            model.addAttribute("successMessage","New Batch Created. Batch id: "+result.batchid + " Batch Name: " + result.name);
             model.addAttribute("batch", result);
         }
 
-        techvvsAuthService.checkuserauth(model)
         batchControllerHelper.bindBatchTypes(model)
         return "service/batch.html";
     }

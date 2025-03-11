@@ -105,9 +105,9 @@
 <!--    </div>-->
 
 
-    <div th:if="${product.createTimeStamp != null}">
-        PRODUCT HAS BEEN CREATED
-    </div>
+<!--    <div th:if="${product.createTimeStamp != null}">-->
+<!--        PRODUCT HAS BEEN CREATED-->
+<!--    </div>-->
 
 
     <div th:if="${filelist != null || product.createTimeStamp != null}">
@@ -206,6 +206,8 @@
                     <div class="alert alert-warning" role="alert" ><a th:href="@{/product/editform?productnumber=__${product.productnumber}__&editmode=yes}">Click here to edit this form</a>
                     </div>
                     <button style="margin-top:5px;" type="submit" class="btn btn-primary" disabled>Submit</button>
+                    <input type="hidden" th:field="*{batch.batchnumber}">
+                    <input type="hidden" th:field="*{batch}">
             </form>
 
     </div> <!-- end filelist view -->
@@ -302,15 +304,14 @@
                 </div>
 
                 <div class="col-md-4" style="margin-bottom: 5px;">
-                    <label class="form-label required">Batch</label>
+                    <label class="form-label required">Batch55</label>
 
-                    <select class="form-control">
+                    <select class="form-control" th:field="*{batch.batchid}">
                         <!--                        <option value="">select operator</option>-->
                         <!--                        <option th:each="operator : ${}" th:value="${operator.id}" th:text="${operator.operatorName}"></option>-->
                         <option th:each="batch : ${batchlist}"
                                 th:value="${batch.batchid}"
                                 th:text="${batch.name}"
-                                th:selected="${batch.batchid.toString() == batchid.toString()}"
                         ></option>
 
                     </select>
@@ -332,6 +333,7 @@
                 </div>
             </div>
             <button style="margin-top:5px;" type="submit" class="btn btn-primary">Submit</button>
+<!--            <input type="hidden" th:field="*{batch.batchid}">-->
         </form>
 
     </div> <!-- end non filelist -->

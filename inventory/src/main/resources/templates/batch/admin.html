@@ -177,12 +177,23 @@
 <div class="container">
 
     <div class="header-dark">
-        <h1>Administrate Batch Data</h1>
+        <h1>Administrate Batch Products</h1>
     </div>
-
+    <div th:if="${productPage != null && productPage.content.size() > 0}" style="margin-bottom: 20px">
+        <a th:href="@{/product?batchid=__${batch.batchid}__}" class="btn btn-primary btn-lg">
+            Click here to create another product
+        </a>
+    </div>
     <!-- New Product Edit Section -->
     <div th:if="${!editmode}" class="tip-box">Create a New Batch and First Product by filling out the form.  </div>
     <div th:if="${editmode}" class="tip-box">Modify product attributes.  If a product has been sold, price change is not possible.</div>
+
+    <div th:if="${productPage != null && productPage.content.size() == 0}">
+            <a th:href="@{/product?batchid=__${batch.batchid}__}" class="btn btn-primary btn-lg">
+                Click here to create your first product
+            </a>
+    </div>
+
 
     <div id="successDiv" class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">
         Success
@@ -192,7 +203,7 @@
         Error
     </div>
 
-    <form th:action="@{/batch/admin/product/edit}" method="post" th:object="${product}">
+    <form th:if="${editmode}" th:action="@{/batch/admin/product/edit}" method="post" th:object="${product}">
         <div class="row mb-3">
             <div class="col-md-4">
                 <label class="form-label">Barcode </label>
@@ -316,6 +327,7 @@
     <br>
 
     <div class="tip-box">Select a Product by clicking on the Barcode</div>
+    <div class="tip-box">To move the product to another batch, click on Move to Different Batch</div>
     <!-- Header for Products in Scope for Batch -->
     <div class="d-flex align-items-center bg-dark text-white p-3 rounded mb-3">
         <i class="bi bi-box-seam me-2" style="font-size: 1.5rem;"></i>
