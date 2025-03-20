@@ -552,9 +552,9 @@ public class CleanBatchViewController {
         int pageSize = 5;
         Pageable pageable;
         if(currentPage == 0){
-            pageable = PageRequest.of(0 , pageSize, Sort.by(Sort.Direction.ASC, "batchid"));
+            pageable = PageRequest.of(0 , pageSize, Sort.by(Sort.Direction.DESC, "batchid"));
         } else {
-            pageable = PageRequest.of(currentPage - 1, pageSize, Sort.by(Sort.Direction.ASC, "batchid"));
+            pageable = PageRequest.of(currentPage - 1, pageSize, Sort.by(Sort.Direction.DESC, "batchid"));
         }
 
         Page<BatchVO> pageOfBatch = batchRepo.findAll(pageable);
