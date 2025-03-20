@@ -89,9 +89,11 @@ class SystemUserHelper {
 
     void updateSystemUser(SystemUserDAO systemUserDAO, Model model) {
 
+        // first we validate the input from the ui
+        validateSystemUser(systemUserDAO, model)
+
         updateSystemUserWithPassword(systemUserDAO, model) // need to grab the password from the backend and bind it
 
-        validateSystemUser(systemUserDAO, model)
         if (model.getAttribute(MessageConstants.ERROR_MSG) == null) {
             if (systemUserDAO.id > 0) {
                 systemUserDAO.updatedtimestamp = LocalDateTime.now()
