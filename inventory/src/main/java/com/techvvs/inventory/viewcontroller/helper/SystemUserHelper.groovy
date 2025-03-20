@@ -87,10 +87,10 @@ class SystemUserHelper {
 //        model.addAttribute("systemuserPage", pageOfSystemUser);
 //    }
 
-    void updateSystemUser(SystemUserDAO systemUserDAO, Model model) {
+    void updateSystemUser(SystemUserDAO systemUserDAO, Model model, boolean isedit) {
 
         // first we validate the input from the ui
-        validateSystemUser(systemUserDAO, model)
+        validateSystemUser(systemUserDAO, model, isedit)
 
         updateSystemUserWithPassword(systemUserDAO, model) // need to grab the password from the backend and bind it
 
@@ -123,10 +123,10 @@ class SystemUserHelper {
 
 
     
-    SystemUserDAO validateSystemUser(SystemUserDAO systemUserDAO, Model model) {
+    SystemUserDAO validateSystemUser(SystemUserDAO systemUserDAO, Model model, boolean isedit) {
 
         //  do any business logic / page specific validation below
-        validateSystemUserData(systemUserDAO, model)
+        validateSystemUserData(systemUserDAO, model, isedit)
 
 
         // first - validate against security issues
@@ -146,7 +146,7 @@ class SystemUserHelper {
         return systemUserDAO
     }
 
-    public static void validateSystemUserData(SystemUserDAO systemUserDAO, Model model) {
+    public static void validateSystemUserData(SystemUserDAO systemUserDAO, Model model, boolean isedit) {
         boolean hasErrors = false;
 
         // Validate email
@@ -167,11 +167,12 @@ class SystemUserHelper {
             hasErrors = true;
         }
 
-        // Validate password
-        if (systemUserDAO.getPassword() == null || systemUserDAO.getPassword().isEmpty()) {
+        // Only validating the password if it's not an edit.... this really isn't a valid scenario ever,
+        // because password management will be handled through a seperate flow......
+        if (systemUserDAO.getPassword() == null || systemUserDAO.getPassword().isEmpty() && !isedit) {
             model.addAttribute("errorMessage", "Password cannot be null or empty.");
             hasErrors = true;
-        } else if (!systemUserDAO.getPassword().equals(systemUserDAO.getPassword2())) {
+        } else if (!systemUserDAO.getPassword().equals(systemUserDAO.getPassword2()) && !isedit) {
             model.addAttribute("errorMessage", "Passwords do not match.");
             hasErrors = true;
         }

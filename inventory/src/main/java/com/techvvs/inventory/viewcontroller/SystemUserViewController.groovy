@@ -100,7 +100,7 @@ public class SystemUserViewController {
     ){
         techvvsAuthService.checkuserauth(model)
 
-        systemUserHelper.updateSystemUser(systemUser, model)
+        systemUserHelper.updateSystemUser(systemUser, model, true)
 
 //        systemUserHelper.addPaginatedData(model, page)
 
