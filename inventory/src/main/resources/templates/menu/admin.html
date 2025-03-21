@@ -248,7 +248,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:each="product, iStat : ${productPage.content}"
+                    <tr th:if="${productPage != null && !productPage.content.isEmpty()}" th:each="product, iStat : ${productPage.content}"
                         th:style="${iStat.odd}? 'font-weight: bold;'"
                         th:alt-title="${iStat.even}? 'even' : 'odd'">
 
@@ -272,7 +272,7 @@
                 <input th:if="${menu.menuid != null && menu.menuid != 0 && editmode}" type="hidden" name="menuid" th:value="${menu != null ? menu.menuid : 0}">
 
             </form>
-            <nav th:if="${productPage.totalPages > 0}">
+            <nav th:if="${productPage != null && productPage.totalPages > 0}">
                 <ul class="pagination justify-content-center">
                     <li class="page-item" th:each="pageNumber : ${productpageNumbers}">
                         <a class="page-link btn btn-secondary btn-sm mx-1"
