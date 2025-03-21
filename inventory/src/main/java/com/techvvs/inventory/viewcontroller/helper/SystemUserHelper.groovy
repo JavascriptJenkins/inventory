@@ -167,15 +167,20 @@ class SystemUserHelper {
             hasErrors = true;
         }
 
+        // if someone puts a country code in front of the phone number, chop it off.
+        if(systemUserDAO.phone.length() > 10) {
+            systemUserDAO.phone = systemUserDAO.phone.substring(1, 11) // chop off the leading 1
+        }
+
         // Only validating the password if it's not an edit.... this really isn't a valid scenario ever,
         // because password management will be handled through a seperate flow......
-        if (systemUserDAO.getPassword() == null || systemUserDAO.getPassword().isEmpty() && !isedit) {
-            model.addAttribute("errorMessage", "Password cannot be null or empty.");
-            hasErrors = true;
-        } else if (!systemUserDAO.getPassword().equals(systemUserDAO.getPassword2()) && !isedit) {
-            model.addAttribute("errorMessage", "Passwords do not match.");
-            hasErrors = true;
-        }
+//        if (systemUserDAO.getPassword() == null || systemUserDAO.getPassword().isEmpty() && !isedit) {
+//            model.addAttribute("errorMessage", "Password cannot be null or empty.");
+//            hasErrors = true;
+//        } else if (!systemUserDAO.getPassword().equals(systemUserDAO.getPassword2()) && !isedit) {
+//            model.addAttribute("errorMessage", "Passwords do not match.");
+//            hasErrors = true;
+//        }
 
         // Validate roles
         if (systemUserDAO.getRoles() == null || systemUserDAO.getRoles().length == 0) {

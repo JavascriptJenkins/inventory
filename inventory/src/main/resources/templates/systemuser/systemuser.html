@@ -111,7 +111,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const form = document.querySelector('form');
+            const form = document.querySelector('#systemuserform');
 
             // Helper function to validate individual fields
             const validateField = (field, condition, errorMessage) => {
@@ -199,7 +199,8 @@
     </div>
 
     <!-- Form for SystemUserDAO -->
-    <form th:action="@{${systemuser != null && systemuser.id > 0 ? '/systemuser/edit' : '/systemuser/create'}}" method="post" th:object="${systemuser}">
+    <form id="systemuserform" th:if="${systemuser.id > 0}" th:action="@{/systemuser/edit}" method="post" th:object="${systemuser}">
+
         <input type="hidden" th:field="*{id}">
 
         <div class="row">
@@ -322,7 +323,7 @@
         </div>
 
         <button type="submit" class="btn btn-primary">
-            <span th:text="${systemuser.id > 0 ? 'Update User' : 'Create User'}"></span>
+            <span>Update User</span>
         </button>
     </form>
 
@@ -452,7 +453,7 @@
             function addSelectedRoleAndSubmit() {
                 const availableRoles = document.getElementById('availableRoles');
                 const selectedRolesContainer = document.getElementById('selectedRoles');
-                const form = document.querySelector('form');
+                const form = document.querySelector('#systemuserform');
 
                 // Flag to track if duplicates are found
                 let duplicatesFound = false;

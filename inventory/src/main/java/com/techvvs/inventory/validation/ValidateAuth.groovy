@@ -26,9 +26,9 @@ class ValidateAuth {
             systemUserDAO.setPhone(systemUserDAO.getPhone().replaceAll(" ", ""));
         }
 
-        if (systemUserDAO.getPhone().length() == 10) {
-            systemUserDAO.setPhone("1" + systemUserDAO.getPhone()); // add usa country code if phone number is 10 digits
-        }
+//        if (systemUserDAO.getPhone().length() == 10) {
+//            systemUserDAO.setPhone("1" + systemUserDAO.getPhone()); // add usa country code if phone number is 10 digits
+//        }
 
         if (systemUserDAO.getEmail().length() < 6
                 || systemUserDAO.getEmail().length() > 200

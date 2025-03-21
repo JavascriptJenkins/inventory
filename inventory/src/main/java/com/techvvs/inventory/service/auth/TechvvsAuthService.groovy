@@ -4,6 +4,7 @@ import com.techvvs.inventory.jparepo.TokenRepo
 import com.techvvs.inventory.model.TokenDAO
 import com.techvvs.inventory.security.JwtTokenProvider
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.core.env.Environment
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
@@ -24,6 +25,9 @@ class TechvvsAuthService {
     @Autowired
     TokenRepo tokenRepo
 
+    @Autowired
+    Environment env
+
     void checkuserauth(Model model){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         boolean isAuthenticated = authentication != null && authentication.isAuthenticated();
@@ -37,8 +41,16 @@ class TechvvsAuthService {
 
         // Set the updated JWT token in a cookie
         Cookie jwtCookie = new Cookie("techvvs_token", token);
+
         jwtCookie.setHttpOnly(true); // Secure the cookie
-        jwtCookie.setSecure(true);  // Ensure it's sent only over HTTPS
+
+        // send user an email link to validate account
+        if ("dev1".equals(env.getProperty("spring.profiles.active"))) {
+            // not setting secure cookie when doing local dev over regular http
+        } else {
+            jwtCookie.setSecure(true);  // Ensure it's sent only over HTTPS
+        }
+
         jwtCookie.setPath("/");    // Make it available to the entire application
         jwtCookie.setMaxAge(1 * 24 * 60 * 60); // Set expiration time (e.g., 1 day)
 
