@@ -249,12 +249,16 @@
                 </button>
                 <div id="selectedRoles">
                     <!-- Display existing roles -->
-                    <span th:each="role : ${systemuser.roles}" class="role-box">
-                    <span th:text="${role}"></span>
-                    <span class="remove-role" onclick="removeRole('${role}')">✕</span>
-                                    <!-- Create hidden inputs for each role -->
-                        <input type="hidden" name="roles" th:value="${role}" />
+                    <span th:each="role : ${systemuser.roles}" class="role-box d-flex align-items-center justify-content-between" th:id="'role-' + ${role}">
+                        <span th:text="${role}"></span>
+                        <i class="bi bi-x-circle-fill remove-role ms-3"
+                           th:attr="data-role=${role}"
+                           title="Remove role"
+                           style="font-size: 1.4rem; color: red; cursor: pointer;"></i>
+                                            <!-- Still include the current role list for display -->
+                        <input type="hidden" name="roles" th:id="'input-role-' + ${role}" th:value="${role}" />
                     </span>
+
                 </div>
             </div>
 
@@ -414,6 +418,8 @@
 
 
     function removeRole(role) {
+    console.log('removing role: ' + role);
+
         // Remove the role box and corresponding hidden input
         const roleBox = document.getElementById(`role-${role}`);
         const hiddenInput = document.getElementById(`input-role-${role}`);
@@ -499,6 +505,38 @@
                 // Submit the form
                 form.submit();
             }
+        </script>
+
+<!--        This javascript makes a hidden element when somebody clicks on a role to delete -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const selectedRolesContainer = document.getElementById('selectedRoles');
+                const form = document.getElementById('systemuserform');
+
+                selectedRolesContainer.addEventListener('click', function (event) {
+                    const target = event.target;
+
+                    if (target.classList.contains('remove-role')) {
+                        const role = target.getAttribute('data-role');
+
+                        // Remove visual role display
+                        const roleBox = document.getElementById(`role-${role}`);
+                        const originalHiddenInput = document.getElementById(`input-role-${role}`);
+                        if (roleBox) roleBox.remove();
+                        if (originalHiddenInput) originalHiddenInput.remove();
+
+                        // Add hidden input for deletion
+                        const deleteInput = document.createElement('input');
+                        deleteInput.type = 'hidden';
+                        deleteInput.name = 'rolestodelete';
+                        deleteInput.value = role;
+                        form.appendChild(deleteInput);
+
+                        // Submit the form
+                        form.submit();
+                    }
+                });
+            });
         </script>
 
         </tbody>

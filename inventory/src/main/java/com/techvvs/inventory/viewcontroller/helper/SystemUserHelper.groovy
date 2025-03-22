@@ -87,12 +87,31 @@ class SystemUserHelper {
 //        model.addAttribute("systemuserPage", pageOfSystemUser);
 //    }
 
-    void updateSystemUser(SystemUserDAO systemUserDAO, Model model, boolean isedit) {
+    void updateSystemUser(
+            SystemUserDAO systemUserDAO,
+                          Model model,
+                          boolean isedit,
+                          Optional<String> rolestodelete // only going to come in with a single role...
+    ) {
 
         // first we validate the input from the ui
         validateSystemUser(systemUserDAO, model, isedit)
 
         updateSystemUserWithPassword(systemUserDAO, model) // need to grab the password from the backend and bind it
+
+        if (rolestodelete.isPresent()) {
+            String roleToDelete = rolestodelete.get();
+
+            // Use an iterator to avoid ConcurrentModificationException
+            Iterator<String> iterator = systemUserDAO.getRoles().iterator();
+            while (iterator.hasNext()) {
+                String role = iterator.next();
+                if (role.equals(roleToDelete)) {
+                    iterator.remove(); // Safe removal during iteration
+                }
+            }
+        }
+
 
         if (model.getAttribute(MessageConstants.ERROR_MSG) == null) {
             if (systemUserDAO.id > 0) {

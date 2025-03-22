@@ -54,53 +54,60 @@
                         <a class="nav-link active" th:href="${isAuthenticated} ? @{/dashboard/index} : @{/login}">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" th:href="@{/batchtype}">Batch Type</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/producttype}">Product Type</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/packagetype}">Package Type</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/location}">Location</a>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-link" th:href="@{/systemuser}">System Users</a>
                     </li>
 <!--                    <li class="nav-item">-->
 <!--                        <a class="nav-link" th:href="@{/systemuser/myprofile}">User Profile</a>-->
 <!--                    </li>-->
                     <li class="nav-item">
-                        <a class="nav-link" th:href="@{/product}">New Product</a>
+                        <a class="nav-link" th:href="@{/location}">Location</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" th:href="@{/customer}">Customers</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" th:href="@{/newbatch}">New Batch</a>
+                        <a class="nav-link" th:href="@{/menu/admin/manage}">Menus</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/batch/edit}">Manage Batches</a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="batchDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Batch Management
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="batchDropdown">
+                            <li><a class="dropdown-item" th:href="@{/newbatch}">New Batch</a></li>
+                            <li><a class="dropdown-item" th:href="@{/batch/edit}">Manage Batches</a></li>
+                            <li><a class="dropdown-item" th:href="@{/newbatch/searchBatch}">Search Batches</a></li>
+                        </ul>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/menu/admin/manage}">Manage Menus</a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="productDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Product Management
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="productDropdown">
+                            <li><a class="dropdown-item" th:href="@{/product/searchProduct}">Search Products</a></li>
+                            <li><a class="dropdown-item" th:href="@{/product/browseProduct}">Browse Products</a></li>
+                            <li><a class="dropdown-item" th:href="@{/product}">New Product</a></li>
+                        </ul>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/newbatch/uploadxlsx}">Upload xlsx</a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="typeDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Type Management
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="typeDropdown">
+                            <li><a class="dropdown-item" th:href="@{/batchtype}">Batch Type</a></li>
+                            <li><a class="dropdown-item" th:href="@{/producttype}">Product Type</a></li>
+                            <li><a class="dropdown-item" th:href="@{/packagetype}">Package Type</a></li>
+                        </ul>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/product/searchProduct}">Search Products</a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="miscDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Misc
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="miscDropdown">
+                            <li><a class="dropdown-item" th:href="@{/newbatch/uploadxlsx}">Upload xlsx</a></li>
+                            <li><a class="dropdown-item" th:href="@{/label}">Label</a></li>
+                        </ul>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/newbatch/searchBatch}">Search Batches</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/product/browseProduct}">Browse Products</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/label}">Label</a>
-                    </li>
+
                     <li th:if="${isAuthenticated}" class="nav-item">
                         <a class="nav-link active" aria-current="page" href="javascript:{}" onclick="postLogout()">Logout</a>
                     </li>

@@ -93,6 +93,7 @@ public class SystemUserViewController {
             @ModelAttribute( "systemuser" ) SystemUserDAO systemUser,
             Model model,
             @RequestParam("systemuserid") Optional<String> systemuserid,
+            @RequestParam("rolestodelete") Optional<String> rolestodelete,
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size,
             HttpServletRequest request,
@@ -100,7 +101,7 @@ public class SystemUserViewController {
     ){
         techvvsAuthService.checkuserauth(model)
 
-        systemUserHelper.updateSystemUser(systemUser, model, true)
+        systemUserHelper.updateSystemUser(systemUser, model, true, rolestodelete)
 
 //        systemUserHelper.addPaginatedData(model, page)
 
