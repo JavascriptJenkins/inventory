@@ -178,11 +178,7 @@ class TransactionHelper {
 
                 transactionVO.product_list.remove(productVO)
 
-
                 addProductToReturnList(transactionVO, productVO)
-                // set the values back to original price before applying the product return math
-//                transactionVO.totalwithtax = Math.max(0,transactionVO.originalprice - amountofdiscount)
-//                transactionVO.total = Math.max(0,transactionVO.originalprice - amountofdiscount)
 
                 productVO.quantityremaining = productVO.quantityremaining + 1
                 amountToSubtract = Math.max(0.00, productVO.price - amountofdiscount)
@@ -217,6 +213,13 @@ class TransactionHelper {
             // here we check to make sure that there is no potential remainder credit for customer that wasn't caught by the
             // if statement above.  i dont even know if this scenario is possible/valid, but it might be.
             transactionVO = checkPotentialForPartialProductCustomerCredit(transactionVO)
+            // at this point, the amount to credit customer is the amountToSubtract - remaining balance, if that value is negative
+            Double balanceAfterSubtract = (transactionVO.totalwithtax - transactionVO.paid) - amountToSubtract
+
+            if (balanceAfterSubtract < 0) {
+                // This means we have a negative balance → customer should get credit back
+                transactionVO.customercredit += Math.abs(balanceAfterSubtract)
+            }
 
             transactionVO.total = Math.max(0,transactionVO.total - amountToSubtract)
             transactionVO.totalwithtax = Math.max(0,transactionVO.totalwithtax - amountToSubtract)
@@ -244,7 +247,7 @@ class TransactionHelper {
 
     @Transactional
     TransactionVO checkPotentialForPartialProductCustomerCredit(TransactionVO transactionVO) {
-        // Calculate the amount left to subtract
+        // Calculate the amount left to subtract // todo: wrap this in math.max 0
         double amountToSubtractInScope = transactionVO.total - transactionVO.paid;
 
         // Log the calculation for debugging purposes

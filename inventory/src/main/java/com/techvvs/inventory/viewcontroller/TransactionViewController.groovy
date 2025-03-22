@@ -154,6 +154,7 @@ public class TransactionViewController {
             @RequestParam("barcode") String barcode
     ){
 
+        // todo: first time the transaction goes negative it does not apply customer credit .....
         transactionid = transactionid == null ? "0" : String.valueOf(transactionid)
 
         // attach the paymentVO to the model

@@ -393,8 +393,15 @@
             <h1>Transaction Review</h1>
             <p>Reviewing Transaction ID: <span th:text="${transaction.transactionid}"></span></p>
             <p>Customer: <span th:text="${transaction.customervo.name}"></span></p>
-            <p>Original Price: <span th:text="${transaction.originalprice}"></span></p>
-            <p>Amount remaining to pay: <span th:text="${transaction.totalwithtax - (transaction.paid == null ? 0.0 : transaction.paid)}"></span></p>
+            <p>
+                Original Price:
+                <span th:text="'$' + ${#numbers.formatDecimal(transaction.originalprice, 1, 2)}"></span>
+            </p>
+            <p>
+                Amount remaining to pay:
+                <span th:text="'$' + ${#numbers.formatDecimal(T(java.lang.Math).max((transaction.totalwithtax - (transaction.paid == null ? 0.0 : transaction.paid)) * 1.0, 0.0), 1, 2)}"></span>
+            </p>
+
         </div>
         <div class="col-md-4">
             <h3>Total Units:
@@ -441,8 +448,8 @@
         <div class="col-md-4">
             <h3><a class="btn btn-secondary headerbutton btn-lg" th::href="@{/transaction/delivery?size=5&page=1&transactionid=__${transaction.transactionid}__&popup=1}">Delivery</a></h3>
             <h6 style="margin-top: 80px" th:if="${transaction.customercredit > 0}">
-                    Customer Credit:
-                <span th:text="${transaction.customercredit}"></span>
+                Customer Credit:
+                <span th:text="'$' + ${#numbers.formatDecimal(transaction.customercredit, 1, 2)}"></span>
             </h6>
         </div>
     </div>
