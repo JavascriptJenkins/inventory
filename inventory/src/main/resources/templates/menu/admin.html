@@ -229,11 +229,31 @@
     </form>
 
     <br>
+
+
+
     <!-- Need to have a table displaying here for adding and removing things from MENU loaded into scope -->
     <div th:if="${editmode}" class="row mb-3">
         <div class="col-md-12">
 
-            <form action="/menu/admin/remove/product" method="post">
+            <!-- todo: have this take you to another page with a dropdown showing all existing menus, allow user to copy all items from that menu to this one -->
+            <form th:action="@{/menu/admin/copyexistingitems}" method="get">
+                <input type="hidden" name="menuid" th:value="${menu.menuid}">
+
+                <!--Button: Copy All Items From An Existing Menu.   This allows user to get started quickly with a menu -->
+                <div class="text-end mb-3">
+                    <button th:if="${productPage == null || productPage.content.isEmpty()}" type="submit" class="btn btn-warning d-flex align-items-center gap-2" style="font-size: 1.5rem; padding: 10px 20px;">
+                        <i class="bi bi-files"></i> Copy All Items From Existing Menu
+                    </button>
+                </div>
+                <!-- DEBUG: -->
+<!--                <p th:text="'Menu ID: ' + ${menu.menuid}">Menu ID Not Available</p>-->
+<!--                <p th:text="'editmode: ' + ${editmode}">editmode</p>-->
+
+            </form>
+
+
+            <form th:if="${productPage != null && !productPage.content.isEmpty()}" action="/menu/admin/remove/product" method="post">
                 <button type="submit" class="btn btn-danger d-flex align-items-center gap-2" style="font-size: 1.5rem; padding: 10px 20px;">
                     <i class="bi bi-dash-circle"></i> Remove From Menu
                 </button>

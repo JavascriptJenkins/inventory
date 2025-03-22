@@ -44,7 +44,7 @@ public class CustomErrorController implements ErrorController {
 
 
         // Return the name of a custom error template
-        return "service/xlsxbatch.html"; // Replace with your actual template path
+        return "error/genericerror.html"; // Replace with your actual template path
     }
 
 

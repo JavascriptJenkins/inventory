@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Copy Existing Items</title>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-kQtW33rZJAHjgefvhyyzcGF3C5TFyBQBA13V1RKPf4uH+bwyzQxZ6CmMZHmNBEfJ" crossorigin="anonymous"></script>
+    <link rel="stylesheet" type="text/css" media="all" href="/css/table.css" th:href="@{/css/table.css}" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        .glowing-valid {
+            box-shadow: 0 0 8px 2px #00ffff !important;
+        }
+        .glowing-invalid {
+            box-shadow: 0 0 8px 2px #ff0000 !important;
+        }
+    </style>
+    <style>
+        .table-hover tbody tr:hover {
+            background-color: #e0f7fa;
+        }
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: #f1f8fa;
+        }
+        .table-dark thead {
+            background-color: #343a40;
+            color: #fff;
+        }
+        .btn-secondary {
+            color: #fff;
+            background-color: #343a40;
+            border-color: #343a40;
+        }
+        .btn-secondary:hover {
+            background-color: #23272b;
+            border-color: #1d2124;
+        }
+        .header-dark {
+            background-color: #343a40;
+            color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            margin-bottom: 15px;
+            font-family: 'Roboto', sans-serif;
+            border: 1px solid transparent;
+            border-image: linear-gradient(to right, #c0c0c0, #ffffff);
+            border-image-slice: 1;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .tip-box {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: #00ffff;
+            text-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff, 0 0 15px #00ffff;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: rgba(0, 0, 0, 0.7);
+            margin-bottom: 15px;
+            animation: glow 1.5s infinite alternate;
+        }
+        .btn-dark-custom {
+            background-color: #343a40;
+            color: white !important;
+            border: 1px solid #343a40;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            border: 2px solid white !important; /* White outline */
+        }
+
+        .btn-dark-custom:hover {
+            background-color: #1d2124; /* Darker shade on hover */
+            color: #f8f9fa; /* Lighter text on hover */
+        }
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff, 0 0 15px #00ffff;
+            }
+            to {
+                text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px #00ffff;
+            }
+        }
+        a.disabled {
+            pointer-events: none;
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+    </style>
+    <script>
+        function copyToClipboard(buttonElement) {
+            // Get the value from the data-barcode attribute
+            var barcodeValue = buttonElement.getAttribute('data-barcode');
+            var productNameValue = buttonElement.getAttribute('data-productname');
+
+            // Copy to clipboard (assuming you've already implemented this logic)
+            var tempInput = document.createElement('input');
+            tempInput.value = barcodeValue;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempInput);
+
+            // Provide feedback (optional)
+            alert("Copied: " + barcodeValue + " | " + productNameValue);
+        }
+
+    </script>
+
+    <script th:inline="javascript">
+        var editmode = /*[[${editmode}]]*/ false; // Thymeleaf will inject true/false here
+        console.log("Edit Mode:", editmode); // Debug to check if it's injected correctly
+    </script>
+
+
+
+<!--    TODO: move this validation into an injectable file -->
+    <script>
+        function validateInputField(inputId) {
+            let input = document.getElementById(inputId);
+            if (input && input.value.trim().length > 0) {
+                input.classList.remove('glowing-invalid');
+                input.classList.add('glowing-valid');
+            } else {
+                input.classList.remove('glowing-valid');
+                input.classList.add('glowing-invalid');
+            }
+
+            /* NOTE: if we have && !editmode attached to the field,
+            that means it will not be validated upon a creation.
+             This is because we are generating these values on the backend during creation.
+             */
+            if(
+            inputId === 'notes'
+             || inputId === 'barcode' && !editmode
+             || inputId === 'quantityremaining' && !editmode
+             || inputId === 'createTimeStamp' && !editmode
+             || inputId === 'updateTimeStamp' && !editmode
+             ) {
+                input.classList.remove('glowing-invalid');
+                input.classList.add('glowing-valid');
+            }
+            checkFormValidity(); // Check form validity after each validation
+        }
+
+        function checkFormValidity() {
+            const hasInvalidFields = document.querySelector('.glowing-invalid') !== null;
+            const submitButton = document.querySelector('.btn-secondary');
+
+            if (submitButton) {
+                submitButton.disabled = hasInvalidFields;
+            }
+        }
+
+        function validateAllFields() {
+            const inputFields = [
+                 'menuidlabel'
+            ];
+            inputFields.forEach(validateInputField);
+        }
+
+        function initializeValidation() {
+            document.querySelectorAll('.form-control').forEach(input => {
+                input.addEventListener('input', validateAllFields);
+            });
+            validateAllFields(); // Ensure validation runs on page load
+        }
+
+        document.addEventListener("DOMContentLoaded", initializeValidation);
+    </script>
+    <!--    TODO: move this validation into an injectable file -->
+
+</head>
+<body>
+
+<div th:insert="fragments/adminnavbar.html :: adminnavbarfragment"> </div>
+
+<div class="container">
+
+    <div class="header-dark">
+        <h1>Coopy Existing Items from Another Menu To Target Menu</h1>
+    </div>
+
+    <div class="tip-box">Select a menu to copy all existing items from.</div>
+
+    <div id="successDiv" class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">
+        Success
+    </div>
+
+    <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">
+        Error
+    </div>
+
+    <form th:action="@{/menu/admin/copyexistingitems}" method="post" th:object="${menu}">
+
+
+        <div class="row mb-3">
+
+            <div th:if="${successMessage == null}"  class="col-md-4">
+                <label class="form-label">Select Menu To Copy Items From</label>
+
+                <label for="menuidlabel"></label><select class="form-control edit-validation-group" th:field="*{menuid}" id="menuidlabel" readonly>
+                    <option value="" selected>Select Existing Menu</option>
+                    <option th:each="menu : ${menus}"
+                            th:value="${menu.menuid}"
+                            th:text="${menu.name + ' - ' + menu.menuid }">
+                    </option>
+                </select>
+            </div>
+            <div th:if="${successMessage != null}"  class="col-md-4">
+                <a th:href="@{/menu/admin/manage?menuid=__${menu.menuid}__}" class="btn btn-primary btn-lg">
+                    Return to Menu
+                </a>
+            </div>
+        </div>
+
+        
+
+<!--        <input th:if="${product.product_id != null && product.product_id != 0 && editmode}" type="hidden" th:field="*{menuid}">-->
+        <div class="text-end">
+            <button type="submit" class="btn btn-secondary">Submit</button>
+        </div>
+
+
+
+
+
+    <br>
+
+    <div th:if="${successMessage == null}" class="tip-box">Menu In Scope Below</div>
+    <div th:if="${successMessage != null}" class="tip-box">You have successfully copied the items from the selected menu. </div>
+
+    <br>
+    <br>
+
+    <!-- This is the target menu that we are copying items to -->
+    <div class="col-md-12" th:if="${menu != null}">
+        <table th:if="${successMessage == null}" class="table table-hover table-striped table-dark" style="margin-top: 20px">
+            <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Menu Name</th>
+                <th scope="col">Create Date</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td th:text="${menu.menuid}"></td>
+                <td th:text="${menu.name}"></td>
+                <td th:text="${menu.createTimeStamp}"></td>
+            </tr>
+
+            </tbody>
+        </table>
+
+    </div>
+        <!-- Here we bind a hidden input with the target menu id -->
+        <input type="hidden" name="targetmenuid" th:value="${menu.menuid}">
+    </form>
+
+    <br>
+    <br>
+</div>
+
+</body>
+</html>

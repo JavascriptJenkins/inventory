@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 import org.springframework.ui.Model
@@ -65,22 +66,22 @@ class MenuService {
 
     // being used on the batch/admin.html page
     void bindAllMenus(Model model,
-                         Optional<Integer> page,
-                         Optional<Integer> size){
+                      Optional<Integer> page,
+                      Optional<Integer> size){
 
 
         //pagination
         int currentPage = page.orElse(0);
         int pageSize = size.isEmpty() ? 5 : size.get();
         Pageable pageable;
+        Sort sort = Sort.by("menuid").descending(); // ← change "title" to your desired field
         if(currentPage == 0){
-            pageable = PageRequest.of(0 , pageSize);
+            pageable = PageRequest.of(0 , pageSize, sort);
         } else {
-            pageable = PageRequest.of(currentPage - 1, pageSize);
+            pageable = PageRequest.of(currentPage - 1, pageSize, sort);
         }
 
 
-        // this needs to only find these based on their batchid
         Page<MenuVO> pageOfMenu = menuRepo.findAll(pageable);
 
         int totalPages = pageOfMenu.getTotalPages();
@@ -96,6 +97,11 @@ class MenuService {
         model.addAttribute("page", currentPage);
         model.addAttribute("size", pageOfMenu.getTotalPages());
         model.addAttribute("menuPage", pageOfMenu);
+    }
+
+    void bindAllMenusSimple(Model model){
+        List<MenuVO> menulist = menuRepo.findAll();
+        model.addAttribute("menus", menulist);
     }
 
 

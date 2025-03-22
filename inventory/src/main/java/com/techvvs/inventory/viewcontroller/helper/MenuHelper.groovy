@@ -1066,4 +1066,38 @@ class MenuHelper {
 
     }
 
+
+    boolean copyExistingItemsFromMenu(int targetmenuid, int sourcemenuid) {
+        try {
+            // Load menus
+            MenuVO targetMenu = loadMenuSimple(targetmenuid);
+            MenuVO sourceMenu = loadMenuSimple(sourcemenuid);
+
+            if (targetMenu == null || sourceMenu == null) {
+                return false; // One or both menus not found
+            }
+
+            // Copy products
+            List<ProductVO> copiedProducts = new ArrayList<>(sourceMenu.getMenu_product_list());
+
+            // Overwrite target menu's list
+            targetMenu.setMenu_product_list(copiedProducts);
+
+            // Save updated target menu
+            menuRepo.save(targetMenu);
+
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace(); // Log if needed
+            return false;
+        }
+    }
+
+
+
+    MenuVO loadMenuSimple(Integer menuid){
+        Optional<MenuVO> menuVO = menuRepo.findById(menuid)
+        return menuVO.get()
+    }
+
 }
