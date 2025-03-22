@@ -20,6 +20,23 @@ public interface TransactionRepo extends JpaRepository<TransactionVO, Integer> {
 
     Page<TransactionVO> findByCustomervo_customerid(Integer customerid, Pageable pageable);
 
+    @Query("""
+    SELECT DISTINCT t
+    FROM TransactionVO t
+    JOIN t.product_list p
+    WHERE (:customerid IS NULL OR t.customervo.customerid = :customerid)
+      AND (:productid IS NULL OR :productid = 0 OR p.product_id = :productid)
+      AND (:batchid IS NULL OR :batchid = 0 OR p.batch.batchid = :batchid)
+    """)
+    Page<TransactionVO> findFilteredTransactions(
+            @Param("customerid") Integer customerid,
+            @Param("productid") Integer productid,
+            @Param("batchid") Integer batchid,
+            Pageable pageable
+    );
+
+
+
 
     // this is a great query that finds a list of unpaid transactions that a product is in based on batchid and productid
 //    SELECT DISTINCT t.transactionid

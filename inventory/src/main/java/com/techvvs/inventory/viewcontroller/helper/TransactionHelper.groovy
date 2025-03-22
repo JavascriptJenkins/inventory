@@ -63,14 +63,18 @@ class TransactionHelper {
     void findAllTransactions(Model model,
                              Optional<Integer> page,
                              Optional<Integer> size,
-                             Optional<Integer> customerid
+                             Optional<Integer> customerid,
+                             Optional<Integer> productinscope,
+                             Optional<Integer> batchid
+
                              ) {
 
         // START PAGINATION
         // https://www.baeldung.com/spring-data-jpa-pagination-sorting
         //pagination
         int currentPage = page.orElse(0);    // Default to first page
-        int pageSize = size.orElse(5);       // Default page size to 5
+        int pageSize = size.orElse(20);       // Default page size to 5
+        int selectedproductid = productinscope.orElse(0);
 
 
         if(
@@ -84,8 +88,9 @@ class TransactionHelper {
 
 
         // run first page request
-        Pageable pageable = PageRequest.of(currentPage, pageSize, Sort.by(Sort.Direction.ASC, "createTimeStamp"));
-        Page<TransactionVO> pageOfTransaction = runPageRequest(pageable, customerid)
+        Pageable pageable = PageRequest.of(currentPage, pageSize, Sort.by(Sort.Direction.DESC, "createTimeStamp"));
+        Page<TransactionVO> pageOfTransaction = runPageRequest(pageable, customerid, productinscope, batchid);
+
 
         int totalPages = pageOfTransaction.getTotalPages();
         int contentsize = pageOfTransaction.getContent().size()
@@ -93,8 +98,8 @@ class TransactionHelper {
 
         if(contentsize == 0){
             // we detect contentsize of 0 then we'll just take the first page of data and show it
-            pageable = PageRequest.of(0, pageSize, Sort.by(Sort.Direction.ASC, "createTimeStamp"));
-            pageOfTransaction = runPageRequest(pageable, customerid)
+            pageable = PageRequest.of(0, pageSize, Sort.by(Sort.Direction.DESC, "createTimeStamp"));
+            pageOfTransaction = runPageRequest(pageable, customerid, productinscope, batchid);
         }
 
         List<Integer> pageNumbers = new ArrayList<>();
@@ -115,16 +120,19 @@ class TransactionHelper {
     }
 
     @Transactional
-    Page<TransactionVO> runPageRequest(Pageable pageable, Optional<Integer> customerid) {
-        Page<TransactionVO> pageOfTransaction
-                // this means someone selected a value on the ui and we need to run a filtered query
-        if(customerid.isPresent() && customerid.get() > 0) {
-            pageOfTransaction = transactionRepo.findByCustomervo_customerid(customerid.get(),pageable);
-        } else {
-             pageOfTransaction = transactionRepo.findAll(pageable);
-        }
-        return pageOfTransaction
+    Page<TransactionVO> runPageRequest(
+            Pageable pageable,
+            Optional<Integer> customerid,
+            Optional<Integer> selectedproductid,
+            Optional<Integer> selectedbatchid
+    ) {
+        Integer custId = (customerid.present && customerid.get() > 0) ? customerid.get() : null
+        Integer prodId = (selectedproductid.present && selectedproductid.get() > 0) ? selectedproductid.get() : null
+        Integer batchId = (selectedbatchid.present && selectedbatchid.get() > 0) ? selectedbatchid.get() : null
+
+        return transactionRepo.findFilteredTransactions(custId, prodId, batchId, pageable)
     }
+
 
 
     @Transactional

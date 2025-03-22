@@ -93,39 +93,87 @@
         }
     </style>
 
-    <script>
-        $(document).ready(function() {
-            function getParameterByName(name) {
-                name = name.replace(/[\[\]]/g, '\\$&');
-                var url = window.location.href;
-                var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)');
-                var results = regex.exec(url);
-                if (!results) return null;
-                if (!results[2]) return '';
-                return decodeURIComponent(results[2].replace(/\+/g, ' '));
-            }
+<!--    <script>-->
+<!--        $(document).ready(function() {-->
+<!--            function getParameterByName(name) {-->
+<!--                name = name.replace(/[\[\]]/g, '\\$&');-->
+<!--                var url = window.location.href;-->
+<!--                var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)');-->
+<!--                var results = regex.exec(url);-->
+<!--                if (!results) return null;-->
+<!--                if (!results[2]) return '';-->
+<!--                return decodeURIComponent(results[2].replace(/\+/g, ' '));-->
+<!--            }-->
 
 
-            var currentSize = getParameterByName('size') || '5'; // Default to 10 if not set
-            var currentPage = getParameterByName('page') || '0'; // Default to 1 if not set
+<!--            var currentSize = getParameterByName('size') || '5'; // Default to 10 if not set-->
+<!--            var currentPage = getParameterByName('page') || '0'; // Default to 1 if not set-->
 
 
-            // Set the dropdown to the current size
-            $('#recordSize').val(currentSize);
+<!--            // Set the dropdown to the current size-->
+<!--            $('#recordSize').val(currentSize);-->
 
-            $('#recordSize').change(function() {
-                var selectedSize = $(this).val();
-                var newUrl = '/transaction/listall?size=' + selectedSize + '&page=' + currentPage;
-                window.location.href = newUrl;
-            });
+<!--            $('#recordSize').change(function() {-->
+<!--                var selectedSize = $(this).val();-->
+<!--                var newUrl = '/transaction/listall?size=' + selectedSize + '&page=' + currentPage;-->
+<!--                window.location.href = newUrl;-->
+<!--            });-->
 
-            $('#customerselectid').change(function() {
-                var selectedCustomerId = $(this).val();
-                var newUrl = '/transaction/listall?size=' + currentSize + '&page=' + currentPage + '&customerid=' + selectedCustomerId;
-                window.location.href = newUrl;
-            });
-        });
-    </script>
+<!--            $('#customerselectid').change(function() {-->
+<!--                var selectedCustomerId = $(this).val();-->
+<!--                var newUrl = '/transaction/listall?size=' + currentSize + '&page=' + currentPage + '&customerid=' + selectedCustomerId;-->
+<!--                window.location.href = newUrl;-->
+<!--            });-->
+<!--            $('#productselectid').change(function() {-->
+<!--                var selectedProductId = $(this).val();-->
+<!--                var newUrl = '/transaction/listall?size=' + currentSize + '&page=' + currentPage + '&customerid=' + selectedCustomerId+ '& productinscope=' + selectedProductId;-->
+<!--                window.location.href = newUrl;-->
+<!--            });-->
+<!--        });-->
+<!--    </script>-->
+    <style>
+        .transaction-pill-link {
+            border: 2px solid white;
+            color: white;
+            background: linear-gradient(to right, #2c2c2c, #3a3a3a); /* subtle dark gradient */
+            transition: transform 0.2s ease, background 0.3s ease;
+        }
+
+        .transaction-pill-link:hover {
+            transform: translateY(-2px); /* raised effect */
+            background: linear-gradient(to right, #444, #666); /* lighter gray on hover */
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            color: white;
+        }
+
+        .transaction-pill-link i {
+            color: white;
+        }
+    </style>
+    <style>
+        .product-pill-link {
+            border: 2px solid white;
+            color: white;
+            background: linear-gradient(to right, #2c2c2c, #3a3a3a);
+            transition: transform 0.2s ease, background 0.3s ease;
+        }
+
+        .product-pill-link:hover {
+            transform: translateY(-2px);
+            background: linear-gradient(to right, #444, #666);
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            color: white;
+        }
+
+        .product-pill-link i {
+            color: white;
+        }
+    </style>
+
+
+
 </head>
 <body>
 
@@ -144,25 +192,67 @@
     </div>
     <br>
 
-    <!-- Dropdown for selecting record size -->
-    <div class="record-selector">
-        <label for="recordSize">Display Records:</label>
-        <select id="recordSize" class="form-select">
-            <option value="5">5 Records</option>
-            <option value="10">10 Records</option>
-            <option value="100">100 Records</option>
-            <option value="100">1000 Records</option>
-            <option value="100">10000 Records</option>
-        </select>
-    </div>
+    <form th:action="@{/transaction/listall}" method="get" id="filterForm">
 
-    <div class="record-selector">
-        <label for="customerselectid">Filter:</label>
-        <select class="form-control" id="customerselectid">
-            <option value="0">Filter by customer</option>
-            <option th:each="customer : ${customers}" th:value="${customer.customerid}" th:text="${customer.name}" th:selected="${customer.customerid == customerid}"></option>
-        </select>
-    </div>
+        <!-- Preserve page value on submit -->
+        <input type="hidden" name="page" th:value="${page}"/>
+
+        <!-- Dropdown for selecting record size -->
+        <div class="record-selector">
+            <label for="recordSize">Display Records:</label>
+            <select name="size" id="recordSize" class="form-select" onchange="document.getElementById('filterForm').submit()">
+                <option value="5" th:selected="${size == 5}">5 Records</option>
+                <option value="10" th:selected="${size == 10}">10 Records</option>
+                <option value="20" th:selected="${size == 20}">20 Records</option>
+                <option value="100" th:selected="${size == 100}">100 Records</option>
+                <option value="1000" th:selected="${size == 1000}">1000 Records</option>
+                <option value="10000" th:selected="${size == 10000}">10000 Records</option>
+            </select>
+
+        </div>
+
+        <!-- Customer Filter -->
+        <div class="record-selector">
+            <label for="customerselectid">Filter:</label>
+            <select class="form-control" id="customerselectid" name="customerid" onchange="document.getElementById('filterForm').submit()">
+                <option value="0">Filter by customer</option>
+                <option th:each="customer : ${customers}"
+                        th:value="${customer.customerid}"
+                        th:text="${customer.name}"
+                        th:selected="${customer.customerid == customerid}">
+                </option>
+            </select>
+        </div>
+
+        <!-- Product Filter -->
+        <div class="record-selector">
+            <label for="productselectid">Product:</label>
+            <select class="form-control" id="productselectid" name="productinscope" onchange="document.getElementById('filterForm').submit()">
+                <option value="0">Filter by product</option>
+                <option th:each="product : ${products}"
+                        th:value="${product.product_id}"
+                        th:text="${product.name + ' | ' + (product.batch != null ? product.batch.name : 'No Batch')}"
+                        th:selected="${product.product_id == productinscope}">
+                </option>
+            </select>
+        </div>
+
+        <!-- Batch Filter -->
+        <div class="record-selector">
+            <label for="batchselectid">Batch:</label>
+            <select class="form-control" id="batchselectid" name="batchid" onchange="document.getElementById('filterForm').submit()">
+                <option value="0">Filter by batch</option>
+                <option th:each="batch : ${batches}"
+                        th:value="${batch.batchid}"
+                        th:text="${batch.name + ' | ' + #temporals.format(batch.createTimeStamp, 'yyyy-MM-dd')}"
+                        th:selected="${batch.batchid == batchinscope}">
+                </option>
+            </select>
+        </div>
+
+
+    </form>
+
 
     <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
     <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
@@ -170,22 +260,75 @@
     <table class="table table-hover table-striped table-dark">
         <thead>
         <tr>
-            <th scope="col">#</th>
             <th scope="col">Transaction ID</th>
             <th scope="col">Customer Name</th>
-            <th scope="col">Total Amount</th>
+            <th scope="col">Amount Owed</th>
+            <th scope="col">Units</th>
             <th scope="col">Create Date</th>
+            <th scope="col">Latest Payment</th>
         </tr>
         </thead>
         <tbody>
         <tr th:each="transaction, iStat : ${transactionPage.content}"
             th:style="${iStat.odd}? 'font-weight: bold;'"
             th:alt-title="${iStat.even}? 'even' : 'odd'">
-            <td th:text="${transaction.transactionid}"></td>
-            <td><a th:href="@{/transaction?transactionid=__${transaction.transactionid}__&size=__${size}__&page=__${page}__}" th:text="${transaction.transactionid}"></a></td>
+            <td>
+                <a th:href="@{/transaction(transactionid=${transaction.transactionid}, size=${size}, page=${page})}"
+                   class="transaction-pill-link d-flex align-items-center gap-2 px-3 py-2 rounded-pill shadow-sm"
+                   style="width: 50%; font-size: 1.25rem; text-decoration: none;">
+                    <i class="bi bi-receipt" style="font-size: 1.5rem;"></i>
+                    <span th:text="${transaction.transactionid}"></span>
+                </a>
+            </td>
+
+
+
             <td th:text="${transaction.customervo.name}"></td>
-            <td th:text="${transaction.totalwithtax - transaction.paid}"></td>
+            <td th:text="'$' + ${#numbers.formatDecimal(transaction.totalwithtax - transaction.paid, 1, 2)}"></td>
+            <td>
+                <a href="#"
+                   data-bs-toggle="modal"
+                   th:attr="data-bs-target='#productListModal-' + ${transaction.transactionid}"
+                   class="product-pill-link d-flex align-items-center gap-2 px-3 py-2 rounded-pill shadow-sm"
+                   style="width: 50%; font-size: 1.1rem; text-decoration: none;">
+                    <i class="bi bi-box-seam" style="font-size: 1.3rem;"></i>
+                    <span th:text="${#lists.size(transaction.product_list)}"></span>
+                </a>
+            </td>
+
+
+
             <td th:text="${transaction.createTimeStamp.toLocalDate()}"></td>
+            <td th:if="${transaction.mostRecentPayment != null && transaction.mostRecentPayment.paymentid != 0}"
+                th:text="${#temporals.format(transaction.mostRecentPayment.createTimeStamp, 'yyyy-MM-dd')}">
+            </td>
+            <td th:if="${transaction.mostRecentPayment == null or transaction.mostRecentPayment.paymentid == 0}">
+                N/A
+            </td>
+
+            <!-- Generate a Modal for each Transaction -->
+            <div class="modal fade" th:id="'productListModal-' + ${transaction.transactionid}" tabindex="-1" aria-labelledby="productListModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-scrollable">
+                    <div class="modal-content bg-dark text-white">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="productListModalLabel">Products in Transaction <span th:text="${transaction.transactionid}"></span></h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item bg-dark text-white"
+                                    th:each="product : ${transaction.product_list}">
+                                    <span th:text="${product.name}"></span>
+                                    <span> | </span>
+                                    <span th:text="${product.batch.name}">Unknown Batch</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
         </tr>
         </tbody>
     </table>

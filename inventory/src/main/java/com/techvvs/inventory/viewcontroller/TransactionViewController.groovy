@@ -1,8 +1,10 @@
 package com.techvvs.inventory.viewcontroller
 
 import com.techvvs.inventory.constants.AppConstants
+import com.techvvs.inventory.jparepo.BatchRepo
 import com.techvvs.inventory.jparepo.DiscountRepo
 import com.techvvs.inventory.jparepo.LocationRepo
+import com.techvvs.inventory.jparepo.ProductRepo
 import com.techvvs.inventory.jparepo.ProductTypeRepo
 import com.techvvs.inventory.jparepo.TransactionRepo
 import com.techvvs.inventory.model.DiscountVO
@@ -69,6 +71,12 @@ public class TransactionViewController {
 
     @Autowired
     DiscountRepo discountRepo
+
+    @Autowired
+    ProductRepo productRepo
+
+    @Autowired
+    BatchRepo batchRepo
 
     @GetMapping
     String reviewtransaction(
@@ -273,19 +281,28 @@ public class TransactionViewController {
             
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size,
-            @RequestParam("customerid") Optional<Integer> customerid
+            @RequestParam("customerid") Optional<Integer> customerid,
+            @RequestParam("productinscope") Optional<Integer> productinscope,
+            @RequestParam("batchid") Optional<Integer> batchinscope
     ){
 
         
 
         // bind the page of transactions
-        transactionHelper.findAllTransactions(model, page, size, customerid)
+        transactionHelper.findAllTransactions(model, page, size, customerid, productinscope, batchinscope)
 
         //transactionHelper.applyCustomerFilter(transactionVO, model)
 
         // fetch all customers from database and bind them to model
         techvvsAuthService.checkuserauth(model)
         checkoutHelper.getAllCustomers(model)
+
+        model.addAttribute("batches", batchRepo.findAll());
+        model.addAttribute("batchinscope", batchinscope.orElse(0)); // or null/0 if not filtering
+
+        model.addAttribute("products", productRepo.findAll());
+        model.addAttribute("productinscope", productinscope.orElse(0)); // or null/0 if not filtering
+
         model.addAttribute("transaction", transactionVO);
         return "transaction/alltransactions.html";
     }
