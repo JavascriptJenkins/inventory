@@ -119,7 +119,7 @@ class InvoiceGenerator {
 
         invoice.append(String.format("Total (with tax)          \$%-10.2f\n", formattingUtil.calculateTotalWithTax(transaction.total, transaction.taxpercentage, 0.00))) // passing 0.00 in here cuz discount was already applied to the total
         invoice.append(String.format("Paid:                     \$%-10s\n", transaction.paid == null ? '0' : transaction.paid))
-        invoice.append(String.format("Remaining Balance:        \$%-10.2f\n", formattingUtil.calculateRemainingBalance(transaction.total, transaction.paid)))
+        invoice.append(String.format("Remaining Balance:        \$%-10.2f\n", Math.max(0.00, formattingUtil.calculateRemainingBalance(transaction.total, transaction.paid))))
         invoice.append("========================================\n")
         invoice.append(String.format("Notes: %s\n", transaction.notes == null ? '' : transaction.notes))
         invoice.append(String.format("Cashier: %s\n", transaction.cashier == null ? '' : transaction.cashier))

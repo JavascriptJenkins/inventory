@@ -132,6 +132,42 @@
         });
     </script>
 
+    <script>
+        function validateAmountPaid() {
+            const inputField = document.getElementById('amountpaid');
+            const inputValue = inputField.value.trim();
+            const amountRemaining = parseFloat(inputField.getAttribute('max'));
+
+            if (!/^\d+(\.\d{1,2})?$/.test(inputValue)) {
+                alert('Please enter a valid amount (up to two decimal places).');
+                return false;
+            }
+
+            const numericValue = parseFloat(inputValue);
+            if (isNaN(numericValue) || numericValue <= 0) {
+                alert('Amount must be greater than zero.');
+                return false;
+            }
+
+            if (numericValue > amountRemaining) {
+                alert('Amount cannot exceed the remaining balance of $' + amountRemaining.toFixed(2));
+                return false;
+            }
+
+            return true;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.querySelector('form');
+            form.addEventListener('submit', function (e) {
+                if (!validateAmountPaid()) {
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+
+
 </head>
 <body>
 <div class="container">
@@ -141,22 +177,38 @@
     <div class="sub-header">
         <p>Transaction ID: <span th:text="${transactionid}"></span></p>
         <p>Customer: <span th:text="${customer.name}"></span></p>
-        <p>Amount remaining to pay: <span th:text="${transaction.totalwithtax - (transaction.paid == null ? 0.0 : transaction.paid)}"></span></p>
+        <p>
+            Amount remaining to pay:
+            <span th:text="'$' + ${#numbers.formatDecimal(T(java.lang.Math).max((transaction.totalwithtax - (transaction.paid == null ? 0.0 : transaction.paid)) * 1.0, 0.0), 1, 2)}"></span>
+        </p>
     </div>
+
     <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
     <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
     <div class="alert alert-primary" role="alert" th:if="${primaryMessage}" th:text="${primaryMessage}">Success</div>
 
     <form th:action="@{/payment/submitpayment?transactionid=__${transaction.transactionid}__&customerid=__${customer.customerid}__}" th:object="${payment}" method="post">
-        <div class="mb-3">
+        <div class="mb-3" th:if="${amountRemaining > 0}">
             <label for="amountpaid" class="form-label required">Amount</label>
-            <input class="form-control" id="amountpaid" th:field="*{amountpaid}" required>
+            <input class="form-control"
+                   id="amountpaid"
+                   type="number"
+                   step="0.01"
+                   min="0.01"
+                   th:field="*{amountpaid}"
+                   th:attr="max=${amountRemaining}"
+                   required>
+
         </div>
 
-        <button type="submit" class="btn-submit-dark">Submit Payment</button>
+        <button th:if="${amountRemaining > 0}" type="submit"
+                class="btn-submit-dark">
+            Submit Payment
+        </button>
+
     </form>
 
-    <a th:href="@{/transaction?transactionid=__${transaction.transactionid}__&size=5&page=1}" class="btn btn-dark" style="margin-top:5px;">Back To Transaction</a>
+    <a th:href="@{/transaction?transactionid=__${transaction.transactionid}__&size=5&page=1}" class="btn btn-dark" style="margin-top:40px;">Back To Transaction</a>
 </div>
 </body>
 </html>

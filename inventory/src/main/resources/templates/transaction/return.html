@@ -3,10 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <title>Return</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Bundle JS (Includes Popper.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-kQtW33rZJAHjgefvhyyzcGF3C5TFyBQBA13V1RKPf4uH+bwyzQxZ6CmMZHmNBEfJ" crossorigin="anonymous"></script>
     <link rel="stylesheet" type="text/css" media="all" href="/css/table.css" th:href="@{/css/table.css}" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
 
@@ -101,7 +104,7 @@
         function processTableItems() {
             const seenBarcodes = new Set();
 
-            $('#deleteItemFromTransactionForm tbody tr').each(function() {
+            $('#deleteItemFromTransactionDiv tbody tr').each(function() {
                 const itemBarcode = $(this).data('barcode');
 
                 if (seenBarcodes.has(itemBarcode)) {
@@ -160,7 +163,6 @@
     <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
     <div class="alert alert-primary" role="alert" th:if="${primaryMessage}" th:text="${primaryMessage}">Success</div>
 
-    <form id="deleteItemFromTransactionForm" th:action="@{/transaction/return?transactionid=__${transaction.transactionid}__&customerid=__${customer.customerid}__}" th:object="${transaction}" method="post">
 
         <div class="form-check mb-3" style="font-size: 1.25rem;">
             <input class="form-check-input" type="checkbox" id="quantityModeCheckbox" style="transform: scale(1.5); margin-right: 10px;">
@@ -170,7 +172,7 @@
 
 
         <!-- Table Section -->
-        <div style="overflow-x: auto;">
+        <div id="deleteItemFromTransactionDiv" style="overflow-x: auto;">
             <table class="table table-hover table-striped table-dark table-bordered">
                 <thead>
                 <tr>
@@ -186,8 +188,9 @@
                     <td th:text="${item.price}">Price</td>
                     <td th:text="${item.displayquantity}">Quantity</td>
                     <td>
-                        <form th:action="@{/return/removeitem}" method="post" onsubmit="return handleQuantityMode(this, event)">
+                        <form th:action="@{/transaction/return}" method="post" onsubmit="return handleQuantityMode(this, event)">
                             <input type="hidden" name="barcode" th:value="${item.barcode}" />
+                            <input type="hidden" name="transactionid" th:value="${transactionid}" />
                             <input type="hidden" name="quantity" th:value="${item.displayquantity}" class="quantity-input" />
                             <button type="submit" class="btn btn-link text-danger p-0" title="Remove item">
                                 <i class="bi bi-x-circle-fill" style="font-size: 1.3rem;"></i>
@@ -200,7 +203,6 @@
                 </tbody>
             </table>
         </div>
-    </form>
 
     <a th:href="@{/transaction?transactionid=__${transaction.transactionid}__&size=5&page=1}" class="btn btn-dark" style="margin-top:5px;">Back To Transaction</a>
 </div>
@@ -230,6 +232,7 @@
     let maxQty = 0;
 
     function handleQuantityMode(form, event) {
+        console.log('dicks');
         const checkbox = document.getElementById('quantityModeCheckbox');
         const quantityMode = checkbox && checkbox.checked;
 

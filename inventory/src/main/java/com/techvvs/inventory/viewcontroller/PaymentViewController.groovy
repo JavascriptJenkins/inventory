@@ -55,8 +55,11 @@ public class PaymentViewController {
         // todo: add a button on the ui to pull the latest transaction for customer (so if someone clicks off page
         //  you can come back and finish the transaction)
 
-        
 
+
+        double paid = transactionVO.getPaid() != null ? transactionVO.getPaid() : 0.0;
+        double remaining = Math.max(transactionVO.getTotalwithtax() - paid, 0.0);
+        model.addAttribute("amountRemaining", remaining);
 
 
         // fetch all customers from database and bind them to model

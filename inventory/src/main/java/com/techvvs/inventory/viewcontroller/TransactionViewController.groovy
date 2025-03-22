@@ -151,7 +151,8 @@ public class TransactionViewController {
             Model model,
             
             @RequestParam("transactionid") String transactionid,
-            @RequestParam("barcode") String barcode
+            @RequestParam("barcode") String barcode,
+            @RequestParam("quantity") Optional<Integer> quantity
     ){
 
         // todo: first time the transaction goes negative it does not apply customer credit .....
@@ -161,7 +162,7 @@ public class TransactionViewController {
         TransactionVO transactionVO = paymentHelper.loadTransaction(transactionid, model)
 
         // todo: this needs to account for any discounts that are active and same product type
-        transactionVO = transactionHelper.deleteProductFromTransaction(transactionVO, barcode)
+        transactionVO = transactionHelper.deleteProductFromTransaction(transactionVO, barcode, quantity)
 
         transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO, model)
 

@@ -162,14 +162,43 @@ class TransactionHelper {
 
     // we are only deleting it from the transaction - the original cart association is not removed.
     @Transactional
-    TransactionVO deleteProductFromTransaction(TransactionVO transactionVO, String barcode){
+    TransactionVO deleteProductFromTransaction(
+            TransactionVO transactionVO,
+            String barcode,
+            Optional<Integer> quantity
+    ){
 
         Double amountToSubtract = 0.00
         double amountofdiscount = 0.00
         TransactionVO transactiontoremove = new TransactionVO(transactionid: 0)
+        int amountOfProductsToReturn = 0
+        if(quantity.isPresent()){
+            amountOfProductsToReturn = quantity.get()
+        }
+        // This is a stupid and inefficient way to do this, but whatever .......
+        for(int i = 0; i < amountOfProductsToReturn; i++) {
+            runRemovalLogic(transactionVO, barcode, amountofdiscount, amountToSubtract, transactiontoremove)
+
+        }
+        transactionVO.updateTimeStamp = LocalDateTime.now()
+        transactionVO = transactionRepo.save(transactionVO)
+
+
+        return transactionVO
+
+    }
+
+    @Transactional
+    void runRemovalLogic(TransactionVO transactionVO,
+                         String barcode,
+                         double amountofdiscount,
+                         double amountToSubtract,
+                         TransactionVO transactiontoremove
+
+    ) {
         // we are only removing one product at a time
-        for(ProductVO productVO : transactionVO.product_list){
-            if(productVO.barcode == barcode){
+        for (ProductVO productVO : transactionVO.product_list) {
+            if (productVO.barcode == barcode) {
 
 
                 // before doing anything, check to see if there is a discount active on this transaction that needs to be
@@ -183,8 +212,8 @@ class TransactionHelper {
                 productVO.quantityremaining = productVO.quantityremaining + 1
                 amountToSubtract = Math.max(0.00, productVO.price - amountofdiscount)
                 // remove the transaction association from the product
-                for(TransactionVO existingTransaction : productVO.transaction_list){
-                    if(existingTransaction.transactionid == transactionVO.transactionid){
+                for (TransactionVO existingTransaction : productVO.transaction_list) {
+                    if (existingTransaction.transactionid == transactionVO.transactionid) {
                         transactiontoremove = existingTransaction
                     }
                 }
@@ -195,17 +224,18 @@ class TransactionHelper {
             }
         }
 
+
         // check to see if the transaction is fully paid, if so then we don't subtract from the total or totalwithtax
         // todo: could there be a scenario here where the transactionVO.totalwithtax - transactionVO.paid
-        if(
+        if (
                 Math.max(0, transactionVO.totalwithtax - transactionVO.paid) == 0 ||
-                transactionVO.isprocessed == 1 // if we are returning something from an already paid transaction
-        ){
+                        transactionVO.isprocessed == 1 // if we are returning something from an already paid transaction
+        ) {
             // this means that someone is returning a product from an already paid transaction
             // This means we need to capture the credit somewhere so the customer can get credit.
-            System.out.println("line 202: transactionVO.customercredit: "+transactionVO.customercredit)
+            System.out.println("line 202: transactionVO.customercredit: " + transactionVO.customercredit)
             transactionVO.customercredit == null ? transactionVO.customercredit = 0.00 : transactionVO.customercredit
-            transactionVO.customercredit = Math.max(0,transactionVO.customercredit + amountToSubtract)
+            transactionVO.customercredit = Math.max(0, transactionVO.customercredit + amountToSubtract)
 
         } else {
 
@@ -221,8 +251,8 @@ class TransactionHelper {
                 transactionVO.customercredit += Math.abs(balanceAfterSubtract)
             }
 
-            transactionVO.total = Math.max(0,transactionVO.total - amountToSubtract)
-            transactionVO.totalwithtax = Math.max(0,transactionVO.totalwithtax - amountToSubtract)
+            transactionVO.total = Math.max(0, transactionVO.total - amountToSubtract)
+            transactionVO.totalwithtax = Math.max(0, transactionVO.totalwithtax - amountToSubtract)
 
 
             //. todo:  test this with the discount functionality and figure out if we need to modify the original price here
@@ -236,13 +266,6 @@ class TransactionHelper {
             //transactionVO.originalprice = Math.max(0,transactionVO.originalprice - amountToSubtract)
 
         }
-
-        transactionVO.updateTimeStamp = LocalDateTime.now()
-        transactionVO = transactionRepo.save(transactionVO)
-
-
-        return transactionVO
-
     }
 
     @Transactional
