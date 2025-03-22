@@ -297,10 +297,10 @@ public class TransactionViewController {
         techvvsAuthService.checkuserauth(model)
         checkoutHelper.getAllCustomers(model)
 
-        model.addAttribute("batches", batchRepo.findAll());
+        model.addAttribute("batches", batchRepo.findAllByOrderByCreateTimeStampDescNameAsc());
         model.addAttribute("batchinscope", batchinscope.orElse(0)); // or null/0 if not filtering
 
-        model.addAttribute("products", productRepo.findAll());
+        model.addAttribute("products", productRepo.findAllByOrderByCreateTimeStampDescNameAsc());
         model.addAttribute("productinscope", productinscope.orElse(0)); // or null/0 if not filtering
 
         model.addAttribute("transaction", transactionVO);

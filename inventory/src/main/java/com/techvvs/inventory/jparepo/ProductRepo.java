@@ -20,6 +20,9 @@ public interface ProductRepo extends JpaRepository<ProductVO, Integer> {
     List<ProductVO> findAllSortedByName();
 
     List<ProductVO> findAll();
+
+    // or descending by timestamp
+    List<ProductVO> findAllByOrderByCreateTimeStampDescNameAsc();
     List<ProductVO> findAllByProductnumber(Integer productnumber);
     List<ProductVO> findAllByName(String name);
     Page<ProductVO> findAllByProducttypeidAndBatch(ProductTypeVO producttypeid, BatchVO batchVO, Pageable pageable);

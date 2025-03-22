@@ -12,6 +12,7 @@ public interface BatchRepo extends JpaRepository<BatchVO, Integer> {
     void deleteByName(String name);
 
     List<BatchVO> findAll();
+    List<BatchVO> findAllByOrderByCreateTimeStampDescNameAsc();
     List<BatchVO> findAllByBatchnumber(Integer batchnumber);
     BatchVO findByBatchid(Integer batchid);
     BatchVO findByName(String name);
