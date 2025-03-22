@@ -222,7 +222,7 @@
 
 
         <input type="hidden" name="editmode" th:value="${editmode == null ? false : editmode}">
-        <div class="text-end">
+        <div class="text-end" th:if="${successMessage == null}">
             <button type="submit" class="btn btn-secondary">Submit</button>
         </div>
 

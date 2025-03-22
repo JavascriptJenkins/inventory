@@ -235,7 +235,7 @@ public class MenuAdminViewController {
         }
 
         // here we check if MenuVO is coming in with values and 0 as it's id
-        if(menuVO != null && menuVO.getMenuid() > 0) {
+        if(menuVO != null && menuVO.getMenuid() > 0 && model.getAttribute("successMessage") == null) {
 
             /* UPDATE/EDIT */
             menuVO = menuService.validateMenuOnAdminPage(menuVO, model, true)
@@ -358,6 +358,7 @@ public class MenuAdminViewController {
             boolean success = menuHelper.copyExistingItemsFromMenu(targetmenuid.get(), menuVO.menuid)
 
             if(success) {
+                model.addAttribute("targetmenuid", targetmenuid.get())
                 model.addAttribute("successMessage", "Items Copied Successfully")
             } else {
                 model.addAttribute("errorMessage", "Failed to Copy Items")

@@ -213,7 +213,7 @@
                 </select>
             </div>
             <div th:if="${successMessage != null}"  class="col-md-4">
-                <a th:href="@{/menu/admin/manage?menuid=__${menu.menuid}__}" class="btn btn-primary btn-lg">
+                <a th:href="@{/menu/admin/manage?menuid=__${targetmenuid}__}" class="btn btn-primary btn-lg">
                     Return to Menu
                 </a>
             </div>
