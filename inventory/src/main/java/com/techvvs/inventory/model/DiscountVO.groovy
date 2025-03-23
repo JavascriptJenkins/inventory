@@ -41,10 +41,19 @@ class DiscountVO implements Serializable {
     @JoinColumn(name="menuid")
     MenuVO menu
 
+    // We are letting the users discount things by product type, or by product
     @JsonProperty
     @ManyToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name="producttypeid")
     ProductTypeVO producttype
+
+
+    @JsonProperty
+    @OneToOne(cascade=CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name="productid")
+    ProductVO product
+    @JsonProperty
+    int quantity = 0 // this relates to how many products are being discounted in context of a Product Discount
 
     @JsonProperty
     String notes

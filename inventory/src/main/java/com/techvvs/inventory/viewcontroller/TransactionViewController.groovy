@@ -9,6 +9,7 @@ import com.techvvs.inventory.jparepo.ProductTypeRepo
 import com.techvvs.inventory.jparepo.TransactionRepo
 import com.techvvs.inventory.model.DiscountVO
 import com.techvvs.inventory.model.ProductTypeVO
+import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.modelnonpersist.FileVO
 import com.techvvs.inventory.printers.PrinterService
@@ -435,5 +436,89 @@ public class TransactionViewController {
         model.addAttribute("transaction", transactionVO);
         checkoutHelper.getAllCustomers(model)
     }
+
+
+    @GetMapping("/discount/product")
+    String viewNewFormDiscountByProduct(
+            Model model,
+            @RequestParam("transactionid") String transactionid,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size
+    ){
+
+        transactionid = transactionid == null ? "0" : String.valueOf(transactionid)
+
+        // attach the paymentVO to the model
+        TransactionVO transactionVO = paymentHelper.loadTransaction(transactionid, model)
+
+
+        transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO, model)
+
+        model.addAttribute("customer", transactionVO.customervo)
+
+
+        model.addAttribute("transaction", transactionVO);
+
+        model.addAttribute("discountMap", buildDiscountMap(transactionVO))
+
+
+        techvvsAuthService.checkuserauth(model)
+        model.addAttribute("transactionid", transactionid);
+        return "transaction/discountbyproduct.html";
+    }
+
+
+    @PostMapping("/discount/product")
+    String postDiscountByProduct(
+            Model model,
+            @ModelAttribute( "transaction" ) TransactionVO transactionVO,
+            @RequestParam("transactionid") String transactionid,
+            @RequestParam("productinscope") Optional<String> productinscope,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size
+    ){
+
+        ProductVO productVO = productRepo.findByBarcode(productinscope.get()).get()
+
+        // apply the discount based on producttypeid to all products of that type
+        transactionVO = transactionService.executeApplyDiscountToTransactionByProduct(transactionVO, transactionid, productVO, transactionVO.discount.quantity)
+
+        transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO, model)
+        printerService.printInvoice(transactionVO, false, true) // print another invoice showing discount...
+        model.addAttribute("customer", transactionVO.customervo)
+
+
+        model.addAttribute("producttypes", productTypeRepo.findAll()); // for the filter dropdown
+        techvvsAuthService.checkuserauth(model)
+        model.addAttribute("transactionid", transactionid);
+        model.addAttribute("transaction", transactionVO);
+        model.addAttribute("productinscope", productinscope.orElse("0"));
+        // Get the most recent discount
+
+
+        def mostRecentDiscount = transactionVO.discount_list.max { it.createTimeStamp }
+        model.addAttribute("successMessage", "Applied discount of: "+mostRecentDiscount.discountamount+" per unit to product type: "+productVO.name);
+
+
+        model.addAttribute("discountMap", buildDiscountMap(transactionVO))
+
+
+        return "transaction/discountbyproduct.html";
+    }
+
+
+    private Map<Integer, DiscountVO> buildDiscountMap(TransactionVO transaction) {
+        Map<Integer, DiscountVO> discountMap = [:]
+        transaction.discount_list?.each { d ->
+            def id = d?.product?.product_id
+            if (id != null) {
+                discountMap[id] = d
+            }
+        }
+        return discountMap
+    }
+
+
+
 
 }

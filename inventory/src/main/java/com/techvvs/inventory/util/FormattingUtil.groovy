@@ -313,4 +313,67 @@ class FormattingUtil {
     }
 
 
+    public static double calculateTotalWithRemovedDiscountAmountPerUnitByProduct(
+            double total,
+            double perunitdiscount,
+            ProductVO productInScope,
+            List<ProductVO> product_list,
+            int quantity // this is how many products in this transaction the discount was applied for, so we need to multiply it here
+    ) {
+
+        int counter1 = 0
+        int counter2 = 0
+        Double totaldiscountcredittoapply = 0.00
+
+        for(ProductVO productVO : product_list){
+            // check every product in the list, if it matches the product_id then increment the discount.
+            if(productVO.product_id == productInScope.product_id && counter1 < quantity){
+                Math.max(0, totaldiscountcredittoapply += perunitdiscount)
+                counter1 ++
+            }
+        }
+
+        double newtotal = Math.max(0, total + totaldiscountcredittoapply)
+
+        double totalpriceofthisgroupofproducts = 0.0
+
+        for(ProductVO productVO : product_list){
+            // check every product in the list, if it matches the producttype then increment the discount
+            if(productVO.product_id == productInScope.product_id && counter2 < quantity){
+                Math.max(0, totalpriceofthisgroupofproducts += productVO.price)
+                counter2 ++
+            }
+        }
+
+        // this ensures that the maximum credit they can get back is the price of this group of products
+        if(totalpriceofthisgroupofproducts > newtotal){
+            newtotal = totalpriceofthisgroupofproducts
+        }
+
+        return newtotal // apply the per unit discount credit back to the total
+    }
+
+
+    // calculates total before tax but with discount
+    public static double calculateTotalWithDiscountAmountPerUnitByProduct(
+            double discountAmount,
+            ProductVO productInScope,
+            int quantity,
+            List<ProductVO> product_list
+    ) {
+
+        Double totaldiscounttoapply = 0.00
+        Double perunitdiscount = discountAmount
+        int counter1 = 0
+        for(ProductVO productVO : product_list){
+            // check every product in the list, if it matches the producttype then increment the discount
+            if(productVO.product_id == productInScope.product_id && counter1 < quantity){
+                Math.max(0,totaldiscounttoapply += perunitdiscount)
+                counter1 ++
+            }
+        }
+
+        return Math.max(0, totaldiscounttoapply)
+    }
+
 }

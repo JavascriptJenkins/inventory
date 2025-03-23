@@ -479,8 +479,9 @@
                     <td th:if="${transaction.discount_list.?[isactive == 1]?.size() > 0}">
                         <span th:each="discount : ${transaction.discount_list}"
                               th:if="${discount.producttype?.producttypeid == item.producttypeid?.producttypeid && discount.isactive == 1}"
-                              th:text="${item.price - discount.discountamount}">
+                              th:text="'$' + ${#numbers.formatDecimal(T(java.lang.Math).max((item.price - discount.discountamount) * 1.0, 0.0), 1, 2)}">
                         </span>
+
                     </td>
                 </tr>
                 </tbody>
@@ -507,7 +508,15 @@
         <a th:href="@{/transaction/discount(transactionid=${transaction.transactionid}, producttypeid=${transaction.product_list?.size() > 0 && transaction.product_list[0]?.producttypeid?.producttypeid != null ? transaction.product_list[0].producttypeid.producttypeid : 0})}"
            class="btn btn-warning"
            style="margin-top:5px;margin-right:5px;float: right;">
-            Discount
+            Discount Per Unit / by Product Type
+        </a>
+    </div>
+
+    <div class="d-inline">
+        <a th:href="@{/transaction/discount/product(transactionid=${transaction.transactionid})}"
+           class="btn btn-warning"
+           style="margin-top:5px;margin-right:5px;float: right;">
+            Discount Per Unit / by Product
         </a>
     </div>
 
