@@ -125,7 +125,8 @@ public class TransactionViewController {
     String viewNewForm(
             Model model,
             
-            @RequestParam("transactionid") String transactionid
+            @RequestParam("transactionid") String transactionid,
+            @RequestParam("discounttype") String discounttype
     ){
 
         transactionid = transactionid == null ? "0" : String.valueOf(transactionid)
@@ -143,6 +144,7 @@ public class TransactionViewController {
 
         techvvsAuthService.checkuserauth(model)
         model.addAttribute("transactionid", transactionid);
+        model.addAttribute("discounttype", discounttype); // binding this so the POST return knows what kind of discount is active
         return "transaction/return.html";
     }
 
@@ -153,7 +155,9 @@ public class TransactionViewController {
             
             @RequestParam("transactionid") String transactionid,
             @RequestParam("barcode") String barcode,
-            @RequestParam("quantity") Optional<Integer> quantity
+            @RequestParam("quantity") Optional<Integer> quantity,
+            @RequestParam("discounttype") String discounttype
+
     ){
 
         // todo: first time the transaction goes negative it does not apply customer credit .....
@@ -163,7 +167,21 @@ public class TransactionViewController {
         TransactionVO transactionVO = paymentHelper.loadTransaction(transactionid, model)
 
         // todo: this needs to account for any discounts that are active and same product type
-        transactionVO = transactionHelper.deleteProductFromTransaction(transactionVO, barcode, quantity)
+
+        if("perproductdiscount".equals(discounttype)){
+            // run the removal logic for per product discounts
+            transactionVO = transactionHelper.deleteProductFromTransaction(transactionVO, barcode, quantity)
+        }
+
+        if("producttypediscount".equals(discounttype)){
+            // run the removal logic for producttype discounts
+            transactionVO = transactionHelper.deleteProductFromTransactionForProductTypeDiscount(transactionVO, barcode, quantity)
+        }
+
+        if("nodiscount".equals(discounttype)){
+            // run the removal logic for transactions with no discounts
+            transactionVO = transactionHelper.deleteProductFromTransactionForProductTypeDiscount(transactionVO, barcode, quantity)
+        }
 
         transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO, model)
 
@@ -179,6 +197,7 @@ public class TransactionViewController {
         model.addAttribute("transactionid", transactionid);
         model.addAttribute("transaction", transactionVO);
         model.addAttribute("successMessage", "Deleted the item from transaction successfully with barcode: "+barcode);
+        model.addAttribute("discounttype", discounttype); // binding this so the POST return knows what kind of discount is active
 
         return "transaction/return.html";
     }
@@ -218,6 +237,9 @@ public class TransactionViewController {
             model.addAttribute("mostRecentMatchingDiscount", mostRecentMatchingDiscount != null ? mostRecentMatchingDiscount : new DiscountVO(discountid: 0));
         }
 
+        model.addAttribute("discountProductTypeMap", buildDiscountMapOfProductTypeDiscounts(transactionVO))
+
+
         techvvsAuthService.checkuserauth(model)
         model.addAttribute("transactionid", transactionid);
         return "transaction/discount.html";
@@ -254,6 +276,9 @@ public class TransactionViewController {
             DiscountVO mostRecentMatchingDiscount = findMostRecentDiscountByProductType(transactionVO, Integer.valueOf(producttypeid.get()))
             model.addAttribute("mostRecentMatchingDiscount", mostRecentMatchingDiscount != null ? mostRecentMatchingDiscount : new DiscountVO(discountid: 0));
         }
+
+        model.addAttribute("discountProductTypeMap", buildDiscountMapOfProductTypeDiscounts(transactionVO))
+
 
         def mostRecentDiscount = transactionVO.discount_list.max { it.createTimeStamp }
         model.addAttribute("successMessage", "Applied discount of: "+mostRecentDiscount.discountamount+" per unit to product type: "+productTypeVO.name);
@@ -506,6 +531,16 @@ public class TransactionViewController {
         return "transaction/discountbyproduct.html";
     }
 
+    private Map<Integer, DiscountVO> buildDiscountMapOfProductTypeDiscounts(TransactionVO transaction) {
+        Map<Integer, DiscountVO> discountMap = [:]
+        transaction.discount_list?.each { d ->
+            def id = d?.producttype?.producttypeid
+            if (id != null && d?.isactive > 0) {
+                discountMap[id] = d
+            }
+        }
+        return discountMap
+    }
 
     private Map<Integer, DiscountVO> buildDiscountMap(TransactionVO transaction) {
         Map<Integer, DiscountVO> discountMap = [:]
@@ -551,6 +586,37 @@ public class TransactionViewController {
         return "transaction/discountbyproduct.html";
     }
 
+
+    @PostMapping("/discount/producttype/delete")
+    String postDiscountByProductTypeDelete(
+            Model model,
+            @RequestParam("transactionidtodelete") Integer transactionid,
+            @RequestParam("discountidtodelete") Integer discountid,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size
+    ){
+        // get the transaction
+        TransactionVO transactionVO = transactionRepo.findById(transactionid).get()
+
+        transactionVO = checkoutHelper.deleteDiscountFromTransaction(transactionVO, discountid)
+
+
+        transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO, model)
+        printerService.printInvoice(transactionVO, false, true) // print another invoice showing discount...
+        model.addAttribute("customer", transactionVO.customervo)
+
+
+        model.addAttribute("producttypes", productTypeRepo.findAll()); // for the filter dropdown
+        techvvsAuthService.checkuserauth(model)
+        model.addAttribute("transactionid", transactionid);
+        model.addAttribute("transaction", transactionVO);
+        // Get the most recent discount
+
+
+        model.addAttribute("discountMap", buildDiscountMap(transactionVO))
+
+        return "transaction/discountbyproduct.html";
+    }
 
 
 }

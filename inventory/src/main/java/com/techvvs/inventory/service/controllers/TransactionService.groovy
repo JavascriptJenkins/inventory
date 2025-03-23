@@ -537,9 +537,13 @@ class TransactionService {
 
             // Save the updated transaction
             transactionVO = transactionRepo.save(savedDiscount.getTransaction());
+
+            return transactionVO;
+        } else {
+            return existingTransaction;
         }
 
-        return transactionVO;
+
     }
 
     private DiscountVO createDiscount(
@@ -638,7 +642,9 @@ class TransactionService {
         List<DiscountVO> discountsCopy = new ArrayList<>(transactionVO.getDiscount_list());
 
         for (DiscountVO existingOldDiscount : discountsCopy) {
-            if (existingOldDiscount.getProducttype().getProducttypeid().equals(producttypeid)
+            if (existingOldDiscount.getIsactive() == 1 &&
+                    existingOldDiscount.product == null && // don't roll back any discounts that are linked to a product
+                    existingOldDiscount.getProducttype().getProducttypeid().equals(producttypeid)
                     && existingOldDiscount.getIsactive() == 1) {
 
                 // Deactivate the matching discount
@@ -709,7 +715,9 @@ class TransactionService {
         List<DiscountVO> discountsCopy = new ArrayList<>(transactionVO.getDiscount_list());
 
         for (DiscountVO existingOldDiscount : discountsCopy) {
-            if (existingOldDiscount.getProduct().getProduct_id().equals(productid)
+            if (existingOldDiscount.getIsactive() == 1 &&
+                    existingOldDiscount.producttype == null && // we only want to roll back any product related discounts here
+                    existingOldDiscount.getProduct().getProduct_id().equals(productid)
                     && existingOldDiscount.getIsactive() == 1) {
 
                 // Deactivate the matching discount

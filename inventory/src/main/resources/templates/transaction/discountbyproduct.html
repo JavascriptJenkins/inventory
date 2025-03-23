@@ -336,6 +336,7 @@
 
                         <td th:if="${discountMap[item.product_id] != null}">
                             <form method="post" action="/transaction/discount/product/delete">
+                                <input type="hidden" name="removaltype" th:value="perproductdiscount">
                                 <input type="hidden" name="transactionidtodelete" th:value="${transaction.transactionid}">
                                 <input type="hidden" name="discountidtodelete" th:value="${discountMap[item.product_id].discountid}">
                                 <button type="submit" class="btn btn-link text-danger p-0" title="Delete Discount">

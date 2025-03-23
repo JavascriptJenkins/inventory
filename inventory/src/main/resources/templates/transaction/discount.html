@@ -301,6 +301,12 @@
             <span id="amountremainingid"
                   th:text="'$' + ${#numbers.formatDecimal(T(java.lang.Math).max((transaction.totalwithtax - (transaction.paid == null ? 0.0 : transaction.paid)) * 1.0, 0.0), 1, 2)}">
     </span>
+<!--        <p><strong>DEBUG Total with Tax:</strong> <span th:text="${transaction.totalwithtax}"></span></p>-->
+<!--        <p><strong>DEBUG Paid:</strong> <span th:text="${transaction.paid}"></span></p>-->
+<!--        <p><strong>DEBUG Calculated Difference:</strong>-->
+<!--            <span th:text="${transaction.totalwithtax - (transaction.paid == null ? 0.0 : transaction.paid)}"></span>-->
+<!--        </p>-->
+
         </p>
 
 <!--        <p>Amount remaining IF NEW DISCOUNT FROM THIS PAGE IS APPLIED (Hypothetical): <span id="amountremainingafterdiscountid" th:text="${transaction.totalwithtax - (transaction.paid == null ? 0.0 : transaction.paid)}"></span></p>-->
@@ -352,6 +358,7 @@
                     <th>Price</th>
                     <th>Quantity</th>
                     <th>Discounted Price</th>
+                    <th th:if="${not #lists.isEmpty(transaction.discount_list)}">Delete</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -369,6 +376,16 @@
         ), 1, 2)
 }">
                             Discounted Price
+                        </td>
+
+                        <td th:if="${discountProductTypeMap[item.producttypeid.producttypeid] != null}">
+                            <form method="post" action="/transaction/discount/producttype/delete">
+                                <input type="hidden" name="transactionidtodelete" th:value="${transaction.transactionid}">
+                                <input type="hidden" name="discountidtodelete" th:value="${discountProductTypeMap[item.producttypeid.producttypeid].discountid}">
+                                <button type="submit" class="btn btn-link text-danger p-0" title="Delete Discount">
+                                    <i class="bi bi-trash-fill" style="font-size: 1.3rem;"></i>
+                                </button>
+                            </form>
                         </td>
 
                     </tr>

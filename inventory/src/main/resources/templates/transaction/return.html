@@ -189,9 +189,15 @@
                     <td th:text="${item.displayquantity}">Quantity</td>
                     <td>
                         <form th:action="@{/transaction/return}" method="post" onsubmit="return handleQuantityMode(this, event)">
+                            <input type="hidden" name="discounttype" th:value="${discounttype}" />
                             <input type="hidden" name="barcode" th:value="${item.barcode}" />
                             <input type="hidden" name="transactionid" th:value="${transactionid}" />
+
+                            <!-- this is 1 unless the quantity mode modal changes it -->
+                            <input id="removethisquantity" type="hidden" name="quantity" value="1" />
+
                             <input type="hidden" name="quantity" th:value="${item.displayquantity}" class="quantity-input" />
+
                             <button type="submit" class="btn btn-link text-danger p-0" title="Remove item">
                                 <i class="bi bi-x-circle-fill" style="font-size: 1.3rem;"></i>
                             </button>
@@ -239,6 +245,9 @@
         if (!quantityMode) return true;
 
         event.preventDefault();
+
+<!-- this is super hacky, but we are removing this input before we parse the actual quantity on the next line -->
+        document.getElementById("removethisquantity")?.remove();
 
         currentForm = form;
         maxQty = parseInt(form.querySelector('.quantity-input').value);

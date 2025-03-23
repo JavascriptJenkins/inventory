@@ -345,7 +345,41 @@ class CheckoutHelper {
     }
 
 
+    @Transactional
+    TransactionVO deleteDiscountFromTransactionForProductTypeDiscount(TransactionVO transactionVO, Integer discountid) {
+        if (transactionVO?.discount_list) {
+            def iterator = transactionVO.discount_list.iterator()
+            while (iterator.hasNext()) {
+                DiscountVO discountVO = iterator.next()
+                if (discountVO?.discountid == discountid) {
 
+                    // before we do anything here, credit back the to original total
+                    // apply the discount based on producttypeid to all products of that type
+                    transactionVO = transactionService.checkForExistingDiscountOfSameProducttypeAndCreditBackToTransactionTotals(
+                            transactionVO, String.valueOf(transactionVO.transactionid), discountVO.product.product_id
+                    )
+
+
+//                    iterator.remove() // Hibernate-safe removal
+
+                    // Break association with product before deleting
+                    //discountVO.product = null
+
+//                    // Optional: clear back-reference if exists
+//                    if (discountVO?.transaction == transactionVO) {
+//                        discountVO.transaction = null
+//                    }
+
+//                    discountRepo.delete(discountVO)
+                    break
+                }
+            }
+
+            transactionVO = transactionRepo.save(transactionVO) // persist transaction without the discount
+        }
+
+        return transactionVO
+    }
 
 
 }

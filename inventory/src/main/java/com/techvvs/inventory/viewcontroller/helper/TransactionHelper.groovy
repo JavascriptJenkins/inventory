@@ -160,6 +160,32 @@ class TransactionHelper {
     }
 
 
+    @Transactional
+    TransactionVO deleteProductFromTransactionForProductTypeDiscount(
+            TransactionVO transactionVO,
+            String barcode,
+            Optional<Integer> quantity
+    ){
+
+        Double amountToSubtract = 0.00
+        double amountofdiscount = 0.00
+        TransactionVO transactiontoremove = new TransactionVO(transactionid: 0)
+        int amountOfProductsToReturn = 0
+        if(quantity.isPresent()){
+            amountOfProductsToReturn = quantity.get()
+        }
+        // This is a stupid and inefficient way to do this, but whatever .......
+        for(int i = 0; i < amountOfProductsToReturn; i++) {
+            runRemovalLogic(transactionVO, barcode, amountofdiscount, amountToSubtract, transactiontoremove)
+        }
+
+        transactionVO.updateTimeStamp = LocalDateTime.now()
+        transactionVO = transactionRepo.save(transactionVO)
+
+        return transactionVO
+
+    }
+
     // we are only deleting it from the transaction - the original cart association is not removed.
     @Transactional
     TransactionVO deleteProductFromTransaction(
@@ -177,8 +203,7 @@ class TransactionHelper {
         }
         // This is a stupid and inefficient way to do this, but whatever .......
         for(int i = 0; i < amountOfProductsToReturn; i++) {
-            runRemovalLogic(transactionVO, barcode, amountofdiscount, amountToSubtract, transactiontoremove)
-
+            runRemovalLogicForPerProductDiscount(transactionVO, barcode, amountofdiscount, amountToSubtract, transactiontoremove)
         }
         transactionVO.updateTimeStamp = LocalDateTime.now()
         transactionVO = transactionRepo.save(transactionVO)
@@ -204,6 +229,86 @@ class TransactionHelper {
                 // before doing anything, check to see if there is a discount active on this transaction that needs to be
                 // applied back to the total and totalwithtax fields
                 amountofdiscount = checkoutService.calculateTotalsForRemovingExistingProductFromTransaction(transactionVO, productVO)
+
+                transactionVO.product_list.remove(productVO)
+
+                addProductToReturnList(transactionVO, productVO)
+
+                productVO.quantityremaining = productVO.quantityremaining + 1
+                amountToSubtract = Math.max(0.00, productVO.price - amountofdiscount)
+                // remove the transaction association from the product
+                for (TransactionVO existingTransaction : productVO.transaction_list) {
+                    if (existingTransaction.transactionid == transactionVO.transactionid) {
+                        transactiontoremove = existingTransaction
+                    }
+                }
+                productVO.transaction_list.remove(transactiontoremove)
+                productVO.updateTimeStamp = LocalDateTime.now()
+                productRepo.save(productVO)
+                break
+            }
+        }
+
+
+        // check to see if the transaction is fully paid, if so then we don't subtract from the total or totalwithtax
+        // todo: could there be a scenario here where the transactionVO.totalwithtax - transactionVO.paid
+        if (
+                Math.max(0, transactionVO.totalwithtax - transactionVO.paid) == 0 ||
+                        transactionVO.isprocessed == 1 // if we are returning something from an already paid transaction
+        ) {
+            // this means that someone is returning a product from an already paid transaction
+            // This means we need to capture the credit somewhere so the customer can get credit.
+            System.out.println("line 202: transactionVO.customercredit: " + transactionVO.customercredit)
+            transactionVO.customercredit == null ? transactionVO.customercredit = 0.00 : transactionVO.customercredit
+            transactionVO.customercredit = Math.max(0, transactionVO.customercredit + amountToSubtract)
+
+        } else {
+
+
+            // here we check to make sure that there is no potential remainder credit for customer that wasn't caught by the
+            // if statement above.  i dont even know if this scenario is possible/valid, but it might be.
+            transactionVO = checkPotentialForPartialProductCustomerCredit(transactionVO)
+            // at this point, the amount to credit customer is the amountToSubtract - remaining balance, if that value is negative
+            Double balanceAfterSubtract = (transactionVO.totalwithtax - transactionVO.paid) - amountToSubtract
+
+            if (balanceAfterSubtract < 0) {
+                // This means we have a negative balance → customer should get credit back
+                transactionVO.customercredit += Math.abs(balanceAfterSubtract)
+            }
+
+            transactionVO.total = Math.max(0, transactionVO.total - amountToSubtract)
+            transactionVO.totalwithtax = Math.max(0, transactionVO.totalwithtax - amountToSubtract)
+
+
+            //. todo:  test this with the discount functionality and figure out if we need to modify the original price here
+            // todo: i am thinking that we want to keep it reflected here as origal price.
+            // todo:  even if someone returns a product on a partially paid transaction, the orginal price should be reflected
+            // todo: after that product is returned.  If we are applying a discount on on a partially paid transaction,
+            //. todo: then the discount should only apply to the products in the current product list.
+
+            // todo:  the discount when applied should take into account any returns in the Returns table
+            // todo: and subtract the price of the returns from the original price at time of applying discount based on the original price
+            //transactionVO.originalprice = Math.max(0,transactionVO.originalprice - amountToSubtract)
+
+        }
+    }
+
+    @Transactional
+    void runRemovalLogicForPerProductDiscount(TransactionVO transactionVO,
+                         String barcode,
+                         double amountofdiscount,
+                         double amountToSubtract,
+                         TransactionVO transactiontoremove
+
+    ) {
+        // we are only removing one product at a time
+        for (ProductVO productVO : transactionVO.product_list) {
+            if (productVO.barcode == barcode) {
+
+
+                // before doing anything, check to see if there is a discount active on this transaction that needs to be
+                // applied back to the total and totalwithtax fields
+                amountofdiscount = checkoutService.calculateTotalsForRemovingExistingProductFromTransactionForProductDiscount(transactionVO, productVO)
 
                 transactionVO.product_list.remove(productVO)
 
