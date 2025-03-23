@@ -410,15 +410,17 @@
             <h6>
                 <span th:text="${transaction.createTimeStamp.toLocalDate()}"></span>
             </h6>
-            <h6 th:if="${transaction.discount_list.size() > 0}">
+            <h6 th:if="${!#lists.isEmpty(transaction.discount_list.?[isactive > 0])}">
                 <ul>
                     Discounts:
-                    <li th:each="discount : ${transaction.discount_list}" th:if="${discount.isactive != 0}">
-                            <span th:text="${discount.name}"></span> |
-                            Amount: <span th:text="${discount.discountamount}"></span>
+                    <li th:each="discount : ${transaction.discount_list}" th:if="${discount.isactive > 0}">
+                        <span th:text="${discount.name}"></span> |
+                        Amount: <span th:text="${discount.discountamount}"></span>
+                        <span th:if="${discount.product != null}"> | Qty: <span th:text="${discount.quantity}"></span></span>
                     </li>
                 </ul>
             </h6>
+
             <h6 th:if="${groupedReturns.size() > 0}">
                 <ul>
                     Returns:
@@ -474,11 +476,16 @@
                 <tbody>
                 <tr th:each="item : ${transaction.product_list}" th:data-barcode="${item.barcode}">
                     <td th:text="${item.name}">Item Name</td>
-                    <td th:text="${item.price}">Price</td>
+                    <td th:text="'$' + ${#numbers.formatDecimal(item.price, 1, 2)}">Price</td>
+
                     <td th:text="${item.displayquantity}">Quantity</td>
                     <td th:if="${transaction.discount_list.?[isactive == 1]?.size() > 0}">
                         <span th:each="discount : ${transaction.discount_list}"
-                              th:if="${discount.producttype?.producttypeid == item.producttypeid?.producttypeid && discount.isactive == 1}"
+                              th:if="${discount.producttype != null && discount.producttype?.producttypeid == item.producttypeid?.producttypeid && discount.isactive == 1}"
+                              th:text="'$' + ${#numbers.formatDecimal(T(java.lang.Math).max((item.price - discount.discountamount) * 1.0, 0.0), 1, 2)}">
+                        </span>
+                        <span th:each="discount : ${transaction.discount_list}"
+                              th:if="${discount.product != null && discount.product?.product_id == item.product_id && discount.isactive == 1}"
                               th:text="'$' + ${#numbers.formatDecimal(T(java.lang.Math).max((item.price - discount.discountamount) * 1.0, 0.0), 1, 2)}">
                         </span>
 

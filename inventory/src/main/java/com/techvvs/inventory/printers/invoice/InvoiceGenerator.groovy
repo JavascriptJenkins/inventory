@@ -102,13 +102,23 @@ class InvoiceGenerator {
         }
 
 
-        if(transaction.discount_list.size()>0){
-            invoice.append("Discounts:\n")
-            invoice.append("-----------------\n")
-            transaction.discount_list.each { discountvo ->
-                invoice.append(String.format("Discount: %-20s \$%-10.2f\n", discountvo.name, discountvo.discountamount))
+        if (transaction.discount_list.size() > 0) {
+            def activeDiscounts = transaction.discount_list.findAll { it?.isactive > 0 }
+
+            if (activeDiscounts.size() > 0) {
+                invoice.append("Discounts:\n")
+                invoice.append("-----------------\n")
+                activeDiscounts.each { discountvo ->
+                    if (discountvo.product != null) {
+                        invoice.append(String.format("Discount: %-20s Qty: %-5d \$%-10.2f\n", discountvo.name, discountvo.quantity, discountvo.discountamount))
+                    } else {
+                        invoice.append(String.format("Discount: %-20s \$%-10.2f\n", discountvo.name, discountvo.discountamount))
+                    }
+                }
             }
         }
+
+
 
 
         invoice.append("-----------------\n")

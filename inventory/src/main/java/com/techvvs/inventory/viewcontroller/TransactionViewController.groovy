@@ -511,13 +511,45 @@ public class TransactionViewController {
         Map<Integer, DiscountVO> discountMap = [:]
         transaction.discount_list?.each { d ->
             def id = d?.product?.product_id
-            if (id != null) {
+            if (id != null && d?.isactive > 0) {
                 discountMap[id] = d
             }
         }
         return discountMap
     }
 
+
+
+    @PostMapping("/discount/product/delete")
+    String postDiscountByProductDelete(
+            Model model,
+            @RequestParam("transactionidtodelete") Integer transactionid,
+            @RequestParam("discountidtodelete") Integer discountid,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size
+    ){
+        // get the transaction
+        TransactionVO transactionVO = transactionRepo.findById(transactionid).get()
+
+        transactionVO = checkoutHelper.deleteDiscountFromTransaction(transactionVO, discountid)
+
+
+        transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO, model)
+        printerService.printInvoice(transactionVO, false, true) // print another invoice showing discount...
+        model.addAttribute("customer", transactionVO.customervo)
+
+
+        model.addAttribute("producttypes", productTypeRepo.findAll()); // for the filter dropdown
+        techvvsAuthService.checkuserauth(model)
+        model.addAttribute("transactionid", transactionid);
+        model.addAttribute("transaction", transactionVO);
+        // Get the most recent discount
+
+
+        model.addAttribute("discountMap", buildDiscountMap(transactionVO))
+
+        return "transaction/discountbyproduct.html";
+    }
 
 
 

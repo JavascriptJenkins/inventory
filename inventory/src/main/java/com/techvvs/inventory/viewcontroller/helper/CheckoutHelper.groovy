@@ -3,6 +3,7 @@ package com.techvvs.inventory.viewcontroller.helper
 import com.techvvs.inventory.jparepo.BatchRepo
 import com.techvvs.inventory.jparepo.CartRepo
 import com.techvvs.inventory.jparepo.CustomerRepo
+import com.techvvs.inventory.jparepo.DiscountRepo
 import com.techvvs.inventory.jparepo.ProductRepo
 import com.techvvs.inventory.jparepo.TransactionRepo
 import com.techvvs.inventory.model.BatchVO
@@ -14,6 +15,7 @@ import com.techvvs.inventory.model.PackageVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.service.controllers.CartService
+import com.techvvs.inventory.service.controllers.TransactionService
 import com.techvvs.inventory.service.transactional.CartDeleteService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
@@ -23,6 +25,7 @@ import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Component
 import org.springframework.ui.Model
 
+import javax.transaction.Transactional
 import java.time.LocalDateTime
 
 // helper class to make sure actual checkout controller code stays clean n tidy
@@ -38,6 +41,14 @@ class CheckoutHelper {
     @Autowired
     BatchRepo batchRepo
 
+    @Autowired
+    TransactionRepo transactionRepo
+
+    @Autowired
+    TransactionService transactionService
+
+    @Autowired
+    DiscountRepo discountRepo
 
     // method to get all customers from db
     void getAllCustomers(Model model){
@@ -294,6 +305,45 @@ class CheckoutHelper {
         }
 
     }
+
+    // NOTE: we are doing a soft delete basically by marking the discount as not active, and then breaking the product association....
+    // this is kind of stupid i think but whatever
+    @Transactional
+    TransactionVO deleteDiscountFromTransaction(TransactionVO transactionVO, Integer discountid) {
+        if (transactionVO?.discount_list) {
+            def iterator = transactionVO.discount_list.iterator()
+            while (iterator.hasNext()) {
+                DiscountVO discountVO = iterator.next()
+                if (discountVO?.discountid == discountid) {
+
+                    // before we do anything here, credit back the to original total
+                    // apply the discount based on producttypeid to all products of that type
+                    transactionVO = transactionService.checkForExistingDiscountOfSameProductAndCreditBackToTransactionTotalsByProduct(
+                            transactionVO, String.valueOf(transactionVO.transactionid), discountVO.product.product_id
+                    )
+
+
+//                    iterator.remove() // Hibernate-safe removal
+
+                    // Break association with product before deleting
+                    //discountVO.product = null
+
+//                    // Optional: clear back-reference if exists
+//                    if (discountVO?.transaction == transactionVO) {
+//                        discountVO.transaction = null
+//                    }
+
+//                    discountRepo.delete(discountVO)
+                    break
+                }
+            }
+
+            transactionVO = transactionRepo.save(transactionVO) // persist transaction without the discount
+        }
+
+        return transactionVO
+    }
+
 
 
 
