@@ -363,7 +363,7 @@
                 </thead>
                 <tbody>
                     <tr th:each="item : ${transaction.product_list}" th:data-barcode="${item.barcode}">
-                        <td th:text="${item.name}" data-barcode="${item.barcode}">Item Name</td>
+                        <td th:text="${item.name + ' | ' + item.producttypeid.name}" data-barcode="${item.barcode}">Item Name</td>
                         <td th:text="${item.price}" data-barcode="${item.barcode}">Price</td>
                         <td th:text="${item.displayquantity}">Quantity</td>
                         <td th:text="'$' + ${

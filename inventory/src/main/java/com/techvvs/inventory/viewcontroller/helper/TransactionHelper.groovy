@@ -5,6 +5,7 @@ import com.techvvs.inventory.jparepo.ProductRepo
 import com.techvvs.inventory.jparepo.ReturnRepo
 import com.techvvs.inventory.jparepo.SystemUserRepo
 import com.techvvs.inventory.jparepo.TransactionRepo
+import com.techvvs.inventory.model.DiscountVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.ReturnVO
 import com.techvvs.inventory.model.SystemUserDAO
@@ -201,9 +202,17 @@ class TransactionHelper {
         if(quantity.isPresent()){
             amountOfProductsToReturn = quantity.get()
         }
+
+        // we should only have one active discount per product at any given time, but doing this to code defensively
+        List<DiscountVO> discountlist = getListOfAllActiveDiscountsForProduct(transactionVO, barcode)
+
+
+        DiscountVO latestDiscount = discountlist?.max { it.createTimeStamp }
+        int amountofdiscountedproducts = latestDiscount.quantity
+
         // This is a stupid and inefficient way to do this, but whatever .......
         for(int i = 0; i < amountOfProductsToReturn; i++) {
-            runRemovalLogicForPerProductDiscount(transactionVO, barcode, amountofdiscount, amountToSubtract, transactiontoremove)
+            runRemovalLogicForPerProductDiscount(transactionVO, barcode, amountofdiscount, amountToSubtract, transactiontoremove, amountofdiscountedproducts)
         }
         transactionVO.updateTimeStamp = LocalDateTime.now()
         transactionVO = transactionRepo.save(transactionVO)
@@ -211,6 +220,25 @@ class TransactionHelper {
 
         return transactionVO
 
+    }
+
+    List<DiscountVO> getListOfAllActiveDiscountsForProduct(TransactionVO transactionVO, String barcode){
+        int productid = 0
+        // find the latest discount that has been applied and take the item amount from that
+        // todo: this needs to not just take the latest discount, it needs to check the barcode being returned and match that with the latest discount for that barcode
+        for(ProductVO existingproduct : transactionVO.product_list){
+            if(barcode.equals(existingproduct.barcode)){
+                productid = existingproduct.product_id
+            }
+        }
+
+        List<DiscountVO> discountlist = new ArrayList<>()
+        for(DiscountVO existingdiscount : transactionVO.discount_list){
+            if(productid == existingdiscount.product.product_id && existingdiscount.isactive == 1){
+                discountlist.add(existingdiscount) // make a list of the active discounts for this product (should be just 1 but we are being safe here...)
+            }
+        }
+        return discountlist
     }
 
     @Transactional
@@ -250,47 +278,12 @@ class TransactionHelper {
         }
 
 
-        // check to see if the transaction is fully paid, if so then we don't subtract from the total or totalwithtax
-        // todo: could there be a scenario here where the transactionVO.totalwithtax - transactionVO.paid
-        if (
-                Math.max(0, transactionVO.totalwithtax - transactionVO.paid) == 0 ||
-                        transactionVO.isprocessed == 1 // if we are returning something from an already paid transaction
-        ) {
-            // this means that someone is returning a product from an already paid transaction
-            // This means we need to capture the credit somewhere so the customer can get credit.
-            System.out.println("line 202: transactionVO.customercredit: " + transactionVO.customercredit)
-            transactionVO.customercredit == null ? transactionVO.customercredit = 0.00 : transactionVO.customercredit
-            transactionVO.customercredit = Math.max(0, transactionVO.customercredit + amountToSubtract)
 
-        } else {
+        checkForCustomerCredit(transactionVO, amountToSubtract)
 
 
-            // here we check to make sure that there is no potential remainder credit for customer that wasn't caught by the
-            // if statement above.  i dont even know if this scenario is possible/valid, but it might be.
-            transactionVO = checkPotentialForPartialProductCustomerCredit(transactionVO)
-            // at this point, the amount to credit customer is the amountToSubtract - remaining balance, if that value is negative
-            Double balanceAfterSubtract = (transactionVO.totalwithtax - transactionVO.paid) - amountToSubtract
-
-            if (balanceAfterSubtract < 0) {
-                // This means we have a negative balance → customer should get credit back
-                transactionVO.customercredit += Math.abs(balanceAfterSubtract)
-            }
-
-            transactionVO.total = Math.max(0, transactionVO.total - amountToSubtract)
-            transactionVO.totalwithtax = Math.max(0, transactionVO.totalwithtax - amountToSubtract)
-
-
-            //. todo:  test this with the discount functionality and figure out if we need to modify the original price here
-            // todo: i am thinking that we want to keep it reflected here as origal price.
-            // todo:  even if someone returns a product on a partially paid transaction, the orginal price should be reflected
-            // todo: after that product is returned.  If we are applying a discount on on a partially paid transaction,
-            //. todo: then the discount should only apply to the products in the current product list.
-
-            // todo:  the discount when applied should take into account any returns in the Returns table
-            // todo: and subtract the price of the returns from the original price at time of applying discount based on the original price
-            //transactionVO.originalprice = Math.max(0,transactionVO.originalprice - amountToSubtract)
-
-        }
+        transactionVO.total = Math.max(0, transactionVO.total - amountToSubtract)
+        transactionVO.totalwithtax = Math.max(0, transactionVO.totalwithtax - amountToSubtract)
     }
 
     @Transactional
@@ -298,9 +291,11 @@ class TransactionHelper {
                          String barcode,
                          double amountofdiscount,
                          double amountToSubtract,
-                         TransactionVO transactiontoremove
+                         TransactionVO transactiontoremove,
+            int amountofdiscountedproducts
 
     ) {
+
         // we are only removing one product at a time
         for (ProductVO productVO : transactionVO.product_list) {
             if (productVO.barcode == barcode) {
@@ -308,7 +303,7 @@ class TransactionHelper {
 
                 // before doing anything, check to see if there is a discount active on this transaction that needs to be
                 // applied back to the total and totalwithtax fields
-                amountofdiscount = checkoutService.calculateTotalsForRemovingExistingProductFromTransactionForProductDiscount(transactionVO, productVO)
+                amountofdiscount = checkoutService.calculateTotalsForRemovingExistingProductFromTransactionForProductDiscount(transactionVO, productVO, amountofdiscountedproducts)
 
                 transactionVO.product_list.remove(productVO)
 
@@ -330,70 +325,45 @@ class TransactionHelper {
         }
 
 
-        // check to see if the transaction is fully paid, if so then we don't subtract from the total or totalwithtax
-        // todo: could there be a scenario here where the transactionVO.totalwithtax - transactionVO.paid
-        if (
-                Math.max(0, transactionVO.totalwithtax - transactionVO.paid) == 0 ||
-                        transactionVO.isprocessed == 1 // if we are returning something from an already paid transaction
-        ) {
-            // this means that someone is returning a product from an already paid transaction
-            // This means we need to capture the credit somewhere so the customer can get credit.
-            System.out.println("line 202: transactionVO.customercredit: " + transactionVO.customercredit)
-            transactionVO.customercredit == null ? transactionVO.customercredit = 0.00 : transactionVO.customercredit
-            transactionVO.customercredit = Math.max(0, transactionVO.customercredit + amountToSubtract)
 
-        } else {
+        checkForCustomerCredit(transactionVO, amountToSubtract)
+
+        transactionVO.total = Math.max(0, transactionVO.total - amountToSubtract)
+        transactionVO.totalwithtax = Math.max(0, transactionVO.totalwithtax - amountToSubtract)
+
+    }
+
+    void checkForCustomerCredit(TransactionVO transactionVO, double amountToSubtract) {
+
+        // at this point, the amount to credit customer is the amountToSubtract - remaining balance, if that value is negative
+        Double balanceAfterSubtract = (transactionVO.total - transactionVO.paid) - amountToSubtract
+
+        // we need to account for any discounts that were applied to the products in the transaction
+        // here we add up all the discounts applied to the products in the transaction.
+        Double totaldiscountfromallproducts = calculateAllDiscountsThatHaveBeenAppliedToTransaction(transactionVO)
+
+        balanceAfterSubtract = (balanceAfterSubtract + totaldiscountfromallproducts) // add back the discounts to get to correct number again
+
+        if (balanceAfterSubtract < 0) {
+            // This means we have a negative balance → customer should get credit back
+            transactionVO.customercredit += Math.abs(balanceAfterSubtract)
+        }
+
+    }
 
 
-            // here we check to make sure that there is no potential remainder credit for customer that wasn't caught by the
-            // if statement above.  i dont even know if this scenario is possible/valid, but it might be.
-            transactionVO = checkPotentialForPartialProductCustomerCredit(transactionVO)
-            // at this point, the amount to credit customer is the amountToSubtract - remaining balance, if that value is negative
-            Double balanceAfterSubtract = (transactionVO.totalwithtax - transactionVO.paid) - amountToSubtract
-
-            if (balanceAfterSubtract < 0) {
-                // This means we have a negative balance → customer should get credit back
-                transactionVO.customercredit += Math.abs(balanceAfterSubtract)
+    Double calculateAllDiscountsThatHaveBeenAppliedToTransaction(TransactionVO transactionVO){
+        double totaldiscountfromallproducts = 0.00
+        for(DiscountVO discountVO : transactionVO.discount_list) {
+            if(discountVO.isactive == 1){
+                totaldiscountfromallproducts += (discountVO.discountamount * discountVO.quantity)
             }
-
-            transactionVO.total = Math.max(0, transactionVO.total - amountToSubtract)
-            transactionVO.totalwithtax = Math.max(0, transactionVO.totalwithtax - amountToSubtract)
-
-
-            //. todo:  test this with the discount functionality and figure out if we need to modify the original price here
-            // todo: i am thinking that we want to keep it reflected here as origal price.
-            // todo:  even if someone returns a product on a partially paid transaction, the orginal price should be reflected
-            // todo: after that product is returned.  If we are applying a discount on on a partially paid transaction,
-            //. todo: then the discount should only apply to the products in the current product list.
-
-            // todo:  the discount when applied should take into account any returns in the Returns table
-            // todo: and subtract the price of the returns from the original price at time of applying discount based on the original price
-            //transactionVO.originalprice = Math.max(0,transactionVO.originalprice - amountToSubtract)
-
-        }
-    }
-
-    @Transactional
-    TransactionVO checkPotentialForPartialProductCustomerCredit(TransactionVO transactionVO) {
-        // Calculate the amount left to subtract // todo: wrap this in math.max 0
-        double amountToSubtractInScope = transactionVO.total - transactionVO.paid;
-
-        // Log the calculation for debugging purposes
-        System.out.println("Calculated amount to subtract: " + amountToSubtractInScope);
-
-        // Check if the resulting value is negative
-        if (amountToSubtractInScope < 0) {
-            // Credit back the customer for the overpayment
-            double creditToApply = Math.abs(amountToSubtractInScope);
-            transactionVO.customercredit += creditToApply;
-
-            // Log the adjustment for auditing
-            System.out.println("Negative balance detected. Crediting customer: " + creditToApply);
         }
 
-        // Return the updated TransactionVO
-        return transactionVO;
+        return Math.max(0,totaldiscountfromallproducts)
     }
+
+
 
     // to keep this simple we are only returning one product at a time ....
     @Transactional

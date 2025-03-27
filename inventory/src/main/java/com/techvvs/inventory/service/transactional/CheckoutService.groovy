@@ -114,13 +114,18 @@ class CheckoutService {
     @Transactional
     double calculateTotalsForRemovingExistingProductFromTransactionForProductDiscount(
             TransactionVO transactionVO,
-            ProductVO productToRemove
+            ProductVO productToRemove,
+            int amountofdiscountedproducts
     ) {
+        //todo: here need to make sure this only runs for the amount of products that have a discount
+        // calculate the number of products that have a discount on the productToRemove
+
         // first check to see if any matches in the active discount list that match to the producttype being removed
         for(DiscountVO discountVO : transactionVO.discount_list) {
             // handle producttype discounts
             if(discountVO.product != null &&
-                    discountVO.product.product_id == productToRemove.product_id && discountVO.isactive == 1) {
+                    discountVO.product.product_id == productToRemove.product_id && discountVO.isactive == 1
+                    && amountofdiscountedproducts < discountVO.quantity) {
                 // if we find a match while removing the product from the transaction, apply the per unit discount back to the transaction total and totalwithtax fields
                 return Math.max(0,discountVO.discountamount)
             }
