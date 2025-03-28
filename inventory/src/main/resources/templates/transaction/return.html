@@ -184,19 +184,20 @@
                 </thead>
                 <tbody>
                 <tr th:each="item : ${transaction.product_list}" th:data-barcode="${item.barcode}">
-                    <td th:text="${item.name}" data-barcode="${item.barcode}">Item Name</td>
+                    <td th:text="${item.name + ' | ' + item.producttypeid.name}" data-barcode="${item.barcode}">Item Name</td>
                     <td th:text="${item.price}">Price</td>
                     <td th:text="${item.displayquantity}">Quantity</td>
                     <td>
-                        <form th:action="@{/transaction/return}" method="post" onsubmit="return handleQuantityMode(this, event)">
+                        <form th:action="@{/transaction/return}"
+                              method="post"
+                              th:attr="data-product-name=${item.name}, data-product-type=${item.producttypeid.name}"
+                              onsubmit="return handleQuantityMode(this, event)">
                             <input type="hidden" name="discounttype" th:value="${discounttype}" />
                             <input type="hidden" name="barcode" th:value="${item.barcode}" />
                             <input type="hidden" name="transactionid" th:value="${transactionid}" />
 
-                            <!-- this is 1 unless the quantity mode modal changes it -->
-                            <input id="removethisquantity" type="hidden" name="quantity" value="1" />
-
-                            <input type="hidden" name="quantity" th:value="${item.displayquantity}" class="quantity-input" />
+                            <input type="hidden" name="quantity" value="1" class="quantity-input" />
+                            <input type="hidden" class="available-quantity" th:value="${item.displayquantity}" />
 
                             <button type="submit" class="btn btn-link text-danger p-0" title="Remove item">
                                 <i class="bi bi-x-circle-fill" style="font-size: 1.3rem;"></i>
@@ -222,8 +223,12 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
+                <!-- Inside the modal body -->
+                <p><strong>Product:</strong> <span id="modalProductName"></span></p>
+                <p><strong>Type:</strong> <span id="modalProductType"></span></p>
+                <p id="modalQtyInfo" class="text-muted"></p>
+
                 <input type="number" id="modalQuantityInput" class="form-control" min="1" />
-                <div class="form-text text-white mt-2" id="modalQtyInfo"></div>
 
             </div>
             <div class="modal-footer">
@@ -238,7 +243,6 @@
     let maxQty = 0;
 
     function handleQuantityMode(form, event) {
-        console.log('dicks');
         const checkbox = document.getElementById('quantityModeCheckbox');
         const quantityMode = checkbox && checkbox.checked;
 
@@ -246,24 +250,26 @@
 
         event.preventDefault();
 
-<!-- this is super hacky, but we are removing this input before we parse the actual quantity on the next line -->
-        document.getElementById("removethisquantity")?.remove();
-
         currentForm = form;
-        maxQty = parseInt(form.querySelector('.quantity-input').value);
+        maxQty = parseInt(form.querySelector('.available-quantity').value);
 
-        const qtyInput = document.getElementById('modalQuantityInput');
-        const qtyInfo = document.getElementById('modalQtyInfo');
+        // Pull product name and type from data attributes on the form
+        const productName = form.getAttribute('data-product-name') || 'Unknown';
+        const productType = form.getAttribute('data-product-type') || 'Unknown';
 
-        qtyInput.value = 1;
-        qtyInput.setAttribute('max', maxQty);
-        qtyInfo.textContent = `Max quantity available: ${maxQty}`;
+        // Set modal field values
+        document.getElementById('modalQuantityInput').value = 1;
+        document.getElementById('modalQuantityInput').setAttribute('max', maxQty);
+        document.getElementById('modalQtyInfo').textContent = `Max quantity available: ${maxQty}`;
+        document.getElementById('modalProductName').textContent = productName;
+        document.getElementById('modalProductType').textContent = productType;
 
         const modal = new bootstrap.Modal(document.getElementById('quantityModal'));
         modal.show();
 
         return false;
     }
+
 
     function submitQuantity() {
         const qty = parseInt(document.getElementById('modalQuantityInput').value);

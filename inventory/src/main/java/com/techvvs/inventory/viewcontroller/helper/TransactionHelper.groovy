@@ -14,6 +14,7 @@ import com.techvvs.inventory.service.email.EmailService
 import com.techvvs.inventory.service.transactional.CheckoutService
 import com.techvvs.inventory.util.SendgridEmailUtil
 import com.techvvs.inventory.util.TwilioTextUtil
+import org.apache.commons.math3.stat.descriptive.summary.Product
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
 import org.springframework.data.domain.Page
@@ -183,6 +184,18 @@ class TransactionHelper {
         transactionVO.updateTimeStamp = LocalDateTime.now()
         transactionVO = transactionRepo.save(transactionVO)
 
+
+        ProductVO productVO = productRepo.findByBarcode(barcode).get()
+
+        // only run this if the return value of the products the customer is returning is greater than the amount remaining to pay (the total)
+        if((amountOfProductsToReturn * productVO.price) > transactionVO.total){
+            transactionVO = checkForCustomerCredit(transactionVO)
+
+            // save it again after calculating any customer credit
+            transactionVO.updateTimeStamp = LocalDateTime.now()
+            transactionVO = transactionRepo.save(transactionVO)
+        }
+
         return transactionVO
 
     }
@@ -217,7 +230,16 @@ class TransactionHelper {
         transactionVO.updateTimeStamp = LocalDateTime.now()
         transactionVO = transactionRepo.save(transactionVO)
 
+        ProductVO productVO = productRepo.findByBarcode(barcode).get()
 
+        // only run this if the return value of the products the customer is returning is greater than the amount remaining to pay (the total)
+        if((amountOfProductsToReturn * productVO.price) > transactionVO.total){
+            transactionVO = checkForCustomerCredit(transactionVO)
+
+            // save it again after calculating any customer credit
+            transactionVO.updateTimeStamp = LocalDateTime.now()
+            transactionVO = transactionRepo.save(transactionVO)
+        }
         return transactionVO
 
     }
@@ -278,10 +300,6 @@ class TransactionHelper {
         }
 
 
-
-        checkForCustomerCredit(transactionVO, amountToSubtract)
-
-
         transactionVO.total = Math.max(0, transactionVO.total - amountToSubtract)
         transactionVO.totalwithtax = Math.max(0, transactionVO.totalwithtax - amountToSubtract)
     }
@@ -325,30 +343,42 @@ class TransactionHelper {
         }
 
 
-
-        checkForCustomerCredit(transactionVO, amountToSubtract)
-
         transactionVO.total = Math.max(0, transactionVO.total - amountToSubtract)
         transactionVO.totalwithtax = Math.max(0, transactionVO.totalwithtax - amountToSubtract)
 
     }
 
-    void checkForCustomerCredit(TransactionVO transactionVO, double amountToSubtract) {
+    // note: this has to be done as a seperate thing than anything else because it has to be done after all transaction actions are saved
+    TransactionVO checkForCustomerCredit(TransactionVO transactionVO) {
 
-        // at this point, the amount to credit customer is the amountToSubtract - remaining balance, if that value is negative
-        Double balanceAfterSubtract = (transactionVO.total - transactionVO.paid) - amountToSubtract
+        Double customercredit = 0.00
+
+        Double valueOfAllReturnedProducts = 0.00
+        // first calculate the value of any returned products
+        for(ReturnVO returnVO : transactionVO.return_list) {
+            valueOfAllReturnedProducts += returnVO.product.price // add up the non discounted price of all returns on the transaction
+        }
 
         // we need to account for any discounts that were applied to the products in the transaction
         // here we add up all the discounts applied to the products in the transaction.
         Double totaldiscountfromallproducts = calculateAllDiscountsThatHaveBeenAppliedToTransaction(transactionVO)
 
-        balanceAfterSubtract = (balanceAfterSubtract + totaldiscountfromallproducts) // add back the discounts to get to correct number again
+        valueOfAllReturnedProducts = (valueOfAllReturnedProducts - totaldiscountfromallproducts)
 
-        if (balanceAfterSubtract < 0) {
+        double amountremainingtopay = Math.max(0,valueOfAllReturnedProducts - transactionVO.paid)
+
+
+        double possiblenegativevalue = (amountremainingtopay - valueOfAllReturnedProducts)
+
+        if (possiblenegativevalue < 0) {
+
+            customercredit = possiblenegativevalue
+
             // This means we have a negative balance → customer should get credit back
-            transactionVO.customercredit += Math.abs(balanceAfterSubtract)
+            transactionVO.customercredit += Math.abs(customercredit)
         }
 
+        return transactionVO
     }
 
 
