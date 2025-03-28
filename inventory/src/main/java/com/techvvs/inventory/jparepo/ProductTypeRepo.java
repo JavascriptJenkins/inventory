@@ -11,6 +11,7 @@ public interface ProductTypeRepo extends JpaRepository<ProductTypeVO, Integer> {
     List<ProductTypeVO> findAll();
     Optional<ProductTypeVO> findByName(String name);
     boolean existsByName(String name);
+    List<ProductTypeVO> findAllByOrderByCreateTimeStampDescNameAsc();
 
 
 

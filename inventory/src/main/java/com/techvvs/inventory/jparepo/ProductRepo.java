@@ -21,6 +21,22 @@ public interface ProductRepo extends JpaRepository<ProductVO, Integer> {
 
     List<ProductVO> findAll();
 
+    // All products, paginated & sorted
+    Page<ProductVO> findAll(Pageable pageable);
+
+    // Filtered by batch
+    @Query("""
+    SELECT p FROM ProductVO p
+    WHERE (:batchid IS NULL OR p.batch.batchid = :batchid)
+      AND (:producttypeid IS NULL OR p.producttypeid.producttypeid = :producttypeid)
+""")
+    Page<ProductVO> findFilteredProducts(
+            @Param("batchid") Integer batchid,
+            @Param("producttypeid") Integer producttypeid,
+            Pageable pageable
+    );
+
+
     // or descending by timestamp
     List<ProductVO> findAllByOrderByCreateTimeStampDescNameAsc();
     List<ProductVO> findAllByProductnumber(Integer productnumber);

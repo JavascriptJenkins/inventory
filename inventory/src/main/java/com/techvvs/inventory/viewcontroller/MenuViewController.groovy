@@ -14,6 +14,7 @@ import com.techvvs.inventory.viewcontroller.helper.CheckoutHelper
 import com.techvvs.inventory.viewcontroller.helper.CustomerHelper
 import com.techvvs.inventory.viewcontroller.helper.MenuHelper
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.core.env.Environment
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
@@ -45,6 +46,9 @@ public class MenuViewController {
 
     @Autowired
     CustomerHelper customerHelper
+
+    @Autowired
+    Environment env
     
 
     // todo: modify this to parse user cookie from request and check user permissions
@@ -511,6 +515,8 @@ public class MenuViewController {
         customerHelper.addPaginatedData(model, page)
         customerHelper.hydrateDisplayDataForActiveTokenPage(model)
 
+
+        model.addAttribute("baseqrdomain", env.getProperty("base.qr.domain"))
 
         return "menu/activeshoppingtokens.html";
     }

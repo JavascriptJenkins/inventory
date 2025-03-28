@@ -84,6 +84,24 @@
                 text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px #00ffff;
             }
         }
+        .record-selector {
+            margin-bottom: 15px;
+            background-color: #343a40;
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            display: inline-block;
+        }
+        .record-selector select {
+            background-color: #23272b;
+            color: #fff;
+            border: 1px solid #343a40;
+        }
+        .record-selector select:focus {
+            border-color: #1d2124;
+            box-shadow: none;
+        }
     </style>
 
     <script th:inline="javascript">
@@ -254,6 +272,20 @@
 
 
             <form th:if="${productPage != null && !productPage.content.isEmpty()}" action="/menu/admin/remove/product" method="post">
+
+                <input type="hidden" name="selectionproductPageInt"
+                       th:value="${pageNumber == null ? 0 : pageNumber}" />
+
+                <input type="hidden" name="menuid"
+                       th:value="${menu != null ? menu.menuid : 0}" />
+
+                <input type="hidden" name="selectionproductPageInt" th:value="${selectionProductPage}"/>
+                <input type="hidden" name="selectionproductSizeInt" th:value="${selectionproductSize}"/>
+
+                <input type="hidden" name="batchid" th:value="${batchinscope}"/>
+                <input type="hidden" name="producttypeid" th:value="${producttypeinscope}"/>
+
+
                 <button type="submit" class="btn btn-danger d-flex align-items-center gap-2" style="font-size: 1.5rem; padding: 10px 20px;">
                     <i class="bi bi-dash-circle"></i> Remove From Menu
                 </button>
@@ -263,6 +295,8 @@
                     <tr>
                         <th scope="col">Product ID</th>
                         <th scope="col">Product Name</th>
+                        <th scope="col">Batch Name</th>
+                        <th scope="col">Product Type</th>
                         <th scope="col">Create Date</th>
                         <th scope="col">Select</th>
                     </tr>
@@ -274,9 +308,11 @@
 
 
                         <td th:text="${product.product_id}"></td>
+                        http://localhost:8080/product/editform?productnumber=7980879&editmode=no&batchnumber=3339016
                         <td th:text="${product.name}"></td>
+                        <td th:text="${product.batch.name}"></td>
+                        <td th:text="${product.producttypeid.name}"></td>
                         <td th:text="${product.createTimeStamp}"></td>
-
 
                         <td>
                             <input class="form-check-input" type="checkbox" name="selectedProducts" th:value="${product.product_id}" style="width: 1.5rem; height: 1.5rem;" onchange="updateHiddenInput(this)">
@@ -316,21 +352,91 @@
     <div class="col-md-12" th:if="${selectionProductPage != null && selectionProductPage.content.size() > 0 && editmode}">
         <div class="tip-box">Select products, then click Add To Menu button</div>
 
+        <form th:action="@{/menu/admin/manage}" method="get" id="filterForm">
+
+
+            <input type="hidden" name="selectionproductPageInt"
+                   th:value="${pageNumber == null ? 0 : pageNumber}" />
+
+            <input type="hidden" name="menuid"
+                   th:value="${menu != null ? menu.menuid : 0}" />
+
+            <!-- Group filters and expand button in a horizontal row -->
+            <div class="d-flex align-items-end gap-3 mb-3">
+
+                <!-- Batch Filter -->
+                <div class="record-selector">
+                    <label for="batchselectid">Batch:</label>
+                    <select class="form-control" id="batchselectid" name="batchid"
+                            onchange="document.getElementById('filterForm').submit()">
+                        <option value="0">Filter by batch</option>
+                        <option th:each="batch : ${batches}"
+                                th:value="${batch.batchid}"
+                                th:text="${batch.name + ' | ' + #temporals.format(batch.createTimeStamp, 'yyyy-MM-dd')}"
+                                th:selected="${batch.batchid == batchinscope}">
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Product Type Filter -->
+                <div class="record-selector">
+                    <label for="producttypeselectid">Product Type:</label>
+                    <select class="form-control" id="producttypeselectid" name="producttypeid"
+                            onchange="document.getElementById('filterForm').submit()">
+                        <option value="0">Filter by Product Type</option>
+                        <option th:each="producttype : ${producttypes}"
+                                th:value="${producttype.producttypeid}"
+                                th:text="${producttype.name + ' | ' + #temporals.format(producttype.createTimeStamp, 'yyyy-MM-dd')}"
+                                th:selected="${producttype.producttypeid == producttypeinscope}">
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Preserve page value on submit -->
+                <input type="hidden" name="selectionproductPageInt" th:value="${selectionProductPage}"/>
+
+                <!-- Dropdown for selecting record size -->
+                <div class="record-selector">
+                    <label for="recordSize">Display Records:</label>
+                    <select name="selectionproductSizeInt" id="recordSize" class="form-select" onchange="document.getElementById('filterForm').submit()">
+                        <option value="5" th:selected="${selectionproductSize == 5}">5 Records</option>
+                        <option value="10" th:selected="${selectionproductSize == 10}">10 Records</option>
+                        <option value="20" th:selected="${selectionproductSize == 20}">20 Records</option>
+                        <option value="100" th:selected="${selectionproductSize == 100}">100 Records</option>
+                        <option value="1000" th:selected="${selectionproductSize == 1000}">1000 Records</option>
+                        <option value="10000" th:selected="${selectionproductSize == 10000}">10000 Records</option>
+                    </select>
+
+                </div>
+
+
+
+            </div>
+
+        </form>
+
 
         <form action="/menu/admin/add/product" method="post">
+
+            <input type="hidden" name="selectionproductPageInt"
+                   th:value="${pageNumber == null ? 0 : pageNumber}" />
+
+            <input type="hidden" name="menuid"
+                   th:value="${menu != null ? menu.menuid : 0}" />
+
+            <input type="hidden" name="selectionproductPageInt" th:value="${selectionProductPage}"/>
+            <input type="hidden" name="selectionproductSizeInt" th:value="${selectionproductSize}"/>
+
+            <input type="hidden" name="batchid" th:value="${batchinscope}"/>
+            <input type="hidden" name="producttypeid" th:value="${producttypeinscope}"/>
+
+
             <div class="d-flex justify-content-start gap-3 mb-3">
                 <!-- Add To Menu Button -->
                 <button type="submit" class="btn btn-success d-flex align-items-center gap-2" style="font-size: 1.5rem; padding: 10px 20px;">
                     <i class="bi bi-plus-circle"></i> Add To Menu
                 </button>
 
-                <!-- Expand Button -->
-                <a
-                        th:href="@{/menu/admin/manage?selectionproductSizeInt=__${#lists.size(selectionProductPage.content) > 5 ? #lists.size(selectionProductPage.content) : 1000}__&selectionproductPageInt=__${pageNumber == null ? 0 : pageNumber}__&menuid=__${menu != null ? menu.menuid : '0'}__}"
-                   class="btn btn-primary d-flex align-items-center gap-2"
-                   style="font-size: 1.5rem; padding: 10px 20px;">
-                    <i class="bi bi-arrows-expand"></i> Expand
-                </a>
             </div>
 
             <table id="addToMenuTable" class="table table-hover table-striped table-dark" style="margin-top: 20px">
@@ -338,6 +444,8 @@
                 <tr>
                     <th scope="col">Product ID</th>
                     <th scope="col">Product Name</th>
+                    <th scope="col">Batch Name</th>
+                    <th scope="col">Product Type</th>
                     <th scope="col">Create Date</th>
                     <th scope="col">Select</th>
                 </tr>
@@ -350,6 +458,8 @@
 
                     <td th:text="${product.product_id}"></td>
                     <td th:text="${product.name}"></td>
+                    <td th:text="${product.batch.name}"></td>
+                    <td th:text="${product.producttypeid.name}"></td>
                     <td th:text="${product.createTimeStamp}"></td>
                     <td>
                         <input class="form-check-input" type="checkbox" name="selectedProducts" th:value="${product.product_id}" style="width: 1.5rem; height: 1.5rem;" onchange="updateHiddenInput(this)">
@@ -442,6 +552,15 @@
     <br>
     <br>
 </div>
+<script>
+    function expandProductList() {
+        const sizeInput = document.getElementById("selectionSizeInput");
+        if (sizeInput) {
+            sizeInput.value = 1000;
+        }
+        document.getElementById("filterForm").submit();
+    }
+</script>
 
 </body>
 </html>

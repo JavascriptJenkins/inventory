@@ -983,41 +983,38 @@ class MenuHelper {
             MenuVO menuVO,
             Model model,
             Optional<Integer> productpage,
-            Optional<Integer> productsize){
+            Optional<Integer> productsize,
+            Optional<Integer> batchinscope,
+            Optional<Integer> producttypeinscope
+    ) {
+
+
+        // Normalize filter values: if 0, treat as null
+        Integer batchFilter = batchinscope.filter { it > 0 }.orElse(null)
+        Integer productTypeFilter = producttypeinscope.filter { it > 0 }.orElse(null)
+
+
 
         int page = productpage.orElse(0)
+        if (page != 0) page -= 1
 
-        if(page != 0){
-            page = page - 1;
-        }
-        // todo: should this be filtered at all?  we are pulling all the products in the system here.
-        List<ProductVO> productList = productRepo.findAllSortedByName()
-        Pageable pageable = PageRequest.of(page, productsize.orElse(5), Sort.by(Sort.Direction.ASC, "createTimeStamp"));
-        // Apply sorting manually to the fileList
-//            if (pageable.getSort().isSorted()) {
-//                productList.sort(Comparator.comparing(FileVO::getCreateTimeStamp)); // Sorting by createTimeStamp field
-//            }
-        int start = Math.min((int) pageable.getOffset(), productList.size());
-        int end = Math.min((start + pageable.getPageSize()), productList.size());
-        List<ProductVO> pagedProducts = productList.subList(start, end);
+        int size = productsize.orElse(5)
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "createTimeStamp"))
 
+        // Call the updated repo method with both filters
+        // Query with normalized filters
+        Page<ProductVO> productPage = productRepo.findFilteredProducts(
+                batchFilter,
+                productTypeFilter,
+                pageable
+        )
 
+        int totalPages = productPage.getTotalPages()
+        List<Integer> pageNumbers = (1..totalPages).toList()
 
-
-        Page<ProductVO> productPage = new PageImpl<>(pagedProducts, pageable, productList.size())
-
-        int totalPages = productPage.getTotalPages(); // for some reason there needs to be a -1 here ... dont ask ...
-
-        List<Integer> pageNumbers = new ArrayList<>();
-
-        while(totalPages > 0){
-            pageNumbers.add(totalPages);
-            totalPages = totalPages - 1;
-        }
-
-
-        model.addAttribute("selectionproductpageNumbers", pageNumbers);
         model.addAttribute("selectionProductPage", productPage)
+        model.addAttribute("selectionproductSize", size)
+        model.addAttribute("selectionproductpageNumbers", pageNumbers)
     }
 
 

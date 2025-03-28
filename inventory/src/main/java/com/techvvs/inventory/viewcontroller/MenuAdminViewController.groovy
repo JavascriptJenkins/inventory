@@ -1,6 +1,8 @@
 package com.techvvs.inventory.viewcontroller
 
 import com.techvvs.inventory.constants.MessageConstants
+import com.techvvs.inventory.jparepo.BatchRepo
+import com.techvvs.inventory.jparepo.ProductTypeRepo
 import com.techvvs.inventory.model.*
 import com.techvvs.inventory.security.JwtTokenProvider
 import com.techvvs.inventory.security.Role
@@ -57,6 +59,12 @@ public class MenuAdminViewController {
     @Autowired
     MenuService menuService
 
+    @Autowired
+    BatchRepo batchRepo
+
+    @Autowired
+    ProductTypeRepo productTypeRepo
+
 
 
     /* This will populate the paginated table of menus when called without menuid
@@ -73,7 +81,9 @@ public class MenuAdminViewController {
             @RequestParam("productSizeInt") Optional<Integer> productsize,
             @RequestParam("selectionproductPageInt") Optional<Integer> selectionproductpage,
             @RequestParam("selectionproductSizeInt") Optional<Integer> selectionproductsize,
-            HttpServletRequest req
+            @RequestParam("batchid") Optional<Integer> batchinscope,
+            @RequestParam("producttypeid") Optional<Integer> producttypeinscope,
+    HttpServletRequest req
     ){
 
         techvvsAuthService.checkuserauth(model)
@@ -88,7 +98,7 @@ public class MenuAdminViewController {
         if(menuid.isPresent() && menuid.get() != null && menuid.get() != 0) {
             MenuVO boundMenu = menuHelper.loadMenu(String.valueOf(menuid.get()), model)
             menuHelper.addPaginatedListOfProducts(boundMenu, model, productpage, productsize) // on the menu in scope
-            menuHelper.addPaginatedListOfSelectionProducts(boundMenu, model, selectionproductpage, selectionproductsize) // from the system
+            menuHelper.addPaginatedListOfSelectionProducts(boundMenu, model, selectionproductpage, selectionproductsize, batchinscope, producttypeinscope) // from the system
             model.addAttribute("editmode", true);
         } else {
             model.addAttribute("menu", new MenuVO(menuid: 0));
@@ -100,6 +110,11 @@ public class MenuAdminViewController {
         // bind all menus here
         menuService.bindAllMenus(model, page, size)
 
+        model.addAttribute("batches", batchRepo.findAllByOrderByCreateTimeStampDescNameAsc());
+        model.addAttribute("batchinscope", batchinscope.orElse(0)); // or null/0 if not filtering
+
+        model.addAttribute("producttypes", productTypeRepo.findAllByOrderByCreateTimeStampDescNameAsc());
+        model.addAttribute("producttypeinscope", producttypeinscope.orElse(0)); // or null/0 if not filtering
 
         return "menu/admin.html";
     }
@@ -117,6 +132,8 @@ public class MenuAdminViewController {
             @RequestParam("selectionproductPageInt") Optional<Integer> selectionproductpage,
             @RequestParam("selectionproductSizeInt") Optional<Integer> selectionproductsize,
             @RequestParam Map<String, String> selectedProducts,
+            @RequestParam("batchid") Optional<Integer> batchinscope,
+            @RequestParam("producttypeid") Optional<Integer> producttypeinscope,
             HttpServletRequest req
     ){
 
@@ -133,7 +150,7 @@ public class MenuAdminViewController {
             MenuVO boundMenu = menuHelper.loadMenu(String.valueOf(menuid.get()), model)
             menuHelper.removeSelectedProducts(boundMenu, model, selectedProducts)
             menuHelper.addPaginatedListOfProducts(boundMenu, model, productpage, productsize) // on the menu in scope
-            menuHelper.addPaginatedListOfSelectionProducts(boundMenu, model, selectionproductpage, selectionproductsize) // from the system
+            menuHelper.addPaginatedListOfSelectionProducts(boundMenu, model, selectionproductpage, selectionproductsize, batchinscope, producttypeinscope) // from the system
             model.addAttribute("editmode", true);
         } else {
             model.addAttribute("menu", new MenuVO(menuid: 0));
@@ -144,6 +161,12 @@ public class MenuAdminViewController {
 
         // bind all menus here
         menuService.bindAllMenus(model, page, size)
+
+        model.addAttribute("batches", batchRepo.findAllByOrderByCreateTimeStampDescNameAsc());
+        model.addAttribute("batchinscope", batchinscope.orElse(0)); // or null/0 if not filtering
+
+        model.addAttribute("producttypes", productTypeRepo.findAllByOrderByCreateTimeStampDescNameAsc());
+        model.addAttribute("producttypeinscope", producttypeinscope.orElse(0)); // or null/0 if not filtering
 
 
         return "menu/admin.html";
@@ -161,6 +184,8 @@ public class MenuAdminViewController {
             @RequestParam("productSizeInt") Optional<Integer> productsize,
             @RequestParam("selectionproductPageInt") Optional<Integer> selectionproductpage,
             @RequestParam("selectionproductSizeInt") Optional<Integer> selectionproductsize,
+            @RequestParam("batchid") Optional<Integer> batchinscope,
+            @RequestParam("producttypeid") Optional<Integer> producttypeinscope,
             @RequestParam Map<String, String> selectedProducts,
             HttpServletRequest req
     ){
@@ -177,7 +202,7 @@ public class MenuAdminViewController {
         if(menuid.isPresent() && menuid.get() != null && menuid.get() != 0) {
             MenuVO boundMenu = menuHelper.loadMenu(String.valueOf(menuid.get()), model)
             menuHelper.addSelectedProducts(boundMenu, model, selectedProducts)
-            menuHelper.addPaginatedListOfSelectionProducts(boundMenu, model, selectionproductpage, selectionproductsize) // from the system
+            menuHelper.addPaginatedListOfSelectionProducts(boundMenu, model, selectionproductpage, selectionproductsize, batchinscope, producttypeinscope) // from the system
             menuHelper.addPaginatedListOfProducts(boundMenu, model, productpage, productsize) // on the menu in scope
             model.addAttribute("editmode", true);
         } else {
@@ -189,6 +214,13 @@ public class MenuAdminViewController {
 
         // bind all menus here
         menuService.bindAllMenus(model, page, size)
+
+        model.addAttribute("batches", batchRepo.findAllByOrderByCreateTimeStampDescNameAsc());
+        model.addAttribute("batchinscope", batchinscope.orElse(0)); // or null/0 if not filtering
+
+        model.addAttribute("producttypes", productTypeRepo.findAllByOrderByCreateTimeStampDescNameAsc());
+        model.addAttribute("producttypeinscope", producttypeinscope.orElse(0)); // or null/0 if not filtering
+
 
 
         return "menu/admin.html";
@@ -204,6 +236,8 @@ public class MenuAdminViewController {
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size,
             @RequestParam("editmode") Optional<Boolean> editmode,
+            @RequestParam("batchid") Optional<Integer> batchinscope,
+            @RequestParam("producttypeid") Optional<Integer> producttypeinscope,
             HttpServletRequest req
     ){
 
@@ -270,6 +304,11 @@ public class MenuAdminViewController {
 
         // bind all menus here
         menuService.bindAllMenus(model, page, size)
+        model.addAttribute("batches", batchRepo.findAllByOrderByCreateTimeStampDescNameAsc());
+        model.addAttribute("batchinscope", batchinscope.orElse(0)); // or null/0 if not filtering
+
+        model.addAttribute("producttypes", productTypeRepo.findAllByOrderByCreateTimeStampDescNameAsc());
+        model.addAttribute("producttypeinscope", producttypeinscope.orElse(0)); // or null/0 if not filtering
 
 
         return "menu/admin.html";
@@ -288,6 +327,8 @@ public class MenuAdminViewController {
             @RequestParam("productSizeInt") Optional<Integer> productsize,
             @RequestParam("selectionproductPageInt") Optional<Integer> selectionproductpage,
             @RequestParam("selectionproductSizeInt") Optional<Integer> selectionproductsize,
+            @RequestParam("batchid") Optional<Integer> batchinscope,
+            @RequestParam("producttypeid") Optional<Integer> producttypeinscope,
             HttpServletRequest req
     ){
 
@@ -308,7 +349,7 @@ public class MenuAdminViewController {
 
 
             menuHelper.addPaginatedListOfProducts(boundMenu, model, productpage, productsize) // on the menu in scope
-            menuHelper.addPaginatedListOfSelectionProducts(boundMenu, model, selectionproductpage, selectionproductsize) // from the system
+            menuHelper.addPaginatedListOfSelectionProducts(boundMenu, model, selectionproductpage, selectionproductsize, batchinscope, producttypeinscope) // from the system
             model.addAttribute("editmode", true);
         } else {
             model.addAttribute("menu", new MenuVO(menuid: 0));
