@@ -453,13 +453,32 @@ class MenuHelper {
 
             ProductVO.sortProductsByDisplayPrice(menuVO.menu_product_list)
 
-//            menuVO.menu_product_list.each { item ->
-//                item.price = item.displayprice // set all prices to the displayprice
-//            }
-
             model.addAttribute("menu", menuVO)
+
+            // now that we have the menu, partition the products into groups of 3 for carousel
+            List<List<ProductVO>> partitionedProducts = menuVO.menu_product_list.collate(3)
+            model.addAttribute("productGroups", partitionedProducts)
+
+            List<ProductTypeVO> producttypes = getProductTypesFromMenu(menuVO)
+            model.addAttribute("producttypes", producttypes)
+
+
             return menuVO
         }
+    }
+
+    List<ProductTypeVO> getProductTypesFromMenu(MenuVO menuVO) {
+        Set<Integer> seenIds = new HashSet<>()
+        List<ProductTypeVO> result = []
+
+        menuVO.menu_product_list.each { product ->
+            def type = product.producttypeid
+            if (type && seenIds.add(type.producttypeid)) {
+                result.add(type)
+            }
+        }
+
+        return result
     }
 
 

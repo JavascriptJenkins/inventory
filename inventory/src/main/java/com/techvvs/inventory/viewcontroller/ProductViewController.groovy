@@ -210,6 +210,7 @@ public class ProductViewController {
             results = productRepo.findAllByDescription(productVO.getDescription());
         }
 
+        model.addAttribute("batchid", productVO.batch.batchid);
         techvvsAuthService.checkuserauth(model)
         model.addAttribute("product", productVO);
         model.addAttribute("products", results);
@@ -257,6 +258,7 @@ public class ProductViewController {
         if(successMessage.isPresent()){
             model.addAttribute("successMessage", successMessage.get());
         }
+        model.addAttribute("batchid", productVO1.batch.batchid);
         techvvsAuthService.checkuserauth(model)
         model.addAttribute("product", productVO1);
         model.addAttribute("editmode", editmode);
@@ -307,6 +309,7 @@ public class ProductViewController {
 
         }
 
+        model.addAttribute("batchid", productVO.batch.batchid);
         model.addAttribute("product", productresult);
         model.addAttribute("editmode", "no");
         techvvsAuthService.checkuserauth(model)
@@ -347,6 +350,7 @@ public class ProductViewController {
 
         }
 
+        model.addAttribute("batchid", productVO.batch.batchid);
         model.addAttribute("batch",batchVO) // bind the object back to the ui
         techvvsAuthService.checkuserauth(model)
         bindProductTypes(model)

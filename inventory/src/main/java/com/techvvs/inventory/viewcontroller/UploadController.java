@@ -324,8 +324,8 @@ public class UploadController {
         }
 
 // Redirect to the product edit form
-        String encodedProductNumber = URLEncoder.encode(String.valueOf(productVO.getProductnumber()), StandardCharsets.UTF_8);
-        return "redirect:/product/editform?editmode=no&productnumber=" + encodedProductNumber;
+        String encodedProductID = URLEncoder.encode(String.valueOf(productVO.getProduct_id()), StandardCharsets.UTF_8);
+        return "redirect:/product/editform?editmode=no&product_id=" + encodedProductID;
     }
 
     // Utility method to prepare the edit form
