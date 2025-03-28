@@ -204,7 +204,7 @@
 <div class="container">
     <div class="header-dark">
         <div class="back-button">
-            <a th:href="@{/batch(batchnumber=${batchnumber}, editmode='no', page=1, size=100)}"><i class="bi bi-arrow-left-circle"></i></a>
+            <a th:href="@{/batch(batchid=${batchid}, editmode='no', page=1, size=100)}"><i class="bi bi-arrow-left-circle"></i></a>
 <!--            <a th:href="@{/admin}"><i class="bi bi-arrow-left-circle"></i></a>-->
         </div>
         <div>
@@ -295,7 +295,7 @@
             </div>
 
             <div class="alert alert-warning" role="alert">
-                <a th:href="@{/product/editform?productnumber=__${product.productnumber}__&editmode=yes}">Click here to edit this form</a>
+                <a th:href="@{/product/editform?product_id=__${product.product_id}__&editmode=yes}">Click here to edit this form</a>
             </div>
             <button style="margin-top:5px;" type="submit" class="btn btn-primary" disabled>Submit</button>
             <input type="hidden" th:field="*{batch}">
@@ -444,7 +444,7 @@
             <ul class="pagination justify-content-center">
                 <li class="page-item" th:each="pageNumber : ${pageNumbers}">
                     <a class="page-link btn btn-secondary btn-sm mx-1"
-                       th:href="@{/product/editform?productid=__${product.product_id}__&size=5&page=__${page}__&editmode=no&batchnumber=__${batchnumber}__&productnumber=__${product.productnumber}__}"
+                       th:href="@{/product/editform?productid=__${product.product_id}__&size=5&page=__${page}__&editmode=no&batchid=__${batchid}__&product_id=__${product.product_id}__}"
                        th:text="${pageNumber}"
                        th:classappend="${pageNumber == filePage.number + 1} ? 'active'">
                     </a>

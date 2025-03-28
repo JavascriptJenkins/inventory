@@ -56,7 +56,7 @@
                     th:alt-title="${iStat.even}? 'even' : 'odd'">
 
                     <td th:text="${product.product_id}"></td>
-                    <td><a th:href="@{/product/editform?productnumber=__${product.productnumber}__&editmode=no}" th:text="${product.productnumber}"></a></td>
+                    <td><a th:href="@{/product/editform?product_id=__${product.product_id}__&editmode=no}" th:text="${product.product_id}"></a></td>
                     <td th:text="${product.name}"></td>
                     <td th:text="${product.description}"></td>
 

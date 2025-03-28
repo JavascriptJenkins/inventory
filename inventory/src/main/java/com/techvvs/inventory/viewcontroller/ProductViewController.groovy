@@ -221,33 +221,32 @@ public class ProductViewController {
     String viewEditForm(
                     Model model,
 
-                    @RequestParam("batchnumber") Optional<String> batchnumber,
+                    @RequestParam("batchid") Optional<Integer> batchid,
                     @RequestParam("editmode") String editmode,
-                    @RequestParam("productnumber") String productnumber,
                     @RequestParam("successMessage") Optional<String> successMessage,
                     @RequestParam("page") Optional<String> page,
                     @RequestParam("size") Optional<String> size,
-                    @RequestParam("size") Optional<String> productid
+                    @RequestParam("product_id") Optional<Integer> product_id
 
     ){
 
-        if(batchnumber.isPresent()){
-            model.addAttribute("batchnumber", batchnumber.get());
+        if(batchid.isPresent()){
+            model.addAttribute("batchid", batchid.get());
         }
-
-        List<ProductVO> results = new ArrayList<ProductVO>();
-        if(productnumber != null){
+        ProductVO productVO1 = new ProductVO(product_id: 0)
+        if(product_id.isPresent()){
             System.out.println("Searching data by productnumber");
-            results = productRepo.findAllByProductnumber(Integer.valueOf(productnumber));
+            productVO1 = productRepo.findById(product_id.get()).get()
+
         }
 
-        results.get(0).primaryphoto = appConstants.UPLOAD_DIR_IMAGES+results.get(0).product_id
+        productVO1.primaryphoto = appConstants.UPLOAD_DIR_IMAGES+productVO1.product_id
 
 
         // todo: rewrite this to get files by id
         // check to see if there are files uploaded related to this productnumber
         //List<FileVO> filelist = techvvsFileHelper.getFilesByFileNumber(Integer.valueOf(productnumber), UPLOAD_DIR);
-        Page<FileVO> filePage = filePagingService.getFilePage(results.get(0), Integer.valueOf(page.orElse("0")), Integer.valueOf(size.orElse("5")), Paths.get(appConstants.UPLOAD_DIR_MEDIA+appConstants.UPLOAD_DIR_PRODUCT).toString())
+        Page<FileVO> filePage = filePagingService.getFilePage(productVO1, Integer.valueOf(page.orElse("0")), Integer.valueOf(size.orElse("5")), Paths.get(appConstants.UPLOAD_DIR_MEDIA+appConstants.UPLOAD_DIR_PRODUCT).toString())
 
         if(filePage.size() > 0){
             model.addAttribute("filePage", filePage);
@@ -259,10 +258,10 @@ public class ProductViewController {
             model.addAttribute("successMessage", successMessage.get());
         }
         techvvsAuthService.checkuserauth(model)
-        model.addAttribute("product", results.get(0));
+        model.addAttribute("product", productVO1);
         model.addAttribute("editmode", editmode);
         bindProductTypes(model)
-        bindBatches(model, results.get(0).batch)
+        bindBatches(model, productVO1.batch)
         return "product/editproduct.html";
     }
 

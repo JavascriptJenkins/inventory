@@ -95,12 +95,12 @@ class BatchControllerHelper {
 
 
 
-    boolean generateSingleMenuBarcodesForBatch(String batchnumber){
+    boolean generateSingleMenuBarcodesForBatch(String batchid){
 
-        List<BatchVO> results = new ArrayList<BatchVO>();
-        if(batchnumber != null){
-            System.out.println("Searching data by batchnumber");
-            results = batchRepo.findAllByBatchnumber(Integer.valueOf(batchnumber));
+        BatchVO result = new BatchVO(batchid:0);
+        if(result != null){
+            System.out.println("Searching data by batchid");
+            result = batchRepo.findById(Integer.valueOf(batchid)).get()
         }
 
       //  barcodeService.createSingleMenuBarcodesForBatch(results.get(0))
@@ -109,78 +109,78 @@ class BatchControllerHelper {
     }
 
     // will generate a barcode for every single product in the batch
-    boolean generateAllBarcodesForBatch(String batchnumber){
+    boolean generateAllBarcodesForBatch(String batchid){
 
-        List<BatchVO> results = new ArrayList<BatchVO>();
-        if(batchnumber != null){
-            System.out.println("Searching data by batchnumber");
-            results = batchRepo.findAllByBatchnumber(Integer.valueOf(batchnumber));
+        BatchVO result = new BatchVO(batchid:0)
+        if(result != null){
+            System.out.println("Searching data by batchid");
+            result = batchRepo.findById(Integer.valueOf(batchid)).get();
         }
 
-        barcodeService.createAllBarcodesForBatch(results.get(0))
+        barcodeService.createAllBarcodesForBatch(result)
         return true
     }
 
-    boolean generateQrcodesForBatch(String batchnumber){
+    boolean generateQrcodesForBatch(String batchid){
 
-        List<BatchVO> results = new ArrayList<BatchVO>();
-        if(batchnumber != null){
-            System.out.println("Searching data by batchnumber");
-            results = batchRepo.findAllByBatchnumber(Integer.valueOf(batchnumber));
+        BatchVO result = new BatchVO(batchid:0)
+        if(result != null){
+            System.out.println("Searching data by batchid");
+            result = batchRepo.findById(Integer.valueOf(batchid)).get();
         }
 
-        qrCodeService.createSingleMenuQrsForBatch(results.get(0))
-
-        return true
-    }
-
-    boolean generateAllMediaQrcodesForBatch(String batchnumber){
-        List<BatchVO> results = new ArrayList<BatchVO>();
-        if(batchnumber != null){
-            System.out.println("Searching data by batchnumber");
-            results = batchRepo.findAllByBatchnumber(Integer.valueOf(batchnumber));
-        }
-
-        qrCodeService.createAllQrMediaForBatch(results.get(0))
-
-        return true
-
-    }
-
-    boolean generateBarcodeManifestForBatch(String batchnumber){
-        List<BatchVO> results = new ArrayList<BatchVO>();
-        if(batchnumber != null){
-            System.out.println("Searching data by batchnumber");
-            results = batchRepo.findAllByBatchnumber(Integer.valueOf(batchnumber));
-        }
-
-        labelPrintingService.createBarcodeManifestScanSheetForBatch(results.get(0))
+        qrCodeService.createSingleMenuQrsForBatch(result)
 
         return true
     }
 
-    boolean generateAllQrcodesForBatch(String batchnumber){
-
-        List<BatchVO> results = new ArrayList<BatchVO>();
-        if(batchnumber != null){
-            System.out.println("Searching data by batchnumber");
-            results = batchRepo.findAllByBatchnumber(Integer.valueOf(batchnumber));
+    boolean generateAllMediaQrcodesForBatch(String batchid){
+        BatchVO result = new BatchVO(batchid:0)
+        if(batchid != null){
+            System.out.println("Searching data by batchid");
+            result = batchRepo.findById(Integer.valueOf(batchid)).get();
         }
 
-        qrCodeService.createAllQrsForBatch(results.get(0))
+        qrCodeService.createAllQrMediaForBatch(result)
+
+        return true
+
+    }
+
+    boolean generateBarcodeManifestForBatch(String batchid){
+        BatchVO result = new BatchVO(batchid:0)
+        if(batchid != null){
+            System.out.println("Searching data by batchid");
+            result = batchRepo.findById(Integer.valueOf(batchid)).get();
+        }
+
+        labelPrintingService.createBarcodeManifestScanSheetForBatch(result)
 
         return true
     }
 
-    boolean generateSinglePageWeightLabelsForBatch(String batchnumber){
+    boolean generateAllQrcodesForBatch(String batchid){
 
-        List<BatchVO> results = new ArrayList<BatchVO>();
-        if(batchnumber != null){
-            System.out.println("Searching data by batchnumber");
-            results = batchRepo.findAllByBatchnumber(Integer.valueOf(batchnumber));
+        BatchVO result = new BatchVO(batchid:0)
+        if(result != null){
+            System.out.println("Searching data by batchid");
+            result = batchRepo.findById(Integer.valueOf(batchid)).get();
         }
 
-        labelPrintingService.generate50StaticWeightLabels(results.get(0))
+        qrCodeService.createAllQrsForBatch(result)
+
+        return true
+    }
+
+    boolean generateSinglePageWeightLabelsForBatch(String batchid){
+
+        BatchVO result = new BatchVO(batchid:0)
+        if(result != null){
+            System.out.println("Searching data by batchid");
+            result = batchRepo.findById(Integer.valueOf(batchid)).get();
+        }
+
+        labelPrintingService.generate50StaticWeightLabels(result)
 
         return true
     }
@@ -188,7 +188,7 @@ class BatchControllerHelper {
 
     // method for combining logic of editform and filtereditform
     Model processModel(Model model,
-                       String batchnumber,
+                       String batchid,
                        String editmode,
                        Optional<Integer> page,
                        ProductTypeVO productTypeVO,
@@ -198,7 +198,7 @@ class BatchControllerHelper {
     ){
 
         // bind the common elements to the batch and return the parent batchVO object
-        BatchVO batchVO =bindCommonElements(model, batchnumber, editmode);
+        BatchVO batchVO =bindCommonElements(model, batchid, editmode);
 
         boolean hasProductTypeId = productTypeVO?.producttypeid != null
 
@@ -295,16 +295,17 @@ class BatchControllerHelper {
     }
 
 
-    BatchVO bindCommonElements(Model model, String batchnumber, String editmode){
+    BatchVO bindCommonElements(Model model, String batchid, String editmode){
 
-        List<BatchVO> results = new ArrayList<BatchVO>();
-        if(batchnumber != null){
-            System.out.println("Searching data by batchnumber");
-            results = batchRepo.findAllByBatchnumber(Integer.valueOf(batchnumber));
+        BatchVO result = new BatchVO(batchid:0);
+        if(batchid != null){
+            System.out.println("Searching data by batchid");
+            result = batchRepo.findById(Integer.valueOf(batchid)).get();
         }
 
+        //todo: this needs to be converted to storing files by batchid at some point
         // check to see if there are files uploaded related to this batchnumber
-        List<FileVO> filelist = techvvsFileHelper.getFilesByFileNumber(Integer.valueOf(batchnumber), appConstants.UPLOAD_DIR);
+        List<FileVO> filelist = techvvsFileHelper.getFilesByFileNumber(Integer.valueOf(result.batchnumber), appConstants.UPLOAD_DIR);
 
         if(filelist.size() > 0){
             model.addAttribute("filelist", filelist);
@@ -326,12 +327,12 @@ class BatchControllerHelper {
         model.addAttribute(controllerConstants.MENU_OPTIONS_QR_CODES, ["All", "Single Menu"]);
         model.addAttribute(controllerConstants.MENU_OPTIONS_WEIGHT_LABELS, [controllerConstants.SINGLE_PAGE]);
         techvvsAuthService.checkuserauth(model);
-        model.addAttribute("batch", results.get(0));
+        model.addAttribute("batch", result);
         bindBatchTypes(model)
         bindProductTypes(model)
         // once products are bound, add the static data
-        calculateStaticPageData(model, results.get(0))
-        return results.get(0)
+        calculateStaticPageData(model, result)
+        return result
     }
 
 
@@ -485,9 +486,9 @@ class BatchControllerHelper {
 
     //String UPLOAD_DIR = "./uploads/menus/";
 
-    boolean sendTextMessageWithDownloadLink(Model model, String username, String batchnumber, Double priceadjustment){
+    boolean sendTextMessageWithDownloadLink(Model model, String username, String batchid, Double priceadjustment){
 
-        BatchVO batchVO = batchRepo.findAllByBatchnumber(Integer.valueOf(batchnumber))?.get(0)
+        BatchVO batchVO = batchRepo.findById(Integer.valueOf(batchid)).get()
 
         SystemUserDAO systemUserDAO = systemUserRepo.findByEmail(username)
 
@@ -517,9 +518,9 @@ class BatchControllerHelper {
 
     }
 
-    boolean sendMediaTextMessageWithDownloadLink(Model model, String username, String batchnumber, Double priceadjustment){
+    boolean sendMediaTextMessageWithDownloadLink(Model model, String username, String batchid, Double priceadjustment){
 
-        BatchVO batchVO = batchRepo.findAllByBatchnumber(Integer.valueOf(batchnumber))?.get(0)
+        BatchVO batchVO = batchRepo.findById(Integer.valueOf(batchid)).get()
 
         SystemUserDAO systemUserDAO = systemUserRepo.findByEmail(username)
 

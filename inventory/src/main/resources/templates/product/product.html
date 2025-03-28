@@ -203,7 +203,7 @@
                             <textarea style="width:648px;height:163px;" th:field="*{notes}" class="form-control" placeholder="notes" aria-label="notes" readonly></textarea>
                         </div>
                     </div>
-                    <div class="alert alert-warning" role="alert" ><a th:href="@{/product/editform?productnumber=__${product.productnumber}__&editmode=yes}">Click here to edit this form</a>
+                    <div class="alert alert-warning" role="alert" ><a th:href="@{/product/editform?product_id=__${product.product_id}__&editmode=yes}">Click here to edit this form</a>
                     </div>
                     <button style="margin-top:5px;" type="submit" class="btn btn-primary" disabled>Submit</button>
                     <input type="hidden" th:field="*{batch.batchnumber}">

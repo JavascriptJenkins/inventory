@@ -120,48 +120,6 @@
             </div>
 
 
-<!--            <div style="margin-bottom: 5px;" class="mx-auto">-->
-
-<!--                <div class="alert alert-info" role="alert" >Upload a file</div>-->
-<!--                &lt;!&ndash; pass the batch object to the upload file controller to get the correct ID to save it under &ndash;&gt;-->
-<!--                <form method="post" th:object="${batch}" th:action="@{/file/upload}" enctype="multipart/form-data">-->
-<!--                    <div class="form-group">-->
-
-<!--                        <div th:if="${disableupload}">-->
-<!--                            <input type="file" disabled="disabled" name="file" class="form-control-file">-->
-<!--                        </div>-->
-
-<!--                        <div th:if="${disableupload == null}">-->
-<!--                            <input type="file" name="file" class="form-control-file">-->
-<!--                        </div>-->
-
-
-
-<!--                        &lt;!&ndash; pass all these hidden attributes with so the data stays on page after uploading the file &ndash;&gt;-->
-<!--                        <input type="hidden" th:field="*{batchnumber}">-->
-<!--                        <input type="hidden" th:field="*{name}">-->
-<!--                        <input type="hidden" th:field="*{description}">-->
-<!--                        <input type="hidden" th:field="*{notes}">-->
-<!--                        <input type="hidden" th:field="*{updateTimeStamp}">-->
-<!--                        <input type="hidden" th:field="*{createTimeStamp}">-->
-<!--                    </div>-->
-<!--                    <br>-->
-
-
-<!--                    <div th:if="${disableupload}">-->
-
-<!--                        <button type="submit" disabled="disabled" class="btn btn-primary">Upload File</button>-->
-<!--                    </div>-->
-
-<!--                    &lt;!&ndash; if it is first download then it is ok.  second download will throw 403 is upload is performed right after  &ndash;&gt;-->
-<!--                    <div th:if="${disableupload == null}">-->
-<!--                        <button type="submit" class="btn btn-primary">Upload File</button>-->
-<!--                    </div>-->
-
-
-<!--&lt;!&ndash;                    <button type="submit" class="btn btn-primary">Upload File</button>&ndash;&gt;-->
-<!--                </form>-->
-<!--            </div>-->
 
 
         </div>

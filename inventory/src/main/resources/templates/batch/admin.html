@@ -359,16 +359,10 @@
                 th:alt-title="${iStat.even}? 'even' : 'odd'">
                 <td th:text="${product.product_id}"></td>
                 <td>
-                    <!--                    <a th:href="@{/product/editform?productnumber=__${product.productnumber}__&batchnumber=__${product.batch.batchnumber}__}"-->
-                    <!--                       th:text="${product.barcode}"-->
-                    <!--                       th:data-barcode="${product.barcode}"-->
-                    <!--                       id="barcode-${product.productnumber}"-->
-                    <!--                       class="btn btn-secondary btn-sm">-->
-                    <!--                    </a>-->
                     <a th:href="@{/batch/admin?size=__${#lists.size(productPage.content) > 5 ? #lists.size(productPage.content) : 5}__&page=__${page == null ? 0 : page}__&batchid=__${batch != null ? batch.batchid : '0'}__&productnamesearch=__${productNameSearchValue == null ? '' : productNameSearchValue}__&productid=__${product.product_id == null ? 0 : product.product_id}__}"
                        th:text="${product.barcode}"
                        th:data-barcode="${product.barcode}"
-                       id="barcode-${product.productnumber}"
+                       id="barcode-${product.product_id}"
                        class="btn btn-secondary btn-sm">
                     </a>
                     <!-- Button to copy barcode -->

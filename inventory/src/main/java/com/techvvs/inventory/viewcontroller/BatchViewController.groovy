@@ -210,13 +210,13 @@ public class BatchViewController {
             @ModelAttribute( "searchproducttype" ) ProductTypeVO productTypeVO,
             
             @RequestParam("editmode") String editmode,
-            @RequestParam("batchnumber") String batchnumber,
+            @RequestParam("batchnumber") String batchid,
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size
 
     ){
 
-        model = batchControllerHelper.processModel(model,  batchnumber, editmode, page, productTypeVO, true, false);
+        model = batchControllerHelper.processModel(model,  batchid, editmode, page, productTypeVO, true, false);
         return "service/editbatch.html";
     }
 
@@ -227,18 +227,18 @@ public class BatchViewController {
             @ModelAttribute( "searchproducttype" ) ProductTypeVO productTypeVO,
             
             @RequestParam("editmode") String editmode,
-            @RequestParam("batchnumber") String batchnumber,
+            @RequestParam("batchid") String batchid,
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size
     ){
 
-        model = batchControllerHelper.processModel(model,  batchnumber, editmode, page, productTypeVO, true, false);
+        model = batchControllerHelper.processModel(model,  batchid, editmode, page, productTypeVO, true, false);
         // I need to do here is build a pdf / excel document, store it in uploads folder, then send a download link back to the user
 
 
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        batchControllerHelper.sendTextMessageWithDownloadLink(model, authentication.getPrincipal().username, batchnumber, 0.00)
+        batchControllerHelper.sendTextMessageWithDownloadLink(model, authentication.getPrincipal().username, batchid, 0.00)
 
         return "service/editbatch.html";
     }
@@ -249,13 +249,13 @@ public class BatchViewController {
             @ModelAttribute( "searchproducttype" ) ProductTypeVO productTypeVO,
             
             @RequestParam("editmode") String editmode,
-            @RequestParam("batchnumber") String batchnumber,
+            @RequestParam("batchid") String batchid,
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size
 
     ){
 
-        model = batchControllerHelper.processModel(model,  batchnumber, editmode, page, productTypeVO, true, true);
+        model = batchControllerHelper.processModel(model,  batchid, editmode, page, productTypeVO, true, true);
         return "service/editbatch.html";
     }
 
@@ -265,7 +265,7 @@ public class BatchViewController {
             @ModelAttribute( "searchproducttype" ) ProductTypeVO productTypeVO,
             
             @RequestParam("editmode") String editmode,
-            @RequestParam("batchnumber") String batchnumber,
+            @RequestParam("batchid") String batchid,
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size
 
@@ -278,14 +278,14 @@ public class BatchViewController {
 
         boolean success = false
 
-        model = batchControllerHelper.processModel(model,  batchnumber, editmode, page, productTypeVO, true, false);
+        model = batchControllerHelper.processModel(model,  batchid, editmode, page, productTypeVO, true, false);
 
         switch(productTypeVO.menutype){
             case controllerConstants.ALL:
-                success = batchControllerHelper.generateAllBarcodesForBatch(batchnumber)
+                success = batchControllerHelper.generateAllBarcodesForBatch(batchid)
                 break
             case controllerConstants.SINGLE_MENU:
-                success = batchControllerHelper.generateSingleMenuBarcodesForBatch(batchnumber)
+                success = batchControllerHelper.generateSingleMenuBarcodesForBatch(batchid)
                 break
         }
 

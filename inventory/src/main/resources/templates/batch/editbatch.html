@@ -66,7 +66,7 @@
         <div class="row" style="margin-bottom: 5px;">
             <div class="col-sm-2" style="margin-bottom: 5px;">
                 <!--  -->
-                <form th:action="@{/newbatch/printmenu?batchnumber=__${batch.batchnumber}__&editmode=no&size=__${#lists.size(productPage.content)}__&page=1}" th:object="${searchproducttype}" method="post">
+                <form th:action="@{/newbatch/printmenu?batchid=__${batch.batchid}__&editmode=no&size=__${#lists.size(productPage.content)}__&page=1}" th:object="${searchproducttype}" method="post">
                     <label class="form-label required">Print Menu</label>
                     <select class="form-control" th:field="${searchproducttype.menutype}"  >
                         <option th:each="menuoption : ${menuoptions}" th:value="${menuoption}" th:text="${menuoption}"></option>
@@ -76,7 +76,7 @@
             </div>
             <div class="col-sm-2" style="margin-bottom: 5px;">
                 <!-- Make a form that sends a search term to the server -->
-                <form th:action="@{/newbatch/filtereditform?batchnumber=__${batch.batchnumber}__&editmode=no&size=__${#lists.size(productPage.content)}__&page=1}" th:object="${searchproducttype}" method="post">
+                <form th:action="@{/newbatch/filtereditform?batchid=__${batch.batchid}__&editmode=no&size=__${#lists.size(productPage.content)}__&page=1}" th:object="${searchproducttype}" method="post">
                     <label class="form-label required">Product Type</label>
                     <select class="form-control" th:field="${searchproducttype.producttypeid}"  id="producttypeid" >
                         <option th:each="producttype : ${producttypelist}" th:value="${producttype.producttypeid}" th:text="${producttype.name}"></option>
@@ -87,7 +87,7 @@
             </div>
             <div class="col-sm-2" style="margin-bottom: 5px;">
                 <!-- Make a form that sends a product similarity search term to the server -->
-                <form th:action="@{/newbatch/likesearch?batchnumber=__${batch.batchnumber}__&editmode=no&size=__${#lists.size(productPage.content)}__&page=1}" th:object="${searchproducttype}" method="post">
+                <form th:action="@{/newbatch/likesearch?batchid=__${batch.batchid}__&editmode=no&size=__${#lists.size(productPage.content)}__&page=1}" th:object="${searchproducttype}" method="post">
 
                     <label class="form-label required">Product Name Search</label>
                         <input type="text" th:field="*{name}" class="form-control" placeholder="name" aria-label="name">
@@ -97,7 +97,7 @@
             </div>
             <div class="col-sm-2" style="margin-bottom: 5px;">
                 <!-- Make a form that sends a search term to the server -->
-                <form th:action="@{/newbatch/filtereditform?batchnumber=__${batch.batchnumber}__&editmode=no&size=__${#lists.size(productPage.content)}__&page=1}" th:object="${searchproducttype}" method="post">
+                <form th:action="@{/newbatch/filtereditform?batchid=__${batch.batchid}__&editmode=no&size=__${#lists.size(productPage.content)}__&page=1}" th:object="${searchproducttype}" method="post">
 
                     <label class="form-label required">Record Size</label>
                     <select class="form-control" th:field="${searchproducttype.pagesize}"  >
@@ -109,7 +109,7 @@
 
             <div class="col-sm-2" style="margin-bottom: 5px;">
                 <!--  -->
-                <form th:action="@{/newbatch/generatebarcodes?batchnumber=__${batch.batchnumber}__&editmode=no&size=__${#lists.size(productPage.content)}__&page=1}" th:object="${searchproducttype}" method="post">
+                <form th:action="@{/newbatch/generatebarcodes?batchid=__${batch.batchid}__&editmode=no&size=__${#lists.size(productPage.content)}__&page=1}" th:object="${searchproducttype}" method="post">
                     <label class="form-label required">Generate Barcodes</label>
                     <select class="form-control" th:field="${searchproducttype.menutype}"  >
                         <option th:each="menuoption : ${menuoptionsBarcode}" th:value="${menuoption}" th:text="${menuoption}"></option>
@@ -120,7 +120,7 @@
 
             <div class="col-sm-2" style="margin-bottom: 5px;">
                 <!--  -->
-                <form th:action="@{/newbatch/generateqrcodes?batchnumber=__${batch.batchnumber}__&editmode=no&size=__${#lists.size(productPage.content)}__&page=1}" th:object="${searchproducttype}" method="post">
+                <form th:action="@{/newbatch/generateqrcodes?batchid=__${batch.batchid}__&editmode=no&size=__${#lists.size(productPage.content)}__&page=1}" th:object="${searchproducttype}" method="post">
                     <label class="form-label required">Generate QR Codes</label>
                     <select class="form-control" th:field="${searchproducttype.menutype}"  >
                         <option th:each="menuoption : ${menuoptionsQrcode}" th:value="${menuoption}" th:text="${menuoption}"></option>
@@ -131,7 +131,7 @@
 
             <div class="col-sm-2" style="margin-bottom: 5px;">
                 <!--  -->
-                <form th:action="@{/newbatch/generateweightlabels?batchnumber=__${batch.batchnumber}__&editmode=no&size=__${#lists.size(productPage.content)}__&page=1}" th:object="${searchproducttype}" method="post">
+                <form th:action="@{/newbatch/generateweightlabels?batchid=__${batch.batchid}__&editmode=no&size=__${#lists.size(productPage.content)}__&page=1}" th:object="${searchproducttype}" method="post">
                     <label class="form-label required">Generate QR Codes</label>
                     <select class="form-control" th:field="${searchproducttype.menutype}"  >
                         <option th:each="menuoption : ${menuoptionsWeightLabels}" th:value="${menuoption}" th:text="${menuoption}"></option>
@@ -184,7 +184,7 @@
                             th:alt-title="${iStat.even}? 'even' : 'odd'">
 
                             <td th:text="${product.product_id}"></td>
-                            <td><a th:href="@{/product/editform?productnumber=__${product.productnumber}__&editmode=no}" th:text="${product.productnumber}"></a></td>
+                            <td><a th:href="@{/product/editform?product_id=__${product.product_id}__&editmode=no}" th:text="${product.product_id}"></a></td>
                             <td th:text="${product.name}"></td>
                             <td th:text="${product.quantityremaining}"></td>
                             <td th:text="${product.price}"></td>
@@ -196,7 +196,7 @@
                     </table>
                     <div th:if="${productPage.totalPages > 0}" class="pagination"
                          th:each="pageNumber : ${pageNumbers}">
-                        <a th:href="@{/newbatch/editform?size=__${#lists.size(productPage.content)}__&page=__${pageNumber}__&batchnumber=__*{batchnumber}__&editmode=no}"
+                        <a th:href="@{/newbatch/editform?size=__${#lists.size(productPage.content)}__&page=__${pageNumber}__&batchid=__*{batchid}__&editmode=no}"
                            th:text=${pageNumber}
                            th:class="${pageNumber==productPage.number + 1} ? active"></a>
                     </div>
@@ -237,7 +237,7 @@
                             <textarea style="width:648px;height:163px;" th:field="*{notes}" class="form-control" placeholder="notes" aria-label="notes" readonly></textarea>
                         </div>
                     </div>
-                    <div class="alert alert-warning" role="alert" ><a th:href="@{/newbatch/editform?batchnumber=__${batch.batchnumber}__&editmode=yes}">Click here to edit this form</a>
+                    <div class="alert alert-warning" role="alert" ><a th:href="@{/newbatch/editform?batchid=__${batch.batchid}__&editmode=yes}">Click here to edit this form</a>
                     </div>
                     <button style="margin-top:5px;" type="submit" class="btn btn-primary" disabled>Submit</button>
             </form>

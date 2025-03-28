@@ -73,7 +73,7 @@
                 <tbody>
                 <tr th:each="product : ${products}">
                     <td th:text="${product.id}"></td>
-                    <td><a th:href="@{/product/editform?productnumber=__${product.productnumber}__}" th:text="${product.productnumber}"></a></td>
+                    <td><a th:href="@{/product/editform?product_id=__${product.product_id}__}" th:text="${product.product_id}"></a></td>
                     <!--            <td onclick="makeInput($(this).closest('tr'), this)" th:text="${student.studentName}"></td>-->
                     <!--            <td onclick="makeInput($(this).closest('tr'), this)" th:text="${student.birthday}"></td>-->
                     <td th:text="${product.name}"></td>
@@ -90,105 +90,8 @@
 
 
 
-<!--                    <div class="col" style="margin-bottom: 5px;">-->
-<!--                        File Number-->
-<!--                        <input type="text" th:field="*{productnumber}" class="form-control" placeholder="productnumber" aria-label="productnumber">-->
-<!--                    </div>-->
-
-<!--                    <div class="col" style="margin-bottom: 5px;">-->
-<!--                        <input type="text" th:field="*{name}" class="form-control" placeholder="name" aria-label="name">-->
-<!--                    </div>-->
-
-<!--                    <div class="col" style="margin-bottom: 5px;">-->
-<!--                        <input type="text" th:field="*{mname}" class="form-control" placeholder="mname" aria-label="mname">-->
-<!--                    </div>-->
-
-
-<!--                    <div class="col" style="margin-bottom: 5px;">-->
-<!--                        <input type="text" th:field="*{desc}" class="form-control" placeholder="desc" aria-label="desc">-->
-<!--                    </div>-->
-
-<!--                    <div class="col" style="margin-bottom: 5px;">-->
-<!--                        <input type="number" th:field="*{age}" class="form-control" placeholder="age" aria-label="age">-->
-<!--                    </div>-->
-
-<!--                    <div class="col" style="margin-bottom: 5px;">-->
-<!--                        <input type="text" th:field="*{height}" class="form-control" placeholder="height" aria-label="height">-->
-<!--                    </div>-->
-
-<!--                    <div class="col" style="margin-bottom: 5px;">-->
-<!--                        <input type="text" th:field="*{haircolor}" class="form-control" placeholder="haircolor" aria-label="haircolor">-->
-<!--                    </div>-->
-
-<!--                    <div class="col" style="margin-bottom: 5px;">-->
-<!--                        <input type="text" th:field="*{race}" class="form-control" placeholder="race" aria-label="race">-->
-<!--                    </div>-->
-
-<!--                    <div class="col" style="margin-bottom: 5px;">-->
-<!--                        <input type="text" th:field="*{phone}" class="form-control" placeholder="phone" aria-label="phone">-->
-<!--                    </div>-->
-
-<!--                    <br>-->
-<!--                    <br>-->
-<!--                    <div class="alert alert-info" role="alert" >Address</div>-->
-<!--                    <br>-->
-<!--                    <div class="col" style="margin-bottom: 5px;">-->
-<!--                        <input type="text" th:field="*{address1}" class="form-control" placeholder="address1" aria-label="address1">-->
-<!--                    </div>-->
-
-<!--                    <div class="col" style="margin-bottom: 5px;">-->
-<!--                        <input type="text" th:field="*{address2}" class="form-control" placeholder="address2" aria-label="address2">-->
-<!--                    </div>-->
-
-<!--                    <div class="col" style="margin-bottom: 5px;">-->
-<!--                        <input type="text" th:field="*{city}" class="form-control" placeholder="city" aria-label="city">-->
-<!--                    </div>-->
-
-<!--                    <div class="col" style="margin-bottom: 5px;">-->
-<!--                        <input type="text" th:field="*{state}" class="form-control" placeholder="state" aria-label="state">-->
-<!--                    </div>-->
-
-<!--                    <div class="col" style="margin-bottom: 5px;">-->
-<!--                        <input type="text" th:field="*{zipcode}" class="form-control" placeholder="zipcode" aria-label="zipcode">-->
-<!--                    </div>-->
-
-
-
-<!--                    <br>-->
-<!--                    <br>-->
-<!--                    <div class="alert alert-info" role="alert" >Notes</div>-->
-
-<!--                    <div class="col" style="margin-bottom: 5px;">-->
-<!--                        <input style="width:648px;height:163px;" type="text" th:field="*{notes}" class="form-control" placeholder="notes" aria-label="notes">-->
-<!--                    </div>-->
-
-
-
-
-
-
-
             <br>
             <br>
-
-<!--            <div class="row" style="margin-bottom: 5px;">-->
-<!--                <div class="col-md-8 mx-auto">-->
-<!--                    <div class="alert alert-info" role="alert" >Upload a file</div>-->
-<!--&lt;!&ndash;                    <p th:text="${message}" th:if="${message ne null}" class="alert alert-primary"></p>&ndash;&gt;-->
-
-<!--                    &lt;!&ndash; pass the product object to the upload file controller to get the correct ID to save it under &ndash;&gt;-->
-<!--                    <form method="post" th:object="${product}" th:action="@{/file/upload" enctype="multipart/form-data">-->
-<!--                        <div class="form-group">-->
-<!--                            <input type="file" name="file" class="form-control-file">-->
-<!--                            <input type="hidden" th:field="*{productnumber}">-->
-<!--                        </div>-->
-<!--                        <br>-->
-<!--                        <button type="submit" class="btn btn-primary">Upload File</button>-->
-<!--                    </form>-->
-<!--                </div>-->
-<!--            </div>-->
-
-
 
 
 

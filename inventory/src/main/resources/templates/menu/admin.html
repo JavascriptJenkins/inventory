@@ -307,8 +307,11 @@
                         th:alt-title="${iStat.even}? 'even' : 'odd'">
 
 
-                        <td th:text="${product.product_id}"></td>
-                        http://localhost:8080/product/editform?productnumber=7980879&editmode=no&batchnumber=3339016
+                        <td>
+                            <a th:href="@{/product/editform(product_id=${product.product_id}, editmode='no', batchid=${product.batch.batchid})}"
+                               th:text="${product.product_id}">
+                            </a>
+                        </td>
                         <td th:text="${product.name}"></td>
                         <td th:text="${product.batch.name}"></td>
                         <td th:text="${product.producttypeid.name}"></td>

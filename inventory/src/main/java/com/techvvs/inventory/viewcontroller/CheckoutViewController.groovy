@@ -754,13 +754,13 @@ public class CheckoutViewController {
                     Model model,
                     
                     @RequestParam("editmode") String editmode,
-                    @RequestParam("batchnumber") String batchnumber,
+                    @RequestParam("batchid") String batchid,
                     @RequestParam("page") Optional<Integer> page,
                     @RequestParam("size") Optional<Integer> size
 
     ){
 
-        model = batchControllerHelper.processModel(model,  batchnumber, editmode, page, null, false , false);
+        model = batchControllerHelper.processModel(model,  batchid, editmode, page, null, false , false);
         return "checkout/editbatch.html";
     }
 
@@ -770,13 +770,13 @@ public class CheckoutViewController {
             @ModelAttribute( "searchproducttype" ) ProductTypeVO productTypeVO,
             
             @RequestParam("editmode") String editmode,
-            @RequestParam("batchnumber") String batchnumber,
+            @RequestParam("batchid") String batchid,
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size
 
     ){
 
-        model = batchControllerHelper.processModel(model,  batchnumber, editmode, page, productTypeVO, true, false);
+        model = batchControllerHelper.processModel(model,  batchid, editmode, page, productTypeVO, true, false);
         return "checkout/editbatch.html";
     }
 
@@ -787,18 +787,18 @@ public class CheckoutViewController {
             @ModelAttribute( "searchproducttype" ) ProductTypeVO productTypeVO,
             
             @RequestParam("editmode") String editmode,
-            @RequestParam("batchnumber") String batchnumber,
+            @RequestParam("batchid") String batchid,
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size
     ){
 
-        model = batchControllerHelper.processModel(model,  batchnumber, editmode, page, productTypeVO, true, false);
+        model = batchControllerHelper.processModel(model,  batchid, editmode, page, productTypeVO, true, false);
         // I need to do here is build a pdf / excel document, store it in uploads folder, then send a download link back to the user
 
 
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        batchControllerHelper.sendTextMessageWithDownloadLink(model, authentication.getPrincipal().username, batchnumber, 0.00)
+        batchControllerHelper.sendTextMessageWithDownloadLink(model, authentication.getPrincipal().username, batchid, 0.00)
 
         return "checkout/editbatch.html";
     }
@@ -809,13 +809,13 @@ public class CheckoutViewController {
             @ModelAttribute( "searchproducttype" ) ProductTypeVO productTypeVO,
             
             @RequestParam("editmode") String editmode,
-            @RequestParam("batchnumber") String batchnumber,
+            @RequestParam("batchid") String batchid,
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size
 
     ){
 
-        model = batchControllerHelper.processModel(model,  batchnumber, editmode, page, productTypeVO, true, true);
+        model = batchControllerHelper.processModel(model,  batchid, editmode, page, productTypeVO, true, true);
         return "checkout/editbatch.html";
     }
 

@@ -112,13 +112,13 @@ public class CleanBatchViewController {
             Model model,
             
             @RequestParam("editmode") String editmode,
-            @RequestParam("batchnumber") String batchnumber,
+            @RequestParam("batchid") String batchid,
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size
 
     ){
 
-        model = batchControllerHelper.processModel(model,  batchnumber, editmode, page, null, false , false);
+        model = batchControllerHelper.processModel(model,  batchid, editmode, page, null, false , false);
         return "batch/batch.html";
     }
 
@@ -621,13 +621,13 @@ public class CleanBatchViewController {
             @ModelAttribute( "searchproducttype" ) ProductTypeVO productTypeVO,
             
             @RequestParam("editmode") String editmode,
-            @RequestParam("batchnumber") String batchnumber,
+            @RequestParam("batchid") String batchid,
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size
 
     ){
 
-        model = batchControllerHelper.processModel(model,  batchnumber, editmode, page, productTypeVO, true, false);
+        model = batchControllerHelper.processModel(model,  batchid, editmode, page, productTypeVO, true, false);
         return "batch/batch.html";
     }
 
@@ -637,19 +637,19 @@ public class CleanBatchViewController {
             Model model,
             @ModelAttribute( "searchproducttype" ) ProductTypeVO productTypeVO,
             @RequestParam("editmode") String editmode,
-            @RequestParam("batchnumber") String batchnumber,
+            @RequestParam("batchid") String batchid,
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size
     ){
 
-        model = batchControllerHelper.processModel(model,  batchnumber, editmode, page, productTypeVO, true, false);
+        model = batchControllerHelper.processModel(model,  batchid, editmode, page, productTypeVO, true, false);
         // I need to do here is build a pdf / excel document, store it in uploads folder, then send a download link back to the user
 
 
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication()
 
-        boolean success = batchControllerHelper.sendTextMessageWithDownloadLink(model, authentication.getPrincipal().username, batchnumber, productTypeVO.priceadjustment)
+        boolean success = batchControllerHelper.sendTextMessageWithDownloadLink(model, authentication.getPrincipal().username, batchid, productTypeVO.priceadjustment)
 
         success ? model.addAttribute("successMessage", "Sent text message link successfully at: "+formattingUtil.getDateTimeForFileSystem()+" | With price adjustment:"+productTypeVO.priceadjustment) : model.addAttribute("errorMessage", "Error sending text message link at:" +formattingUtil.getDateTimeForFileSystem())
 
@@ -661,19 +661,19 @@ public class CleanBatchViewController {
             Model model,
             @ModelAttribute( "searchproducttype" ) ProductTypeVO productTypeVO,
             @RequestParam("editmode") String editmode,
-            @RequestParam("batchnumber") String batchnumber,
+            @RequestParam("batchid") String batchid,
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size
     ){
 
-        model = batchControllerHelper.processModel(model,  batchnumber, editmode, page, productTypeVO, true, false);
+        model = batchControllerHelper.processModel(model,  batchid, editmode, page, productTypeVO, true, false);
         // I need to do here is build a pdf / excel document, store it in uploads folder, then send a download link back to the user
 
 
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication()
 
-        boolean success = batchControllerHelper.sendMediaTextMessageWithDownloadLink(model, authentication.getPrincipal().username, batchnumber, productTypeVO.priceadjustment)
+        boolean success = batchControllerHelper.sendMediaTextMessageWithDownloadLink(model, authentication.getPrincipal().username, batchid, productTypeVO.priceadjustment)
 
         success ? model.addAttribute("successMessage", "Sent text message link successfully at: "+formattingUtil.getDateTimeForFileSystem()+" | With price adjustment:"+productTypeVO.priceadjustment) : model.addAttribute("errorMessage", "Error sending text message link at:" +formattingUtil.getDateTimeForFileSystem())
 
@@ -687,13 +687,13 @@ public class CleanBatchViewController {
             @ModelAttribute( "searchproducttype" ) ProductTypeVO productTypeVO,
             
             @RequestParam("editmode") String editmode,
-            @RequestParam("batchnumber") String batchnumber,
+            @RequestParam("batchid") String batchid,
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size
 
     ){
 
-        model = batchControllerHelper.processModel(model,  batchnumber, editmode, page, productTypeVO, true, true);
+        model = batchControllerHelper.processModel(model,  batchid, editmode, page, productTypeVO, true, true);
         return "batch/batch.html";
     }
 
@@ -703,7 +703,7 @@ public class CleanBatchViewController {
             @ModelAttribute( "searchproducttype" ) ProductTypeVO productTypeVO,
             
             @RequestParam("editmode") String editmode,
-            @RequestParam("batchnumber") String batchnumber,
+            @RequestParam("batchid") String batchid,
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size
 
@@ -716,14 +716,14 @@ public class CleanBatchViewController {
 
         boolean success = false
 
-        model = batchControllerHelper.processModel(model,  batchnumber, editmode, page, productTypeVO, true, false);
+        model = batchControllerHelper.processModel(model,  batchid, editmode, page, productTypeVO, true, false);
 
         switch(productTypeVO.menutype){
             case controllerConstants.ALL:
-                success = batchControllerHelper.generateAllBarcodesForBatch(batchnumber)
+                success = batchControllerHelper.generateAllBarcodesForBatch(batchid)
                 break
             case controllerConstants.SINGLE_MENU:
-                success = batchControllerHelper.generateSingleMenuBarcodesForBatch(batchnumber)
+                success = batchControllerHelper.generateSingleMenuBarcodesForBatch(batchid)
                 break
         }
 
@@ -746,7 +746,7 @@ public class CleanBatchViewController {
             @ModelAttribute( "searchproducttype" ) ProductTypeVO productTypeVO,
             
             @RequestParam("editmode") String editmode,
-            @RequestParam("batchnumber") String batchnumber,
+            @RequestParam("batchid") String batchid,
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size
 
@@ -757,14 +757,14 @@ public class CleanBatchViewController {
         // todo: all we are doing is routing the button to this method and then generating the barcode sheets for this batch
 
 
-        model = batchControllerHelper.processModel(model,  batchnumber, editmode, page, productTypeVO, true, false);
+        model = batchControllerHelper.processModel(model,  batchid, editmode, page, productTypeVO, true, false);
 
         switch(productTypeVO.menutype){
             case controllerConstants.ALL:
-                batchControllerHelper.generateAllQrcodesForBatch(batchnumber)
+                batchControllerHelper.generateAllQrcodesForBatch(batchid)
                 break
             case controllerConstants.SINGLE_MENU:
-                batchControllerHelper.generateQrcodesForBatch(batchnumber)
+                batchControllerHelper.generateQrcodesForBatch(batchid)
                 break
         }
 
@@ -780,7 +780,7 @@ public class CleanBatchViewController {
             @ModelAttribute( "searchproducttype" ) ProductTypeVO productTypeVO,
             
             @RequestParam("editmode") String editmode,
-            @RequestParam("batchnumber") String batchnumber,
+            @RequestParam("batchid") String batchid,
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size
 
@@ -791,11 +791,11 @@ public class CleanBatchViewController {
         // todo: all we are doing is routing the button to this method and then generating the barcode sheets for this batch
 
 
-        model = batchControllerHelper.processModel(model,  batchnumber, editmode, page, productTypeVO, true, false);
+        model = batchControllerHelper.processModel(model,  batchid, editmode, page, productTypeVO, true, false);
 
         switch(productTypeVO.menutype){
             case controllerConstants.SINGLE_PAGE:
-                batchControllerHelper.generateSinglePageWeightLabelsForBatch(batchnumber)
+                batchControllerHelper.generateSinglePageWeightLabelsForBatch(batchid)
                 break
         }
 
