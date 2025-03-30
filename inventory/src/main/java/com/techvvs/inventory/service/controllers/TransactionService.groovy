@@ -773,4 +773,25 @@ class TransactionService {
     }
 
 
+
+    @Transactional
+    void checkToSeeIfDiscountQuantityIsMoreThanProductQuantityInTransaction(TransactionVO transactionVO, DiscountVO discountVO){
+
+        int productcount = 0
+        for(ProductVO productVO : transactionVO.getProduct_list()){
+            if(productVO.product_id == discountVO.product.product_id){
+                productcount ++ //
+            }
+        }
+
+        if(discountVO.quantity > productcount){
+            System.out.print("INFO: Quantity of discount is more than quantity of product in transaction: " + discountVO.quantity + " > " + productcount)
+            discountVO = discountRepo.findById(discountVO.discountid).get() // update in scope for hibernate
+            discountVO.setQuantity(productcount)
+            discountVO = discountRepo.save(discountVO)
+        }
+
+    }
+
+
 }

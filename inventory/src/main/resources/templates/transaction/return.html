@@ -179,7 +179,9 @@
                     <th>Item</th>
                     <th>Price</th>
                     <th>Quantity</th>
+                    <th>Discounts Active</th>
                     <th>Return Product</th>
+
                 </tr>
                 </thead>
                 <tbody>
@@ -187,6 +189,25 @@
                     <td th:text="${item.name + ' | ' + item.producttypeid.name}" data-barcode="${item.barcode}">Item Name</td>
                     <td th:text="${item.price}">Price</td>
                     <td th:text="${item.displayquantity}">Quantity</td>
+
+                    <!-- New Discounts Column -->
+                    <td>
+                        <span th:if="${transaction.discount_list != null}">
+                            <span th:each="discount : ${transaction.discount_list}"
+                                  th:if="${discount.isactive == 1 and discount.product != null and discount.product.product_id == item.product_id}">
+
+                                <span>
+                                    <strong th:text="'$' + ${#numbers.formatDecimal(discount.discountamount, 1, 2)}"></strong>
+                                    |
+                                    <i class="bi bi-stack" title="Quantity"></i>
+                                    <span th:text="${discount.quantity}"></span>
+                                </span>
+
+                            </span>
+                        </span>
+                    </td>
+
+
                     <td>
                         <form th:action="@{/transaction/return}"
                               method="post"
@@ -198,6 +219,7 @@
 
                             <input type="hidden" name="quantity" value="1" class="quantity-input" />
                             <input type="hidden" class="available-quantity" th:value="${item.displayquantity}" />
+
 
                             <button type="submit" class="btn btn-link text-danger p-0" title="Remove item">
                                 <i class="bi bi-x-circle-fill" style="font-size: 1.3rem;"></i>
@@ -242,33 +264,80 @@
     let currentForm = null;
     let maxQty = 0;
 
-    function handleQuantityMode(form, event) {
-        const checkbox = document.getElementById('quantityModeCheckbox');
-        const quantityMode = checkbox && checkbox.checked;
+<!-- old working version for submitting with quantity mode checked-->
+<!--    function handleQuantityMode(form, event) {-->
+<!--        const checkbox = document.getElementById('quantityModeCheckbox');-->
+<!--        const quantityMode = checkbox && checkbox.checked;-->
 
-        if (!quantityMode) return true;
+<!--        if (!quantityMode) return true;-->
 
-        event.preventDefault();
+<!--        event.preventDefault();-->
 
-        currentForm = form;
-        maxQty = parseInt(form.querySelector('.available-quantity').value);
+<!--        currentForm = form;-->
+<!--        maxQty = parseInt(form.querySelector('.available-quantity').value);-->
 
-        // Pull product name and type from data attributes on the form
-        const productName = form.getAttribute('data-product-name') || 'Unknown';
-        const productType = form.getAttribute('data-product-type') || 'Unknown';
+<!--        // Pull product name and type from data attributes on the form-->
+<!--        const productName = form.getAttribute('data-product-name') || 'Unknown';-->
+<!--        const productType = form.getAttribute('data-product-type') || 'Unknown';-->
 
-        // Set modal field values
-        document.getElementById('modalQuantityInput').value = 1;
-        document.getElementById('modalQuantityInput').setAttribute('max', maxQty);
-        document.getElementById('modalQtyInfo').textContent = `Max quantity available: ${maxQty}`;
-        document.getElementById('modalProductName').textContent = productName;
-        document.getElementById('modalProductType').textContent = productType;
+<!--        // Set modal field values-->
+<!--        document.getElementById('modalQuantityInput').value = 1;-->
+<!--        document.getElementById('modalQuantityInput').setAttribute('max', maxQty);-->
+<!--        document.getElementById('modalQtyInfo').textContent = `Max quantity available: ${maxQty}`;-->
+<!--        document.getElementById('modalProductName').textContent = productName;-->
+<!--        document.getElementById('modalProductType').textContent = productType;-->
 
-        const modal = new bootstrap.Modal(document.getElementById('quantityModal'));
-        modal.show();
+<!--        const modal = new bootstrap.Modal(document.getElementById('quantityModal'));-->
+<!--        modal.show();-->
 
-        return false;
-    }
+<!--        return false;-->
+<!--    }-->
+
+        function handleQuantityMode(form, event) {
+            const checkbox = document.getElementById('quantityModeCheckbox');
+            const quantityMode = checkbox && checkbox.checked;
+
+            event.preventDefault(); // always prevent by default
+
+            currentForm = form;
+            maxQty = parseInt(form.querySelector('.available-quantity').value);
+
+            const productName = form.getAttribute('data-product-name') || 'Unknown';
+            const productType = form.getAttribute('data-product-type') || 'Unknown';
+
+            if (quantityMode) {
+                // Quantity mode modal
+                document.getElementById('modalQuantityInput').value = 1;
+                document.getElementById('modalQuantityInput').setAttribute('max', maxQty);
+                document.getElementById('modalQtyInfo').textContent = `Max quantity available: ${maxQty}`;
+                document.getElementById('modalProductName').textContent = productName;
+                document.getElementById('modalProductType').textContent = productType;
+
+                const quantityModal = new bootstrap.Modal(document.getElementById('quantityModal'));
+                quantityModal.show();
+            } else {
+                // Confirm single return modal
+                document.getElementById('confirmReturnMessage').textContent = `Confirm returning 1x ${productName}?`;
+
+                const confirmModal = new bootstrap.Modal(document.getElementById('confirmReturnModal'));
+                confirmModal.show();
+            }
+
+            return false;
+        }
+
+        function submitConfirmReturn() {
+            // Set quantity to 1 and submit the form
+            if (currentForm) {
+                currentForm.querySelector('.quantity-input').value = 1;
+
+                const confirmModal = bootstrap.Modal.getInstance(document.getElementById('confirmReturnModal'));
+                confirmModal.hide();
+
+                currentForm.submit();
+            }
+        }
+
 
 
     function submitQuantity() {
@@ -288,6 +357,26 @@
         currentForm.submit();
     }
 </script>
+
+
+<!-- Return Confirmation Modal -->
+<div class="modal fade" id="confirmReturnModal" tabindex="-1" aria-labelledby="confirmReturnModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-white">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmReturnModalLabel">Confirm Return</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmReturnMessage">Are you sure you want to return this item?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" onclick="submitConfirmReturn()">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 </body>
 </html>

@@ -10,6 +10,7 @@ import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.ReturnVO
 import com.techvvs.inventory.model.SystemUserDAO
 import com.techvvs.inventory.model.TransactionVO
+import com.techvvs.inventory.service.controllers.TransactionService
 import com.techvvs.inventory.service.email.EmailService
 import com.techvvs.inventory.service.transactional.CheckoutService
 import com.techvvs.inventory.util.SendgridEmailUtil
@@ -59,6 +60,9 @@ class TransactionHelper {
 
     @Autowired
     CheckoutService checkoutService
+
+    @Autowired
+    TransactionService transactionService
 
 
     @Transactional
@@ -240,6 +244,16 @@ class TransactionHelper {
             transactionVO.updateTimeStamp = LocalDateTime.now()
             transactionVO = transactionRepo.save(transactionVO)
         }
+
+
+        // NOTE: Before anything happens, we need to adjust down the discount.quantity value before we calculate the transaction remaining amount.
+        //todo: add a check here, pass in the TransactionVO, and see if the number of products on the transaction is greater than
+        // todo: cont. the discount.quantity.  If it is, then we need to increment the discount.quantity down so it matches the number of products.
+
+        transactionService.checkToSeeIfDiscountQuantityIsMoreThanProductQuantityInTransaction(transactionVO, latestDiscount)
+
+
+
         return transactionVO
 
     }
