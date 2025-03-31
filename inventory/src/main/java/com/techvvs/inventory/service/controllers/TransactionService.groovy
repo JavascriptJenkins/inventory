@@ -35,6 +35,7 @@ import com.techvvs.inventory.util.TwilioTextUtil
 import com.techvvs.inventory.viewcontroller.helper.TransactionHelper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
+import org.springframework.security.core.parameters.P
 import org.springframework.stereotype.Component
 
 import javax.persistence.EntityNotFoundException
@@ -555,6 +556,15 @@ class TransactionService {
             ProductTypeVO producttypevo
     ) {
 
+        // count the quantity of the product we are applying discount for
+        int quantity = 0
+        ProductVO productVO1 = new ProductVO(product_id:0)
+        for(ProductVO productVO : transaction.product_list){
+            if(productVO.producttypeid.producttypeid == producttypevo.producttypeid){
+                quantity++
+                productVO1 = productVO
+            }
+        }
 
         DiscountVO newDiscount = new DiscountVO();
         newDiscount.setDiscountamount(incomingDiscount.getDiscountamount());
@@ -562,6 +572,8 @@ class TransactionService {
         newDiscount.setName("ProductType: " + producttypevo.name)
         newDiscount.setDescription("Discount applied based on product type");
         newDiscount.setIsactive(1);
+        newDiscount.setQuantity(quantity)
+        newDiscount.setProduct(productVO1)
         newDiscount.setTransaction(transaction);
         newDiscount.setCreateTimeStamp(LocalDateTime.now());
         newDiscount.setUpdateTimeStamp(LocalDateTime.now());
@@ -655,11 +667,6 @@ class TransactionService {
                 existingOldDiscount.setUpdateTimeStamp(LocalDateTime.now());
                 discountRepo.save(existingOldDiscount);
 
-                // Re-fetch the transaction to ensure the latest state is loaded
-                transactionVO = transactionRepo.findById(Integer.valueOf(transactionid)).orElseThrow({ new EntityNotFoundException("Transaction not found: " + transactionid) });
-
-                // Recalculate totals by crediting back the removed discount
-                transactionVO = removeDiscountFromTransactionReCalcTotals(transactionVO, existingOldDiscount, transactionVO.originalprice, transactionVO.total);
             }
         }
 
@@ -719,20 +726,18 @@ class TransactionService {
 
         for (DiscountVO existingOldDiscount : discountsCopy) {
             if (existingOldDiscount.getIsactive() == 1 &&
-                    existingOldDiscount.producttype == null && // we only want to roll back any product related discounts here
-                    existingOldDiscount.getProduct().getProduct_id().equals(productid)
-                    && existingOldDiscount.getIsactive() == 1) {
+                    existingOldDiscount.getProduct().getProduct_id().equals(productid)) {
 
                 // Deactivate the matching discount
                 existingOldDiscount.setIsactive(0);
                 existingOldDiscount.setUpdateTimeStamp(LocalDateTime.now());
                 discountRepo.save(existingOldDiscount);
 
-                // Re-fetch the transaction to ensure the latest state is loaded
-                transactionVO = transactionRepo.findById(Integer.valueOf(transactionid)).orElseThrow({ new EntityNotFoundException("Transaction not found: " + transactionid) });
-
-                // Recalculate totals by crediting back the removed discount
-                transactionVO = removeDiscountFromTransactionReCalcTotalsByProduct(transactionVO, existingOldDiscount, transactionVO.total);
+//                // Re-fetch the transaction to ensure the latest state is loaded
+//                transactionVO = transactionRepo.findById(Integer.valueOf(transactionid)).orElseThrow({ new EntityNotFoundException("Transaction not found: " + transactionid) });
+//
+//                // Recalculate totals by crediting back the removed discount
+//                transactionVO = removeDiscountFromTransactionReCalcTotalsByProduct(transactionVO, existingOldDiscount, transactionVO.total);
             }
         }
 
@@ -780,24 +785,29 @@ class TransactionService {
     @Transactional
     void checkToSeeIfDiscountQuantityIsMoreThanProductQuantityInTransaction(TransactionVO transactionVO, DiscountVO discountVO){
 
-        int productcount = 0
-        for(ProductVO productVO : transactionVO.getProduct_list()){
-            if(productVO.product_id == discountVO.product.product_id){
-                productcount ++ //
+        // if discount is null it means there is no latest discount
+        if(discountVO != null){
+
+            int productcount = 0
+            for(ProductVO productVO : transactionVO.getProduct_list()){
+                if(productVO.product_id == discountVO.product.product_id){
+                    productcount ++ //
+                }
+            }
+
+            if(discountVO.quantity > productcount){
+                System.out.print("INFO: Quantity of discount is more than quantity of product in transaction: " + discountVO.quantity + " > " + productcount)
+                discountVO = discountRepo.findById(discountVO.discountid).get() // update in scope for hibernate
+                discountVO.setQuantity(productcount)
+                discountVO = discountRepo.save(discountVO)
             }
         }
 
-        if(discountVO.quantity > productcount){
-            System.out.print("INFO: Quantity of discount is more than quantity of product in transaction: " + discountVO.quantity + " > " + productcount)
-            discountVO = discountRepo.findById(discountVO.discountid).get() // update in scope for hibernate
-            discountVO.setQuantity(productcount)
-            discountVO = discountRepo.save(discountVO)
-        }
 
     }
 
     @Transactional
-    Double calculateTotal(TransactionVO transactionVO){
+    TransactionVO calculateTotal(TransactionVO transactionVO){
 
         // find value of all discounts on the transaction
         Double finaltotal = 0.00
@@ -835,7 +845,14 @@ class TransactionService {
         finaltotal = (finaltotal - totaldiscountfromallproducts)
 
 
-        return Math.max(0,finaltotal)
+        double total = Math.max(0,finaltotal)
+
+
+        transactionVO.total = total
+        transactionVO.totalwithtax = total
+        transactionVO.updateTimeStamp = LocalDateTime.now()
+        transactionVO = transactionRepo.save(transactionVO)
+        return transactionVO
     }
 
 

@@ -182,17 +182,8 @@
 
             var currentSize = getParameterByName('size') || '5'; // Default to 10 if not set
             var currentPage = getParameterByName('page') || '0'; // Default to 1 if not set
-            var currentTransactionId = getParameterByName('transactionid') || '0'; // Default to 1 if not set
+            var currentTransactionId = getParameterByName('transactionid') || document.getElementById('transactionid').value;
 
-
-<!--            // Set the dropdown to the current size-->
-<!--            $('#recordSize').val(currentSize);-->
-
-<!--            $('#recordSize').change(function() {-->
-<!--                var selectedSize = $(this).val();-->
-<!--                var newUrl = '/transaction/listall?size=' + selectedSize + '&page=' + currentPage;-->
-<!--                window.location.href = newUrl;-->
-<!--            });-->
 
             $('#producttypeselectid').change(function() {
                 var selectedProductTypeId = $(this).val();
@@ -309,13 +300,13 @@
         </p>
 
 <!--        <p>Amount remaining IF NEW DISCOUNT FROM THIS PAGE IS APPLIED (Hypothetical): <span id="amountremainingafterdiscountid" th:text="${transaction.totalwithtax - (transaction.paid == null ? 0.0 : transaction.paid)}"></span></p>-->
-        <th:block th:each="discount, i : ${transaction.discount_list}">
-            <input type="hidden"
-                   th:id="discountamounthiddeninput"
-                   th:if="${discount.producttype != null && discount.producttype.producttypeid.toString() == producttypeid.toString()}"
-                   th:name="'transaction.discount_list[' + ${i} + '].discountamount'"
-                   th:value="${discount.discountamount}" />
-        </th:block>
+<!--        <th:block th:each="discount, i : ${transaction.discount_list}">-->
+<!--            <input type="hidden"-->
+<!--                   th:id="discountamounthiddeninput"-->
+<!--                   th:if="${discount.producttype != null && discount.producttype.producttypeid.toString() == producttypeid.toString()}"-->
+<!--                   th:name="'transaction.discount_list[' + ${i} + '].discountamount'"-->
+<!--                   th:value="${discount.discountamount}" />-->
+<!--        </th:block>-->
 
     </div>
     <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
@@ -323,7 +314,7 @@
     <div class="alert alert-primary" role="alert" th:if="${primaryMessage}" th:text="${primaryMessage}">Success</div>
 
     <form id="appyDiscountTransactionForm" th:action="@{/transaction/discount?transactionid=__${transaction.transactionid}__&customerid=__${customer.customerid}__&producttypeid=__${producttypeid}__}" th:object="${transaction}" method="post">
-
+        <input type="hidden" id="transactionid" th:value="${transactionid}">
         <div class="row" style="margin-bottom: 5px;">
 
             <div class="record-selector col-md-4">
@@ -345,7 +336,13 @@
                     <input id="discountamountid" type="number" th:field="*{discount.discountamount}" step="any" min="0" max="10000" class="form-control" placeholder="Discount Amount" aria-label="discount amount">
                 </div>
             </div>
-        </div>
+
+            <button id="applyDiscountButton" type="submit" class="btn btn-dark" style="margin-top:5px;">
+                Apply Discount
+            </button>
+            <div>
+    </form>
+
 
 
         <!-- Table Section -->
@@ -377,8 +374,10 @@
                             Discounted Price
                         </td>
 
-                        <td th:if="${discountProductTypeMap[item.producttypeid.producttypeid] != null}">
-                            <form method="post" action="/transaction/discount/producttype/delete">
+                        <td th:if="${(item != null) and (item.producttypeid != null) and (discountProductTypeMap[item.producttypeid.producttypeid] != null)}"
+
+                        >
+                            <form id="deletediscountform" method="post" action="/transaction/discount/producttype/delete">
                                 <input type="hidden" name="transactionidtodelete" th:value="${transaction.transactionid}">
                                 <input type="hidden" name="discountidtodelete" th:value="${discountProductTypeMap[item.producttypeid.producttypeid].discountid}">
                                 <button type="submit" class="btn btn-link text-danger p-0" title="Delete Discount">
@@ -391,10 +390,8 @@
                 </tbody>
             </table>
         </div>
-        <button id="applyDiscountButton" type="submit" class="btn btn-dark" style="margin-top:5px;">
-            Apply Discount
-        </button>
-    </form>
+
+
 
     <a th:href="@{/transaction?transactionid=__${transaction.transactionid}__&size=5&page=1}" class="btn btn-dark" style="margin-top:5px;float: right;">Back To Transaction</a>
 </div>

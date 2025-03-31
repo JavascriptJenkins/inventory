@@ -484,10 +484,7 @@
                               th:if="${discount.producttype != null && discount.producttype?.producttypeid == item.producttypeid?.producttypeid && discount.isactive == 1}"
                               th:text="'$' + ${#numbers.formatDecimal(T(java.lang.Math).max((item.price - discount.discountamount) * 1.0, 0.0), 1, 2)}">
                         </span>
-                        <span th:each="discount : ${transaction.discount_list}"
-                              th:if="${discount.product != null && discount.product?.product_id == item.product_id && discount.isactive == 1}"
-                              th:text="'$' + ${#numbers.formatDecimal(T(java.lang.Math).max((item.price - discount.discountamount) * 1.0, 0.0), 1, 2)}">
-                        </span>
+
 
                     </td>
                 </tr>
@@ -508,7 +505,8 @@
     </div>
 
     <!-- This means productType discounts are active -->
-    <div class="d-inline" th:if="${#lists.isEmpty(transaction.discount_list.?[isactive > 0 and product != null]) && !#lists.isEmpty(transaction.discount_list.?[isactive > 0 and producttype != null])}">
+    <div class="d-inline"
+         th:if="${!#lists.isEmpty(transaction.discount_list.?[isactive > 0 and name.contains('ProductType')])}">
         <a th:href="@{/transaction/return?transactionid=__${transaction.transactionid}__&discounttype=producttypediscount}" class="btn btn-warning" style="margin-top:5px;float: right;">Return Product</a>
     </div>
 
@@ -523,7 +521,10 @@
     </div>
 
     <div class="d-inline"
-         th:if="${#lists.isEmpty(transaction.discount_list.?[isactive > 0 and product != null])}">
+         th:if="${!#lists.isEmpty(transaction.discount_list.?[isactive > 0 and name.contains('ProductType')])
+        or #lists.isEmpty(transaction.discount_list)
+        or #lists.isEmpty(transaction.discount_list.?[isactive == 1])
+        }">
         <a th:href="@{/transaction/discount(transactionid=${transaction.transactionid}, producttypeid=${transaction.product_list?.size() > 0 && transaction.product_list[0]?.producttypeid?.producttypeid != null ? transaction.product_list[0].producttypeid.producttypeid : 0})}"
            class="btn btn-warning"
            style="margin-top:5px;margin-right:5px;float: right;">
@@ -533,7 +534,10 @@
 
 
     <div class="d-inline"
-         th:if="${#lists.isEmpty(transaction.discount_list.?[isactive > 0 and producttype != null])}">
+         th:if="${!#lists.isEmpty(transaction.discount_list.?[isactive > 0 and name.contains('Product:')])
+        or #lists.isEmpty(transaction.discount_list)
+        or #lists.isEmpty(transaction.discount_list.?[isactive == 1])}"
+    >
         <a th:href="@{/transaction/discount/product(transactionid=${transaction.transactionid})}"
            class="btn btn-warning"
            style="margin-top:5px;margin-right:5px;float: right;">

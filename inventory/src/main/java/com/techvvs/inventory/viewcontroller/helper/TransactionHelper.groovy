@@ -185,24 +185,18 @@ class TransactionHelper {
             runRemovalLogic(transactionVO, barcode, amountofdiscount, amountToSubtract, transactiontoremove)
         }
 
-        double total = transactionService.calculateTotal(transactionVO)
+        // we should only have one active discount per product at any given time, but doing this to code defensively
+        List<DiscountVO> discountlist = getListOfAllActiveDiscountsForProduct(transactionVO, barcode)
 
-        transactionVO.total = total
-        transactionVO.totalwithtax = total
-        transactionVO.updateTimeStamp = LocalDateTime.now()
-        transactionVO = transactionRepo.save(transactionVO)
+        DiscountVO latestDiscount = discountlist?.max { it.createTimeStamp }
+
+        // this HAS TO BE DONE before calculating total
+        transactionService.checkToSeeIfDiscountQuantityIsMoreThanProductQuantityInTransaction(transactionVO, latestDiscount)
 
 
-//        ProductVO productVO = productRepo.findByBarcode(barcode).get()
+        transactionVO = transactionService.calculateTotal(transactionVO)
 
-//        // only run this if the return value of the products the customer is returning is greater than the amount remaining to pay (the total)
-//        if((amountOfProductsToReturn * productVO.price) > transactionVO.total){
-//            transactionVO = checkForCustomerCredit(transactionVO)
-//
-//            // save it again after calculating any customer credit
-//            transactionVO.updateTimeStamp = LocalDateTime.now()
-//            transactionVO = transactionRepo.save(transactionVO)
-//        }
+
 
         return transactionVO
 
@@ -241,15 +235,7 @@ class TransactionHelper {
         transactionService.checkToSeeIfDiscountQuantityIsMoreThanProductQuantityInTransaction(transactionVO, latestDiscount)
 
 
-        double total = transactionService.calculateTotal(transactionVO)
-
-        transactionVO.total = total
-        transactionVO.totalwithtax = total
-
-        transactionVO.updateTimeStamp = LocalDateTime.now()
-        transactionVO = transactionRepo.save(transactionVO)
-
-
+        transactionVO = transactionService.calculateTotal(transactionVO)
 
 
         return transactionVO

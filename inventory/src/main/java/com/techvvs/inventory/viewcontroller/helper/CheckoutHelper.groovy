@@ -338,7 +338,7 @@ class CheckoutHelper {
                 }
             }
 
-            transactionVO = transactionRepo.save(transactionVO) // persist transaction without the discount
+            transactionVO = transactionService.calculateTotal(transactionVO)
         }
 
         return transactionVO

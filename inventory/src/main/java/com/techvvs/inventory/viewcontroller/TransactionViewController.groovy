@@ -593,30 +593,33 @@ public class TransactionViewController {
             @RequestParam("transactionidtodelete") Integer transactionid,
             @RequestParam("discountidtodelete") Integer discountid,
             @RequestParam("page") Optional<Integer> page,
-            @RequestParam("size") Optional<Integer> size
-    ){
-        // get the transaction
-        TransactionVO transactionVO = transactionRepo.findById(transactionid).get()
+            @RequestParam("size") Optional<Integer> size,
+            @RequestParam("producttypeid") Optional<Integer> producttypeid
+    ) {
+        TransactionVO transactionVO = transactionRepo.findById(transactionid).get();
 
-        transactionVO = checkoutHelper.deleteDiscountFromTransaction(transactionVO, discountid)
+        transactionVO = checkoutHelper.deleteDiscountFromTransaction(transactionVO, discountid);
+        transactionVO = transactionService.calculateTotal(transactionVO);
+        transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO, model);
 
+        printerService.printInvoice(transactionVO, false, true);
 
-        transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO, model)
-        printerService.printInvoice(transactionVO, false, true) // print another invoice showing discount...
-        model.addAttribute("customer", transactionVO.customervo)
-
-
-        model.addAttribute("producttypes", productTypeRepo.findAll()); // for the filter dropdown
-        techvvsAuthService.checkuserauth(model)
         model.addAttribute("transactionid", transactionid);
         model.addAttribute("transaction", transactionVO);
-        // Get the most recent discount
+        model.addAttribute("customer", transactionVO.customervo);
 
+        model.addAttribute("producttypes", productTypeRepo.findAll());
+        model.addAttribute("producttypeid", producttypeid.orElse(0));
+        model.addAttribute("productinscope", "0");
+        model.addAttribute("page", page.orElse(0));
+        model.addAttribute("size", size.orElse(20));
+        model.addAttribute("discountProductTypeMap", buildDiscountMapOfProductTypeDiscounts(transactionVO))
 
-        model.addAttribute("discountMap", buildDiscountMap(transactionVO))
+        techvvsAuthService.checkuserauth(model);
 
-        return "transaction/discountbyproduct.html";
+        return "transaction/discount.html";
     }
+
 
 
 }

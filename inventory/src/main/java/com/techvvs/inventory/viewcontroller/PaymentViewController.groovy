@@ -1,17 +1,21 @@
 package com.techvvs.inventory.viewcontroller
 
+import com.techvvs.inventory.jparepo.TransactionRepo
 import com.techvvs.inventory.model.CustomerVO
 import com.techvvs.inventory.model.PaymentVO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.printers.PrinterService
 import com.techvvs.inventory.service.auth.TechvvsAuthService
 import com.techvvs.inventory.service.controllers.PaymentService
+import com.techvvs.inventory.service.controllers.TransactionService
 import com.techvvs.inventory.viewcontroller.helper.CheckoutHelper
 import com.techvvs.inventory.viewcontroller.helper.PaymentHelper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.*
+
+import javax.persistence.TransactionRequiredException
 
 
 @RequestMapping("/payment")
@@ -32,6 +36,11 @@ public class PaymentViewController {
 
     @Autowired
     TechvvsAuthService techvvsAuthService
+
+    @Autowired
+    TransactionService transactionService
+
+
 
 
     //default home mapping
@@ -87,6 +96,8 @@ public class PaymentViewController {
         if(model.getAttribute("errorMessage") == null){
 
             TransactionVO transactionVO = paymentService.submitPaymentForTransaction(Integer.valueOf(transactionid),Integer.valueOf(customerid),paymentVO)
+            transactionVO = transactionService.calculateTotal(transactionVO)
+
             transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO, model)
             printerService.printInvoice(transactionVO, false, true)
 
