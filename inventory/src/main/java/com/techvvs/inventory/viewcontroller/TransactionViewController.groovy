@@ -259,6 +259,7 @@ public class TransactionViewController {
         ProductTypeVO productTypeVO = productTypeRepo.findById(Integer.valueOf(producttypeid.orElse("0"))).get()
         // apply the discount based on producttypeid to all products of that type
         transactionVO = transactionService.executeApplyDiscountToTransaction(transactionVO, transactionid, productTypeVO)
+        transactionVO = transactionService.calculateTotal(transactionVO)
 
         transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO, model)
         printerService.printInvoice(transactionVO, false, true) // print another invoice showing discount...
@@ -507,7 +508,9 @@ public class TransactionViewController {
 
         // apply the discount based on producttypeid to all products of that type
         transactionVO = transactionService.executeApplyDiscountToTransactionByProduct(transactionVO, transactionid, productVO, transactionVO.discount.quantity)
+        transactionVO = transactionService.calculateTotal(transactionVO)
 
+        transactionVO = transactionService.calculateTotal(transactionVO)
         transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO, model)
         printerService.printInvoice(transactionVO, false, true) // print another invoice showing discount...
         model.addAttribute("customer", transactionVO.customervo)

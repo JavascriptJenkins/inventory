@@ -223,7 +223,7 @@ class TransactionHelper {
 
 
         DiscountVO latestDiscount = discountlist?.max { it.createTimeStamp }
-        int amountofdiscountedproducts = latestDiscount.quantity
+        int amountofdiscountedproducts = latestDiscount == null ? 0 :latestDiscount.quantity
 
         // This is a stupid and inefficient way to do this, but whatever .......
         for(int i = 0; i < amountOfProductsToReturn; i++) {

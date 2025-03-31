@@ -537,7 +537,8 @@ class TransactionService {
             savedDiscount.getTransaction().getDiscount_list().add(savedDiscount);
 
             // Apply discounts to the transaction
-            savedDiscount.setTransaction(applyAllDiscountsToTransaction(savedDiscount.getTransaction()));
+//            savedDiscount.setTransaction(applyAllDiscountsToTransaction(savedDiscount.getTransaction()));
+            savedDiscount.setTransaction(savedDiscount.getTransaction());
 
             // Save the updated transaction
             transactionVO = transactionRepo.save(savedDiscount.getTransaction());
@@ -658,9 +659,7 @@ class TransactionService {
 
         for (DiscountVO existingOldDiscount : discountsCopy) {
             if (existingOldDiscount.getIsactive() == 1 &&
-                    existingOldDiscount.product == null && // don't roll back any discounts that are linked to a product
-                    existingOldDiscount.getProducttype().getProducttypeid().equals(producttypeid)
-                    && existingOldDiscount.getIsactive() == 1) {
+                    existingOldDiscount.getProducttype().getProducttypeid().equals(producttypeid)) {
 
                 // Deactivate the matching discount
                 existingOldDiscount.setIsactive(0);
@@ -706,7 +705,8 @@ class TransactionService {
 
             // Apply discounts to the transaction
             // NOTE: this is handling ALL discounts including product type discounts and product discounts...
-            savedDiscount.setTransaction(applyAllDiscountsToTransaction(savedDiscount.getTransaction()));
+//            savedDiscount.setTransaction(applyAllDiscountsToTransaction(savedDiscount.getTransaction()));
+            savedDiscount.setTransaction(savedDiscount.getTransaction());
 
             // Save the updated transaction
             transactionVO = transactionRepo.save(savedDiscount.getTransaction());
