@@ -185,20 +185,24 @@ class TransactionHelper {
             runRemovalLogic(transactionVO, barcode, amountofdiscount, amountToSubtract, transactiontoremove)
         }
 
+        double total = transactionService.calculateTotal(transactionVO)
+
+        transactionVO.total = total
+        transactionVO.totalwithtax = total
         transactionVO.updateTimeStamp = LocalDateTime.now()
         transactionVO = transactionRepo.save(transactionVO)
 
 
-        ProductVO productVO = productRepo.findByBarcode(barcode).get()
+//        ProductVO productVO = productRepo.findByBarcode(barcode).get()
 
-        // only run this if the return value of the products the customer is returning is greater than the amount remaining to pay (the total)
-        if((amountOfProductsToReturn * productVO.price) > transactionVO.total){
-            transactionVO = checkForCustomerCredit(transactionVO)
-
-            // save it again after calculating any customer credit
-            transactionVO.updateTimeStamp = LocalDateTime.now()
-            transactionVO = transactionRepo.save(transactionVO)
-        }
+//        // only run this if the return value of the products the customer is returning is greater than the amount remaining to pay (the total)
+//        if((amountOfProductsToReturn * productVO.price) > transactionVO.total){
+//            transactionVO = checkForCustomerCredit(transactionVO)
+//
+//            // save it again after calculating any customer credit
+//            transactionVO.updateTimeStamp = LocalDateTime.now()
+//            transactionVO = transactionRepo.save(transactionVO)
+//        }
 
         return transactionVO
 
@@ -231,26 +235,20 @@ class TransactionHelper {
         for(int i = 0; i < amountOfProductsToReturn; i++) {
             runRemovalLogicForPerProductDiscount(transactionVO, barcode, amountofdiscount, amountToSubtract, transactiontoremove, amountofdiscountedproducts)
         }
+
+
+        // this HAS TO BE DONE before calculating total
+        transactionService.checkToSeeIfDiscountQuantityIsMoreThanProductQuantityInTransaction(transactionVO, latestDiscount)
+
+
+        double total = transactionService.calculateTotal(transactionVO)
+
+        transactionVO.total = total
+        transactionVO.totalwithtax = total
+
         transactionVO.updateTimeStamp = LocalDateTime.now()
         transactionVO = transactionRepo.save(transactionVO)
 
-        ProductVO productVO = productRepo.findByBarcode(barcode).get()
-
-        // only run this if the return value of the products the customer is returning is greater than the amount remaining to pay (the total)
-        if((amountOfProductsToReturn * productVO.price) > transactionVO.total){
-            transactionVO = checkForCustomerCredit(transactionVO)
-
-            // save it again after calculating any customer credit
-            transactionVO.updateTimeStamp = LocalDateTime.now()
-            transactionVO = transactionRepo.save(transactionVO)
-        }
-
-
-        // NOTE: Before anything happens, we need to adjust down the discount.quantity value before we calculate the transaction remaining amount.
-        //todo: add a check here, pass in the TransactionVO, and see if the number of products on the transaction is greater than
-        // todo: cont. the discount.quantity.  If it is, then we need to increment the discount.quantity down so it matches the number of products.
-
-        transactionService.checkToSeeIfDiscountQuantityIsMoreThanProductQuantityInTransaction(transactionVO, latestDiscount)
 
 
 
@@ -292,14 +290,14 @@ class TransactionHelper {
 
                 // before doing anything, check to see if there is a discount active on this transaction that needs to be
                 // applied back to the total and totalwithtax fields
-                amountofdiscount = checkoutService.calculateTotalsForRemovingExistingProductFromTransaction(transactionVO, productVO)
+//                amountofdiscount = checkoutService.calculateTotalsForRemovingExistingProductFromTransaction(transactionVO, productVO)
 
                 transactionVO.product_list.remove(productVO)
 
                 addProductToReturnList(transactionVO, productVO)
 
                 productVO.quantityremaining = productVO.quantityremaining + 1
-                amountToSubtract = Math.max(0.00, productVO.price - amountofdiscount)
+//                amountToSubtract = Math.max(0.00, productVO.price - amountofdiscount)
                 // remove the transaction association from the product
                 for (TransactionVO existingTransaction : productVO.transaction_list) {
                     if (existingTransaction.transactionid == transactionVO.transactionid) {
@@ -314,8 +312,8 @@ class TransactionHelper {
         }
 
 
-        transactionVO.total = Math.max(0, transactionVO.total - amountToSubtract)
-        transactionVO.totalwithtax = Math.max(0, transactionVO.totalwithtax - amountToSubtract)
+//        transactionVO.total = Math.max(0, transactionVO.total - amountToSubtract)
+//        transactionVO.totalwithtax = Math.max(0, transactionVO.totalwithtax - amountToSubtract)
     }
 
     @Transactional
@@ -335,14 +333,14 @@ class TransactionHelper {
 
                 // before doing anything, check to see if there is a discount active on this transaction that needs to be
                 // applied back to the total and totalwithtax fields
-                amountofdiscount = checkoutService.calculateTotalsForRemovingExistingProductFromTransactionForProductDiscount(transactionVO, productVO, amountofdiscountedproducts)
+//                amountofdiscount = checkoutService.calculateTotalsForRemovingExistingProductFromTransactionForProductDiscount(transactionVO, productVO, amountofdiscountedproducts)
 
                 transactionVO.product_list.remove(productVO)
 
                 addProductToReturnList(transactionVO, productVO)
 
                 productVO.quantityremaining = productVO.quantityremaining + 1
-                amountToSubtract = Math.max(0.00, productVO.price - amountofdiscount)
+//                amountToSubtract = Math.max(0.00, productVO.price - amountofdiscount)
                 // remove the transaction association from the product
                 for (TransactionVO existingTransaction : productVO.transaction_list) {
                     if (existingTransaction.transactionid == transactionVO.transactionid) {
@@ -357,8 +355,8 @@ class TransactionHelper {
         }
 
 
-        transactionVO.total = Math.max(0, transactionVO.total - amountToSubtract)
-        transactionVO.totalwithtax = Math.max(0, transactionVO.totalwithtax - amountToSubtract)
+//        transactionVO.total = Math.max(0, transactionVO.total - amountToSubtract)
+//        transactionVO.totalwithtax = Math.max(0, transactionVO.totalwithtax - amountToSubtract)
 
     }
 

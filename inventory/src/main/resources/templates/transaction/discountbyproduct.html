@@ -261,8 +261,7 @@
         <p>
             Amount remaining to pay:
             <span id="amountremainingid"
-                  th:text="'$' + ${#numbers.formatDecimal(T(java.lang.Math).max((transaction.totalwithtax - (transaction.paid == null ? 0.0 : transaction.paid)) * 1.0, 0.0), 1, 2)}">
-    </span>
+                  th:text="'$' + ${#numbers.formatDecimal(T(java.lang.Math).max(transaction.totalwithtax * 1.0, 0.0), 1, 2)}"></span>
         </p>
 
     </div>

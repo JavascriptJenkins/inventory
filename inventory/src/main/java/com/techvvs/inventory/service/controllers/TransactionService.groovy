@@ -32,6 +32,7 @@ import com.techvvs.inventory.service.transactional.CheckoutService
 import com.techvvs.inventory.util.FormattingUtil
 import com.techvvs.inventory.util.TechvvsAppUtil
 import com.techvvs.inventory.util.TwilioTextUtil
+import com.techvvs.inventory.viewcontroller.helper.TransactionHelper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
@@ -108,6 +109,8 @@ class TransactionService {
     @Autowired
     TwilioTextUtil twilioTextUtil
 
+    @Autowired
+    TransactionHelper transactionHelper
 
     @Transactional
     TransactionVO processCartGenerateNewTransaction(CartVO cartVO) {
@@ -791,6 +794,48 @@ class TransactionService {
             discountVO = discountRepo.save(discountVO)
         }
 
+    }
+
+    @Transactional
+    Double calculateTotal(TransactionVO transactionVO){
+
+        // find value of all discounts on the transaction
+        Double finaltotal = 0.00
+        Double orignalprice = transactionVO.getOriginalprice()
+
+        Double valueOfAllReturnedProducts = 0.00
+        // first calculate the value of any returned products
+        for(ReturnVO returnVO : transactionVO.return_list) {
+            valueOfAllReturnedProducts += returnVO.product.price // add up the non discounted price of all returns on the transaction
+        }
+
+        finaltotal = orignalprice - valueOfAllReturnedProducts
+
+        finaltotal = (finaltotal - transactionVO.paid)
+
+        // it's only possible to get customer credit if you've submitted a payment
+        if (finaltotal < 0 && transactionVO.paid > 0) {
+
+            // This means we have a negative balance → customer should get credit back
+            transactionVO.customercredit = Math.abs(finaltotal)
+        }
+
+
+        // we need to account for any discounts that were applied to the products in the transaction
+        // here we add up all the discounts applied to the products in the transaction.
+
+
+        // we only apply the current discounts on the transaction to the final total AFTER we have calculated customer credit.
+        // Customer Credit DOES NOT GET TO BE CALCULATED including current discounts
+        Double totaldiscountfromallproducts = transactionHelper.calculateAllDiscountsThatHaveBeenAppliedToTransaction(transactionVO)
+
+//        if(finaltotal < 0){
+//            finaltotal = (finaltotal - totaldiscountfromallproducts)
+//        }
+        finaltotal = (finaltotal - totaldiscountfromallproducts)
+
+
+        return Math.max(0,finaltotal)
     }
 
 
