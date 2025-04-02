@@ -533,9 +533,9 @@
                                     </p>
 
                                     <div class="d-grid gap-2 mt-2">
-                                        <a th:href="@{/video2/product(productid=${product.product_id}, menuid=${menu.menuid}, shoppingtoken=${shoppingtoken})}" class="btn btn-outline-light">Videos</a>
-                                        <a th:href="@{/photo2/product(productid=${product.product_id}, menuid=${menu.menuid}, shoppingtoken=${shoppingtoken})}" class="btn btn-outline-light">Photos</a>
-                                        <a th:href="@{/document2/product(productid=${product.product_id}, menuid=${menu.menuid}, shoppingtoken=${shoppingtoken})}" class="btn btn-outline-light">Documents</a>
+                                        <a th:href="@{/video/product(productid=${product.product_id}, menuid=${menu.menuid}, shoppingtoken=${shoppingtoken})}" class="btn btn-outline-light">Videos</a>
+                                        <a th:href="@{/photo/product(productid=${product.product_id}, menuid=${menu.menuid}, shoppingtoken=${shoppingtoken})}" class="btn btn-outline-light">Photos</a>
+                                        <a th:href="@{/document/product(productid=${product.product_id}, menuid=${menu.menuid}, shoppingtoken=${shoppingtoken})}" class="btn btn-outline-light">Documents</a>
 
                                         <a href="javascript:void(0);" class="btn btn-warning add-to-cart-btn mt-2"
                                            th:data-product-id="${product.product_id}"
@@ -599,9 +599,9 @@
                         <p class="card-text"><strong>Qty:</strong> <span th:text="${product.quantityremaining}"></span></p>
                         <p class="card-text"><strong>Price:</strong> $<span th:text="${product.displayprice}"></span></p>
                         <div class="d-grid gap-2 mt-2">
-                            <a th:href="@{/video2/product(productid=${product.product_id}, menuid=${menu.menuid}, shoppingtoken=${shoppingtoken})}" class="btn btn-outline-light">Videos</a>
-                            <a th:href="@{/photo2/product(productid=${product.product_id}, menuid=${menu.menuid}, shoppingtoken=${shoppingtoken})}" class="btn btn-outline-light">Photos</a>
-                            <a th:href="@{/document2/product(productid=${product.product_id}, menuid=${menu.menuid}, shoppingtoken=${shoppingtoken})}" class="btn btn-outline-light">Documents</a>
+                            <a th:href="@{/video/product(productid=${product.product_id}, menuid=${menu.menuid}, shoppingtoken=${shoppingtoken})}" class="btn btn-outline-light">Videos</a>
+                            <a th:href="@{/photo/product(productid=${product.product_id}, menuid=${menu.menuid}, shoppingtoken=${shoppingtoken})}" class="btn btn-outline-light">Photos</a>
+                            <a th:href="@{/document/product(productid=${product.product_id}, menuid=${menu.menuid}, shoppingtoken=${shoppingtoken})}" class="btn btn-outline-light">Documents</a>
                             <a href="javascript:void(0);" class="btn btn-warning add-to-cart-btn mt-2"
                                th:data-product-id="${product.product_id}"
                                th:data-cart-id="${cartid}"
