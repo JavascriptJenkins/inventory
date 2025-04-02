@@ -95,6 +95,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .antMatchers(MENU_URI).permitAll()
             .antMatchers(MENU_SHOP_URI).permitAll()
             .antMatchers(MENU_SHOP_URI_33).permitAll()
+            .antMatchers(MENU_URI_2_33).permitAll()
+            .antMatchers(MENU_URI_2).permitAll()
+            .antMatchers(MENU_SHOP_2_URI).permitAll()
+            .antMatchers(MENU_SHOP_URI_2_33).permitAll()
             .antMatchers(DELIVERY_ITEM).permitAll()
             .antMatchers(DELIVERY_ITEM_33).permitAll()
 //            .antMatchers("/login/systemuser").permitAll()//

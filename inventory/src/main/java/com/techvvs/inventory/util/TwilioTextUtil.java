@@ -227,12 +227,12 @@ public class TwilioTextUtil {
                 String encodedSmsToken = encodeJwt(shoppingtoken);
 
                 // Construct the URL including custom JWT and filename
-                String smsUrl = baseuri+"/menu/shop?shoppingtoken=" + encodedSmsToken + "&menuid=" + menuid;
+                String smsUrl = baseuri+"/menu2/shop?shoppingtoken=" + encodedSmsToken + "&menuid=" + menuid;
 
                 result = sendDownloadLinkCustomPhoneNumber(phonenumber, smsUrl, isDev1);
             } else {
                 String baseuri = env.getProperty("base.qr.domain");
-                String smsUrl = baseuri+"/menu/shop?shoppingtoken=" + shoppingtoken + "&menuid=" + menuid;
+                String smsUrl = baseuri+"/menu2/shop?shoppingtoken=" + shoppingtoken + "&menuid=" + menuid;
                 System.out.println("------------------------------------------------------------------------------");
                 System.out.println("SHOPPING TOKEN HERE FOR DEVELOPMENT PURPOSES: " + shoppingtoken);
                 System.out.println("URI LINK FOR DEVELOPMENT PURPOSES: " + smsUrl);
