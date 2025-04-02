@@ -175,7 +175,7 @@ class VideoController {
         // fetch all customers from database and bind them to model
         //checkoutHelper.getAllCustomers(model)
         //techvvsAuthService.checkuserauth(model)
-        return "menu/videoplayer.html";
+        return "menu2/videoplayer.html";
     }
 
 
