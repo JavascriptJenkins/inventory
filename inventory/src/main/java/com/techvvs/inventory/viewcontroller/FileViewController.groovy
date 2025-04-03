@@ -155,60 +155,59 @@ public class FileViewController {
 
     @PostMapping("/textemailinvoice")
     String textemailinvoice(
-                @RequestParam( "batchid" ) String batchid,
-                            @ModelAttribute( "menuoption" ) MenuOptionVO menuoption,
-                            Model model,
-                            @RequestParam("page") Optional<Integer> page,
-                            @RequestParam("size") Optional<Integer> size){
-
-        
+            @RequestParam("batchid") String batchid,
+            @ModelAttribute("menuoption") MenuOptionVO menuoption,
+            Model model,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size) {
 
         menuoption = fileViewHelper.sanitizeTransients(menuoption)
 
         batchid = batchid == null ? "0" : String.valueOf(batchid)
         BatchVO batchVO = batchControllerHelper.loadBatch(batchid, model)
 
-        String selected = menuoption.selected // this contains file path from the dropdown
-        String filename = menuoption.filenametosend // this contains file path from the dropdown
-
+        String selected = menuoption.selected
+        String filename = menuoption.filenametosend
 
         filename = filename.replaceAll(",", "")
         String contentsofinvoice = ""
-        // now here we need to actually send out the file
-        String dir = appConstants.PARENT_LEVEL_DIR+String.valueOf(batchVO.batchnumber)+selected+"/"+filename
+
+        String dir = appConstants.PARENT_LEVEL_DIR + batchVO.batchnumber + selected + "/" + filename
+        File file = new File(dir)
 
         if (menuoption.action.contains(appConstants.TEXT_INVOICE)) {
             transactionHelper.sendTextMessageWithDownloadLink(menuoption.phonenumber, dir)
         } else if (menuoption.action.contains(appConstants.EMAIL_INVOICE)) {
             transactionHelper.sendEmailWithDownloadLink(menuoption.email, dir)
         } else if (menuoption.action.contains(appConstants.VIEW_INVOICE)) {
-            contentsofinvoice = techvvsFileHelper.readPdfAsBase64String(dir)
+            // Check if the file is larger than 1MB
+            if (file.exists() && file.length() > (1 * 1024 * 1024)) {
+                // Instead of base64, provide a public blob download link (e.g., from a /download endpoint)
+                //     // href="https://domain/file/inappdownload?filename=sample_inventory_template.xlsx"
+                contentsofinvoice = "/file/inappdownload?filename=" + URLEncoder.encode(filename, "UTF-8")
+                model.addAttribute("isBlobDownload", true)
+            } else {
+                // Safe to use base64
+                contentsofinvoice = techvvsFileHelper.readPdfAsBase64String(dir)
+                model.addAttribute("isBlobDownload", false)
+            }
         }
 
-
-
-        // start file paging
+        // Handle paging
         Page<FileVO> filePage = filePagingService.getFilePage(batchVO, page.get(), size.get(), selected)
-        filePagingService.bindPageAttributesToModel(model, filePage, page, size);
-        model.addAttribute(controllerConstants.MENU_OPTIONS_DIRECTORIES, controllerConstants.DIRECTORIES_FOR_BATCH_UI);
-        // end file paging
+        filePagingService.bindPageAttributesToModel(model, filePage, page, size)
 
-        techvvsAuthService.checkuserauth(model)
-        model.addAttribute("menuoption", new MenuOptionVO(selected: selected));
+        model.addAttribute(controllerConstants.MENU_OPTIONS_DIRECTORIES, controllerConstants.DIRECTORIES_FOR_BATCH_UI)
+        model.addAttribute("menuoption", new MenuOptionVO(selected: selected))
         model.addAttribute("invoicecontent", contentsofinvoice)
 
-        // only send a successmessage if we sent out an email or text, viewing file will get no successmessage
-        if(model.getAttribute("errorMessage") == null && contentsofinvoice.length() == 0){
-            model.addAttribute("successMessage", "Successfully sent file: "+filename+
-                    "using method: "+menuoption.action)
-
-            return "files/batchfiles.html";
-
-        } else {
-            return "files/batchfiles.html";
+        if (model.getAttribute("errorMessage") == null && contentsofinvoice.length() == 0) {
+            model.addAttribute("successMessage", "Successfully sent file: " + filename + " using method: " + menuoption.action)
         }
 
+        return "files/batchfiles.html"
     }
+
 
 
     @PostMapping("/adhoclabels")

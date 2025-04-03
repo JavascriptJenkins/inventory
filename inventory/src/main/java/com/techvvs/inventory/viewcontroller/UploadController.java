@@ -849,6 +849,7 @@ public class UploadController {
 
     // this should be used for static files that need to be served to logged in users of the app
     // this means they are logged with a valid cookie
+    // href="https://domain/file/inappdownload?filename=sample_inventory_template.xlsx"
     @RequestMapping(value="/inappdownload", method=RequestMethod.GET)
     public void inappdownload(@RequestParam("filename") String filename,
                                HttpServletResponse response
@@ -859,7 +860,12 @@ public class UploadController {
 
         try {
 
-            filename = fileViewHelper.buildFileNameForPublicDownload(appConstants.FILES_FOR_GLOBAL_USER_DOWNLOAD_DIR, filename);
+            // using this to serve .pdf files larger than 1MB
+            if(filename.contains("dymno28mmx89mm")){
+                filename = fileViewHelper.buildFileNameForInAppDownloadOfOver1MBPdfLabelSheet(appConstants.BARCODES_DYMNO_28mmx89mm_DIR, filename);
+            } else {
+                filename = fileViewHelper.buildFileNameForPublicDownload(appConstants.FILES_FOR_GLOBAL_USER_DOWNLOAD_DIR, filename);
+            }
 
             // todo: set filetype based on file extension here
             if(filename.contains(".pdf")){
