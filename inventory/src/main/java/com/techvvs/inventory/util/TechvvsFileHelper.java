@@ -235,7 +235,7 @@ public class TechvvsFileHelper {
             byte[] fileBytes = Files.readAllBytes(Paths.get(filePath));
 
 
-            System.out.println("---------------> ENCODE TO STRING: "+Base64.getEncoder().encodeToString(fileBytes));
+//            System.out.println("---------------> ENCODE TO STRING: "+Base64.getEncoder().encodeToString(fileBytes));
 
 
             // Encode the byte array to a Base64 string
