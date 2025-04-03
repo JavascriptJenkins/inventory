@@ -862,7 +862,8 @@ public class UploadController {
 
             // using this to serve .pdf files larger than 1MB
             if(filename.contains("dymno28mmx89mm")){
-                filename = fileViewHelper.buildFileNameForInAppDownloadOfOver1MBPdfLabelSheet(appConstants.BARCODES_DYMNO_28mmx89mm_DIR, filename);
+                String batchnumber = extractNumberBeforePdf(filename);
+                filename = fileViewHelper.buildFileNameForInAppDownloadOfOver1MBPdfLabelSheet(appConstants.BARCODES_DYMNO_28mmx89mm_DIR, filename, batchnumber);
             } else {
                 filename = fileViewHelper.buildFileNameForPublicDownload(appConstants.FILES_FOR_GLOBAL_USER_DOWNLOAD_DIR, filename);
             }
@@ -896,6 +897,23 @@ public class UploadController {
 
 //        return "redirect: /newform/viewNewForm";
     }
+
+
+    public static String extractNumberBeforePdf(String filename) {
+        if (filename == null || filename.isEmpty()) {
+            return null;
+        }
+
+        Pattern pattern = Pattern.compile("-(\\d+)\\.pdf$");
+        Matcher matcher = pattern.matcher(filename);
+
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+
+        return null; // No match found
+    }
+
 
 
 

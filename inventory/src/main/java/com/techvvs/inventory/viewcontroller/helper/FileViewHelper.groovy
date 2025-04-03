@@ -45,9 +45,9 @@ class FileViewHelper {
         return dirandfilename;
     }
 
-    String buildFileNameForInAppDownloadOfOver1MBPdfLabelSheet(String subdir, String filename){
+    String buildFileNameForInAppDownloadOfOver1MBPdfLabelSheet(String subdir, String filename, String batchnumber){
         filename = filename.replaceAll(",", "")
-        String dirandfilename = appConstants.PARENT_LEVEL_DIR+subdir+filename
+        String dirandfilename = appConstants.PARENT_LEVEL_DIR+batchnumber+subdir+filename
         return dirandfilename;
     }
 
