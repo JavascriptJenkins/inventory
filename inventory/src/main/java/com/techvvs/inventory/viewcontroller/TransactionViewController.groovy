@@ -510,7 +510,6 @@ public class TransactionViewController {
         transactionVO = transactionService.executeApplyDiscountToTransactionByProduct(transactionVO, transactionid, productVO, transactionVO.discount.quantity)
         transactionVO = transactionService.calculateTotal(transactionVO)
 
-        transactionVO = transactionService.calculateTotal(transactionVO)
         transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO, model)
         printerService.printInvoice(transactionVO, false, true) // print another invoice showing discount...
         model.addAttribute("customer", transactionVO.customervo)
