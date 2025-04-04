@@ -284,7 +284,7 @@
 
 
             <td th:text="${transaction.customervo.name}"></td>
-            <td>  <span th:text="'$' + ${#numbers.formatDecimal(T(java.lang.Math).max(transaction.originalprice - transaction.paid, 0.0), 1, 2)}"></span>
+            <td>  <span th:text="'$' + ${#numbers.formatDecimal(T(java.lang.Math).max(transaction.totalwithtax - transaction.paid, 0.0), 1, 2)}"></span>
             </td>
             <td>
                 <a href="#"

@@ -821,7 +821,7 @@ class TransactionService {
 
         finaltotal = orignalprice - valueOfAllReturnedProducts
 
-        finaltotal = (finaltotal - transactionVO.paid)
+//        finaltotal = (finaltotal - transactionVO.paid)
 
         // it's only possible to get customer credit if you've submitted a payment
         if (finaltotal < 0 && transactionVO.paid > 0) {

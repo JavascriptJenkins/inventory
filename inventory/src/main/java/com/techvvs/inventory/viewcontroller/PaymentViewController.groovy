@@ -96,7 +96,6 @@ public class PaymentViewController {
         if(model.getAttribute("errorMessage") == null){
 
             TransactionVO transactionVO = paymentService.submitPaymentForTransaction(Integer.valueOf(transactionid),Integer.valueOf(customerid),paymentVO)
-            transactionVO = transactionService.calculateTotal(transactionVO)
 
             transactionVO = checkoutHelper.hydrateTransientQuantitiesForTransactionDisplay(transactionVO, model)
             printerService.printInvoice(transactionVO, false, true)
