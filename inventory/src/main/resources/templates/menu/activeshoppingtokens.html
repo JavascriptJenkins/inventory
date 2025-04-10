@@ -14,7 +14,6 @@
             background-color: #121212;
             color: #ffffff;
             font-family: 'Roboto', sans-serif;
-            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -164,7 +163,7 @@
 <body>
 <div class="container ">
 
-    <div class="responsive">
+    <div class="responsive" style="margin-top: 20px">
         <!-- Back Button -->
         <a href="/dashboard/index" class="back-button">
             <i class="fas fa-arrow-left"></i>
@@ -194,7 +193,6 @@
                     <strong>Name:</strong> <span th:text="${customer.name}"></span>
                 </td>
                 <td>
-                    <strong>Actions:</strong>
                     <button class="btn btn-sm btn-primary"
                             th:if="${customer.shoppingtoken != null}"
                             th:data-url="${baseqrdomain + '/menu/shop?shoppingtoken=' + customer.shoppingtoken}"
@@ -202,7 +200,7 @@
                         Copy Token
                     </button>
                 </td>
-                <td>
+                <td class="expiration-cell">
                     <strong>Expires:</strong>
                 </td>
             </tr>
