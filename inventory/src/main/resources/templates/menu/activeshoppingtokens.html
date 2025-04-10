@@ -114,7 +114,6 @@
                 border-top: 1px solid #444;
             }
             td strong {
-                display: inline-block;
                 width: 100px;
             }
         }
@@ -191,7 +190,7 @@
             </thead>
             <tbody>
             <tr th:each="customer : ${customerPage.content}" th:data-shoppingtoken="${customer.shoppingtoken}">
-                <td class="d-block d-sm-table-cell">
+                <td>
                     <strong>Name:</strong> <span th:text="${customer.name}"></span>
                 </td>
                 <td>
@@ -203,7 +202,7 @@
                         Copy Token
                     </button>
                 </td>
-                <td class="d-block d-sm-table-cell expiration-cell">
+                <td>
                     <strong>Expires:</strong>
                 </td>
             </tr>
