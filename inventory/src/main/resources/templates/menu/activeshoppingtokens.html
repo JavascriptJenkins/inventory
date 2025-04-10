@@ -135,7 +135,9 @@
                 const payload = JSON.parse(atob(token.split('.')[1])); // Decode the payload
                 if (payload.exp) {
                     const expirationDate = new Date(payload.exp * 1000); // Convert UNIX timestamp to milliseconds
-                    return expirationDate.toLocaleString(); // Format as a readable date/time
+                    const isValid = expirationDate > new Date(); // Check if token is still valid
+                    const formattedDate = expirationDate.toLocaleString(); // Format as a readable date/time
+                    return isValid ? `${formattedDate} ✅` : `${formattedDate} ❌`; // Add checkmark or X
                 }
                 return 'No Expiration';
             } catch (error) {
@@ -143,20 +145,20 @@
             }
         }
 
-        function setExpirationValues() {
-            const rows = document.querySelectorAll('tr[data-shoppingtoken]');
-            rows.forEach(row => {
-                const token = row.getAttribute('data-shoppingtoken');
-                const expirationCell = row.querySelector('.expiration-cell');
-                if (token) {
-                    expirationCell.textContent = parseJwt(token);
-                } else {
-                    expirationCell.textContent = 'No Token';
+                function setExpirationValues() {
+                    const rows = document.querySelectorAll('tr[data-shoppingtoken]');
+                    rows.forEach(row => {
+                        const token = row.getAttribute('data-shoppingtoken');
+                        const expirationCell = row.querySelector('.expiration-cell');
+                        if (token) {
+                            expirationCell.textContent = parseJwt(token);
+                        } else {
+                            expirationCell.textContent = 'No Token';
+                        }
+                    });
                 }
-            });
-        }
 
-        document.addEventListener('DOMContentLoaded', setExpirationValues);
+                document.addEventListener('DOMContentLoaded', setExpirationValues);
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
