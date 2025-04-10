@@ -7,7 +7,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Bootstrap Bundle JS (Includes Popper.js) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body {
             background-color: #121212;
@@ -179,7 +180,7 @@
         <h1 class="glowing-text mt-4">Active Shopping Tokens</h1>
     </div>
 
-    <div style="width: 100%; overflow-x: auto;">
+    <div style="width: 100%; overflow-x: auto;" class="table-responsive">
         <table class="table table-striped table-dark table-bordered" >
             <thead class="d-none d-sm-table-header-group">
             <tr>
@@ -189,11 +190,11 @@
             </tr>
             </thead>
             <tbody>
-            <tr th:each="customer : ${customerPage.content}" th:data-shoppingtoken="${customer.shoppingtoken}" class="d-block d-sm-table-row w-100">
+            <tr th:each="customer : ${customerPage.content}" th:data-shoppingtoken="${customer.shoppingtoken}">
                 <td class="d-block d-sm-table-cell">
                     <strong>Name:</strong> <span th:text="${customer.name}"></span>
                 </td>
-                <td class="d-block d-sm-table-cell">
+                <td>
                     <strong>Actions:</strong>
                     <button class="btn btn-sm btn-primary"
                             th:if="${customer.shoppingtoken != null}"
