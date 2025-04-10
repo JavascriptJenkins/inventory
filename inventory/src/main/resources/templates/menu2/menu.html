@@ -586,8 +586,8 @@
         </div>
         <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
             <div class="col" th:each="product : ${menu.menu_product_list}"
-                 th:attr="data-type=${product.producttypeid?.producttypeid}"
-            >
+                 th:attr="data-type=${product.producttypeid?.producttypeid},
+              data-quantity=${product.quantityremaining}">
                 <div class="card h-100" style="background-color: rgba(34, 139, 34, 0.85); border-radius: 15px;">
                     <div th:if="${product.primaryphoto}">
                         <img th:src="${product.primaryphoto}" class="card-img-top" alt="Product Image"

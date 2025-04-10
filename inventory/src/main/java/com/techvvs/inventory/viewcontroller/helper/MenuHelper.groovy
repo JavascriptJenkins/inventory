@@ -452,6 +452,7 @@ class MenuHelper {
             menuVO.setDisplayPrice() // this sets the displayprice on the products
 
             ProductVO.sortProductsByDisplayPrice(menuVO.menu_product_list)
+            ProductVO.removeOutOfStockProducts(menuVO.menu_product_list)
 
             model.addAttribute("menu", menuVO)
 

@@ -151,4 +151,13 @@ class ProductVO implements Serializable, Comparable<ProductVO> {
         });
     }
 
+    static void removeOutOfStockProducts(List<ProductVO> products) {
+        if (products == null) return
+        products.removeIf { product ->
+            product?.quantityremaining == null || product.quantityremaining <= 0
+        }
     }
+
+
+
+}
