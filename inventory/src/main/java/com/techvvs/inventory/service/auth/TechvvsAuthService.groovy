@@ -73,6 +73,7 @@ class TechvvsAuthService {
     }
 
     boolean isTokenUsed(String token){
+        System.out.println("token coming into isTokenUsed: "+token)
         Optional<TokenDAO> tokenDao = tokenRepo.findByToken(token)
         System.out.println("tokenDao.isEmpty(): "+tokenDao.isEmpty())
         if(tokenDao.isEmpty()){
