@@ -291,16 +291,20 @@
             color: #eee;
         }
 
-        .modal-content {
-            background-color: #1c1c1c;
-            color: #fff;
-        }
+<!--        .modal-content {-->
+<!--            background-color: #1c1c1c;-->
+<!--            color: #fff;-->
+<!--        }-->
 
         .cart-row  {
             color: black !important;
             background-color: white !important;
             padding: 4px 8px;
             border-radius: 5px;
+        }
+
+        .btn-close {
+            filter: brightness(0) invert(1);
         }
 
 
@@ -544,6 +548,7 @@
                                            th:data-menu-id="${menuid}"
                                            th:data-product-name="${product.name}"
                                            th:data-product-price="${product.displayprice}"
+                                           th:data-product-quantityremaining="${product.quantityremaining}"
                                            th:disabled="${cart.isprocessed == 1 or (MediaOnlyView != null and MediaOnlyView == 'yes')}"
                                            th:classappend="${(cart.isprocessed == 1 or (MediaOnlyView != null and MediaOnlyView == 'yes')) ? 'disabled' : ''}">
                                             Add to Cart
@@ -609,6 +614,7 @@
                                th:data-menu-id="${menuid}"
                                th:data-product-name="${product.name}"
                                th:data-product-price="${product.displayprice}"
+                               th:data-product-quantityremaining="${product.quantityremaining}"
                                th:disabled="${cart.isprocessed == 1 or (MediaOnlyView != null and MediaOnlyView == 'yes')}"
                                th:classappend="${(cart.isprocessed == 1 or (MediaOnlyView != null and MediaOnlyView == 'yes')) ? 'disabled' : ''}">
                                 Add to Cart
@@ -632,7 +638,7 @@
                     <button type="button" class="btn-close close-modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <p id="modalProductPrice" class="text-muted"></p> <!-- Product price will be displayed here -->
+                    <p id="modalProductPrice" ></p> <!-- Product price will be displayed here -->
                     <label for="quantitySelect" class="form-label">Select Quantity:</label>
                     <select id="quantitySelect" class="form-select">
                         <option value="">Select Amount</option>
@@ -662,6 +668,7 @@
                 // Get product name and price from the button's data attributes
                 const productName = $(this).data('product-name');
                 const productPrice = $(this).data('product-price');
+                const productQuantityRemaining = $(this).data('product-quantityremaining');
 
                 // Update modal with product details
                 $('#modalProductName').text(`Add ${productName} to Cart`);
@@ -670,6 +677,22 @@
                 // Reset dropdown and disable Confirm button
                 $('#quantitySelect').val('');
                 $('#submitQuantity').prop('disabled', true);
+
+                const select = addToCartModal.querySelector('#quantitySelect');
+                select.innerHTML = '';
+
+                // Add placeholder option
+                const placeholder = document.createElement('option');
+                placeholder.value = '';
+                placeholder.textContent = 'Select Amount';
+                select.appendChild(placeholder);
+
+                for (let i = 1; i <= productQuantityRemaining; i++) {
+                    const option = document.createElement('option');
+                    option.value = i;
+                    option.textContent = i;
+                    select.appendChild(option);
+                }
 
                 // Show the modal
                 $('#addToCartModal').fadeIn();
@@ -797,7 +820,7 @@
             </div>
             <!-- Replace Submit Cart Button Based on cart.isprocessed -->
             <div th:if="${cart.isprocessed == 1}">
-                <p class="text-muted">This cart has already been processed.</p>
+                <p >This cart has already been processed.</p>
             </div>
             <div th:if="${cart.isprocessed != 1}">
                 <button id="submitCartButton" class="btn btn-light mt-2" type="button">Submit Cart</button>
@@ -972,7 +995,7 @@
         <button class="btn btn-danger">Empty Cart</button>
     </div>
     <div th:if="${cart.isprocessed == 1}" class="floating-button">
-        <p class="text-muted">This cart has already been processed and cannot be emptied.</p>
+        <p>This cart has already been processed and cannot be emptied.</p>
     </div>
 
 

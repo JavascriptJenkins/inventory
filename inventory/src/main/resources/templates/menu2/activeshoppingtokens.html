@@ -63,6 +63,11 @@
             padding: 5px 10px;
             transition: all 0.3s ease;
             background: transparent;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            word-break: normal;
+            hyphens: none;
         }
 
         .btn-copy:hover {
@@ -101,14 +106,25 @@
         }
     </style>
     <script>
+<!--        function copyToClipboard(button) {-->
+<!--            const tokenUrl = button.getAttribute('data-url');-->
+<!--            navigator.clipboard.writeText(tokenUrl).then(() => {-->
+<!--                alert('URL copied to clipboard: ' + tokenUrl);-->
+<!--            }).catch(err => {-->
+<!--                alert('Failed to copy URL: ' + err);-->
+<!--            });-->
+<!--        }-->
+<!--        -->
         function copyToClipboard(button) {
             const tokenUrl = button.getAttribute('data-url');
             navigator.clipboard.writeText(tokenUrl).then(() => {
-                alert('URL copied to clipboard: ' + tokenUrl);
+                // Show a non-blocking toast message instead of `alert`
+                console.log('Token copied:', tokenUrl);
             }).catch(err => {
-                alert('Failed to copy URL: ' + err);
+                console.error('Failed to copy URL:', err);
             });
         }
+
     </script>
     <script>
         function parseJwt(token) {
