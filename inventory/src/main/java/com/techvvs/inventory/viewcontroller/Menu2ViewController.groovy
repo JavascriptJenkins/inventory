@@ -120,6 +120,11 @@ public class Menu2ViewController {
             model.addAttribute("MediaOnlyView", "yes") // this will remove the add to cart button and only allow clients to view media on the menu
         }
 
+        System.out.println("DEBUGGGGG222: menuid.isPresent(): "+menuid.isPresent())
+        System.out.println("DEBUGGGGG222: shoppingtoken.isPresent(): "+shoppingtoken.isPresent())
+        System.out.println("DEBUGGGGG222: !tokenused: "+!tokenused)
+
+
         if(menuid.isPresent() && shoppingtoken.isPresent() && !tokenused) {
             menuHelper.loadMenuWithToken(menuid.get(), model, shoppingtoken.get())
             // hydrate hidden values for passing into the post methods like token etc
