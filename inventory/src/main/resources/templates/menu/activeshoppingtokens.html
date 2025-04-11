@@ -126,13 +126,20 @@
     </style>
     <script>
         function copyToClipboard(button) {
-            const tokenUrl = button.getAttribute('data-url');
-            navigator.clipboard.writeText(tokenUrl).then(() => {
-                alert('URL copied to clipboard: ' + tokenUrl);
+            const rawUrl = button.getAttribute('data-url');
+
+            // URL-encode the full string to ensure it's safe for browser address bar
+            const encodedUrl = encodeURI(rawUrl);
+
+            navigator.clipboard.writeText(encodedUrl).then(() => {
+                console.log('Copied for URL bar:', encodedUrl);
+                // Optional: Show feedback
+                showToast("Copied token URL!");
             }).catch(err => {
-                alert('Failed to copy URL: ' + err);
+                console.error('Failed to copy URL:', err);
             });
         }
+
     </script>
     <script>
         function parseJwt(token) {
@@ -230,5 +237,21 @@
 
 
 </div>
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="copyToast" class="toast text-bg-success" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-body">
+            Copied to clipboard!
+        </div>
+    </div>
+</div>
+<script>
+    function showToast() {
+    const toast = new bootstrap.Toast(document.getElementById('copyToast'));
+    toast.show();
+}
+
+</script>
+
 </body>
 </html>
