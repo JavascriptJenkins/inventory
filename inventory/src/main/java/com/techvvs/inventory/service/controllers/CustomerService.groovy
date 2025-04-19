@@ -34,7 +34,13 @@ class CustomerService {
     @Transactional
     CustomerVO saveActiveShoppingToken(CustomerVO customerVO, List<Role> roles, String hours, String menuid, String customerid){
 
-        Optional<TokenDAO> tokenDAO = tokenRepo.findByToken(customerVO.shoppingtoken)
+        Optional<TokenDAO> tokenDAO = Optional.empty()
+        if(customerVO.shoppingtoken == null){
+            // do nothing
+        } else {
+            tokenDAO = tokenRepo.findByToken(customerVO.shoppingtoken)
+        }
+
 
         // this scenario means we are sending a new token to a customer.
         // this could be because we sent them the wrong menu, or because we want to send them a longer token

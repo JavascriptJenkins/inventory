@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 
 import javax.persistence.*
+import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
 
 
@@ -70,4 +71,11 @@ class CustomerVO implements Serializable {
 
     @JsonProperty
     Integer deleted = 0
+
+
+    String getEncodedShoppingtoken() {
+        if (shoppingtoken == null) return null
+        Base64.getUrlEncoder().withoutPadding().encodeToString(shoppingtoken.getBytes(StandardCharsets.UTF_8));
+    }
+
 }

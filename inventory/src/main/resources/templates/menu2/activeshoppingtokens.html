@@ -180,12 +180,12 @@
         </tr>
         </thead>
         <tbody>
-        <tr th:each="customer : ${customerPage.content}" th:data-shoppingtoken="${customer.shoppingtoken}">
+        <tr th:each="customer : ${customerPage.content}" th:data-shoppingtoken="${customer.encodedShoppingtoken}">
             <td th:text="${customer.name}"></td>
             <td>
                 <button class="btn btn-copy"
                         th:if="${customer.shoppingtoken != null}"
-                        th:data-url="${baseqrdomain + '/menu/shop?shoppingtoken=' + customer.shoppingtoken}"
+                        th:data-url="${baseqrdomain + '/menu/shop?shoppingtoken=' + customer.encodedShoppingtoken}"
                         onclick="copyToClipboard(this)">
                     Copy Token
                 </button>

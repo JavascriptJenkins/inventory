@@ -572,7 +572,7 @@ class MenuHelper {
         }
 
 
-        twilioTextUtil.sendShoppingTokenLinkSMS(phonenumber,isDev1, menuid, customerVO.shoppingtoken)
+//        twilioTextUtil.sendShoppingTokenLinkSMS(phonenumber,isDev1, menuid, customerVO.shoppingtoken)
 
         model.addAttribute("successMessage","Shopping token sent to :"+phonenumber+" valid for "+tokenlength+" hours.  ")
     }

@@ -247,7 +247,7 @@ public class TwilioTextUtil {
     }
 
     public static String encodeJwt(String jwt) {
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(jwt.getBytes());
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(jwt.getBytes(StandardCharsets.UTF_8));
     }
 
     public String sendShoppingTokenLinkSMSWithCustomMessage(String phonenumber,

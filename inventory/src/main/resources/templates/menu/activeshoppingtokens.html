@@ -129,10 +129,10 @@
             const rawUrl = button.getAttribute('data-url');
 
             // URL-encode the full string to ensure it's safe for browser address bar
-            const encodedUrl = encodeURI(rawUrl);
+<!--            const encodedUrl = encodeURI(rawUrl);-->
 
-            navigator.clipboard.writeText(encodedUrl).then(() => {
-                console.log('Copied for URL bar:', encodedUrl);
+            navigator.clipboard.writeText(rawUrl).then(() => {
+                console.log('Copied for URL bar:', rawUrl);
                 // Optional: Show feedback
                 showToast("Copied token URL!");
             }).catch(err => {
@@ -209,7 +209,7 @@
                 <td>
                     <button class="btn btn-sm btn-primary"
                             th:if="${customer.shoppingtoken != null}"
-                            th:data-url="${baseqrdomain + '/menu2/shop?shoppingtoken=' + customer.shoppingtoken}"
+                            th:data-url="${baseqrdomain + '/menu2/shop?shoppingtoken=' + customer.encodedShoppingtoken}"
                             onclick="copyToClipboard(this)">
                         Copy Token
                     </button>
