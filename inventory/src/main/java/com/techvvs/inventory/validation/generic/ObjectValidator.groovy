@@ -137,11 +137,24 @@ class ObjectValidator {
 //        }
 
         /* Ensure vendor is a String and has at least 2 characters */
-        if (object.hasProperty('vendor')) {
-            if (object.vendor == null || object.vendor.trim().length() <= 1) {
-                errors['vendor'] = 'Vendor must be a valid string with at least 2 characters.'
-            }
-        }
+//        if (object.hasProperty('vendor')) {
+//            def vendor = object.vendor
+//
+//            if (vendor == null) {
+//                errors['vendor'] = 'Vendor must be selected.'
+//            } else if (vendor instanceof String) {
+//                if (vendor.trim().length() <= 1) {
+//                    errors['vendor'] = 'Vendor must be a valid string with at least 2 characters.'
+//                }
+//            } else if (vendor.respondsTo('getVendorid')) {
+//                if (vendor.vendorid == null || vendor.vendorid.toString().trim().length() <= 0) {
+//                    errors['vendor'] = 'Vendor must be selected.'
+//                }
+//            } else {
+//                errors['vendor'] = 'Unsupported vendor format.'
+//            }
+//        }
+
 
         return errors
     }

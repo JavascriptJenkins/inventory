@@ -1,6 +1,8 @@
 package com.techvvs.inventory.service.auth
 
+import com.techvvs.inventory.jparepo.SystemUserRepo
 import com.techvvs.inventory.jparepo.TokenRepo
+import com.techvvs.inventory.model.SystemUserDAO
 import com.techvvs.inventory.model.TokenDAO
 import com.techvvs.inventory.security.JwtTokenProvider
 import org.springframework.beans.factory.annotation.Autowired
@@ -28,11 +30,27 @@ class TechvvsAuthService {
     @Autowired
     Environment env
 
+    @Autowired
+    SystemUserRepo systemUserRepo
+
     void checkuserauth(Model model){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         boolean isAuthenticated = authentication != null && authentication.isAuthenticated();
 
         model.addAttribute("isAuthenticated", isAuthenticated);
+    }
+
+    int getSystemIdOfCurrentUser(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAuthenticated = authentication != null && authentication.isAuthenticated();
+        if(isAuthenticated){
+            String username = authentication.getPrincipal().username
+            SystemUserDAO systemUserDAO = systemUserRepo.findByEmail(username)
+
+            return systemUserDAO.id
+        } else {
+            return 0 // should never happen
+        }
     }
 
     void updateJwtToken(String token, HttpServletResponse response){

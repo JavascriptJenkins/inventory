@@ -2,17 +2,17 @@
 <html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
-    <title>Admin Vendor Page</title>
+    <title>Admin Expenses Config</title>
 
     <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
-    <link rel="stylesheet" type="text/css" media="all" href="/css/table.css" th:href="@{/css/table.css}" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Bootstrap Bundle JS (Includes Popper.js) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" type="text/css" media="all" href="/css/table.css" th:href="@{/css/table.css}" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
 
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -108,6 +108,12 @@
         }
     </style>
 
+    <script th:inline="javascript">
+        var editmode = /*[[${editmode}]]*/ false; // Thymeleaf will inject true/false here
+        console.log("Edit Mode:", editmode); // Debug to check if it's injected correctly
+    </script>
+
+
 
 </head>
 <body>
@@ -117,13 +123,13 @@
 <div class="container">
 
     <div class="header-dark">
-        <h1>Administrate Vendors</h1>
+        <h1>Administrate Expenses</h1>
     </div>
 
     <!-- New Product Edit Section -->
 <!--    <div th:if="${!editmode}" class="tip-box">Create a New Menu by typing in New Menu Name.  </div>-->
 <!--    <div th:if="${editmode}" class="tip-box">Modify attributes of menu. </div>-->
-    <div class="tip-box">Add and edit Vendors. </div>
+    <div class="tip-box">Log expenses to a batch and/or vendor. </div>
 
     <div id="successDiv" class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">
         Success
@@ -134,66 +140,76 @@
     </div>
 
 
-    <form th:action="@{/vendor/admin/edit}" method="post" th:object="${vendor}">
+    <form th:action="@{/accounting/admin/expenses/edit}" method="post" th:object="${expense}">
         <div class="row mb-3">
             <div class="col-md-4">
-                <label class="form-label">Vendor ID</label>
-                <input type="text" th:field="*{vendorid}" id="vendorid" class="form-control edit-validation-group" placeholder="Vendor ID" readonly>
+                <label class="form-label">Expense ID </label>
+                <input type="text" th:field="*{expenseid}" id="expenseid" class="form-control edit-validation-group" placeholder="Expense ID" readonly>
             </div>
             <div class="col-md-4">
-                <label class="form-label">Name</label>
-                <input type="text" th:field="*{name}" id="name" class="form-control edit-validation-group" placeholder="Name">
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">Email</label>
-                <input type="text" th:field="*{email}" id="email" class="form-control edit-validation-group email" placeholder="Email">
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">Address</label>
-                <input type="text" th:field="*{address}" id="address" class="form-control edit-validation-group" placeholder="Address">
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">Address2</label>
-                <input type="text" th:field="*{address2}" id="address2" class="form-control edit-validation-group" placeholder="Address2">
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">City</label>
-                <input type="text" th:field="*{city}" id="city" class="form-control edit-validation-group" placeholder="City">
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">State</label>
-                <input type="text" th:field="*{state}" id="state" class="form-control edit-validation-group" placeholder="State">
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">Zipcode</label>
-                <input type="text" th:field="*{zipcode}" id="zipcode" class="form-control edit-validation-group zipcode" placeholder="Zipcode">
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">Phone</label>
-                <input type="tel" th:field="*{phone}" id="phone" class="form-control edit-validation-group phone" placeholder="Phone">
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">Website</label>
-                <input type="text" th:field="*{website}" id="website" class="form-control edit-validation-group" placeholder="Website">
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">License Number</label>
-                <input type="text" th:field="*{licensenumber}" id="licensenumber" class="form-control edit-validation-group" placeholder="License Number">
+                <label class="form-label">Amount</label>
+                <input type="number" th:field="*{amount}" id="amount" class="form-control edit-validation-group" placeholder="Amount">
             </div>
             <div class="col-md-4">
                 <label class="form-label">Notes</label>
                 <input type="text" step="any" th:field="*{notes}" id="notes" class="form-control edit-validation-group" placeholder="Notes">
             </div>
-            
+            <div class="col-md-4">
+                <label class="form-label">Payment Method</label>
+                <select th:field="*{paymentmethod}" class="form-select form-control edit-validation-group">
+                    <option value="" th:if="*{paymentmethod} == null">-- Select Payment Method --</option>
+                    <option th:each="paymentmethod : ${paymentmethods}"
+                            th:value="${paymentmethod.name()}"
+                            th:text="${paymentmethod.name()}">
+                    </option>
+                </select>
+
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Expense Type</label>
+                <select th:field="*{expensetype}" class="form-select form-control edit-validation-group">
+                    <option value="" th:if="*{expensetype} == null">-- Select Expense Type --</option>
+                    <option th:each="expensetype : ${expensetypes}"
+                            th:value="${expensetype.name()}"
+                            th:text="${expensetype.name()}">
+                    </option>
+                </select>
+
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Batch</label>
+                <select th:field="*{batch}" class="form-select form-control edit-validation-group">
+                    <option value="" th:if="*{batch} == null">-- Select Batch --</option>
+                    <option th:each="batch : ${batches}"
+                            th:value="${batch.batchid}"
+                            th:text="${batch.name}">
+                    </option>
+                </select>
+
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Vendor</label>
+                <select th:field="*{vendor}" class="form-select form-control edit-validation-group">
+                    <option value="" th:if="*{vendor} == null">-- Select Vendor --</option>
+                    <option th:each="vendor : ${vendors}"
+                            th:value="${vendor.vendorid}"
+                            th:text="${vendor.name}">
+                    </option>
+                </select>
+
+            </div>
+
 
         </div>
 
 
 
 <!--        &lt;!&ndash; START: put any hidden values needed here &ndash;&gt;-->
-        <input th:if="${vendor.vendorid != null && vendor.vendorid != 0}" type="hidden" th:field="*{expenses}">
-        <input th:if="${vendor.vendorid != null && vendor.vendorid != 0}" type="hidden" th:field="*{updateTimeStamp}">
-        <input th:if="${vendor.vendorid != null && vendor.vendorid != 0}" type="hidden" th:field="*{createTimeStamp}">
+        <input th:if="${expense.expenseid != null && expense.expenseid != 0}" type="hidden" th:field="*{updateTimeStamp}">
+        <input th:if="${expense.expenseid != null && expense.expenseid != 0}" type="hidden" th:field="*{createTimeStamp}">
 <!--        &lt;!&ndash; END: Hidden Values &ndash;&gt;-->
 
 
@@ -208,52 +224,52 @@
 
     
     <!-- START: Expenses Config Selection Table -->
-    <div class="col-md-12" th:if="${vendorPage != null && vendorPage.content.size() > 0}">
-        <div class="tip-box">Select a Vendor by clicking on the Vendor ID</div>
+    <div class="col-md-12" th:if="${expensePage != null && expensePage.content.size() > 0}">
+        <div class="tip-box">Select an Expense by clicking on the Expense ID</div>
         <table id="selectMenuTable" class="table table-hover table-striped table-dark" style="margin-top: 20px">
             <thead>
             <tr>
-                <th scope="col">Vendor ID</th>
-                <th scope="col">Name</th>
-                <th scope="col">Email</th>
-                <th scope="col">Phone</th>
-                <th scope="col">Website</th>
+                <th scope="col">Expense ID</th>
+                <th scope="col">Batch</th>
+                <th scope="col">Vendor</th>
+                <th scope="col">Amount</th>
+                <th scope="col">Payment Method</th>
+                <th scope="col">Expense Type</th>
                 <th scope="col">Notes</th>
                 <th scope="col">Created</th>
             </tr>
             </thead>
             <tbody>
-            <tr th:each="vendor, iStat : ${vendorPage.content}"
+            <tr th:each="expense, iStat : ${expensePage.content}"
                 th:style="${iStat.odd}? 'font-weight: bold;'"
                 th:alt-title="${iStat.even}? 'even' : 'odd'">
                 <td>
-                    <a th:href="@{/vendor/admin?size=__${1}__&page=__${page == null ? 0 : page}__&vendorid=__${vendor.vendorid == null ? 0 : vendor.vendorid}__}"
-                       th:data-vendorid="${vendor.vendorid}"
-                       id="vendorid-${vendor.vendorid}"
+                    <a th:href="@{/rewards/admin?size=__${1}__&page=__${page == null ? 0 : page}__&expenseid=__${expense.expenseid == null ? 0 : expense.expenseid}__}"
+                       th:data-expenseid="${expense.expenseid}"
+                       id="expenseid-${expense.expenseid}"
                        class="btn btn-secondary btn-sm">
-                        <span th:text="${vendor.vendorid}"></span>
+                        <span th:text="${expense.expenseid}"></span>
                     </a>
                 </td>
-
-
-                <td th:text="${vendor.name}"></td>
-                <td th:text="${vendor.email}"></td>
-                <td th:text="${vendor.phone}"></td>
-                <td th:text="${vendor.website}"></td>
-                <td th:text="${vendor.notes}"></td>
-                <td th:text="${vendor.createTimeStamp}"></td>
+                <td th:text="${expense.batch.name}"></td>
+                <td th:text="${expense?.vendor?.name ?: 'N/A'}"></td>
+                <td th:text="${expense.amount}"></td>
+                <td th:text="${expense.paymentmethod}"></td>
+                <td th:text="${expense.expensetype}"></td>
+                <td th:text="${expense.notes}"></td>
+                <td th:text="${expense.createTimeStamp}"></td>
 
 
             </tr>
             </tbody>
         </table>
-        <nav th:if="${vendorPage.totalPages > 0}">
+        <nav th:if="${expensePage.totalPages > 0}">
             <ul class="pagination justify-content-center">
                 <li class="page-item" th:each="pageNumber : ${pageNumbers}">
                     <a class="page-link btn btn-secondary btn-sm mx-1"
-                       th:href="@{/vendor/admin?size=__${#lists.size(vendorPage.content) > 5 ? #lists.size(vendorPage.content) : 5}__&page=__${pageNumber}__&vendorid=__${vendor != null ? vendor.vendorid : '0'}__}"
+                       th:href="@{/rewards/admin?size=__${#lists.size(expensePage.content) > 5 ? #lists.size(expensePage.content) : 5}__&page=__${pageNumber}__&expenseid=__${expense != null ? expense.expenseid : '0'}__}"
                        th:text="${pageNumber}"
-                       th:classappend="${pageNumber==vendorPage.number + 1} ? 'active'">
+                       th:classappend="${pageNumber==expensePage.number + 1} ? 'active'">
                     </a>
                 </li>
             </ul>
@@ -265,23 +281,18 @@
 
 
 </div>
-
 <div th:insert="fragments/validation.html :: validationfragment"> </div>
 <script>
     const inputFields = [
-        'vendorid', 'name', 'email', 'address',
-        'city', 'state', 'zipcode', 'phone', 'website',
-        'licensenumber','address2', 'notes'
+        'expenseid', 'batch', 'vendor', 'amount',
+        'paymentmethod', 'notes', 'expensetype', 'notes'
     ];
 
-    const optionalFields = ['address2', 'notes'];
+    const optionalFields = ['notes', 'vendor'];
 
     document.addEventListener("DOMContentLoaded", () => {
         initializeValidation(inputFields, optionalFields);
     });
 </script>
-
-
-
 </body>
 </html>

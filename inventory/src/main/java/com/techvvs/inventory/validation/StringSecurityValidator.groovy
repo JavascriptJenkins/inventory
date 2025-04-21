@@ -73,23 +73,26 @@ class StringSecurityValidator {
     public void validateStringValues(Object obj, Model model) {
         def errors = []
 
-        // Iterate through all properties of the object
-        obj.metaClass.properties.each { property ->
-            if (property.type == String) {
-                def value = obj."${property.name}"
-
-                // If value is null or empty, skip it
-                if (value?.trim()) {
+        obj.class.declaredFields.each { field ->
+            field.accessible = true // bypass private/protected restrictions
+            if (field.type == String && field.name != 'website') {
+                def value = field.get(obj)
+                if (value instanceof String && !value.isBlank()) {
                     riskyPatterns.each { pattern ->
                         if (value =~ pattern) {
-                            errors << "Security risk detected in field '${property.name}': invalid value '$value'"
+                            errors << "Security risk detected in field '${field.name}': invalid value '$value'"
                         }
                     }
                 }
             }
         }
+
         errors.each { error ->
             modelMessageUtil.addMessage(model, MessageConstants.ERROR_MSG, error.toString())
         }
     }
+
+
+
+
 }

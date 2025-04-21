@@ -66,7 +66,18 @@
                         <a class="nav-link" th:href="@{/customer}">Customers</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" th:href="@{/vendor/admin}">Vendors</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" th:href="@{/menu/admin/manage}">Menus</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="accountingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Accounting
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="accountingDropdown">
+                            <li><a class="dropdown-item" th:href="@{/accounting/admin/expenses}">Expenses</a></li>
+                        </ul>
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="batchDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">

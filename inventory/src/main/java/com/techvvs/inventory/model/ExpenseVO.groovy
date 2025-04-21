@@ -4,56 +4,44 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 
 import javax.persistence.*
-import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
 
 
 //@IdClass(BatchCompositeID.class)
 @JsonIgnoreProperties
 @Entity
-@Table(name="vendor")
-class VendorVO implements Serializable {
+@Table(name="expense")
+class ExpenseVO implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @JsonProperty
-    Integer vendorid
+    Integer expenseid
 
     @JsonProperty
-    String name
+    @ManyToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name="batchid")
+    BatchVO batch;
 
     @JsonProperty
-    String email
+    @ManyToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "vendorid", referencedColumnName = "vendorid")
+    VendorVO vendor;
 
     @JsonProperty
-    String address
+    Double amount
 
     @JsonProperty
-    String address2
+    String paymentmethod // filled by PaymentMethod ENUM
 
     @JsonProperty
-    String city;
-
-    @JsonProperty
-    String state;
-
-    @JsonProperty
-    String zipcode;
-
-    @JsonProperty
-    String phone
-
-    @JsonProperty
-    String website
-
-    @JsonProperty
-    String licensenumber
+    String expensetype // filled by ExpenseType ENUM
 
     @JsonProperty
     String notes
 
-    @OneToMany(mappedBy = "vendor", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    List<ExpenseVO> expenses;
+    @JsonProperty
+    int systemuser
 
     // generic fields below
     @JsonProperty
@@ -61,7 +49,5 @@ class VendorVO implements Serializable {
 
     @JsonProperty
     LocalDateTime createTimeStamp
-
-
 
 }
