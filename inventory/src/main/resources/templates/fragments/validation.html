@@ -1,0 +1,71 @@
+<div th:fragment="validationfragment">
+    <script>
+        function validateInputField(inputId, optionalFields = []) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+
+            const value = input.value.trim();
+            const isOptional = optionalFields.includes(inputId);
+            let isValid = false;
+
+            if (isOptional && value === '') {
+                isValid = true;
+            } else if (input.classList.contains('email')) {
+                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                const hasDoubleDots = value.includes('..');
+                isValid = emailPattern.test(value) && !hasDoubleDots;
+            } else if (input.classList.contains('phone')) {
+                const phonePattern = /^\d{10}$/;
+                isValid = phonePattern.test(value);
+            } else if (input.classList.contains('zipcode')) {
+                const zipPattern = /^\d{5}$/;
+                isValid = zipPattern.test(value);
+            } else {
+                isValid = value.length > 0;
+            }
+
+            input.classList.remove('glowing-valid', 'glowing-invalid');
+            input.classList.add(isValid ? 'glowing-valid' : 'glowing-invalid');
+
+            checkFormValidity();
+        }
+
+        function checkFormValidity() {
+            const hasInvalidFields = document.querySelector('.glowing-invalid') !== null;
+            const submitButton = document.querySelector('.btn-secondary');
+            if (submitButton) {
+                submitButton.disabled = hasInvalidFields;
+            }
+        }
+
+        function validateAllFields(inputFields = [], optionalFields = []) {
+            inputFields.forEach(id => validateInputField(id, optionalFields));
+        }
+
+        function initializeValidation(inputFields = [], optionalFields = []) {
+            inputFields.forEach(id => {
+                const input = document.getElementById(id);
+                if (input) {
+                    input.addEventListener('input', () => validateInputField(id, optionalFields));
+                }
+            });
+
+            inputFields.forEach(id => validateInputField(id, optionalFields));
+        }
+    </script>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Bundle JS (Includes Popper.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <style>
+        .glowing-valid {
+            box-shadow: 0 0 8px 2px #00ffff !important;
+        }
+        .glowing-invalid {
+            box-shadow: 0 0 8px 2px #ff0000 !important;
+        }
+    </style>
+</div>
