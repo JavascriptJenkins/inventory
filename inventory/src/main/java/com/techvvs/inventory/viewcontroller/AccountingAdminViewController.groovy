@@ -182,49 +182,48 @@ public class AccountingAdminViewController {
             @RequestParam("productid") Optional<Integer> productinscope,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Optional<LocalDateTime> startdate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Optional<LocalDateTime> enddate
+    ) {
+        // Define default range using LocalDateTime
+        LocalDateTime start = startdate.orElse(LocalDateTime.now().minusMonths(1)).withHour(0).withMinute(0)
+        LocalDateTime end = enddate.orElse(LocalDateTime.now()).withHour(23).withMinute(59)
 
+        Integer customerid = customerinscope.filter { it > 0 }.orElse(null)
+        Integer productid = productinscope.filter { it > 0 }.orElse(null)
+        Integer batchid = batchinscope.filter { it > 0 }.orElse(null)
 
-    ){
-
-        Integer customerid = (customerinscope.present && customerinscope.get() > 0) ? customerinscope.get() : null
-        Integer productid = (productinscope.present && productinscope.get() > 0) ? productinscope.get() : null
-        Integer batchid = (batchinscope.present && batchinscope.get() > 0) ? batchinscope.get() : null
-
-
-        List<Object[]> results = transactionRepo.findDailyRevenueByFilters(
-                startdate.orElse(LocalDateTime.now().minusMonths(1)),
-                enddate.orElse(LocalDateTime.now()),
-                customerid,
-                productid,
-                batchid
-        );
-
-        Map<LocalDate, Double> revenueMap = results.collectEntries { row ->
-            def date = ((java.sql.Date) row[0]).toLocalDate()
-            def amount = (Double) row[1]
-            [(date): amount]
+        // Choose query
+        List<Object[]> results
+        if (productid || batchid) {
+            results = transactionRepo.findRevenueWithJoin(start, end, customerid, productid, batchid)
+        } else {
+            results = transactionRepo.findRevenueWithoutJoin(start, end, customerid)
         }
 
+        // Map results using LocalDateTime keys (truncated to day)
+        Map<LocalDateTime, Double> revenueMap = results.collectEntries { row ->
+            def date = ((java.sql.Date) row[0]).toLocalDate()
+            def dateTime = date.atStartOfDay()
+            def rawAmount = row[1]
+            def amount = (rawAmount instanceof Number) ? ((Number) rawAmount).doubleValue() : 0.0
+            [(dateTime): amount]
+        }
 
-        // Ensure full date range is represented
-        LocalDate start = startdate.orElse(LocalDateTime.now().minusMonths(1)).toLocalDate()
-        LocalDate end = enddate.orElse(LocalDateTime.now()).toLocalDate()
-
+        // Fill in missing dates
         List<RevenueDataPoint> response = []
-        LocalDate current = start
+        LocalDateTime current = start.withHour(0).withMinute(0).withSecond(0).withNano(0)
         while (!current.isAfter(end)) {
-            response << new RevenueDataPoint(current, revenueMap.getOrDefault(current, 0.0))
+            response << new RevenueDataPoint(current.toLocalDate(), revenueMap.getOrDefault(current, 0.0))
             current = current.plusDays(1)
         }
 
-
+        // Auth + model binding
         techvvsAuthService.checkuserauth(model)
-
         bindStaticValuesForSalesGraphPage(model, batchinscope, productinscope, customerinscope, startdate, enddate)
         model.addAttribute("revenuedata", response)
 
-        return "accounting/sales.html";
+        return "accounting/sales.html"
     }
+
 
     void bindStaticValuesForSalesGraphPage(Model model,
                                            Optional<Integer> batchinscope,

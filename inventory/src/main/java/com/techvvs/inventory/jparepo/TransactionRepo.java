@@ -59,6 +59,45 @@ public interface TransactionRepo extends JpaRepository<TransactionVO, Integer> {
 
 
 
+    @Query("""
+    SELECT cast(t.createTimeStamp as date), SUM(t.paid)
+    FROM TransactionVO t
+    WHERE t.createTimeStamp BETWEEN :startDate AND :endDate
+      AND (:customerid IS NULL OR t.customervo.customerid = :customerid)
+    GROUP BY cast(t.createTimeStamp as date)
+    ORDER BY cast(t.createTimeStamp as date) ASC
+""")
+    List<Object[]> findRevenueWithoutJoin(
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
+            @Param("customerid") Integer customerid
+    );
+
+
+    @Query("""
+    SELECT cast(t.createTimeStamp as date), SUM(t.paid)
+    FROM TransactionVO t
+    WHERE t.transactionid IN (
+        SELECT DISTINCT t2.transactionid
+        FROM TransactionVO t2
+        JOIN t2.product_list p
+        WHERE (:productid IS NULL OR :productid = 0 OR p.product_id = :productid)
+          AND (:batchid IS NULL OR :batchid = 0 OR p.batch.batchid = :batchid)
+    )
+    AND t.createTimeStamp BETWEEN :startDate AND :endDate
+    AND (:customerid IS NULL OR t.customervo.customerid = :customerid)
+    GROUP BY cast(t.createTimeStamp as date)
+    ORDER BY cast(t.createTimeStamp as date) ASC
+""")
+    List<Object[]> findRevenueWithJoin(
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
+            @Param("customerid") Integer customerid,
+            @Param("productid") Integer productid,
+            @Param("batchid") Integer batchid
+    );
+
+
 
 
     // this is a great query that finds a list of unpaid transactions that a product is in based on batchid and productid
