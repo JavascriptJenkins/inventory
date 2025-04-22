@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import javax.transaction.Transactional;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface TransactionRepo extends JpaRepository<TransactionVO, Integer> {
@@ -34,6 +35,28 @@ public interface TransactionRepo extends JpaRepository<TransactionVO, Integer> {
             @Param("batchid") Integer batchid,
             Pageable pageable
     );
+
+
+    // this query drives the graphing behavior.  will get the daily amount that was actually paid
+    @Query("""
+    SELECT cast(t.createTimeStamp as date) as txDate, SUM(t.paid)
+    FROM TransactionVO t
+    JOIN t.product_list p
+    WHERE t.createTimeStamp BETWEEN :startDate AND :endDate
+      AND (:customerid IS NULL OR t.customervo.customerid = :customerid)
+      AND (:productid IS NULL OR :productid = 0 OR p.product_id = :productid)
+      AND (:batchid IS NULL OR :batchid = 0 OR p.batch.batchid = :batchid)
+    GROUP BY cast(t.createTimeStamp as date)
+    ORDER BY txDate ASC
+""")
+    List<Object[]> findDailyRevenueByFilters(
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
+            @Param("customerid") Integer customerid,
+            @Param("productid") Integer productid,
+            @Param("batchid") Integer batchid
+    );
+
 
 
 

@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Sales</title>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Bundle JS (Includes Popper.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" type="text/css" media="all" href="/css/table.css" th:href="@{/css/table.css}" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        .glowing-valid {
+            box-shadow: 0 0 8px 2px #00ffff !important;
+        }
+        .glowing-invalid {
+            box-shadow: 0 0 8px 2px #ff0000 !important;
+        }
+    </style>
+    <style>
+        .table-hover tbody tr:hover {
+            background-color: #e0f7fa;
+        }
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: #f1f8fa;
+        }
+        .table-dark thead {
+            background-color: #343a40;
+            color: #fff;
+        }
+        .btn-secondary {
+            color: #fff;
+            background-color: #343a40;
+            border-color: #343a40;
+        }
+        .btn-secondary:hover {
+            background-color: #23272b;
+            border-color: #1d2124;
+        }
+        .header-dark {
+            background-color: #343a40;
+            color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            margin-bottom: 15px;
+            font-family: 'Roboto', sans-serif;
+            border: 1px solid transparent;
+            border-image: linear-gradient(to right, #c0c0c0, #ffffff);
+            border-image-slice: 1;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .tip-box {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: #00ffff;
+            text-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff, 0 0 15px #00ffff;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: rgba(0, 0, 0, 0.7);
+            margin-bottom: 15px;
+            animation: glow 1.5s infinite alternate;
+        }
+        .btn-dark-custom {
+            background-color: #343a40;
+            color: #fff;
+            border: 1px solid #343a40;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .btn-dark-custom:hover {
+            background-color: #1d2124; /* Darker shade on hover */
+            color: #f8f9fa; /* Lighter text on hover */
+        }
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff, 0 0 15px #00ffff;
+            }
+            to {
+                text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px #00ffff;
+            }
+        }
+        .record-selector {
+            margin-bottom: 15px;
+            background-color: #343a40;
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            display: inline-block;
+        }
+        .record-selector select {
+            background-color: #23272b;
+            color: #fff;
+            border: 1px solid #343a40;
+        }
+        .record-selector select:focus {
+            border-color: #1d2124;
+            box-shadow: none;
+        }
+    </style>
+
+    <style>
+        .record-selector {
+            max-width: 300px;
+            margin-bottom: 1rem;       /* vertical spacing */
+            margin-right: 1rem;        /* horizontal spacing */
+        }
+
+        @media (max-width: 768px) {
+            .record-selector {
+                max-width: 100%;
+                margin-right: 0;
+            }
+        }
+
+        .record-selector select,
+        .record-selector input[type="datetime-local"] {
+            width: 100%;
+        }
+    </style>
+
+
+
+
+    <script th:inline="javascript">
+        var editmode = /*[[${editmode}]]*/ false; // Thymeleaf will inject true/false here
+        console.log("Edit Mode:", editmode); // Debug to check if it's injected correctly
+    </script>
+
+
+
+</head>
+<body>
+
+<div th:insert="fragments/adminnavbar.html :: adminnavbarfragment"> </div>
+
+<div class="container">
+
+    <div class="header-dark">
+        <h1>View Sales</h1>
+    </div>
+
+    <!-- New Product Edit Section -->
+<!--    <div th:if="${!editmode}" class="tip-box">Create a New Menu by typing in New Menu Name.  </div>-->
+<!--    <div th:if="${editmode}" class="tip-box">Modify attributes of menu. </div>-->
+    <div class="tip-box">View Sales on this sweet graph. </div>
+
+    <div id="successDiv" class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">
+        Success
+    </div>
+
+    <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">
+        Error
+    </div>
+
+
+    <form th:action="@{/accounting/admin/sales}" method="get" id="filterForm">
+
+        <!-- Preserve page value on submit -->
+        <input type="hidden" name="page" th:value="${page}"/>
+
+        <div class="d-flex flex-wrap mb-3">
+            <div class="record-selector">
+                <label for="customerid">Customer</label>
+                <select class="form-control" id="customerid" name="customerid"
+                        onchange="document.getElementById('filterForm').submit()">
+                    <option th:value="0">All</option>
+                    <option th:each="c : ${customers}" th:value="${c.customerid}" th:text="${c.name}"
+                            th:selected="${customerinscope} == ${c.customerid}"></option>
+                </select>
+            </div>
+
+            <div class="record-selector">
+                <label for="productid">Product</label>
+                <select class="form-control" id="productid" name="productid"
+                        onchange="document.getElementById('filterForm').submit()">
+                    <option th:value="0">All</option>
+                    <option th:each="p : ${products}" th:value="${p.product_id}" th:text="${p.name}"
+                            th:selected="${productinscope} == ${p.product_id}"></option>
+                </select>
+            </div>
+
+            <div class="record-selector">
+                <label for="batchid">Batch</label>
+                <select class="form-control" id="batchid" name="batchid"
+                        onchange="document.getElementById('filterForm').submit()">
+                    <option th:value="0">All</option>
+                    <option th:each="b : ${batches}" th:value="${b.batchid}" th:text="${b.name}"
+                            th:selected="${batchinscope} == ${b.batchid}"></option>
+                </select>
+            </div>
+        </div>
+
+
+
+
+
+
+        <div class="d-flex flex-wrap mb-4">
+            <div class="record-selector">
+                <label for="startdate">Start Date</label>
+                <input type="datetime-local" class="form-control"
+                       id="startdate"
+                       name="startdate"
+                       th:value="${startdate != null} ? ${#temporals.format(startdate, 'yyyy-MM-dd''T''HH:mm')}"
+                       onchange="document.getElementById('filterForm').submit()">
+            </div>
+
+            <div class="record-selector">
+                <label for="enddate">End Date</label>
+                <input type="datetime-local" class="form-control"
+                       id="enddate"
+                       name="enddate"
+                       th:value="${enddate != null} ? ${#temporals.format(enddate, 'yyyy-MM-dd''T''HH:mm')}"
+                       onchange="document.getElementById('filterForm').submit()">
+            </div>
+        </div>
+
+
+
+
+
+    </form>
+
+    <br>
+
+    
+    <!-- START: Graph area -->
+    <div class="col-md-12">
+        <div class="tip-box">View the sweet graph</div>
+        <div class="p-3" style="background-color: #1a1a1a; border-radius: 10px;">
+            <canvas id="revenueChart" width="100%" height="40"></canvas>
+        </div>
+
+
+    </div>
+    <!-- END: Graph area -->
+
+
+
+
+</div>
+<script th:inline="javascript">
+    const revenueData = /*[[${revenuedata}]]*/ [];
+    const chartData = JSON.parse(JSON.stringify(revenueData));
+
+    const labels = chartData.map(d => d.date);
+    const data = chartData.map(d => d.total);
+
+    const ctx = document.getElementById('revenueChart').getContext('2d');
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Revenue ($)',
+                data: data,
+                fill: true,
+                borderColor: '#00ffff',
+                backgroundColor: 'rgba(0, 255, 255, 0.1)',
+                tension: 0.3,
+                pointBackgroundColor: '#00ffff'
+            }]
+        },
+        options: {
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Date'
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Revenue'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#fff'
+                    }
+                }
+            }
+        }
+    });
+</script>
+
+</body>
+</html>
