@@ -551,6 +551,7 @@ class TransactionService {
 
     }
 
+    @Transactional
     private DiscountVO createDiscount(
             DiscountVO incomingDiscount,
             TransactionVO transaction,
