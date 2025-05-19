@@ -67,7 +67,7 @@ class ValidateAuth {
         stringSecurityValidator.validateStringValues(systemUserDAO, model)
 
         // second - validate all object fields
-        objectValidator.validateAndAttachErrors(systemUserDAO, model)
+//        objectValidator.validateAndAttachErrors(systemUserDAO, model)
 
 
         // note - not validating password in here becasue it's not needed until phonetoken/password page
