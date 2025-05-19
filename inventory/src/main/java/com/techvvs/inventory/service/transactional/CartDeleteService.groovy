@@ -7,6 +7,7 @@ import com.techvvs.inventory.jparepo.ProductRepo
 import com.techvvs.inventory.model.CartVO
 import com.techvvs.inventory.model.CustomerVO
 import com.techvvs.inventory.model.ProductVO
+import com.techvvs.inventory.model.SystemUserDAO
 import com.techvvs.inventory.service.controllers.CartService
 import com.techvvs.inventory.service.controllers.ProductService
 import org.springframework.beans.factory.annotation.Autowired
@@ -220,6 +221,49 @@ class CartDeleteService {
         return cartVO
     }
 
+
+    @Transactional
+    boolean deleteCart(Integer cartid){
+
+        CartVO cartVO = cartRepo.findById(cartid).get()
+        if(cartVO?.cartid == 0 || cartVO?.cartid == null){
+            return false
+        } else {
+
+
+
+            try {
+
+
+                CartVO existingCart = cartRepo.findById(cartid).get()
+
+                for(ProductVO existingProduct : existingCart.product_cart_list){
+                    Optional<ProductVO> productVO = productRepo.findById(existingProduct.product_id)
+
+                    if(productVO.present){
+
+                        productVO.get().quantityremaining = (productVO.get().quantityremaining + 1)
+                        productRepo.save(productVO.get()); // Don't forget to persist the update
+                    }
+                }
+
+                //
+
+
+            } catch (Exception e){
+                System.out.println("Caught Exception While Deleting Cart: " + e)
+                return false
+            } finally{
+
+                cartRepo.deleteById(cartid)
+
+            }
+
+
+
+            return true
+        }
+    }
 
 
 }

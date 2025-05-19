@@ -54,8 +54,6 @@ public class AuthViewController {
     @Autowired
     CheckoutHelper checkoutHelper;
 
-    @Autowired
-    TwilioTextUtil textMagicUtil;
 
 
     @Autowired
@@ -130,26 +128,15 @@ public class AuthViewController {
     @GetMapping("/createaccount")
     String viewCreateAccount(Model model) {
 
-        checkForDev1(model);
+        techvvsAuthService.checkForDev1(model);
         model.addAttribute("systemuser", new SystemUserDAO());
         return "auth/newaccount.html";
     }
 
-    void checkForDev1(Model model){
-        boolean isDev1 = "dev1".equals(env.getProperty("spring.profiles.active"));
-        if(isDev1){
-            model.addAttribute("isDev1",1); // if it is dev1 we will give option to fillout default values
-        } else {
-            model.addAttribute("isDev1",0);
-        }
-    }
 
 
-    void bindObjectsForMenuFunctionality(Model model){
-        Optional<Integer> page = Optional.of(0);
-        Optional<Integer> size = Optional.of(0);
-        menuHelper.findMenus(model,  page, size);
-    }
+
+
 
     // display the page for typing in the token when user clicks link on phone
 //    @GetMapping("/verifylinkphonetoken")
@@ -185,151 +172,14 @@ public class AuthViewController {
         // get all the customers
         checkoutHelper.getAllCustomers(model);
 
-        if (tokenDAO != null && tokenDAO.getUsermetadata() != null && tokenDAO.getToken() != null) {
+        try {
+            return techvvsAuthService.runLoginRoutineFromToken(tokenDAO, model, response);
+        } catch (Exception ex) {
 
-            if (tokenDAO.getToken().length() < 5) {
-                model.addAttribute("errorMessage", "Token must be at least characters. ");
-                model.addAttribute("tknfromcontroller", tokenDAO);
-                checkForDev1(model);
-                return "auth/authEnterPhoneToken.html";
-            }
-
-
-            Optional<SystemUserDAO> existingUser = Optional.ofNullable(systemUserRepo.findByEmail(tokenDAO.getUsermetadata())); // see if user exists
-
-            if (tokenDAO.getPassword() != null && tokenDAO.getPassword().length() > 1) {
-
-
-                if (existingUser.isPresent() && passwordEncoder.matches(tokenDAO.getPassword(), existingUser.get().getPassword())) {
-                    // this means passwords match
-                    System.out.println("passwords match");
-
-                } else {
-                    System.out.println("passwords do not match");
-                    model.addAttribute("tknfromcontroller", tokenDAO);
-                    model.addAttribute("errorMessage", "Unable to login. ");
-                    checkForDev1(model);
-                    return "auth/authEnterPhoneToken.html";
-                }
-            } else {
-                System.out.println("passwords not in correct format");
-                model.addAttribute("tknfromcontroller", tokenDAO);
-                model.addAttribute("errorMessage", "password is blank ");
-                checkForDev1(model);
-                return "auth/authEnterPhoneToken.html";
-            }
-
-
-            TokenDAO latest;
-            List<TokenDAO> tokenlist = tokenRepo.findTop10ByUsermetadataOrderByCreatetimestampDesc(tokenDAO.getUsermetadata());
-            if (tokenlist != null && tokenlist.size() > 0) {
-
-                // take the most recent token generated for the user
-                latest = tokenlist.get(0);
-
-                boolean skip = false;
-                // if we are in dev1 just mark any token valid and let the user in
-                if ("dev1".equals(env.getProperty("spring.profiles.active"))){
-
-                    skip = true;
-                }
-
-
-                // make sure token matches the one passed from controller
-                if (!latest.getToken().equals(tokenDAO.getToken()) && !skip) {
-                    // the tokens don't match then we send them back
-                    model.addAttribute("errorMessage", "Token does not match.  Make sure you are entering the correct value or try logging in again. "); // todo: add a login link here
-                    model.addAttribute("tknfromcontroller", tokenDAO);
-                    checkForDev1(model);
-                    return "auth/authEnterPhoneToken.html";
-                }
-
-
-                if (latest.getTokenused() == 1 && !skip) {
-                    // if token is used send them back
-                    model.addAttribute("errorMessage", "Try logging in again so a new token will be sent. "); // todo: add a login link here
-                    model.addAttribute("tknfromcontroller", tokenDAO);
-                    checkForDev1(model);
-                    return "auth/authEnterPhoneToken.html";
-
-                } else if (latest.getTokenused() == 0) {
-
-
-                    latest.setUpdatedtimestamp(LocalDateTime.now());
-                    latest.setTokenused(1);
-                    // have them validate existing token
-                    System.out.println("User has valid token, setting it to used now. ");
-                    tokenRepo.save(latest);
-
-
-                    // note - user will be active if the email link has been clicked
-                    // insert jwt token minting here
-                    try {
-
-                        if (existingUser.isPresent() && existingUser.get().getIsuseractive() == 0 && !skip) {
-                            model.addAttribute("tknfromcontroller", tokenDAO);
-                            System.out.println("User exists but is not active.  User needs to activate email. ");
-                            model.addAttribute("errorMessage", "Unable to login. If you have created an account, check your email (and spam) for account activation link. ");
-                            //  return "auth/authVerifySuccess.html";
-                            checkForDev1(model);
-                            return "auth/authEnterPhoneToken.html";
-                        } else if (existingUser.isEmpty() && !skip) {
-                            model.addAttribute("tknfromcontroller", tokenDAO);
-                            model.addAttribute("errorMessage", "Unable to login. If you have created an account, check your email (and spam) for account activation link.  ");
-                            //return "auth/authVerifySuccess.html";
-                            checkForDev1(model);
-                            return "auth/authEnterPhoneToken.html";
-                        }
-
-
-                        if (existingUser.isPresent()) {
-                            String token = userService.signin(
-                                    existingUser.get().getEmail(),
-                                    tokenDAO.getPassword()); // pass in plaintext password from server
-
-                            Token token1;
-                            if (token != null) {
-                                System.out.println("SIGN-IN TOKEN GENERATED!!! ");
-                                token1 = new Token();
-                                token1.setToken(token);
-
-                                // Create and add the JWT cookie
-                                Cookie cookie = new Cookie("techvvs_token", token);
-                                cookie.setHttpOnly(true);
-                                cookie.setSecure(true); // Set to true in production with HTTPS
-                                cookie.setPath("/");
-                                response.addCookie(cookie);
-                                //
-                                techvvsAuthService.checkuserauth(model);
-
-                            } else {
-                                System.out.println("TOKEN IS NULL THIS IS BAD BRAH! ");
-                            }
-                        }
-
-                    } catch (Exception ex) {
-                        model.addAttribute("errorMessage", "System Error");
-                        System.out.println("TechVVS System Error in login: " + ex.getMessage());
-                        model.addAttribute("tknfromcontroller", tokenDAO);
-                        // return "auth/auth.html"; // return early with error
-                        checkForDev1(model);
-                        return "auth/authEnterPhoneToken.html";
-                    }
-
-
-                    model.addAttribute("successMessage", "Phone token verified. ");
-                    model.addAttribute("tknfromcontroller", tokenDAO);
-                    checkForDev1(model);
-                    bindObjectsForMenuFunctionality(model);
-                    return "auth/index.html";
-
-                }
-            }
-
-
-        } else {
-            model.addAttribute("errorMessage", "fill out required fields");
+            model.addAttribute("errorMessage", "System Error.  Try again or contact support: info@techvvs.io");
+            System.out.println("Error in postverifyphonetoken: " + ex.getMessage());
         }
+
 
 //        return "index.html";
 
@@ -450,7 +300,7 @@ public class AuthViewController {
 
 
         Optional<SystemUserDAO> userfromdb = Optional.empty();
-        String errorResult = validateAuth.validateLoginInfo(systemUserDAO);
+        String errorResult = validateAuth.validateLoginInfo(systemUserDAO, model);
 
         // todo: add a feature to make sure login pages are not abused with ddos (maybe nginx setting)
         // if the email is valid format, do a lookup to see if there is actually a user with this email in the system
@@ -488,75 +338,8 @@ public class AuthViewController {
             // todo: check if one hour has passed on the token
             // pull token from database and see if 1 hour has passed and if the token is unused
             try {
-                List<TokenDAO> tokenlist = tokenRepo.findTop10ByUsermetadataOrderByCreatetimestampAsc(systemUserDAO.getEmail());
-                System.out.println("Size of Token list. " + String.valueOf(tokenlist.size()));
-                if (tokenlist != null && tokenlist.size() > 0) {
-                    TokenDAO latest = tokenlist.get(0);
-                    if (latest.getTokenused() == 1) {
-                        System.out.println("User has token that is already used. Making a new one now. ");
-                        //send a new token
-                        boolean isDev1 = "dev1".equals(env.getProperty("spring.profiles.active"));
-                        textMagicUtil.createAndSendNewPhoneToken(userfromdb.get(), isDev1);
 
-                    } else if (latest.getTokenused() == 0) {
-                        // have them validate existing token
-                        System.out.println("User has valid phone token not expired yet. ");
-                    }
-                }
-
-                // upon account creation we are putting a token in the database
-
-                // if the user has no token yet we make one and text it here
-                if (tokenlist != null && tokenlist.isEmpty()) {
-
-
-                    // save a token value to a username and then send a text message
-                    String tokenval = String.valueOf(100000 + secureRandom.nextInt(900000));  // Generate a 6-digit random number
-                    String result = "";
-                    try {
-                        TokenDAO tokenDAO = new TokenDAO();
-                        tokenDAO.setUsermetadata(systemUserDAO.getEmail());
-                        tokenDAO.setToken(tokenval);
-                        tokenDAO.setTokenused(0);
-                        tokenDAO.setCreatetimestamp(LocalDateTime.now());
-                        tokenDAO.setUpdatedtimestamp(LocalDateTime.now());
-                        tokenRepo.save(tokenDAO);
-                        System.out.println("new token saved successfully for user with no existing token. ");
-
-                    } catch (Exception ex) {
-                        System.out.println("error inserting token into database");
-                    } finally {
-                        System.out.println("sending out validation text");
-                        // only send the text message after everything else went smoothly
-                        // todo : check result of this
-                        boolean isDev1 = "dev1".equals(env.getProperty("spring.profiles.active"));
-                        if(!isDev1){
-                            result = textMagicUtil.sendValidationText(userfromdb.get(), tokenval, isDev1);
-                        } else {
-                            System.out.println("NOT sending validation text because we are in dev1");
-                        }
-
-                    }
-
-
-                    // If we have 1 token in the database for a user, and that token is NOT used, do this
-                    if (tokenlist != null && tokenlist.size() == 1) {
-                        TokenDAO latest = tokenlist.get(0);
-                        if (latest.getTokenused() == 1) {
-                            System.out.println("User has token that is already used. Making a new one now. ");
-                            boolean isDev1 = "dev1".equals(env.getProperty("spring.profiles.active"));
-                            //send a new token
-                            textMagicUtil.createAndSendNewPhoneToken(userfromdb.get(), isDev1);
-
-                        } else if (latest.getTokenused() == 0) {
-                            // have them validate existing token
-                            System.out.println("User has valid phone token not expired yet. ");
-                        }
-                    }
-
-
-                }
-
+                techvvsAuthService.runLoginRoutine(systemUserDAO);
 
             } catch (Exception ex) {
                 System.out.println("token issue: " + ex.getMessage());
@@ -573,7 +356,7 @@ public class AuthViewController {
         }
 
         //  return "auth/index.html";
-        checkForDev1(model);
+       techvvsAuthService.checkForDev1(model);
         return "auth/authEnterPhoneToken.html";
     }
 
@@ -589,6 +372,76 @@ public class AuthViewController {
         return "authActuallyResetPassword.html";
     }
 
+    /* Request 24 hour login link to your email address if user doesn't want to use 2 factor auth OTP */
+    @GetMapping("/requestlink")
+    String requestLoginLink(Model model, HttpServletResponse response) {
+
+        model.addAttribute("systemuser", new SystemUserDAO());
+        return "auth/requestlink.html";
+    }
+
+    /* Request 24 hour login link to your email address if user doesn't want to use 2 factor auth OTP */
+    @PostMapping("/requestlink")
+    String requestLoginLink(@ModelAttribute("systemuser") SystemUserDAO systemUserDAO, Model model, HttpServletResponse response) {
+
+        String errorResult = validateAuth.validateMagicLinkRequest(systemUserDAO, model);
+        // Validation
+        if (!errorResult.equals("success")) {
+            model.addAttribute("errorMessage", errorResult);
+        } else {
+
+            try {
+                Optional<SystemUserDAO> existingUser = Optional.ofNullable(systemUserRepo.findByEmail(systemUserDAO.getEmail())); // see if user exists
+
+                if (existingUser.isPresent() && existingUser.get().getIsuseractive() == 0) {
+                    model.addAttribute("errorMessage", "Unable to process request. ");
+                    return "auth/requestlink.html";
+                } else if (existingUser.isPresent() && existingUser.get().getIsuseractive() == 1) {
+
+                    // happy path
+                    boolean result = techvvsAuthService.sendMagicLoginLinkOverEmail(existingUser.get());
+                    // not checking result of this because we dont want client to see if user exists or not...
+
+                }
+
+            } catch (Exception ex) {
+                model.addAttribute("errorMessage", "System Error");
+                System.out.println("TechVVS System Error: " + ex.getMessage());
+                return "auth/requestlink.html"; // return early with error
+            }
+            model.addAttribute("successMessage", "If email exists in the system, a login link has been sent! Check your spam folder if you don't see the email.  ");
+        }
+
+        model.addAttribute("systemuser", new SystemUserDAO());
+        return "auth/requestlink.html";
+    }
+
+
+    @GetMapping("/magiclinkgateway")
+    String magiclinkgateway(@RequestParam("customJwtParameter") String token, Model model, HttpServletResponse response) {
+
+        // this needs to parse the token and make sure it's valid
+
+        // run the login routine and route to the home page
+        try {
+            // search for the token
+            techvvsAuthService.loginUsingMagicLink(token, model, response);
+
+            if(model.containsAttribute("successMessage")) {
+                return "auth/index.html";
+            } else {
+                return "auth/requestlink.html";
+            }
+
+        } catch (Exception ex) {
+
+            model.addAttribute("errorMessage", "System Error.  Try again or contact support: info@techvvs.io");
+            System.out.println("Error in postverifyphonetoken: " + ex.getMessage());
+        }
+
+        return "auth/requestlink.html";
+    }
+
     @GetMapping("/resetpassword")
     String resetpasswordFromEmailLink(Model model, HttpServletResponse response) {
 
@@ -600,7 +453,7 @@ public class AuthViewController {
     String actuallyresetpassword(@ModelAttribute("systemuser") SystemUserDAO systemUserDAO, Model model, HttpServletResponse response) {
 
 
-        String errorResult = validateAuth.validateActuallyResetPasswordInfo(systemUserDAO);
+        String errorResult = validateAuth.validateActuallyResetPasswordInfo(systemUserDAO, model);
 
         // Validation
         if (!errorResult.equals("success")) {
@@ -670,6 +523,7 @@ public class AuthViewController {
                         roles.add(Role.ROLE_CLIENT);
                         String emailtoken = jwtTokenProvider.createTokenForEmailValidation(existingUser.get().getEmail(), roles);
 
+                        // todo: change this link to be dynamic based on environment
                         sb.append("Change password for your techvvs account at http://localhost:8080/login/viewresetpass?customJwtParameter=" + emailtoken);
 
                         emailManager.generateAndSendEmail(sb.toString(), list, "Change password request TechVVS InventoryVVS account");
@@ -733,6 +587,8 @@ public class AuthViewController {
         }
 
     }
+
+
 
 
 
