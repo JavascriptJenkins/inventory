@@ -186,12 +186,12 @@ class TransactionHelper {
         }
 
         // we should only have one active discount per product at any given time, but doing this to code defensively
-        List<DiscountVO> discountlist = getListOfAllActiveDiscountsForProduct(transactionVO, barcode)
+        List<DiscountVO> discountlist = getListOfAllActiveDiscountsForProductType(transactionVO, barcode)
 
         DiscountVO latestDiscount = discountlist?.max { it.createTimeStamp }
 
         // this HAS TO BE DONE before calculating total
-        transactionService.checkToSeeIfDiscountQuantityIsMoreThanProductQuantityInTransaction(transactionVO, latestDiscount)
+        transactionService.checkToSeeIfDiscountQuantityIsMoreThanProductQuantityInTransactionProductType(transactionVO, latestDiscount)
 
 
         transactionVO = transactionService.calculateTotal(transactionVO)
@@ -259,6 +259,29 @@ class TransactionHelper {
             }
         }
         return discountlist
+    }
+
+    List<DiscountVO> getListOfAllActiveDiscountsForProductType(TransactionVO transactionVO, String barcode) {
+        Set<Integer> matchingProductTypeIds = new HashSet<>();
+
+        ProductVO productVO = productRepo.findByBarcode(barcode).get()
+
+        // Collect all producttypeids that match the given barcode
+        for (ProductVO existingProduct : transactionVO.product_list) {
+            if (productVO.producttypeid.producttypeid == existingProduct.producttypeid.producttypeid) {
+                matchingProductTypeIds.add(existingProduct.producttypeid.producttypeid);
+            }
+        }
+
+        List<DiscountVO> discountList = new ArrayList<>();
+        for (DiscountVO existingDiscount : transactionVO.discount_list) {
+            int discountProductTypeId = existingDiscount.product.producttypeid.producttypeid;
+            if (existingDiscount.isactive == 1 && matchingProductTypeIds.contains(discountProductTypeId)) {
+                discountList.add(existingDiscount); // Collect all active discounts for matching product types
+            }
+        }
+
+        return discountList;
     }
 
     @Transactional

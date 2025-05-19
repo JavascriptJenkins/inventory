@@ -909,6 +909,38 @@ public class CheckoutViewController {
     }
 
 
+    @PostMapping ("/delete/cart")
+    String deleteCart(
+            @RequestParam("cartid") Integer cartid,
+                                  Model model,
+                                  @RequestParam("page") Optional<Integer> page,
+                                  @RequestParam("size") Optional<Integer> size){
+
+        boolean result = cartDeleteService.deleteCart(cartid);
+
+        if(result){
+            model.addAttribute("successMessage","Success deleting Cart with id: "+cartid);
+            bindPendingCartStuff(model, page, size)
+
+        } else {
+            model.addAttribute("errorMessage","Error while deleting record. ");
+            bindPendingCartStuff(model, page, size)
+        }
+        return "checkout/pendingcarts.html"
+
+    }
+
+
+
+    void bindPendingCartStuff(Model model, Optional<Integer> page, Optional<Integer> size){
+        // bind the page of transactions
+        checkoutHelper.findPendingCarts(model, page, size)
+        // fetch all customers from database and bind them to model
+        checkoutHelper.getAllCustomers(model)
+        techvvsAuthService.checkuserauth(model)
+    }
+
+
 
 
 }

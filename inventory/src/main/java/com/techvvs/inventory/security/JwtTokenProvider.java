@@ -53,6 +53,9 @@ public class JwtTokenProvider {
     @Value("${security.jwt.token.expire-length:86400000}")
     private long validityInMillisecondsEmailValidation = 86400000; // 24 hour
 
+  private long validityInMillisecondsEmailValidationMagicLink = 900000; // 15 minutes
+
+
   private long validityInMillisecondsPhoneDownload = 3600000 ; // 1 hour
 
 //  private long validityInMillisecondsMediaDownload = Long.valueOf(7776000000) ; // 90 days
@@ -86,6 +89,22 @@ public class JwtTokenProvider {
                 .signWith(SignatureAlgorithm.HS256, secretKey)//
                 .compact();
     }
+
+  public String createTokenForEmailValidationMagicLink(String email, List<Role> roles) {
+
+    Claims claims = Jwts.claims().setSubject(email);
+    claims.put("auth", roles.stream().map(s -> new SimpleGrantedAuthority(s.getAuthority())).filter(Objects::nonNull).collect(Collectors.toList()));
+
+    Date now = new Date();
+    Date validity = new Date(now.getTime() + validityInMillisecondsEmailValidationMagicLink);
+
+    return Jwts.builder()//
+            .setClaims(claims)//
+            .setIssuedAt(now)//
+            .setExpiration(validity)//
+            .signWith(SignatureAlgorithm.HS256, secretKey)//
+            .compact();
+  }
 
   public String createTokenForSmsDownloadLinks(String email, List<Role> roles) {
 

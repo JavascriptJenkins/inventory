@@ -54,6 +54,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     // Then the request will be either handled by a dispatcher -> ErrorController, or let through on a normal Auth Flow / Login Page
     http.authorizeRequests()
             .antMatchers(LOGIN).permitAll()
+            .antMatchers(LOGIN_REQUEST_LINK).permitAll()
+            .antMatchers(LOGIN_MAGIC_LINK_GATEWAY).permitAll()
             .antMatchers(FAVICON).permitAll()
             .antMatchers(CSS_TABLE).permitAll()
             .antMatchers(LOGIN_SYSTEMUSER).permitAll()

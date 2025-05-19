@@ -2,10 +2,19 @@ package com.techvvs.inventory.validation
 
 import com.google.common.base.CharMatcher
 import com.techvvs.inventory.model.SystemUserDAO
+import com.techvvs.inventory.validation.generic.ObjectValidator
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import org.springframework.ui.Model
 
 @Component
 class ValidateAuth {
+
+    @Autowired
+    StringSecurityValidator stringSecurityValidator
+
+    @Autowired
+    ObjectValidator objectValidator
 
 
     String validateCreateSystemUser(SystemUserDAO systemUserDAO) {
@@ -51,7 +60,15 @@ class ValidateAuth {
     }
 
 
-    String validateLoginInfo(SystemUserDAO systemUserDAO) {
+    String validateLoginInfo(SystemUserDAO systemUserDAO, Model model) {
+
+
+        // first - validate against security issues
+        stringSecurityValidator.validateStringValues(systemUserDAO, model)
+
+        // second - validate all object fields
+        objectValidator.validateAndAttachErrors(systemUserDAO, model)
+
 
         // note - not validating password in here becasue it's not needed until phonetoken/password page
         if (systemUserDAO.getEmail() == null || systemUserDAO.getEmail().isBlank()) {
@@ -80,7 +97,16 @@ class ValidateAuth {
     }
 
 
-    String validateActuallyResetPasswordInfo(SystemUserDAO systemUserDAO) {
+    String validateActuallyResetPasswordInfo(SystemUserDAO systemUserDAO, Model model) {
+
+
+        // first - validate against security issues
+        stringSecurityValidator.validateStringValues(systemUserDAO, model)
+
+        // second - validate all object fields
+        objectValidator.validateAndAttachErrors(systemUserDAO, model)
+
+
 
         if (systemUserDAO.getEmail() == null || systemUserDAO.getPassword() == null || systemUserDAO.getEmail().isBlank() || systemUserDAO.getPassword().isBlank()) {
             return "either email or password is blank";
@@ -106,6 +132,34 @@ class ValidateAuth {
         return "success";
     }
 
+
+    String validateMagicLinkRequest(SystemUserDAO systemUserDAO, Model model) {
+
+        // first - validate against security issues
+        stringSecurityValidator.validateStringValues(systemUserDAO, model)
+
+//        // second - validate all object fields
+//        objectValidator.validateAndAttachErrors(systemUserDAO, model)
+
+
+        if (systemUserDAO.getEmail() == null || systemUserDAO.getEmail().isBlank()) {
+            return "email is blank";
+        }
+
+
+        if (systemUserDAO.getEmail().length() < 6
+                || systemUserDAO.getEmail().length() > 200
+                || !systemUserDAO.getEmail().contains("@")
+
+        ) {
+            return "email must be between 6-200 characters and contain @ and .com";
+        } else {
+            systemUserDAO.setEmail(systemUserDAO.getEmail().trim());
+            systemUserDAO.setEmail(systemUserDAO.getEmail().replaceAll(" ", ""));
+        }
+
+        return "success";
+    }
 
 
 

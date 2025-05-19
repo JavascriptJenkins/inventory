@@ -191,16 +191,17 @@
                     <td th:text="${item.displayquantity}">Quantity</td>
 
                     <!-- New Discounts Column -->
+                    <!-- todo: this needs to show the discount based on product type, not matching on productid -->
                     <td>
                         <span th:if="${transaction.discount_list != null}">
                             <span th:each="discount : ${transaction.discount_list}"
-                                  th:if="${discount.isactive == 1 and discount.product != null and discount.product.product_id == item.product_id}">
+                                  th:if="${discount.isactive == 1 and discount.producttype != null and discount.producttype.producttypeid == item.producttypeid.producttypeid}">
 
                                 <span>
                                     <strong th:text="'$' + ${#numbers.formatDecimal(discount.discountamount, 1, 2)}"></strong>
                                     |
                                     <i class="bi bi-stack" title="Quantity"></i>
-                                    <span th:text="${discount.quantity}"></span>
+                                    <span th:text="${item.displayquantity}"></span>
                                 </span>
 
                             </span>

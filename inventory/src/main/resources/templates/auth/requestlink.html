@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Request Link</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Bundle JS (Includes Popper.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <link rel="stylesheet" type="text/css" media="all" href="/css/table.css" th:href="@{/css/table.css}" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+
+    <script>
+        function hideform(){
+            console.log("hideform");
+            $("#maincontainer").hide();
+            $("#hiddencontainer").show();
+        }
+    </script>
+
+    <style>
+        body {
+            color: #fff;
+            font-family: 'Roboto', sans-serif;
+            background-color: #343a40; /* Applying dark background to body */
+        }
+        .header-dark {
+            background-color: #343a40;
+            color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-family: 'Roboto', sans-serif;
+            border: 1px solid transparent;
+            border-image: linear-gradient(to right, #c0c0c0, #ffffff);
+            border-image-slice: 1;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .btn-dark-mode {
+            font-size: 1.2rem;
+            background-color: #23272b;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            display: inline-block;
+            text-align: center;
+            text-decoration: none;
+            border: 2px solid #343a40;
+            transition: background-color 0.3s ease;
+            margin: 10px 0; /* Adding margin for spacing */
+        }
+        .btn-dark-mode:hover {
+            background-color: #1d2124;
+            color: #fff;
+            text-decoration: none;
+        }
+        .btn-submit-dark {
+            font-size: 1.2rem;
+            background-color: #444;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: 2px solid #343a40;
+            display: inline-block;
+            text-align: center;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+            margin-top: 10px;
+            width: 100%;
+        }
+        .btn-submit-dark:hover {
+            background-color: #333;
+            border-color: #23272b;
+        }
+        .required:after {
+            content:" *";
+            color: red;
+        }
+        .responsive-image {
+            max-width: 100%;  /* Adjusts within container */
+            height: auto;     /* Keeps aspect ratio */
+        }
+        .center-image {
+            display: block;
+            margin: auto;
+            width: 200px; /* Adjust as needed */
+            height: auto; /* Maintain aspect ratio */
+        }
+
+
+    </style>
+
+</head>
+<body>
+
+<div id="hiddencontainer" class="container" style="display:none">
+    <div id="pleasewait" class="alert alert-primary" role="alert">Sending validation text message to phone associated with this email...</div>
+</div>
+
+<div id="maincontainer" class="container">
+
+<!--    <img src="@{/images/red_tulip_adhoc_1.png}" alt="Logo">-->
+<!--    <p>Resolved path: <span th:text="@{/images/red_tulip_adhoc_1.png}"></span></p>-->
+
+    <img th:src="@{/image/images/photos/red_tulip_adhoc_1.png}" class="card-img-top center-image" alt="Product Image">
+
+
+
+    <div class="header-dark">
+        <h1>Request Login Link</h1>
+    </div>
+
+    <form th:action="@{/login/requestlink}" th:object="${systemuser}" method="post">
+        <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
+        <div class="alert alert-info" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
+
+        <div class="row">
+            <div class="col">
+                <input id="email" style="margin-bottom: 5px;" type="email" th:field="*{email}" class="form-control email" placeholder="Email" aria-label="Email">
+            </div>
+        </div>
+
+        <button type="submit" class="btn-submit-dark btn-secondary" onclick="hideform()">Request Login Link</button>
+    </form>
+
+    <br>
+    <div>
+        <a href="http://localhost:8080/login/createaccount" class="btn-dark-mode">Create an Account</a>
+    </div>
+    <div>
+        <a href="http://localhost:8080/login/resetpassword" class="btn-dark-mode">Reset Password</a>
+    </div>
+    <div>
+        <a href="http://localhost:8080/login/requestlink" class="btn-dark-mode">Request Login Link</a>
+    </div>
+
+</div>
+<div th:insert="fragments/validation.html :: validationfragment"> </div>
+<script>
+    const inputFields = [
+        'email'
+    ];
+
+    const optionalFields = [];
+
+    document.addEventListener("DOMContentLoaded", () => {
+        initializeValidation(inputFields, optionalFields);
+    });
+</script>
+
+</body>
+</html>

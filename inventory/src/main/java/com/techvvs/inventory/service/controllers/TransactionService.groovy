@@ -808,6 +808,30 @@ class TransactionService {
     }
 
     @Transactional
+    void checkToSeeIfDiscountQuantityIsMoreThanProductQuantityInTransactionProductType(TransactionVO transactionVO, DiscountVO discountVO){
+
+        // if discount is null it means there is no latest discount
+        if(discountVO != null){
+
+            int productcount = 0
+            for(ProductVO productVO : transactionVO.getProduct_list()){
+                if(productVO.producttypeid.producttypeid == discountVO.product.producttypeid.producttypeid){
+                    productcount ++ //
+                }
+            }
+
+            if(discountVO.quantity > productcount){
+                System.out.print("INFO: Quantity of discount is more than quantity of product in transaction: " + discountVO.quantity + " > " + productcount)
+                discountVO = discountRepo.findById(discountVO.discountid).get() // update in scope for hibernate
+                discountVO.setQuantity(productcount)
+                discountVO = discountRepo.save(discountVO)
+            }
+        }
+
+
+    }
+
+    @Transactional
     TransactionVO calculateTotal(TransactionVO transactionVO){
 
         // find value of all discounts on the transaction

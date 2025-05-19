@@ -133,6 +133,8 @@ public class JwtTokenFilter extends OncePerRequestFilter implements CsrfTokenRep
               VERIFY_PHONE_TOKEN.equals(path) ||
               CREATE_ACCOUNT.equals(path) ||
               LOGIN.equals(path) ||
+              LOGIN_REQUEST_LINK.equals(path) ||
+              LOGIN_MAGIC_LINK_GATEWAY.equals(path) ||
               CREATE_SYSTEM_USER.equals(path) ||
               VERIFY.equals(path) ||
               QR.equals(path) ||

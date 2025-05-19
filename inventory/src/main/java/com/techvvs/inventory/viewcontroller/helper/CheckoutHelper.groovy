@@ -84,7 +84,7 @@ class CheckoutHelper {
         // START PAGINATION
         // pagination
         int currentPage = page.orElse(0);    // Default to first page
-        int pageSize = size.orElse(5);       // Default page size to 5
+        int pageSize = size.orElse(10);       // Default page size to 10
 
 
         if(
@@ -93,10 +93,10 @@ class CheckoutHelper {
             currentPage = 0;
         }
 
-        pageSize = pageSize < 5 ? 5 : pageSize; // make sure it's not less than 5
+        pageSize = pageSize < 10 ? 10 : pageSize; // make sure it's not less than 5
 
         // run first page request
-        Pageable pageable = PageRequest.of(currentPage, pageSize, Sort.by(Sort.Direction.ASC, "createTimeStamp"));
+        Pageable pageable = PageRequest.of(currentPage, pageSize, Sort.by(Sort.Direction.DESC, "createTimeStamp"));
         Page<CartVO> pageOfCart = cartRepo.findAllByIsprocessed(0,pageable,);  // Fetch paginated results
 
         int totalPages = pageOfCart.getTotalPages();
