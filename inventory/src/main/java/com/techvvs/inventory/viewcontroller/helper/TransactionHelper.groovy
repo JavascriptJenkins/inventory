@@ -380,6 +380,7 @@ class TransactionHelper {
     }
 
 
+    @Transactional
     Double calculateAllDiscountsThatHaveBeenAppliedToTransaction(TransactionVO transactionVO){
         double totaldiscountfromallproducts = 0.00
         for(DiscountVO discountVO : transactionVO.discount_list) {
