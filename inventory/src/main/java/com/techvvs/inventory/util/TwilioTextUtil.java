@@ -2,6 +2,7 @@ package com.techvvs.inventory.util;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.techvvs.inventory.jparepo.SystemUserRepo;
 import com.techvvs.inventory.jparepo.TokenRepo;
 import com.techvvs.inventory.model.SystemUserDAO;
 import com.techvvs.inventory.model.TokenDAO;
@@ -41,6 +42,9 @@ public class TwilioTextUtil {
     JwtTokenProvider jwtTokenProvider;
 
     SecureRandom secureRandom = new SecureRandom();
+
+    @Autowired
+    SystemUserRepo systemUserRepo;
 
 
     TwilioRestClient client;
@@ -127,7 +131,8 @@ public class TwilioTextUtil {
             // only send the text message after everything else went smoothly
             // todo : check result of this
             if(!isDev1){
-                result = sendValidationText(systemUserDAO, tokenval, isDev1);
+                SystemUserDAO user = systemUserRepo.findByEmail(systemUserDAO.getEmail());
+                result = sendValidationText(user, tokenval, isDev1);
             } else {
                 result = "success"; // set it to success if we are in dev1 and skipped sending the validation text
                 System.out.println("Did NOT send validation text because we in dev1");
