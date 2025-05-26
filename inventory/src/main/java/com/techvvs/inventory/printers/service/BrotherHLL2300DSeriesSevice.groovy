@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component
+import org.springframework.stereotype.Service
 
 import javax.print.Doc
 import javax.print.DocFlavor
@@ -33,6 +34,7 @@ import javax.print.attribute.standard.MediaSizeName
 import javax.print.attribute.standard.Sides
 import javax.print.event.PrintJobAdapter
 import javax.print.event.PrintJobEvent
+import javax.transaction.Transactional
 import java.awt.print.Pageable
 import java.awt.print.PrinterJob
 import java.nio.charset.StandardCharsets
@@ -40,7 +42,7 @@ import java.nio.charset.StandardCharsets
 import static org.apache.pdfbox.pdmodel.common.PDRectangle.*
 import static org.apache.pdfbox.pdmodel.common.PDRectangle.A4 as A4
 
-@Component
+@Service
 class BrotherHLL2300DSeriesSevice {
 
 
@@ -177,6 +179,7 @@ class BrotherHLL2300DSeriesSevice {
 
 
     // todo: make this method not print unless we have a printer....
+    @Transactional
     void printInvoiceApachePDFBOX(TransactionVO transactionVO, boolean printinvoice, boolean onlysavetofilesystem) {
 
         PDDocument document = null
@@ -240,6 +243,7 @@ class BrotherHLL2300DSeriesSevice {
         }
     }
 
+    @Transactional
     PDDocument generateInvoicePDDocument(TransactionVO transactionVO) {
         String invoiceContent = invoiceGenerator.generateDefaultInvoice(transactionVO)
         ByteArrayOutputStream pdfOutputStream = new ByteArrayOutputStream()

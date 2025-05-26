@@ -7,17 +7,14 @@ import com.techvvs.inventory.printers.service.MunbynITPP905Service
 import com.techvvs.inventory.viewcontroller.helper.CheckoutHelper
 import org.springframework.beans.factory.annotation.Autowired
 
-import javax.print.PrintService;
-import javax.print.PrintServiceLookup
-import javax.print.Doc;
-import javax.print.DocFlavor;
-import javax.print.DocPrintJob;
-import javax.print.SimpleDoc;
-import javax.print.PrintException;
-import org.springframework.stereotype.Component;
+
+import org.springframework.stereotype.Component
+import org.springframework.stereotype.Service
+
+import javax.transaction.Transactional;
 
 
-@Component
+@Service
 class PrinterService {
 
     @Autowired
@@ -35,6 +32,7 @@ class PrinterService {
         munbynITPP905Service.printReceipt(transactionVO);
     }
 
+    @Transactional
     void printInvoice(TransactionVO transactionVO, boolean printinvoice, boolean onlysavetofilesystem) {
 
         List<ProductVO> unmodifiedlist = transactionVO.product_list

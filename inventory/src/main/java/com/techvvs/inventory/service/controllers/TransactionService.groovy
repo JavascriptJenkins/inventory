@@ -37,6 +37,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
 import org.springframework.security.core.parameters.P
 import org.springframework.stereotype.Component
+import org.springframework.stereotype.Service
 
 import javax.persistence.EntityNotFoundException
 import javax.transaction.Transactional
@@ -45,7 +46,7 @@ import java.time.LocalDateTime
 
 
 // abstraction for transactions
-@Component
+@Service
 class TransactionService {
 
     @Autowired
@@ -157,23 +158,7 @@ class TransactionService {
         cartVO.updateTimeStamp = LocalDateTime.now()
         cartVO = cartRepo.save(newtransaction.cart)
 
-
-        // quantityremaining is updated when the cart is saved... this method is useless for now but will
-        // be useful if we need to do anything to the product after the transaction is saved
-
-        for(ProductVO productVO : newtransaction.product_list){
-
-            ProductVO existingproduct = productService.findProductByID(productVO)
-
-           // existingproduct.quantityremaining = productVO.quantityremaining - 1
-            existingproduct.updateTimeStamp = LocalDateTime.now()
-            productVO = productService.saveProduct(productVO)
-
-        }
-
-
-
-            return newtransaction
+        return newtransaction
 
     }
 

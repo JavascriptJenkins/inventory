@@ -1,20 +1,19 @@
 package com.techvvs.inventory.printers.invoice
 
-import com.techvvs.inventory.model.CartVO
-import com.techvvs.inventory.model.CustomerVO
-import com.techvvs.inventory.model.PaymentVO
+
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.service.controllers.TransactionService
 import com.techvvs.inventory.util.FormattingUtil
 import com.techvvs.inventory.viewcontroller.helper.CheckoutHelper
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Component
+import org.springframework.stereotype.Service
 
+import javax.transaction.Transactional
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-@Component
+@Service
 class InvoiceGenerator {
 
     @Autowired
@@ -34,6 +33,7 @@ class InvoiceGenerator {
 
 
     // todo: make sure this can handle printing out more than 1 page ......
+    @Transactional
     String generateDefaultInvoice(TransactionVO transaction) {
 
         // Aggregate products to their unique list
