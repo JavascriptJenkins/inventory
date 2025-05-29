@@ -234,10 +234,10 @@
     </table>
 
     <nav th:if="${cartPage.totalPages > 0}">
-        <ul class="pagination">
+        <ul class="pagination flex-wrap justify-content-center">
             <li class="page-item" th:each="pageNumber : ${pageNumbers}">
-                <a class="page-link"
-                   th:href="@{/checkout/pendingcarts?size=__${size}__&page=__${pageNumber == 1 ? 0 : pageNumber - 1}__}"
+                <a class="page-link m-1"
+                   th:href="@{/checkout/pendingcarts(size=${size}, page=${pageNumber == 1 ? 0 : pageNumber - 1})}"
                    th:text="${pageNumber}"
                    th:classappend="${pageNumber==cartPage.number + 1} ? 'active'">
                 </a>
