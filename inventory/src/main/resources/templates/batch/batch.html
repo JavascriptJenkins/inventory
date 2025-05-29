@@ -257,10 +257,10 @@
                 </tbody>
             </table>
             <nav th:if="${productPage.totalPages > 0}">
-                <ul class="pagination justify-content-center">
+                <ul class="pagination flex-wrap justify-content-center">
                     <li class="page-item" th:each="pageNumber : ${pageNumbers}">
-                        <a class="page-link btn btn-secondary btn-sm mx-1"
-                           th:href="@{/batch?size=__${#lists.size(productPage.content)}__&page=__${pageNumber}__&batchid=__${batch.batchid}__&editmode=no}"
+                        <a class="page-link btn btn-secondary btn-sm m-1"
+                           th:href="@{/batch(size=${#lists.size(productPage.content)}, page=${pageNumber}, batchid=${batch.batchid}, editmode='no')}"
                            th:text="${pageNumber}"
                            th:classappend="${pageNumber==productPage.number + 1} ? 'active'">
                         </a>
