@@ -248,10 +248,10 @@
             </tbody>
         </table>
         <nav th:if="${vendorPage.totalPages > 0}">
-            <ul class="pagination justify-content-center">
+            <ul class="pagination flex-wrap justify-content-center">
                 <li class="page-item" th:each="pageNumber : ${pageNumbers}">
-                    <a class="page-link btn btn-secondary btn-sm mx-1"
-                       th:href="@{/vendor/admin?size=__${#lists.size(vendorPage.content) > 5 ? #lists.size(vendorPage.content) : 5}__&page=__${pageNumber}__&vendorid=__${vendor != null ? vendor.vendorid : '0'}__}"
+                    <a class="page-link btn btn-secondary btn-sm m-1"
+                       th:href="@{/vendor/admin(size=${#lists.size(vendorPage.content) > 5 ? #lists.size(vendorPage.content) : 5}, page=${pageNumber}, vendorid=${vendor != null ? vendor.vendorid : '0'})}"
                        th:text="${pageNumber}"
                        th:classappend="${pageNumber==vendorPage.number + 1} ? 'active'">
                     </a>

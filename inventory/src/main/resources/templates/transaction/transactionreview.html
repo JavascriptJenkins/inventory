@@ -578,9 +578,13 @@
             </tbody>
         </table>
         <nav th:if="${filePage.totalPages > 0}">
-            <ul class="pagination">
+            <ul class="pagination flex-wrap justify-content-center">
                 <li class="page-item" th:each="pageNumber : ${pageNumbers}">
-                    <a class="page-link" th:href="@{/transaction?transactionid=__${transaction.transactionid}__&size=5&page=__${pageNumber}__}" th:text="${pageNumber}" th:classappend="${pageNumber==filePage.number + 1} ? 'active'"></a>
+                    <a class="page-link m-1"
+                       th:href="@{/transaction(transactionid=${transaction.transactionid}, size=5, page=${pageNumber})}"
+                       th:text="${pageNumber}"
+                       th:classappend="${pageNumber == filePage.number + 1} ? 'active'">
+                    </a>
                 </li>
             </ul>
         </nav>

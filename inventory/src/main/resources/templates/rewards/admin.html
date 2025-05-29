@@ -297,12 +297,12 @@
             </tbody>
         </table>
         <nav th:if="${rewardconfigPage.totalPages > 0}">
-            <ul class="pagination justify-content-center">
+            <ul class="pagination flex-wrap justify-content-center">
                 <li class="page-item" th:each="pageNumber : ${pageNumbers}">
-                    <a class="page-link btn btn-secondary btn-sm mx-1"
-                       th:href="@{/rewards/admin?size=__${#lists.size(rewardconfigPage.content) > 5 ? #lists.size(rewardconfigPage.content) : 5}__&page=__${pageNumber}__&rewardconfigid=__${rewardconfig != null ? rewardconfig.rewardconfigid : '0'}__}"
+                    <a class="page-link btn btn-secondary btn-sm m-1"
+                       th:href="@{/rewards/admin(size=${#lists.size(rewardconfigPage.content) > 5 ? #lists.size(rewardconfigPage.content) : 5}, page=${pageNumber}, rewardconfigid=${rewardconfig != null ? rewardconfig.rewardconfigid : '0'})}"
                        th:text="${pageNumber}"
-                       th:classappend="${pageNumber==rewardconfigPage.number + 1} ? 'active'">
+                       th:classappend="${pageNumber == rewardconfigPage.number + 1} ? 'active'">
                     </a>
                 </li>
             </ul>
