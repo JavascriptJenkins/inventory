@@ -530,16 +530,17 @@
             </tbody>
         </table>
         <nav th:if="${menuPage.totalPages > 0 && !editmode}">
-            <ul class="pagination justify-content-center">
+            <ul class="pagination flex-wrap justify-content-center">
                 <li class="page-item" th:each="pageNumber : ${pageNumbers}">
-                    <a class="page-link btn btn-secondary btn-sm mx-1"
-                       th:href="@{/menu/admin/manage?size=__${#lists.size(menuPage.content) > 5 ? #lists.size(menuPage.content) : 5}__&page=__${pageNumber}__&menuid=__${menu != null ? menu.menuid : '0'}__}"
+                    <a class="page-link btn btn-secondary btn-sm m-1"
+                       th:href="@{/menu/admin/manage(size=${#lists.size(menuPage.content) > 5 ? #lists.size(menuPage.content) : 5}, page=${pageNumber}, menuid=${menu != null ? menu.menuid : '0'})}"
                        th:text="${pageNumber}"
-                       th:classappend="${pageNumber==menuPage.number + 1} ? 'active'">
+                       th:classappend="${pageNumber==menuPage.number + 1} ? ' active'">
                     </a>
                 </li>
             </ul>
         </nav>
+
 
     </div>
     <!-- END: Menu Selection Table -->
