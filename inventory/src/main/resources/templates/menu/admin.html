@@ -477,10 +477,10 @@
             <input th:if="${menu.menuid != null && menu.menuid != 0 && editmode}" type="hidden" name="menuid" th:value="${menu != null ? menu.menuid : 0}">
         </form>
         <nav th:if="${selectionProductPage.totalPages > 0 && editmode}">
-            <ul class="pagination justify-content-center">
+            <ul class="pagination flex-wrap justify-content-center">
                 <li class="page-item" th:each="pageNumber : ${selectionproductpageNumbers}">
-                    <a class="page-link btn btn-secondary btn-sm mx-1"
-                       th:href="@{/menu/admin/manage?selectionproductSizeInt=__${#lists.size(selectionProductPage.content) > 5 ? #lists.size(selectionProductPage.content) : 5}__&selectionproductPageInt=__${pageNumber}__&menuid=__${menu != null ? menu.menuid : '0'}__}"
+                    <a class="page-link btn btn-secondary btn-sm m-1"
+                       th:href="@{/menu/admin/manage(selectionproductSizeInt=${#lists.size(selectionProductPage.content) > 5 ? #lists.size(selectionProductPage.content) : 5}, selectionproductPageInt=${pageNumber}, menuid=${menu != null ? menu.menuid : '0'})}"
                        th:text="${pageNumber}"
                        th:classappend="${pageNumber==selectionProductPage.number + 1} ? 'active'">
                     </a>
