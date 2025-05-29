@@ -179,7 +179,7 @@
         <p>Customer: <span th:text="${customer.name}"></span></p>
         <p>
             Amount remaining to pay:
-            <span th:text="'$' + ${#numbers.formatDecimal(T(java.lang.Math).max(transaction.totalwithtax * 1.0, 0.0), 1, 2)}"></span>
+            <span th:text="'$' + ${#numbers.formatDecimal(T(java.lang.Math).max(transaction.totalwithtax - transaction.paid, 0.0), 1, 2)}"></span>
         </p>
     </div>
 
