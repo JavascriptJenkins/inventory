@@ -1,0 +1,81 @@
+Preventing Product Visibility – Cannabis Delivery License  
+Minnesota Cannabis Delivery Business
+
+---
+
+ 1. Objective
+To establish product visibility policies that ensure cannabis flower, cannabis products, lower-potency hemp edibles, and hemp-derived consumer products are not visible to individuals outside the delivery vehicle, ensuring compliance with Minnesota Office of Cannabis Management (OCM) regulations.
+
+---
+
+ 2. Product Visibility Prevention Measures
+
+ 2.1 Secure & Opaque Packaging
+- All cannabis products will be stored in child-resistant, tamper-evident, and fully opaque exit bags that comply with Minnesota OCM packaging regulations.
+- The driver will not remove any product from packaging once it has been sealed at the licensed distribution facility.
+
+ 2.2 Storage & Transportation Procedures
+- All products will be stored in a lockable, opaque storage container inside the delivery vehicle, preventing any outside visibility.
+- Storage containers will be secured in the rear cargo area of the delivery vehicle, ensuring no products are visible through windows.
+- Deliveries will be pre-sorted in a secure location before departure to minimize handling in public view.
+
+ 2.3 Vehicle Window Tint & Security Measures
+- Delivery vehicles will be equipped with legally compliant tinted windows to reduce product visibility.
+- Interior privacy partitions or storage covers will be used to conceal products from public view during deliveries.
+- A no-loitering policy will be enforced, preventing unauthorized individuals from approaching the vehicle during stops.
+
+---
+
+ 3. Compliance & Monitoring
+- Delivery drivers will complete product visibility training to ensure compliance with these policies.
+- Daily vehicle inspections will be conducted to verify that storage areas remain secure and compliant.
+- Security cameras installed in delivery vehicles will document product handling and transportation, ensuring adherence to visibility prevention protocols.
+
+---
+
+ 4. Conclusion
+By implementing secure storage, opaque packaging, and visibility prevention measures, this cannabis delivery business ensures compliance with Minnesota regulations and protects public perception of cannabis transportation operations.
+
+---
+
+End of Document
+
+
+
+
+curl -X GET "https://sandbox-api-mn.metrc.com/facilities/v1/" \
+     -H "Authorization: Basic cmFUN08xdmRacExEaHRsSHdCMDVlTlJpSmNSWE9hbTJBYS0zUmZBNmVLd3ZlTWwzOg==" \
+     -H "Content-Type: application/json" \
+     -H "Metrc-License: C0001"
+
+
+curl -X GET "https://sandbox-api-mn.metrc.com/facilities/v1/" \
+     -H "Authorization: Basic cmFUN08xdmRacExEaHRsSHdCMDVlTlJpSmNSWE9hbTJBYS0zUmZBNmVLd3ZlTWwzOg==" \
+     -H "Content-Type: application/json" \
+     -H "Metrc-License: C0001"
+
+
+
+
+
+
+SELECT
+    pc.*,
+    p.name AS product_name
+FROM
+    PRODUCT_CART pc
+JOIN
+    PRODUCT p ON pc.productid = p.product_id
+WHERE
+    pc.cartid = 3876;
+
+
+SELECT
+    tp.*,
+    p.name AS product_name
+FROM
+    TRANSACTION_PRODUCT tp
+JOIN
+    PRODUCT p ON tp.productid = p.product_id
+WHERE
+    tp.transactionid = 3877;
