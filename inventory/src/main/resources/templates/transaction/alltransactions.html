@@ -334,17 +334,19 @@
         </tbody>
     </table>
 
+    <!-- note: this styling should fix the bug of too many pagination buttons not displaying correctly on the android touch screen -->
     <nav th:if="${transactionPage.totalPages > 0}">
-        <ul class="pagination">
+        <ul class="pagination flex-wrap justify-content-center">
             <li class="page-item" th:each="pageNumber : ${pageNumbers}">
-                <a class="page-link"
-                   th:href="@{/transaction/listall?size=__${size}__&page=__${pageNumber == 1 ? 0 : pageNumber - 1}__&customerid=__${customerid == 0 ? 0 : customerid}__}"
+                <a class="page-link m-1"
+                   th:href="@{/transaction/listall(size=${size}, page=${pageNumber == 1 ? 0 : pageNumber - 1}, customerid=${customerid == 0 ? 0 : customerid})}"
                    th:text="${pageNumber}"
-                   th:classappend="${pageNumber==transactionPage.number + 1} ? 'active'">
+                   th:classappend="${pageNumber==transactionPage.number + 1} ? ' active'">
                 </a>
             </li>
         </ul>
     </nav>
+
 
 </div>
 
