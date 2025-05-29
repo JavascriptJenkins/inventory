@@ -641,17 +641,17 @@
                     </tr>
                     </tbody>
                 </table>
-                <nav th:if="${pageOfPackageInDelivery != null && pageOfPackageInDelivery.totalPages > 0}">
-                    <ul class="pagination justify-content-center">
-                        <li class="page-item" th:each="pageNumber : ${deliverypageNumbers}">
-                            <a class="page-link btn btn-secondary btn-sm mx-1"
-                               th:href="@{/delivery?deliverysize=__${deliverysize}__&deliverypage=__${pageNumber == 1 ? 0 : pageNumber - 1}__&deliveryid=__${delivery.deliveryid}__}"
-                               th:text="${pageNumber}"
-                               th:classappend="${pageNumber==pageOfPackageInDelivery.number + 1} ? 'active'">
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
+            <nav th:if="${pageOfPackageInDelivery != null && pageOfPackageInDelivery.totalPages > 0}">
+                <ul class="pagination flex-wrap justify-content-center">
+                    <li class="page-item" th:each="pageNumber : ${deliverypageNumbers}">
+                        <a class="page-link btn btn-secondary btn-sm m-1"
+                           th:href="@{/delivery(deliverysize=${deliverysize}, deliverypage=${pageNumber == 1 ? 0 : pageNumber - 1}, deliveryid=${delivery.deliveryid})}"
+                           th:text="${pageNumber}"
+                           th:classappend="${pageNumber==pageOfPackageInDelivery.number + 1} ? 'active'">
+                        </a>
+                    </li>
+                </ul>
+            </nav>
         </div>
 
         <!-- Crates in Delivery display upper right -->
@@ -698,10 +698,10 @@
                 </tbody>
             </table>
             <nav th:if="${pageOfCrateInDelivery != null && pageOfCrateInDelivery.totalPages > 0}">
-                <ul class="pagination justify-content-center">
+                <ul class="pagination flex-wrap justify-content-center">
                     <li class="page-item" th:each="pageNumber : ${deliverypageNumbers}">
-                        <a class="page-link btn btn-secondary btn-sm mx-1"
-                           th:href="@{/delivery?deliverysize=__${deliverysize}__&deliverypage=__${pageNumber == 1 ? 0 : pageNumber - 1}__&deliveryid=__${delivery.deliveryid}__}"
+                        <a class="page-link btn btn-secondary btn-sm m-1"
+                           th:href="@{/delivery(deliverysize=${deliverysize}, deliverypage=${pageNumber == 1 ? 0 : pageNumber - 1}, deliveryid=${delivery.deliveryid})}"
                            th:text="${pageNumber}"
                            th:classappend="${pageNumber==pageOfCrateInDelivery.number + 1} ? 'active'">
                         </a>
@@ -744,10 +744,10 @@
                 </tbody>
             </table>
             <nav th:if="${packagePage.totalPages > 0}">
-                <ul class="pagination justify-content-center">
+                <ul class="pagination flex-wrap justify-content-center">
                     <li class="page-item" th:each="pageNumber : ${pageNumbers}">
-                        <a class="page-link btn btn-secondary btn-sm mx-1"
-                           th:href="@{/delivery?size=__${size}__&page=__${pageNumber == 1 ? 0 : pageNumber - 1}__&deliveryid=__${delivery.deliveryid}__}"
+                        <a class="page-link btn btn-secondary btn-sm m-1"
+                           th:href="@{/delivery(size=${size}, page=${pageNumber == 1 ? 0 : pageNumber - 1}, deliveryid=${delivery.deliveryid})}"
                            th:text="${pageNumber}"
                            th:classappend="${pageNumber==packagePage.number + 1} ? 'active'">
                         </a>
@@ -787,10 +787,10 @@
                 </tbody>
             </table>
             <nav th:if="${cratePage.totalPages > 0}">
-                <ul class="pagination justify-content-center">
+                <ul class="pagination flex-wrap justify-content-center">
                     <li class="page-item" th:each="pageNumber : ${pageNumbers}">
-                        <a class="page-link btn btn-secondary btn-sm mx-1"
-                           th:href="@{/delivery?size=__${size}__&page=__${pageNumber == 1 ? 0 : pageNumber - 1}__&deliveryid=__${delivery.deliveryid}__}"
+                        <a class="page-link btn btn-secondary btn-sm m-1"
+                           th:href="@{/delivery(size=${size}, page=${pageNumber == 1 ? 0 : pageNumber - 1}, deliveryid=${delivery.deliveryid})}"
                            th:text="${pageNumber}"
                            th:classappend="${pageNumber==cratePage.number + 1} ? 'active'">
                         </a>

@@ -440,17 +440,17 @@
     </div>
 
 
-        <nav th:if="${filePage != null && filePage.totalPages > 0}">
-            <ul class="pagination justify-content-center">
-                <li class="page-item" th:each="pageNumber : ${pageNumbers}">
-                    <a class="page-link btn btn-secondary btn-sm mx-1"
-                       th:href="@{/product/editform?productid=__${product.product_id}__&size=5&page=__${page}__&editmode=no&batchid=__${batchid}__&product_id=__${product.product_id}__}"
-                       th:text="${pageNumber}"
-                       th:classappend="${pageNumber == filePage.number + 1} ? 'active'">
-                    </a>
-                </li>
-            </ul>
-        </nav>
+    <nav th:if="${filePage != null && filePage.totalPages > 0}">
+        <ul class="pagination flex-wrap justify-content-center">
+            <li class="page-item" th:each="pageNumber : ${pageNumbers}">
+                <a class="page-link btn btn-secondary btn-sm m-1"
+                   th:href="@{/product/editform(productid=${product.product_id}, size=5, page=${pageNumber}, editmode='no', batchid=${batchid}, product_id=${product.product_id})}"
+                   th:text="${pageNumber}"
+                   th:classappend="${pageNumber == filePage.number + 1} ? 'active'">
+                </a>
+            </li>
+        </ul>
+    </nav>
 
     </div>
 

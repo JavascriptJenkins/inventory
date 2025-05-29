@@ -264,10 +264,10 @@
             </tbody>
         </table>
         <nav th:if="${expensePage.totalPages > 0}">
-            <ul class="pagination justify-content-center">
+            <ul class="pagination flex-wrap justify-content-center">
                 <li class="page-item" th:each="pageNumber : ${pageNumbers}">
-                    <a class="page-link btn btn-secondary btn-sm mx-1"
-                       th:href="@{/rewards/admin?size=__${#lists.size(expensePage.content) > 5 ? #lists.size(expensePage.content) : 5}__&page=__${pageNumber}__&expenseid=__${expense != null ? expense.expenseid : '0'}__}"
+                    <a class="page-link btn btn-secondary btn-sm m-1"
+                       th:href="@{/rewards/admin(size=${#lists.size(expensePage.content) > 5 ? #lists.size(expensePage.content) : 5}, page=${pageNumber}, expenseid=${expense != null ? expense.expenseid : '0'})}"
                        th:text="${pageNumber}"
                        th:classappend="${pageNumber==expensePage.number + 1} ? 'active'">
                     </a>

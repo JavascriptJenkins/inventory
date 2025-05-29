@@ -254,10 +254,10 @@
     </table>
 
     <nav th:if="${pageOfDelivery.totalPages > 0}">
-        <ul class="pagination">
+        <ul class="pagination flex-wrap justify-content-center">
             <li class="page-item" th:each="pageNumber : ${pageNumbers}">
-                <a class="page-link"
-                   th:href="@{/delivery/pendingdeliveries?size=__${size}__&page=__${pageNumber == 1 ? 0 : pageNumber - 1}__}"
+                <a class="page-link m-1"
+                   th:href="@{/delivery/pendingdeliveries(size=${size}, page=${pageNumber == 1 ? 0 : pageNumber - 1})}"
                    th:text="${pageNumber}"
                    th:classappend="${pageNumber==pageOfDelivery.number + 1} ? 'active'">
                 </a>

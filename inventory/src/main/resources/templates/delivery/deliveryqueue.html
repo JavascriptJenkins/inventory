@@ -344,12 +344,12 @@
 
     <!-- Pagination Navigation -->
     <nav th:if="${deliveryPage.totalPages > 0}">
-        <ul class="pagination justify-content-center">
+        <ul class="pagination flex-wrap justify-content-center">
             <li class="page-item" th:each="pageNumber : ${pageNumbers}">
-                <a class="page-link"
+                <a class="page-link m-1"
                    th:href="@{/delivery/queue(size=${size}, page=${pageNumber == 1 ? 0 : pageNumber - 1}, customerid=${customerid})}"
                    th:text="${pageNumber}"
-                   th:classappend="${pageNumber == deliveryPage.number + 1} ? ' active'">
+                   th:classappend="${pageNumber == deliveryPage.number + 1} ? 'active'">
                 </a>
             </li>
         </ul>

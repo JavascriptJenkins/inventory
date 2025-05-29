@@ -379,17 +379,18 @@
             </tbody>
         </table>
     </form>
-        <nav th:if="${filePage.totalPages > 0}">
-            <ul class="pagination justify-content-center">
-                <li class="page-item" th:each="pageNumber : ${pageNumbers}">
-                    <a class="page-link btn btn-secondary btn-sm mx-1"
-                       th:href="@{/viewfiles?batchid=__${batch.batchid}__&size=5&page=__${page}__}"
-                       th:text="${pageNumber}"
-                       th:classappend="${pageNumber == filePage.number + 1} ? 'active'">
-                    </a>
-                </li>
-            </ul>
-        </nav>
+    <nav th:if="${filePage.totalPages > 0}">
+        <ul class="pagination flex-wrap justify-content-center">
+            <li class="page-item" th:each="pageNumber : ${pageNumbers}">
+                <a class="page-link btn btn-secondary btn-sm m-1"
+                   th:href="@{/viewfiles(batchid=${batch.batchid}, size=5, page=${pageNumber})}"
+                   th:text="${pageNumber}"
+                   th:classappend="${pageNumber == filePage.number + 1} ? 'active'">
+                </a>
+            </li>
+        </ul>
+    </nav>
+
 
 
 </div>

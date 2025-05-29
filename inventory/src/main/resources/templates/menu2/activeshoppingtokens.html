@@ -197,9 +197,9 @@
 
 
     <nav th:if="${customerPage.totalPages > 1}">
-        <ul class="pagination">
+        <ul class="pagination flex-wrap justify-content-center">
             <li class="page-item" th:each="pageNumber : ${#numbers.sequence(1, customerPage.totalPages)}">
-                <a class="page-link"
+                <a class="page-link m-1"
                    th:href="@{/activeshoppingtokens(size=${size}, page=${pageNumber - 1})}"
                    th:text="${pageNumber}"
                    th:classappend="${pageNumber == customerPage.number + 1} ? 'active'">
@@ -207,6 +207,7 @@
             </li>
         </ul>
     </nav>
+
 </div>
 </body>
 </html>
