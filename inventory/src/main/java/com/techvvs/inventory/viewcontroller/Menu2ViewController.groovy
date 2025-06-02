@@ -123,6 +123,9 @@ public class Menu2ViewController {
         if(jwtTokenProvider.hasRole(authorities, String.valueOf(Role.ROLE_NO_PRICES))){
             model.addAttribute("NoPricesView", "yes") // remove the price listing
         }
+        if(jwtTokenProvider.hasRole(authorities, String.valueOf(Role.ROLE_INCLUDE_OUT_OF_STOCK))){
+            model.addAttribute("IncludeOutOfStockView", "yes") // include showing the out of stock items
+        }
 
         System.out.println("DEBUGGGGG222: menuid.isPresent(): "+menuid.isPresent())
         System.out.println("DEBUGGGGG222: shoppingtoken.isPresent(): "+shoppingtoken.isPresent())
@@ -539,6 +542,7 @@ public class Menu2ViewController {
             @RequestParam("tokenlength") Optional<String> tokenlength,
             @RequestParam("mediaOnly") Optional<String> mediaOnly,
             @RequestParam("noPrices") Optional<String> noPrices,
+            @RequestParam("includeOutOfStock") Optional<String> includeOutOfStock,
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size
     ){
@@ -551,7 +555,8 @@ public class Menu2ViewController {
                 phonenumber.isPresent() &&
                 tokenlength.isPresent() &&
                 mediaOnly.isPresent() &&
-                noPrices.isPresent()
+                noPrices.isPresent() &&
+                includeOutOfStock.isPresent()
         )  {
             menuHelper.sendShoppingToken(
                     menuid.get(),
@@ -560,6 +565,7 @@ public class Menu2ViewController {
                     tokenlength.get(),
                     mediaOnly.get(),
                     noPrices.get(),
+                    includeOutOfStock.get(),
                     model
             )
         } else {

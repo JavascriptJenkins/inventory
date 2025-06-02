@@ -452,7 +452,15 @@ class MenuHelper {
             menuVO.setDisplayPrice() // this sets the displayprice on the products
 
             ProductVO.sortProductsByDisplayPrice(menuVO.menu_product_list)
-            ProductVO.removeOutOfStockProducts(menuVO.menu_product_list)
+
+
+            List<String> authorities = jwtTokenProvider.extractAuthorities(token)
+            if(jwtTokenProvider.hasRole(authorities, String.valueOf(Role.ROLE_INCLUDE_OUT_OF_STOCK))){
+                // do nothing, and the out of stock items will be shown
+            } else {
+                // otherwise the default behavior is to remove out of stock items
+                ProductVO.removeOutOfStockProducts(menuVO.menu_product_list)
+            }
 
             model.addAttribute("menu", menuVO)
 
@@ -539,6 +547,7 @@ class MenuHelper {
                            String tokenlength,
                            String mediaOnly,
                            String noPrices,
+                           String includeOutOfStock,
                            Model model
 
     ){
@@ -551,6 +560,10 @@ class MenuHelper {
 
         if("yes".equals(noPrices)){
             roles.add(Role.ROLE_NO_PRICES)
+        }
+
+        if("yes".equals(includeOutOfStock)){
+            roles.add(Role.ROLE_INCLUDE_OUT_OF_STOCK)
         }
 
 

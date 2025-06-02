@@ -387,6 +387,15 @@
                         </div>
                     </div>
 
+                    <!-- Added Checkbox for Include Out Of Stock Items -->
+                    <div class="col-md-12">
+                        <div class="form-check">
+                            <input type="checkbox" id="includeOutOfStockCheckbox" class="form-check-input">
+                            <label class="form-check-label" for="includeOutOfStockCheckbox">Include Out of Stock Items</label>
+                        </div>
+                    </div>
+
+
 
                     <!-- Submit and Close Buttons -->
                     <div class="col-12 d-flex justify-content-between" style="margin-top: 50px;">
@@ -690,6 +699,7 @@
             const submitBtn = document.getElementById('submitBtn');
             const mediaOnlyCheckbox = document.getElementById('mediaOnlyCheckbox');
             const noPricesCheckbox = document.getElementById('noPricesCheckbox');
+            const includeOutOfStockCheckbox = document.getElementById('includeOutOfStockCheckbox');
 
             let currentMenuId = null; // To store the correct menu ID for the popup
 
@@ -739,6 +749,7 @@
                 const phoneNumber = phoneNumberInput.value;
                 let mediaOnlyValue = "no";
                 let noPricesValue = "no";
+                let includeOutOfStockValue = "no";
 
                 if(mediaOnlyCheckbox.checked) {
                     mediaOnlyValue = "yes";
@@ -746,6 +757,10 @@
 
                 if(noPricesCheckbox.checked) {
                     noPricesValue = "yes";
+                }
+
+                if(includeOutOfStockCheckbox.checked) {
+                    includeOutOfStockValue = "yes";
                 }
 
                 if (!currentMenuId || !customerId || !tokenLength || !phoneNumber) {
@@ -759,6 +774,7 @@
                     + `&phonenumber=${encodeURIComponent(phoneNumber)}`
                     + `&mediaOnly=${encodeURIComponent(mediaOnlyValue)}`
                     + `&noPrices=${encodeURIComponent(noPricesValue)}`
+                    + `&includeOutOfStock=${encodeURIComponent(includeOutOfStockValue)}`
                     + `&tokenlength=${encodeURIComponent(tokenLength)}`;
 
                 // Safely submit the form
