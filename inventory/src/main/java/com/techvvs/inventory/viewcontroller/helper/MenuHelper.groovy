@@ -538,15 +538,21 @@ class MenuHelper {
                            String phonenumber,
                            String tokenlength,
                            String mediaOnly,
+                           String noPrices,
                            Model model
 
     ){
         List<Role> roles
         if("yes".equals(mediaOnly)){
-            roles = Arrays.asList(Role.ROLE_CLIENT, Role.ROLE_SHOPPING_TOKEN, Role.ROLE_MEDIA_ONLY);
+            roles = new ArrayList<>(Arrays.asList(Role.ROLE_CLIENT, Role.ROLE_SHOPPING_TOKEN, Role.ROLE_MEDIA_ONLY))
         } else {
-            roles = Arrays.asList(Role.ROLE_CLIENT, Role.ROLE_SHOPPING_TOKEN);
+            roles = new ArrayList<>(Arrays.asList(Role.ROLE_CLIENT, Role.ROLE_SHOPPING_TOKEN))
         }
+
+        if("yes".equals(noPrices)){
+            roles.add(Role.ROLE_NO_PRICES)
+        }
+
 
         CustomerVO customerVO = customerRepo.findByCustomerid(Integer.valueOf(customerid)).get()
 

@@ -188,6 +188,14 @@
             border-color: #ffd700;
             box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
         }
+
+          /* Scale up the checkboxes */
+          .form-check-input {
+            transform: scale(2.5); /* Adjust the scale as desired */
+            margin-right: 1.5rem; /* Adjust spacing if needed */
+            margin-top: 3rem; /* Adjust spacing if needed */
+            margin-left: 3rem; /* Adjust spacing if needed */
+          }
     </style>
 
 
@@ -371,10 +379,17 @@
                         </div>
                     </div>
 
+                    <!-- Added Checkbox for No Prices -->
+                    <div class="col-md-12">
+                        <div class="form-check">
+                            <input type="checkbox" id="noPricesCheckbox" class="form-check-input">
+                            <label class="form-check-label" for="noPricesCheckbox">No Prices</label>
+                        </div>
+                    </div>
 
 
                     <!-- Submit and Close Buttons -->
-                    <div class="col-12 d-flex justify-content-between">
+                    <div class="col-12 d-flex justify-content-between" style="margin-top: 50px;">
                         <button type="submit" id="submitBtn" class="btn btn-primary" disabled>Submit</button>
                         <button type="button" class="btn btn-secondary" id="closePopupBtn">Close</button>
                     </div>
@@ -674,6 +689,7 @@
             const phoneNumberInput = document.getElementById('phoneNumber');
             const submitBtn = document.getElementById('submitBtn');
             const mediaOnlyCheckbox = document.getElementById('mediaOnlyCheckbox');
+            const noPricesCheckbox = document.getElementById('noPricesCheckbox');
 
             let currentMenuId = null; // To store the correct menu ID for the popup
 
@@ -722,9 +738,14 @@
                 const tokenLength = tokenLengthSelect.value;
                 const phoneNumber = phoneNumberInput.value;
                 let mediaOnlyValue = "no";
+                let noPricesValue = "no";
 
                 if(mediaOnlyCheckbox.checked) {
                     mediaOnlyValue = "yes";
+                }
+
+                if(noPricesCheckbox.checked) {
+                    noPricesValue = "yes";
                 }
 
                 if (!currentMenuId || !customerId || !tokenLength || !phoneNumber) {
@@ -733,10 +754,11 @@
                 }
 
                 // Construct the dynamic URI
-                const actionUri = `/menu/shoppingtoken/send?menuid=${encodeURIComponent(currentMenuId)}`
+                const actionUri = `/menu2/shoppingtoken/send?menuid=${encodeURIComponent(currentMenuId)}`
                     + `&customerid=${encodeURIComponent(customerId)}`
                     + `&phonenumber=${encodeURIComponent(phoneNumber)}`
                     + `&mediaOnly=${encodeURIComponent(mediaOnlyValue)}`
+                    + `&noPrices=${encodeURIComponent(noPricesValue)}`
                     + `&tokenlength=${encodeURIComponent(tokenLength)}`;
 
                 // Safely submit the form

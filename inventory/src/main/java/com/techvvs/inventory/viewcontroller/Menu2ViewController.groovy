@@ -120,6 +120,10 @@ public class Menu2ViewController {
             model.addAttribute("MediaOnlyView", "yes") // this will remove the add to cart button and only allow clients to view media on the menu
         }
 
+        if(jwtTokenProvider.hasRole(authorities, String.valueOf(Role.ROLE_NO_PRICES))){
+            model.addAttribute("NoPricesView", "yes") // remove the price listing
+        }
+
         System.out.println("DEBUGGGGG222: menuid.isPresent(): "+menuid.isPresent())
         System.out.println("DEBUGGGGG222: shoppingtoken.isPresent(): "+shoppingtoken.isPresent())
         System.out.println("DEBUGGGGG222: !tokenused: "+!tokenused)
@@ -534,6 +538,7 @@ public class Menu2ViewController {
             @RequestParam("phonenumber") Optional<String> phonenumber,
             @RequestParam("tokenlength") Optional<String> tokenlength,
             @RequestParam("mediaOnly") Optional<String> mediaOnly,
+            @RequestParam("noPrices") Optional<String> noPrices,
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size
     ){
@@ -541,8 +546,22 @@ public class Menu2ViewController {
         techvvsAuthService.checkuserauth(model)
 
         // if all values present, send token
-        if(menuid.isPresent() && customerid.isPresent() && phonenumber.isPresent() && tokenlength.isPresent() && mediaOnly.isPresent())  {
-            menuHelper.sendShoppingToken(menuid.get(), customerid.get(), phonenumber.get(), tokenlength.get(), mediaOnly.get(), model)
+        if(menuid.isPresent() &&
+                customerid.isPresent() &&
+                phonenumber.isPresent() &&
+                tokenlength.isPresent() &&
+                mediaOnly.isPresent() &&
+                noPrices.isPresent()
+        )  {
+            menuHelper.sendShoppingToken(
+                    menuid.get(),
+                    customerid.get(),
+                    phonenumber.get(),
+                    tokenlength.get(),
+                    mediaOnly.get(),
+                    noPrices.get(),
+                    model
+            )
         } else {
             model.addAttribute("errorMessage", "menuid, customerid, phonenumber, and tokenlength are required")
         }
