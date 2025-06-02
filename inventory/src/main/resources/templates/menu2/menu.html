@@ -631,7 +631,7 @@
                     <div class="card-body text-white text-center">
                         <h5 class="card-title" th:text="${product.name}">Product Name</h5>
                         <p class="card-text"><strong>Qty:</strong> <span th:text="${product.quantityremaining}"></span></p>
-                        <p>DEBUG NoPricesView: <span th:text="'[' + ${NoPricesView} + ']'"></span></p>
+<!--                        <p>DEBUG NoPricesView: <span th:text="'[' + ${NoPricesView} + ']'"></span></p>-->
 
                         <!-- todo: toggle price here -->
                         <p class="card-text" th:if="${NoPricesView == null}"><strong>Price:</strong> $<span th:text="${product.displayprice}"></span></p>
