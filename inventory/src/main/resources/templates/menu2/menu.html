@@ -578,8 +578,8 @@
                                            th:data-product-name="${product.name}"
                                            th:data-product-price="${product.displayprice}"
                                            th:data-product-quantityremaining="${product.quantityremaining}"
-                                           th:disabled="${cart.isprocessed == 1 or (MediaOnlyView != null and MediaOnlyView == 'yes')}"
-                                           th:classappend="${(cart.isprocessed == 1 or (MediaOnlyView != null and MediaOnlyView == 'yes')) ? 'disabled' : ''}">
+                                           th:disabled="${cart.isprocessed == 1 or (MediaOnlyView != null and MediaOnlyView == 'yes') or (NoPricesView != null and NoPricesView == 'yes')}"
+                                           th:classappend="${(cart.isprocessed == 1 or (MediaOnlyView != null and MediaOnlyView == 'yes') or (NoPricesView != null and NoPricesView == 'yes')) ? 'disabled' : ''}">
                                             Add to Cart
                                         </a>
                                     </div>
@@ -648,10 +648,11 @@
                                th:data-product-name="${product.name}"
                                th:data-product-price="${product.displayprice}"
                                th:data-product-quantityremaining="${product.quantityremaining}"
-                               th:disabled="${cart.isprocessed == 1 or (MediaOnlyView != null and MediaOnlyView == 'yes')}"
-                               th:classappend="${(cart.isprocessed == 1 or (MediaOnlyView != null and MediaOnlyView == 'yes')) ? 'disabled' : ''}">
+                               th:disabled="${cart.isprocessed == 1 or (MediaOnlyView != null and MediaOnlyView == 'yes') or (NoPricesView != null and NoPricesView == 'yes')}"
+                               th:classappend="${(cart.isprocessed == 1 or (MediaOnlyView != null and MediaOnlyView == 'yes') or (NoPricesView != null and NoPricesView == 'yes')) ? 'disabled' : ''}">
                                 Add to Cart
                             </a>
+
                         </div>
                     </div>
                 </div>
