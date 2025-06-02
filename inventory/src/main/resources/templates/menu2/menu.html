@@ -560,7 +560,7 @@
                                         <span th:text="${product.quantityremaining}"></span>
                                     </p>
                                     <!-- todo: toggle price here -->
-                                    <p th:if="${NoPricesView != null and NoPricesView != 'yes'}" class="card-text">
+                                    <p th:if="${NoPricesView == null}" class="card-text">
                                         <strong>Price:</strong>
                                         $<span th:text="${product.displayprice}"></span>
                                     </p>
@@ -631,10 +631,10 @@
                     <div class="card-body text-white text-center">
                         <h5 class="card-title" th:text="${product.name}">Product Name</h5>
                         <p class="card-text"><strong>Qty:</strong> <span th:text="${product.quantityremaining}"></span></p>
-<!--                        <p>DEBUG NoPricesView: <span th:text="'[' + ${NoPricesView} + ']'"></span></p>-->
+                        <p>DEBUG NoPricesView: <span th:text="'[' + ${NoPricesView} + ']'"></span></p>
 
                         <!-- todo: toggle price here -->
-                        <p class="card-text" th:if="${NoPricesView != null and NoPricesView != 'yes'}"><strong>Price:</strong> $<span th:text="${product.displayprice}"></span></p>
+                        <p class="card-text" th:if="${NoPricesView == null}"><strong>Price:</strong> $<span th:text="${product.displayprice}"></span></p>
 
                         <div class="d-grid gap-2 mt-2">
                             <a th:href="@{/video/product(productid=${product.product_id}, menuid=${menu.menuid}, shoppingtoken=${shoppingtoken})}" class="btn btn-outline-light">Videos</a>
