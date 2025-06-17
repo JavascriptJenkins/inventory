@@ -15,7 +15,7 @@ import java.time.LocalDateTime
 class VendorVO implements Serializable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JsonProperty
     Integer vendorid
 

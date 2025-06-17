@@ -10,9 +10,9 @@
             integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="
             crossorigin="anonymous"></script>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    <!-- JavaScript Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-kQtW33rZJAHjgefvhyyzcGF3C5TFyBQBA13V1RKPf4uH+bwyzQxZ6CmMZHmNBEfJ" crossorigin="anonymous"></script>
+<!--    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">-->
+<!--    &lt;!&ndash; JavaScript Bundle with Popper &ndash;&gt;-->
+<!--    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-kQtW33rZJAHjgefvhyyzcGF3C5TFyBQBA13V1RKPf4uH+bwyzQxZ6CmMZHmNBEfJ" crossorigin="anonymous"></script>-->
 
 
     <link rel="stylesheet" type="text/css" media="all" href="/css/table.css" th:href="@{/css/table.css}" />
@@ -25,26 +25,21 @@
         color: red;
       }
     </style>
+    <style>
+        input[readonly], textarea[readonly], select[readonly] {
+          background-color: #e9ecef !important; /* Bootstrap's default readonly bg */
+          color: #6c757d !important; /* Optional: muted text */
+        }
+    </style>
+
 
     <script type="text/javascript">
         function onpageload() {
             console.log('running stuff on page load');
-            if(document.getElementById("barcodeinput1")){
-                var input = document.getElementById("barcodeinput1").focus();
+            // Autofocus only if creating new product
+            if (document.getElementById("name") && document.querySelector("[name='createTimeStamp']") === null) {
+                document.getElementById("name").focus();
             }
-            if(document.getElementById("barcodeinput2")){
-                var input = document.getElementById("barcodeinput2").focus();
-            }
-
-             $("#hiddencontainerBarcodeInputMsg").show();
-
-             $(":input").keypress(function(event){
-                if (event.which == '10' || event.which == '13') {
-                    console.log("barcode keypress");
-                    event.preventDefault();
-                    var inputs = document.getElementById("name").focus();
-                }
-            });
 
         }
 
@@ -116,8 +111,13 @@
                 <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
 
                 <div class="row" style="margin-bottom: 5px;">
+                    <div th:if="${batchid != null}">
+                        <a th:href="@{/batch/admin(batchid=${batchid})}" class="btn btn-warning mb-3">
+                            <-- Back to Batch: <span th:text="${product.batch.name}">Batch Name</span>
+                        </a>
+                    </div>
                     <div class="col-sm-2" style="margin-bottom: 5px;">
-                        <label class="form-label"><b>Product Number</b></label>
+                        <label class="form-label"><b>Product Numberfff</b></label>
                         <input type="text" th:field="*{productnumber}" class="form-control" placeholder="productnumber" aria-label="productnumber" readonly>
                     </div>
 
@@ -221,6 +221,12 @@
             <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
             <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
 
+            <div th:if="${batchid != null}">
+                <a th:href="@{/batch/admin(batchid=${batchid})}" class="btn btn-warning mb-3">
+                    <-- Back to Batch: <span th:text="${product.batch.name}">Batch Name</span>
+                </a>
+            </div>
+
             <div class="row" style="margin-bottom: 5px;">
                 <div class="col-sm-2" style="margin-bottom: 5px;">
                     <label class="form-label"><b>Product Number</b></label>
@@ -256,7 +262,7 @@
                 </div>
                 <div class="col-md-4" style="margin-bottom: 5px;">
                     <label class="form-label">Description</label>
-                    <input type="text" th:field="*{description}" class="form-control" placeholder="description" aria-label="description">
+                    <input id="description"  type="text" th:field="*{description}" class="form-control" placeholder="description" aria-label="description">
                 </div>
             </div>
 
@@ -264,7 +270,7 @@
             <div class="row" style="margin-bottom: 5px;">
                 <div class="col-md-4" style="margin-bottom: 5px;">
                     <label class="form-label required">Quantity</label>
-                    <input type="number" th:field="*{quantity}" class="form-control" placeholder="quantity" aria-label="quantity">
+                    <input id="quantity"  type="number" th:field="*{quantity}" class="form-control" placeholder="quantity" aria-label="quantity">
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Quantity Remaining</label>
@@ -272,21 +278,58 @@
                     <input th:if="${product.quantityremaining == null}" type="number" th:field="*{quantityremaining}" id="quantityremaining" class="form-control" placeholder="Generated upon create" readonly>
                 </div>
                 <div class="col-md-4" style="margin-bottom: 5px;">
-                    <label class="form-label">Vendor</label>
-                    <input type="text" th:field="*{vendor}" class="form-control" placeholder="vendor" aria-label="vendor">
+                    <label class="form-label required">Vendor</label>
+                    <select class="form-control" th:field="${product.vendorvo}" id="vendorid">
+                        <option th:each="vendor : ${vendors}" th:value="${vendor.vendorid}" th:text="${vendor.name}"></option>
+                    </select>
                 </div>
             </div>
 
             <div class="row" style="margin-bottom: 5px;">
                 <div class="col-md-4" style="margin-bottom: 5px;">
                     <label class="form-label">Price</label>
-                    <input type="number" th:field="*{price}" class="form-control" placeholder="price" aria-label="price">
+                    <input id="price"  type="number" th:field="*{price}" class="form-control" placeholder="price" aria-label="price">
                 </div>
                 <div class="col-md-4" style="margin-bottom: 5px;">
                     <label class="form-label">Cost</label>
-                    <input type="number" th:field="*{cost}" class="form-control" placeholder="cost" aria-label="cost">
+                    <input id="cost" type="number" th:field="*{cost}" class="form-control" placeholder="cost" aria-label="cost">
                 </div>
             </div>
+
+            <div class="row" style="margin-bottom: 5px;">
+                <div class="col-md-4" style="margin-bottom: 5px;">
+                    <label class="form-label required">Attributes</label>
+                    <select class="form-control" id="attributeSelect" th:field="${product.attribute_list}" multiple>
+                        <option th:each="attribute : ${attributes}"
+                                th:value="${attribute.attributeid}"
+                                th:text="${attribute.name} +' | ' + ${attribute.value}"></option>
+                    </select>
+                    <button type="button" id="addAttributesBtn" class="btn btn-lg btn-primary mt-2">Add Attribute(s)</button>
+                </div>
+
+                <!-- Inline display of selected attributes -->
+                <div id="selectedAttributesContainer">
+                  <span th:each="attribute : ${product.attribute_list}" class="badge bg-secondary me-2 mb-2 px-3 py-2 fs-5 d-inline-flex align-items-center">
+                    <span th:text="${attribute.name}" class="me-2"></span>
+                    <i class="bi bi-x-circle remove-attribute"
+                       style="cursor: pointer; font-size: 1.25rem;"
+                       th:attr="data-attribute-id=${attribute.attributeid}"></i>
+                  </span>
+                </div>
+
+
+
+                <!-- Hidden inputs for form submission -->
+                <div id="hiddenAttributesContainer"></div>
+
+
+            </div>
+
+            <!-- Hidden form for attribute removals -->
+<!--            <form id="removeAttributeForm" action="/attribute/admin/product/remove" method="post" style="display:none;">-->
+<!--                <input type="hidden" name="productId" th:value="${product.product_id}" />-->
+<!--                <input type="hidden" name="attributeId" id="removeAttributeId" />-->
+<!--            </form>-->
 
 
             <br>
@@ -306,7 +349,7 @@
                 <div class="col-md-4" style="margin-bottom: 5px;">
                     <label class="form-label required">Batch55</label>
 
-                    <select class="form-control" th:field="*{batch.batchid}">
+                    <select class="form-control" th:field="*{batch.batchid}"   id="batchid">
                         <!--                        <option value="">select operator</option>-->
                         <!--                        <option th:each="operator : ${}" th:value="${operator.id}" th:text="${operator.operatorName}"></option>-->
                         <option th:each="batch : ${batchlist}"
@@ -329,10 +372,13 @@
                 <div class="alert alert-info" role="alert" >Notes</div>
                 <div class="col" style="margin-bottom: 5px;">
                     <label class="form-label">Notes</label>
-                    <textarea style="width:648px;height:163px;" th:field="*{notes}" class="form-control" placeholder="notes" aria-label="notes"></textarea>
+                    <textarea style="width:648px;height:163px;" th:field="*{notes}" class="form-control" placeholder="notes" aria-label="notes" id="notes"></textarea>
                 </div>
             </div>
-            <button style="margin-top:5px;" type="submit" class="btn btn-primary">Submit</button>
+            <button style="margin-top:10px;" type="submit" class="btn btn-secondary btn-lg px-4 py-2">
+                <i class="bi bi-check-circle me-2"></i> Submit
+            </button>
+
 <!--            <input type="hidden" th:field="*{batch.batchid}">-->
         </form>
 
@@ -369,8 +415,80 @@
 
 
 
+<div th:insert="fragments/validation.html :: validationfragment"> </div>
+<script>
+    const inputFields = [
+        'vendorid', 'name', 'description', 'notes',
+        'quantity', 'price', 'cost',
+        'producttypeid','batchid', 'attributeSelect'
+    ];
 
+    const optionalFields = ['notes', 'attributeSelect'];
+
+    document.addEventListener("DOMContentLoaded", () => {
+        initializeValidation(inputFields, optionalFields);
+    });
+</script>
 
 
 </body>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+      const selectedContainer = $('#selectedAttributesContainer');
+      const hiddenContainer = $('#hiddenAttributesContainer');
+      const selectedIds = new Set();
+
+      // Initialize from existing Thymeleaf-rendered attributes
+      selectedContainer.find('.remove-attribute').each(function () {
+        selectedIds.add($(this).data('attribute-id') || $(this).data('id'));
+      });
+
+    $('#addAttributesBtn').click(function () {
+      $('#attributeSelect option:selected').each(function () {
+        const id = $(this).val();
+        const name = $(this).text();
+
+        // Check if badge exists
+        if ($(`#selectedAttributesContainer [data-id="${id}"]`).length === 0) {
+          selectedIds.add(id);
+          addAttributeBadge(id, name);
+          addHiddenInput(id);
+        }
+
+
+        // ✅ This ensures the option gets unselected so it can be reselected later
+        $(this).prop('selected', false);
+      });
+    });
+
+
+    function addAttributeBadge(id, name) {
+      const badge = $(`
+        <span class="badge bg-warning text-dark rounded-pill px-4 py-3 fs-4 d-inline-flex align-items-center me-2 mb-2">
+          <span class="me-3">${name}</span>
+          <i class="bi bi-x-circle remove-attribute" style="cursor: pointer; font-size: 1.5rem;" data-id="${id}"></i>
+        </span>
+      `);
+      selectedContainer.append(badge);
+    }
+
+
+      function addHiddenInput(id) {
+        hiddenContainer.append(`<input type="hidden" name="attributeIds" value="${id}" data-id="${id}">`);
+      }
+
+      selectedContainer.on('click', '.remove-attribute', function () {
+        const id = $(this).data('id') || $(this).data('attribute-id');
+        selectedIds.delete(id);
+        $(this).closest('.badge').remove();
+        hiddenContainer.find(`input[data-id="${id}"]`).remove();
+        $(`#attributeSelect option[value="${id}"]`).prop('selected', false);
+      });
+    });
+</script>
+
+
+
+
 </html>

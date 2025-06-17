@@ -113,60 +113,60 @@
 
 
 <!--    TODO: move this validation into an injectable file -->
-    <script>
-        function validateInputField(inputId) {
-            let input = document.getElementById(inputId);
-            if (input && input.value.trim().length > 0) {
-                input.classList.remove('glowing-invalid');
-                input.classList.add('glowing-valid');
-            } else {
-                input.classList.remove('glowing-valid');
-                input.classList.add('glowing-invalid');
-            }
+<!--    <script>-->
+<!--        function validateInputField(inputId) {-->
+<!--            let input = document.getElementById(inputId);-->
+<!--            if (input && input.value.trim().length > 0) {-->
+<!--                input.classList.remove('glowing-invalid');-->
+<!--                input.classList.add('glowing-valid');-->
+<!--            } else {-->
+<!--                input.classList.remove('glowing-valid');-->
+<!--                input.classList.add('glowing-invalid');-->
+<!--            }-->
 
-            /* NOTE: if we have && !editmode attached to the field,
-            that means it will not be validated upon a creation.
-             This is because we are generating these values on the backend during creation.
-             */
-            if(
-            inputId === 'notes'
-             || inputId === 'barcode' && !editmode
-             || inputId === 'quantityremaining' && !editmode
-             || inputId === 'createTimeStamp' && !editmode
-             || inputId === 'updateTimeStamp' && !editmode
-             ) {
-                input.classList.remove('glowing-invalid');
-                input.classList.add('glowing-valid');
-            }
-            checkFormValidity(); // Check form validity after each validation
-        }
+<!--            /* NOTE: if we have && !editmode attached to the field,-->
+<!--            that means it will not be validated upon a creation.-->
+<!--             This is because we are generating these values on the backend during creation.-->
+<!--             */-->
+<!--            if(-->
+<!--            inputId === 'notes'-->
+<!--             || inputId === 'barcode' && !editmode-->
+<!--             || inputId === 'quantityremaining' && !editmode-->
+<!--             || inputId === 'createTimeStamp' && !editmode-->
+<!--             || inputId === 'updateTimeStamp' && !editmode-->
+<!--             ) {-->
+<!--                input.classList.remove('glowing-invalid');-->
+<!--                input.classList.add('glowing-valid');-->
+<!--            }-->
+<!--            checkFormValidity(); // Check form validity after each validation-->
+<!--        }-->
 
-        function checkFormValidity() {
-            const hasInvalidFields = document.querySelector('.glowing-invalid') !== null;
-            const submitButton = document.querySelector('.btn-secondary');
+<!--        function checkFormValidity() {-->
+<!--            const hasInvalidFields = document.querySelector('.glowing-invalid') !== null;-->
+<!--            const submitButton = document.querySelector('.btn-secondary');-->
 
-            if (submitButton) {
-                submitButton.disabled = hasInvalidFields;
-            }
-        }
+<!--            if (submitButton) {-->
+<!--                submitButton.disabled = hasInvalidFields;-->
+<!--            }-->
+<!--        }-->
 
-        function validateAllFields() {
-            const inputFields = [
-                'barcode', 'name', 'description', 'price', 'cost', 'quantity',
-                'quantityremaining', 'producttypeid', 'notes', 'vendor', 'createTimeStamp', 'updateTimeStamp', 'batchname', 'batch_type_id'
-            ];
-            inputFields.forEach(validateInputField);
-        }
+<!--        function validateAllFields() {-->
+<!--            const inputFields = [-->
+<!--                'barcode', 'name', 'description', 'price', 'cost', 'quantity',-->
+<!--                'quantityremaining', 'producttypeid', 'notes', 'vendor', 'createTimeStamp', 'updateTimeStamp', 'batchname', 'batch_type_id', 'vendorid'-->
+<!--            ];-->
+<!--            inputFields.forEach(validateInputField);-->
+<!--        }-->
 
-        function initializeValidation() {
-            document.querySelectorAll('.form-control').forEach(input => {
-                input.addEventListener('input', validateAllFields);
-            });
-            validateAllFields(); // Ensure validation runs on page load
-        }
+<!--        function initializeValidation() {-->
+<!--            document.querySelectorAll('.form-control').forEach(input => {-->
+<!--                input.addEventListener('input', validateAllFields);-->
+<!--            });-->
+<!--            validateAllFields(); // Ensure validation runs on page load-->
+<!--        }-->
 
-        document.addEventListener("DOMContentLoaded", initializeValidation);
-    </script>
+<!--        document.addEventListener("DOMContentLoaded", initializeValidation);-->
+<!--    </script>-->
     <!--    TODO: move this validation into an injectable file -->
 
 </head>
@@ -220,9 +220,11 @@
             </div>
         </div>
         <div class="row mb-3">
-            <div class="col-md-4">
-                <label class="form-label">Vendor</label>
-                <input type="text" th:field="*{vendor}" id="vendor" class="form-control edit-validation-group" placeholder="Vendor">
+            <div class="col-md-4" style="margin-bottom: 5px;">
+                <label class="form-label required">Vendor</label>
+                <select class="form-control" th:field="${product.vendorvo}" id="vendorid">
+                    <option th:each="vendor : ${vendors}" th:value="${product.vendorvo.vendorid}" th:text="${vendor.name}"></option>
+                </select>
             </div>
             <div class="col-md-4">
                 <label class="form-label">Create Time Stamp</label>
@@ -281,15 +283,9 @@
             </div>
             <div class="col-md-4">
                 <label class="form-label">Batch Type</label>
-
-                <select th:if="${product.batch != null}" class="form-control edit-validation-group" th:field="*{batch_type_id}" id="batch_type_id" readonly>
-                    <option th:each="batchtype : ${batchtypes}" th:value="${batch.batch_type_id.batch_type_id}" th:text="${batch.batch_type_id.name}"></option>
-                </select>
-
-                <select th:if="${product.batch == null}" class="form-control edit-validation-group" th:field="*{batch_type_id}" id="batch_type_id" readonly>
-                    <option value="" selected>Select Batch Type</option>
-                    <option th:each="batchtype : ${batchtypes}" th:value="${batchtype.batch_type_id}" th:text="${batchtype.name}"></option>
-                </select>
+                <div class="form-control-plaintext">
+                    <span th:text="${product.batch.batch_type_id.name}">Batch Type Name</span>
+                </div>
             </div>
         </div>
 
@@ -419,6 +415,22 @@
     <br>
     <br>
 </div>
+<div th:insert="fragments/validation.html :: validationfragment"> </div>
+<!-- todo: add the attributeSelect to the form here and also add it to validation-->
+<script>
+    const inputFields = [
+        'barcode', 'name', 'description', 'price',
+        'cost', 'quantity', 'quantityremaining',
+        'producttypeid','notes', 'vendor', 'createTimeStamp', 'updateTimeStamp', 'batchname', 'batch_type_id', 'vendorid'
+    ];
 
+    const optionalFields = ['notes', 'attributeSelect'];
+
+    document.addEventListener("DOMContentLoaded", () => {
+        initializeValidation(inputFields, optionalFields);
+    });
+
+
+</script>
 </body>
 </html>

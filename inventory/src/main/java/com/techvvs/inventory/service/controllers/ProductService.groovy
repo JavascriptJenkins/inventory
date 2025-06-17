@@ -582,6 +582,13 @@ class ProductService {
     }
 
 
+    @Transactional
+    Optional<ProductVO> getProductWithLazyFieldsLoaded(int productid){
+        Optional<ProductVO> product = productRepo.findByIdWithVendor(productid);
+
+        return product
+    }
+
 
 
 }

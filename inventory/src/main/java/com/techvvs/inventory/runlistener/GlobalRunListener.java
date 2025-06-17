@@ -1,8 +1,11 @@
 package com.techvvs.inventory.runlistener;
 
 //import com.techvvs.inventory.deployment.service.DeploymentManager;
+import com.techvvs.inventory.metrc.service.MetrcService;
 import com.techvvs.inventory.model.ProductVO;
 import com.techvvs.inventory.refdata.RefDataLoader;
+import com.techvvs.inventory.service.webscrape.BrandStreetTokyoPoshmarkUpdater;
+import com.techvvs.inventory.service.webscrape.BrandStreetTokyoScraperService;
 import com.techvvs.inventory.util.SimpleCache;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -32,6 +35,14 @@ public class GlobalRunListener implements ApplicationListener<ApplicationReadyEv
     @Autowired
     Environment environment;
 
+    @Autowired
+    BrandStreetTokyoScraperService brandStreetTokyoScraperService;
+
+    @Autowired
+    BrandStreetTokyoPoshmarkUpdater brandStreetTokyoPoshmarkUpdater;
+
+    @Autowired
+    MetrcService metrcService;
 //    @Autowired
 //    DeploymentManager deploymentManager;
 

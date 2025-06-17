@@ -9,10 +9,12 @@ import com.techvvs.inventory.jparepo.BatchRepo
 import com.techvvs.inventory.jparepo.BatchTypeRepo
 import com.techvvs.inventory.jparepo.ProductRepo
 import com.techvvs.inventory.jparepo.ProductTypeRepo
+import com.techvvs.inventory.jparepo.VendorRepo
 import com.techvvs.inventory.model.BatchTypeVO
 import com.techvvs.inventory.model.BatchVO
 import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.ProductVO
+import com.techvvs.inventory.model.VendorVO
 import com.techvvs.inventory.modelnonpersist.FileVO
 import com.techvvs.inventory.security.JwtTokenProvider
 import com.techvvs.inventory.security.Role
@@ -36,6 +38,7 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Controller
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.*
 
@@ -59,6 +62,9 @@ public class CleanBatchViewController {
 
     @Autowired
     BatchRepo batchRepo;
+
+    @Autowired
+    VendorRepo vendorRepo;
 
     @Autowired
     ProductRepo productRepo
@@ -192,6 +198,7 @@ public class CleanBatchViewController {
 
     // todo: enforce admin rights to view this page
     // Admin page for editing the batch, removing and adding products and whatnot
+    @Transactional
     @GetMapping("/admin")
     String admin(@ModelAttribute( "batch" ) BatchVO batchVO,
                  Model model,
@@ -221,7 +228,12 @@ public class CleanBatchViewController {
 
         // bind the batch into scope
         if(productid.isPresent() && productid.get() != 0 && productid.get() != null) {
-            product = productRepo.findById(productid.get());
+//            product = productRepo.findByIdWithVendor(productid.get());
+            product = productService.getProductWithLazyFieldsLoaded(productid.get());
+            // 🚨 Force loading of vendorvo BEFORE returning to view
+            if (product.get().vendorvo != null) {
+                product.get().vendorvo.name; // Access any property to initialize
+            }
             model.addAttribute("product", product.get());
             model.addAttribute("editmode", true);
         } else {
@@ -248,6 +260,7 @@ public class CleanBatchViewController {
         bindBatchTypes(model)
         bindProductTypes(model)
         bindBatches(model)
+        bindVendors(model)
         techvvsAuthService.checkuserauth(model)
         return "batch/admin.html";
     }
@@ -372,6 +385,7 @@ public class CleanBatchViewController {
         bindProductTypes(model)
         bindBatchTypes(model)
         bindBatches(model)
+        bindVendors(model)
         techvvsAuthService.checkuserauth(model)
         return "batch/admin.html";
     }
@@ -392,6 +406,13 @@ public class CleanBatchViewController {
         // get all the batchtypes objects and bind them to select dropdown
         List<BatchVO> batches = batchRepo.findAll();
         model.addAttribute("batches", batches);
+    }
+
+
+    void bindVendors(Model model){
+        // get all the vendor objects and bind them to select dropdown
+        List<VendorVO> vendorVOS = vendorRepo.findAll();
+        model.addAttribute("vendors", vendorVOS);
     }
 
     ProductVO generateTimestampsAndBarcode(ProductVO productVO, BatchVO batchVO){
@@ -464,6 +485,7 @@ public class CleanBatchViewController {
         }
 
         bindBatches(model)
+        bindVendors(model)
         bindBatchTypes(model)
         bindProductTypes(model)
         techvvsAuthService.checkuserauth(model)
@@ -532,6 +554,7 @@ public class CleanBatchViewController {
         }
 
         bindBatches(model)
+        bindVendors(model)
         bindBatchTypes(model)
         bindProductTypes(model)
         techvvsAuthService.checkuserauth(model)

@@ -22,7 +22,7 @@ class PaymentVO implements Serializable {
     Double amountpaid;
 
     @JsonProperty
-    String paymenttype;
+    String paymenttype; // tracked by PaymentMethod enum
 
     @JsonProperty
     @ManyToOne(cascade=CascadeType.ALL, fetch = FetchType.EAGER)

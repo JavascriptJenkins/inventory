@@ -10,6 +10,14 @@ class ValidateProduct {
 
     String validateNewFormInfo(ProductVO productVO){
 
+        // todo: implement a price change table so people can change the price of a SKU after a transaction has been made.
+        // check if the product price coming in here is different than the existing price in the database
+
+        // if it is indeed different, then we need see if any transactions have been made.
+        //
+        // If a transaction has indeed been made, then don't let the user change the price
+
+
         if(productVO.getName() != null &&
                 (productVO.getName().length() > 250
                         || productVO.getName().length() < 1)

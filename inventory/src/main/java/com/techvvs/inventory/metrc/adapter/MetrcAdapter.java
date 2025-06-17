@@ -17,8 +17,8 @@ public class MetrcAdapter {
 
     private static final Logger logger = LoggerFactory.getLogger(MetrcAdapter.class);
 
-
-    RestTemplate restTemplate = new RestTemplate();
+    @Autowired
+    RestTemplate restTemplate;
 
     public void createProduct(MetrcProductDto productDto) {
         try {
@@ -115,7 +115,7 @@ public class MetrcAdapter {
     }
 
     public MetrcComplianceCheckDto checkCompliance(String entityId) {
-        String apiUrl = "https://api-mn.metrc.com/compliance/v1/check?entityId=" + entityId;
+        String apiUrl = "https://sandbox-api-mn.metrc.com/compliance/v1/check?entityId=" + entityId;
         return restTemplate.getForObject(apiUrl, MetrcComplianceCheckDto.class);
     }
 

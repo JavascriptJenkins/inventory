@@ -94,6 +94,10 @@ public interface ProductRepo extends JpaRepository<ProductVO, Integer> {
     Page<ProductVO> findUnpaidProductsByBatchId(@Param("batchid") int batchid, Pageable pageable);
 
 
+    @Query("SELECT p FROM ProductVO p JOIN FETCH p.vendorvo WHERE p.product_id = :id")
+    Optional<ProductVO> findByIdWithVendor(@Param("id") Integer id);
+
+
 
 
 

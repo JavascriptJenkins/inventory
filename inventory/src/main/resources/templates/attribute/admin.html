@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Attribute Page</title>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" type="text/css" media="all" href="/css/table.css" th:href="@{/css/table.css}" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Bundle JS (Includes Popper.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        .glowing-valid {
+            box-shadow: 0 0 8px 2px #00ffff !important;
+        }
+        .glowing-invalid {
+            box-shadow: 0 0 8px 2px #ff0000 !important;
+        }
+    </style>
+    <style>
+        .table-hover tbody tr:hover {
+            background-color: #e0f7fa;
+        }
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: #f1f8fa;
+        }
+        .table-dark thead {
+            background-color: #343a40;
+            color: #fff;
+        }
+        .btn-secondary {
+            color: #fff;
+            background-color: #343a40;
+            border-color: #343a40;
+        }
+        .btn-secondary:hover {
+            background-color: #23272b;
+            border-color: #1d2124;
+        }
+        .header-dark {
+            background-color: #343a40;
+            color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            margin-bottom: 15px;
+            font-family: 'Roboto', sans-serif;
+            border: 1px solid transparent;
+            border-image: linear-gradient(to right, #c0c0c0, #ffffff);
+            border-image-slice: 1;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .tip-box {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: #00ffff;
+            text-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff, 0 0 15px #00ffff;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: rgba(0, 0, 0, 0.7);
+            margin-bottom: 15px;
+            animation: glow 1.5s infinite alternate;
+        }
+        .btn-dark-custom {
+            background-color: #343a40;
+            color: #fff;
+            border: 1px solid #343a40;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .btn-dark-custom:hover {
+            background-color: #1d2124; /* Darker shade on hover */
+            color: #f8f9fa; /* Lighter text on hover */
+        }
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff, 0 0 15px #00ffff;
+            }
+            to {
+                text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px #00ffff;
+            }
+        }
+        .record-selector {
+            margin-bottom: 15px;
+            background-color: #343a40;
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            display: inline-block;
+        }
+        .record-selector select {
+            background-color: #23272b;
+            color: #fff;
+            border: 1px solid #343a40;
+        }
+        .record-selector select:focus {
+            border-color: #1d2124;
+            box-shadow: none;
+        }
+    </style>
+
+
+</head>
+<body>
+
+<div th:insert="fragments/adminnavbar.html :: adminnavbarfragment"> </div>
+
+<div class="container">
+
+    <div class="header-dark">
+        <h1>Administrate Attributes</h1>
+    </div>
+
+    <!-- New Product Edit Section -->
+<!--    <div th:if="${!editmode}" class="tip-box">Create a New Menu by typing in New Menu Name.  </div>-->
+<!--    <div th:if="${editmode}" class="tip-box">Modify attributes of menu. </div>-->
+    <div class="tip-box">Add and edit Attributes. </div>
+
+    <div id="successDiv" class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">
+        Success
+    </div>
+
+    <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">
+        Error
+    </div>
+
+
+    <form th:action="@{/attribute/admin/edit}" method="post" th:object="${attribute}">
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label class="form-label">Attribute ID</label>
+                <input type="text" th:field="*{attributeid}" id="attributeid" class="form-control edit-validation-group" placeholder="Attribute ID" readonly>
+            </div>
+
+            <!-- This needs to come from an ENUM -->
+            <div class="col-md-4">
+                <label class="form-label">Attribute Name</label>
+                <select th:field="*{name}" class="form-select form-control edit-validation-group">
+                    <option th:each="attrinutename : ${attributenames}"
+                            th:value="${attrinutename.name()}"
+                            th:text="${attrinutename.name()}">
+                    </option>
+                </select>
+
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Value</label>
+                <input type="text" th:field="*{value}" id="value" class="form-control edit-validation-group" placeholder="Value">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Description</label>
+                <input type="text" th:field="*{description}" id="description" class="form-control edit-validation-group" placeholder="Description">
+            </div>
+
+
+
+        </div>
+
+
+
+<!--        &lt;!&ndash; START: put any hidden values needed here &ndash;&gt;-->
+        <input th:if="${attribute.attributeid != null && attribute.attributeid != 0}" type="hidden" th:field="*{product_attribute_list}">
+        <input th:if="${attribute.attributeid != null && attribute.attributeid != 0}" type="hidden" th:field="*{active}">
+        <input th:if="${attribute.attributeid != null && attribute.attributeid != 0}" type="hidden" th:field="*{iconUrl}">
+        <input th:if="${attribute.attributeid != null && attribute.attributeid != 0}" type="hidden" th:field="*{updateTimeStamp}">
+        <input th:if="${attribute.attributeid != null && attribute.attributeid != 0}" type="hidden" th:field="*{createTimeStamp}">
+<!--        &lt;!&ndash; END: Hidden Values &ndash;&gt;-->
+
+
+
+
+        <div class="text-end">
+            <a href="/attribute/admin" class="btn btn-primary me-2">REFRESH</a>
+            <button type="submit" class="btn btn-secondary" th:if="${successMessage == null}">Submit</button>
+        </div>
+
+
+    </form>
+
+    <br>
+
+    
+    <!-- START: Expenses Config Selection Table -->
+    <div class="col-md-12" th:if="${attributePage != null && attributePage.content.size() > 0}">
+        <div class="tip-box">Select a Attribute by clicking on the Attribute ID</div>
+        <table id="selectMenuTable" class="table table-hover table-striped table-dark" style="margin-top: 20px">
+            <thead>
+            <tr>
+                <th scope="col">Attribute ID</th>
+                <th scope="col">Name</th>
+                <th scope="col">Description</th>
+                <th scope="col">Created</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="attribute, iStat : ${attributePage.content}"
+                th:style="${iStat.odd}? 'font-weight: bold;'"
+                th:alt-title="${iStat.even}? 'even' : 'odd'">
+                <td>
+                    <a th:href="@{/attribute/admin?size=__${1}__&page=__${page == null ? 0 : page}__&attributeid=__${attribute.attributeid == null ? 0 : attribute.attributeid}__}"
+                       th:data-attributeid="${attribute.attributeid}"
+                       id="attributeid-${attribute.attributeid}"
+                       class="btn btn-secondary btn-sm">
+                        <span th:text="${attribute.attributeid}"></span>
+                    </a>
+                </td>
+
+
+                <td th:text="${attribute.name}"></td>
+                <td th:text="${attribute.description}"></td>
+                <td th:text="${attribute.createTimeStamp}"></td>
+
+
+            </tr>
+            </tbody>
+        </table>
+        <nav th:if="${attributePage.totalPages > 0}">
+            <ul class="pagination flex-wrap justify-content-center">
+                <li class="page-item" th:each="pageNumber : ${pageNumbers}">
+                    <a class="page-link btn btn-secondary btn-sm m-1"
+                       th:href="@{/attribute/admin(size=${#lists.size(attributePage.content) > 5 ? #lists.size(attributePage.content) : 5}, page=${pageNumber}, attributeid=${attribute != null ? attribute.attributeid : '0'})}"
+                       th:text="${pageNumber}"
+                       th:classappend="${pageNumber==attributePage.number + 1} ? 'active'">
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+    </div>
+    <!-- END: Menu Selection Table -->
+
+
+
+</div>
+
+<div th:insert="fragments/validation.html :: validationfragment"> </div>
+<script>
+    const inputFields = [
+        'attributeid', 'name', 'description', 'value'
+    ];
+
+    const optionalFields = [];
+
+    document.addEventListener("DOMContentLoaded", () => {
+        initializeValidation(inputFields, optionalFields);
+    });
+</script>
+
+
+
+</body>
+</html>

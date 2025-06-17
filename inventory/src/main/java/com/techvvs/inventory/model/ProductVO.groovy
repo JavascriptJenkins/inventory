@@ -24,8 +24,15 @@ class ProductVO implements Serializable, Comparable<ProductVO> {
     @JoinColumn(name="producttypeid")
     ProductTypeVO producttypeid;
     @JsonProperty
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="vendorid")
+    VendorVO vendorvo;
+    @JsonProperty
     @ManyToMany(mappedBy = "product_cart_list")
     List<CartVO> cart_list
+    @JsonProperty
+    @ManyToMany(mappedBy = "product_attribute_list") // this is like product sub category but functions as a list of searchable product attributes
+    List<AttributeVO> attribute_list
     @JsonProperty
     @ManyToMany(mappedBy = "product_list")
     List<TransactionVO> transaction_list
@@ -158,6 +165,10 @@ class ProductVO implements Serializable, Comparable<ProductVO> {
         }
     }
 
+
+    VendorVO getVendorvo() {
+        return this.vendorvo
+    }
 
 
 }

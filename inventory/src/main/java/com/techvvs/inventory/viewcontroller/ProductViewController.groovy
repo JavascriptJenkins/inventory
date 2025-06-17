@@ -3,14 +3,19 @@ package com.techvvs.inventory.viewcontroller
 import com.techvvs.inventory.barcode.impl.BarcodeGenerator
 import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.dao.ProductDao
+import com.techvvs.inventory.jparepo.AttributeRepo
 import com.techvvs.inventory.jparepo.BatchRepo
 import com.techvvs.inventory.jparepo.ProductRepo
 import com.techvvs.inventory.jparepo.ProductTypeRepo
+import com.techvvs.inventory.jparepo.VendorRepo
+import com.techvvs.inventory.model.AttributeVO
 import com.techvvs.inventory.model.BatchVO
 import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.ProductVO
+import com.techvvs.inventory.model.VendorVO
 import com.techvvs.inventory.modelnonpersist.FileVO
 import com.techvvs.inventory.modelnonpersist.MenuOptionVO
+import com.techvvs.inventory.service.attribute.constants.AttributeNameEnum
 import com.techvvs.inventory.service.auth.TechvvsAuthService
 import com.techvvs.inventory.service.paging.FilePagingService
 import com.techvvs.inventory.util.TechvvsFileHelper
@@ -56,6 +61,12 @@ public class ProductViewController {
     ProductTypeRepo productTypeRepo;
 
     @Autowired
+    VendorRepo vendorRepo;
+
+    @Autowired
+    AttributeRepo attributeRepo;
+
+    @Autowired
     BatchRepo batchRepo;
 
     @Autowired
@@ -87,6 +98,7 @@ public class ProductViewController {
                        Model model,
                         @RequestParam("batchid") Optional<String> batchid
     ){
+        techvvsAuthService.checkuserauth(model)
 
 
 
@@ -97,6 +109,7 @@ public class ProductViewController {
             productVOToBind = new ProductVO();
             if(batchid.isPresent()){
                 productVOToBind.setBatch(batchRepo.findById(Integer.valueOf(batchid.get())).get())
+                model.addAttribute("batchid", productVOToBind.batch.batchid);
             }
             productVOToBind.setProductnumber(0);
             productVOToBind.setProductnumber(secureRandom.nextInt(10000000));
@@ -105,10 +118,11 @@ public class ProductViewController {
 
 
         model.addAttribute("disableupload","true"); // disable uploading a file until we actually have a record submitted successfully
-        techvvsAuthService.checkuserauth(model)
         model.addAttribute("product", productVOToBind);
         model.addAttribute("batch", new BatchVO()); // provide a default object for thymeleaf
         bindProductTypes(model)
+        bindVendors(model)
+        bindAttributes(model)
         bindBatchList(model, batchid) // bind list of batches so we can assign a new product to them?
         return "product/product.html";
     }
@@ -142,12 +156,28 @@ public class ProductViewController {
         model.addAttribute("producttypes", productTypeVOS);
     }
 
+    void bindVendors(Model model){
+        // get all the vendor objects and bind them to select dropdown
+        List<VendorVO> vendorVOS = vendorRepo.findAll();
+        model.addAttribute("vendors", vendorVOS);
+    }
+
+    void bindAttributes(Model model){
+        // get all the attribute objects and bind them to select dropdown
+        List<AttributeVO> attributeVOS = attributeRepo.findAll();
+        model.addAttribute("attributes", attributeVOS);
+        model.addAttribute("attributenames", AttributeNameEnum.values()); // grab from the enum
+    }
+
     @GetMapping("/browseProduct")
     String browseProduct(@ModelAttribute( "product" ) ProductVO productVO,
                              Model model,
                              
                              @RequestParam("page") Optional<Integer> page,
                              @RequestParam("size") Optional<Integer> size ){
+
+        techvvsAuthService.checkuserauth(model)
+
 
         // https://www.baeldung.com/spring-data-jpa-pagination-sorting
         //pagination
@@ -174,7 +204,6 @@ public class ProductViewController {
         model.addAttribute("pageNumbers", pageNumbers);
         model.addAttribute("page", currentPage);
         model.addAttribute("size", pageOfProduct.getTotalPages());
-        techvvsAuthService.checkuserauth(model)
         model.addAttribute("product", new ProductVO());
         model.addAttribute("productPage", pageOfProduct);
         return "product/browseproduct.html";
@@ -194,6 +223,7 @@ public class ProductViewController {
     @PostMapping("/searchProduct")
     String searchProductPost(@ModelAttribute( "product" ) ProductVO productVO, Model model){
 
+        techvvsAuthService.checkuserauth(model)
 
 
         List<ProductVO> results = new ArrayList<ProductVO>();
@@ -211,7 +241,6 @@ public class ProductViewController {
         }
 
         model.addAttribute("batchid", productVO.batch.batchid);
-        techvvsAuthService.checkuserauth(model)
         model.addAttribute("product", productVO);
         model.addAttribute("products", results);
         return "product/searchproduct.html";
@@ -230,6 +259,8 @@ public class ProductViewController {
                     @RequestParam("product_id") Optional<Integer> product_id
 
     ){
+        techvvsAuthService.checkuserauth(model)
+
 
         if(batchid.isPresent()){
             model.addAttribute("batchid", batchid.get());
@@ -259,10 +290,11 @@ public class ProductViewController {
             model.addAttribute("successMessage", successMessage.get());
         }
         model.addAttribute("batchid", productVO1.batch.batchid);
-        techvvsAuthService.checkuserauth(model)
         model.addAttribute("product", productVO1);
         model.addAttribute("editmode", editmode);
         bindProductTypes(model)
+        bindVendors(model)
+        bindAttributes(model)
         bindBatches(model, productVO1.batch)
         return "product/editproduct.html";
     }
@@ -274,12 +306,7 @@ public class ProductViewController {
                                 Model model
     ){
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        System.out.println("----------------------- START AUTH INFO ");
-        System.out.println("authentication.getCredentials: "+authentication.getCredentials());
-        System.out.println("authentication.getPrincipal: "+authentication.getPrincipal());
-        System.out.println("authentication.getAuthorities: "+authentication.getAuthorities());
-        System.out.println("----------------------- END AUTH INFO ");
+        techvvsAuthService.checkuserauth(model)
 
         String errorResult = validateProduct.validateNewFormInfo(productVO);
 
@@ -312,8 +339,9 @@ public class ProductViewController {
         model.addAttribute("batchid", productVO.batch.batchid);
         model.addAttribute("product", productresult);
         model.addAttribute("editmode", "no");
-        techvvsAuthService.checkuserauth(model)
         bindProductTypes(model)
+        bindVendors(model)
+        bindAttributes(model)
         return "product/editproduct.html";
     }
 
@@ -322,13 +350,8 @@ public class ProductViewController {
                                 Model model,
                                 HttpServletResponse response
     ){
+        techvvsAuthService.checkuserauth(model)
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        System.out.println("----------------------- START AUTH INFO ");
-        System.out.println("authentication.getCredentials: "+authentication.getCredentials());
-        System.out.println("authentication.getPrincipal: "+authentication.getPrincipal());
-        System.out.println("authentication.getAuthorities: "+authentication.getAuthorities());
-        System.out.println("----------------------- END AUTH INFO ");
 
         String errorResult = validateProduct.validateNewFormInfo(productVO);
 
@@ -352,8 +375,9 @@ public class ProductViewController {
 
         model.addAttribute("batchid", productVO.batch.batchid);
         model.addAttribute("batch",batchVO) // bind the object back to the ui
-        techvvsAuthService.checkuserauth(model)
         bindProductTypes(model)
+        bindVendors(model)
+        bindAttributes(model)
         bindBatchList(model, Optional.of(String.valueOf(batchVO.batchid))) // bind list of batches so we can assign a new product to them?
 
         //  bindBatches(model)
