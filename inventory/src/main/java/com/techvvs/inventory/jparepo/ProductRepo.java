@@ -98,6 +98,10 @@ public interface ProductRepo extends JpaRepository<ProductVO, Integer> {
     Optional<ProductVO> findByIdWithVendor(@Param("id") Integer id);
 
 
+    // get the last product that was created
+    Optional<ProductVO> findTopByOrderByCreateTimeStampDesc();
+
+
 
 
 

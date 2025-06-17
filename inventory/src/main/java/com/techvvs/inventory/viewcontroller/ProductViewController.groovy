@@ -14,7 +14,6 @@ import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.VendorVO
 import com.techvvs.inventory.modelnonpersist.FileVO
-import com.techvvs.inventory.modelnonpersist.MenuOptionVO
 import com.techvvs.inventory.service.attribute.constants.AttributeNameEnum
 import com.techvvs.inventory.service.auth.TechvvsAuthService
 import com.techvvs.inventory.service.paging.FilePagingService
@@ -26,13 +25,9 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
-import org.springframework.security.core.Authentication
-import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.*
-
-import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import java.nio.file.Paths
 import java.security.SecureRandom
@@ -118,12 +113,13 @@ public class ProductViewController {
 
 
         model.addAttribute("disableupload","true"); // disable uploading a file until we actually have a record submitted successfully
-        model.addAttribute("product", productVOToBind);
         model.addAttribute("batch", new BatchVO()); // provide a default object for thymeleaf
         bindProductTypes(model)
         bindVendors(model)
         bindAttributes(model)
         bindBatchList(model, batchid) // bind list of batches so we can assign a new product to them?
+        bindLastCreatedProduct(productVOToBind) // bind the vendor and product type of the last created product to the form
+        model.addAttribute("product", productVOToBind);
         return "product/product.html";
     }
 
@@ -167,6 +163,19 @@ public class ProductViewController {
         List<AttributeVO> attributeVOS = attributeRepo.findAll();
         model.addAttribute("attributes", attributeVOS);
         model.addAttribute("attributenames", AttributeNameEnum.values()); // grab from the enum
+    }
+
+    void bindLastCreatedProduct(ProductVO productVOToBind){
+        // do a query to find the last created product in the DB
+        Optional<ProductVO> lastCreatedProduct = productRepo.findTopByOrderByCreateTimeStampDesc()
+
+        if(lastCreatedProduct.isPresent()){
+            productVOToBind.setProducttypeid(lastCreatedProduct.get().producttypeid)
+            productVOToBind.setVendorvo(lastCreatedProduct.get().vendorvo)
+        } else {
+            // do nothing
+        }
+
     }
 
     @GetMapping("/browseProduct")
@@ -290,7 +299,6 @@ public class ProductViewController {
             model.addAttribute("successMessage", successMessage.get());
         }
         model.addAttribute("batchid", productVO1.batch.batchid);
-        model.addAttribute("product", productVO1);
         model.addAttribute("editmode", editmode);
         bindProductTypes(model)
         bindVendors(model)
@@ -337,7 +345,6 @@ public class ProductViewController {
         }
 
         model.addAttribute("batchid", productVO.batch.batchid);
-        model.addAttribute("product", productresult);
         model.addAttribute("editmode", "no");
         bindProductTypes(model)
         bindVendors(model)
