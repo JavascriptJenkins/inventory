@@ -75,7 +75,7 @@ class StringSecurityValidator {
 
         obj.class.declaredFields.each { field ->
             field.accessible = true // bypass private/protected restrictions
-            if (field.type == String && field.name != 'website') {
+            if (field.type == String && !['website', 'state'].contains(field.name)) {
                 def value = field.get(obj)
                 if (value instanceof String && !value.isBlank()) {
                     riskyPatterns.each { pattern ->
