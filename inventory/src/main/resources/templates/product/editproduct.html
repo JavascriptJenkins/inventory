@@ -156,10 +156,11 @@
             const form = document.getElementById('uploadForm');
             const originalAction = form.getAttribute('action');
 
-            // Select all checkboxes inside the form
+            const menuidInput = document.getElementById('menuid');
+            const menuid = menuidInput ? menuidInput.value : null;
+
             const checkboxes = Array.from(document.querySelectorAll('#uploadForm .form-check-input'));
 
-            // Map of checkboxes to query parameters
             const actionParams = {
                 isPrimaryCheckbox: 'primary=yes',
                 isVideoCheckbox: 'video=yes',
@@ -167,33 +168,32 @@
                 isPhotoCheckbox: 'photo=yes'
             };
 
-            // Update form action and ensure only one checkbox is selected
             function updateFormAction(event) {
-                // Uncheck all other checkboxes
                 checkboxes.forEach(checkbox => {
-                    if (checkbox !== event.target) {
-                        checkbox.checked = false;
-                    }
+                    if (checkbox !== event.target) checkbox.checked = false;
                 });
 
-                // Determine the new action based on the selected checkbox
-                const checkedCheckbox = checkboxes.find(checkbox => checkbox.checked);
+                const checkedCheckbox = checkboxes.find(cb => cb.checked);
+                let newAction = originalAction;
+
                 if (checkedCheckbox) {
-                    const param = actionParams[checkedCheckbox.id];
-                    form.setAttribute('action', `${originalAction}?${param}`);
-                } else {
-                    form.setAttribute('action', originalAction); // Reset to original action
+                    newAction += '?' + actionParams[checkedCheckbox.id];
                 }
 
-                console.log('Form action updated to:', form.getAttribute('action'));
+                if (menuid) {
+                    newAction += (newAction.includes('?') ? '&' : '?') + 'menuid=' + menuid;
+                }
+
+                form.setAttribute('action', newAction);
+                console.log('Form action updated to:', newAction);
             }
 
-            // Attach event listeners to each checkbox
             checkboxes.forEach(checkbox => {
                 checkbox.addEventListener('change', updateFormAction);
             });
         });
     </script>
+
 
 
 </head>
@@ -214,7 +214,12 @@
     </div>
     <br>
 
-    <a th:href="@{/product?batchid=__${batch.batchid}__}" class="btn btn-primary btn-lg" style="margin-bottom: 20px;">
+    <a th:if="${menuid != null}" th:href="@{/menu/admin/manage(page=1, size=100, menuid=${menuid})}" class="btn btn-warning btn-lg" style="margin-bottom: 20px;">
+        Click here to Return to the Menu
+    </a>
+
+    <!-- todo: pass the menuid in this button as a url to bind it into the next view -->
+    <a  th:href="@{/product(batchid=${batchid}, menuid=${menuid})}" class="btn btn-primary btn-lg" style="margin-bottom: 20px;">
         Click here to create another product
     </a>
 
@@ -299,7 +304,7 @@
             </div>
 
             <div class="alert alert-warning" role="alert">
-                <a th:href="@{/product/editform?product_id=__${product.product_id}__&editmode=yes}">Click here to edit this form</a>
+                <a th:href="@{/product/editform?product_id=__${product.product_id}__&editmode=yes&menuid=__${menuid}__}">Click here to edit this form</a>
             </div>
             <button style="margin-top:5px;" type="submit" class="btn btn-primary" disabled>Submit</button>
             <input type="hidden" th:field="*{batch}">
@@ -406,6 +411,10 @@
 
             <button style="margin-top:5px;" type="submit" class="btn btn-primary">Submit Edit</button>
             <input type="hidden" th:field="*{batch}">
+
+            <!-- adhoc menuid that will submit to the backend to persist menuid to enable the back button even after product edits -->
+            <input type="hidden" name="menuid" th:if="${menuid != null}" th:value="${menuid}" />
+
         </form>
     </div> <!-- end edit view -->
 
@@ -523,6 +532,9 @@
                     <input type="hidden" th:field="*{transaction_list}">z
                 </div>
                 <br>
+
+                <input type="hidden" id="menuid" th:value="${menuid}">
+
 
                 <div th:if="${disableupload}">
                     <button type="submit" disabled="disabled" class="btn btn-primary">Upload File</button>

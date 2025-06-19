@@ -120,6 +120,11 @@
                             <-- Back to Batch: <span th:text="${product.batch.name}">Batch Name</span>
                         </a>
                     </div>
+                    <div th:if="${menuid != null && menuid.length() > 0}">
+                        <a th:href="@{/menu/admin/manage(menuid=${menuid})}" class="btn btn-warning mb-3">
+                            <-- Back to Menu: <span th:text="${menuid}">Menuid</span>
+                        </a>
+                    </div>
                     <div class="col-sm-2" style="margin-bottom: 5px;">
                         <label class="form-label"><b>Product Numberfff</b></label>
                         <input type="text" th:field="*{productnumber}" class="form-control" placeholder="productnumber" aria-label="productnumber" readonly>
@@ -228,6 +233,11 @@
             <div th:if="${batchid != null}">
                 <a th:href="@{/batch/admin(batchid=${batchid})}" class="btn btn-warning mb-3">
                     <-- Back to Batch: <span th:text="${product.batch.name}">Batch Name</span>
+                </a>
+            </div>
+            <div th:if="${menuid != null && menuid.length() > 0}">
+                <a th:href="@{/menu/admin/manage(menuid=${menuid})}" class="btn btn-warning mb-3">
+                    <-- Back to Menu: <span th:text="${menuid}">Menuid</span>
                 </a>
             </div>
 

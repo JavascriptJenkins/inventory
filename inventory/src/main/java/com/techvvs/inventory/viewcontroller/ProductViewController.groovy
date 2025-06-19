@@ -91,11 +91,14 @@ public class ProductViewController {
     String viewNewForm(
             @ModelAttribute( "product" ) ProductVO productVO,
                        Model model,
-                        @RequestParam("batchid") Optional<String> batchid
+                        @RequestParam("batchid") Optional<String> batchid,
+                        @RequestParam("menuid") Optional<String> menuid
     ){
         techvvsAuthService.checkuserauth(model)
 
-
+        if(menuid.isPresent()){
+            model.addAttribute("menuid", menuid.get());
+        }
 
         ProductVO productVOToBind;
         if(productVO != null && productVO.getProduct_id() != null){
@@ -124,6 +127,21 @@ public class ProductViewController {
     }
 
 
+    void bindUploadedFilesPage(ProductVO productVO, Model model, Optional<String> page, Optional<String> size){
+
+        productVO.primaryphoto = appConstants.UPLOAD_DIR_IMAGES+productVO.product_id
+
+        // todo: rewrite this to get files by id
+        // check to see if there are files uploaded related to this productnumber
+        //List<FileVO> filelist = techvvsFileHelper.getFilesByFileNumber(Integer.valueOf(productnumber), UPLOAD_DIR);
+        Page<FileVO> filePage = filePagingService.getFilePage(productVO, Integer.valueOf(page.orElse("0")), Integer.valueOf(size.orElse("5")), Paths.get(appConstants.UPLOAD_DIR_MEDIA+appConstants.UPLOAD_DIR_PRODUCT).toString())
+
+        if(filePage.size() > 0){
+            model.addAttribute("filePage", filePage);
+        } else {
+            model.addAttribute("filePage", null);
+        }
+    }
 
     void bindBatches(Model model, BatchVO batchVO){
         // get all the batch objects and bind them to select dropdown
@@ -261,6 +279,7 @@ public class ProductViewController {
                     Model model,
 
                     @RequestParam("batchid") Optional<Integer> batchid,
+                    @RequestParam("menuid") Optional<Integer> menuid,
                     @RequestParam("editmode") String editmode,
                     @RequestParam("successMessage") Optional<String> successMessage,
                     @RequestParam("page") Optional<String> page,
@@ -274,6 +293,9 @@ public class ProductViewController {
         if(batchid.isPresent()){
             model.addAttribute("batchid", batchid.get());
         }
+        if(menuid.isPresent()){
+            model.addAttribute("menuid", menuid.get());
+        }
         ProductVO productVO1 = new ProductVO(product_id: 0)
         if(product_id.isPresent()){
             System.out.println("Searching data by productnumber");
@@ -281,19 +303,9 @@ public class ProductViewController {
 
         }
 
-        productVO1.primaryphoto = appConstants.UPLOAD_DIR_IMAGES+productVO1.product_id
 
 
-        // todo: rewrite this to get files by id
-        // check to see if there are files uploaded related to this productnumber
-        //List<FileVO> filelist = techvvsFileHelper.getFilesByFileNumber(Integer.valueOf(productnumber), UPLOAD_DIR);
-        Page<FileVO> filePage = filePagingService.getFilePage(productVO1, Integer.valueOf(page.orElse("0")), Integer.valueOf(size.orElse("5")), Paths.get(appConstants.UPLOAD_DIR_MEDIA+appConstants.UPLOAD_DIR_PRODUCT).toString())
-
-        if(filePage.size() > 0){
-            model.addAttribute("filePage", filePage);
-        } else {
-            model.addAttribute("filePage", null);
-        }
+        bindUploadedFilesPage(productVO1, model, page, size)
 
         if(successMessage.isPresent()){
             model.addAttribute("successMessage", successMessage.get());
@@ -312,8 +324,13 @@ public class ProductViewController {
     @PostMapping ("/editProduct")
     String editProduct(
             @ModelAttribute( "product" ) ProductVO productVO,
+            @RequestParam("menuid") Optional<Integer> menuid,
                                 Model model
     ){
+
+        if(menuid.isPresent()){
+            model.addAttribute("menuid", menuid.get());
+        }
 
         techvvsAuthService.checkuserauth(model)
 
@@ -345,7 +362,11 @@ public class ProductViewController {
 
         }
 
+        Optional<String> page = Optional.of("0");
+        Optional<String> size = Optional.of("10");
+
         model.addAttribute("batchid", productVO.batch.batchid);
+        bindUploadedFilesPage(productVO, model, page, size)
         model.addAttribute("editmode", "no");
         bindProductTypes(model)
         bindVendors(model)

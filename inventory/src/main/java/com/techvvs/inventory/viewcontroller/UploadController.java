@@ -225,9 +225,13 @@ public class UploadController {
                                   @RequestParam("document") Optional<String> isdocument,
                                   @RequestParam("photo") Optional<String> isphoto,
                                   @RequestParam("qrmedia") Optional<String> isqrmedia,
+                                  @RequestParam("menuid") Optional<Integer> menuid,
                                   RedirectAttributes attributes) {
 
         System.out.println("Starting file upload...");
+        if(menuid.isPresent()){
+            model.addAttribute("menuid", menuid.get());
+        }
 
         // Check if the file is empty
         if (file.isEmpty()) {
@@ -319,13 +323,22 @@ public class UploadController {
         if (success) {
             attributes.addFlashAttribute("successMessage", "File uploaded successfully: " + sanitizedFileName);
             attributes.addFlashAttribute("editmode", "no");
+            if(menuid.isPresent()){
+                model.addAttribute("menuid", menuid.get());
+                attributes.addFlashAttribute("menuid", menuid.get());
+            }
         } else {
             model.addAttribute("errorMessage", "Unexpected error occurred while uploading the file.");
         }
 
 // Redirect to the product edit form
         String encodedProductID = URLEncoder.encode(String.valueOf(productVO.getProduct_id()), StandardCharsets.UTF_8);
-        return "redirect:/product/editform?editmode=no&product_id=" + encodedProductID;
+
+        if(menuid.isPresent()){
+            return "redirect:/product/editform?editmode=no&product_id=" + encodedProductID + "&menuid=" + menuid.get();
+        } else {
+            return "redirect:/product/editform?editmode=no&product_id=" + encodedProductID;
+        }
     }
 
     // Utility method to prepare the edit form

@@ -308,10 +308,15 @@
 
 
                         <td>
-                            <a th:href="@{/product/editform(product_id=${product.product_id}, editmode='no', batchid=${product.batch.batchid})}"
-                               th:text="${product.product_id}">
+                            <a th:href="@{/product/editform(product_id=${product.product_id}, editmode='no', batchid=${product.batch.batchid}, menuid=${menu.menuid})}"
+                               class="text-decoration-none d-flex align-items-center text-white" style="text-shadow: 0 0 2px #000;">
+                                <i class="bi bi-box-seam fs-3 me-2"></i>
+                                <span th:text="${product.product_id}" class="fs-5"></span>
                             </a>
                         </td>
+
+
+
                         <td th:text="${product.name}"></td>
                         <td th:text="${product.batch.name}"></td>
                         <td th:text="${product.producttypeid.name}"></td>
