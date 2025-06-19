@@ -51,7 +51,9 @@ pipeline {
                         string(credentialsId: 'TWILIO_API_PASSWORD', variable: 'TWILIO_API_PASSWORD'),
                         string(credentialsId: 'SENDGRID_API_KEY', variable: 'SENDGRID_API_KEY'),
                          string(credentialsId: 'DB_PASSWORD', variable: 'DB_PASSWORD'),
-                         string(credentialsId: 'JWT_SECRET_KEY', variable: 'JWT_SECRET_KEY')
+                         string(credentialsId: 'JWT_SECRET_KEY', variable: 'JWT_SECRET_KEY'),
+                         string(credentialsId: 'METRC_API_KEY_USERNAME', variable: 'METRC_API_KEY_USERNAME'),
+                         string(credentialsId: 'METRC_API_KEY_PASSWORD', variable: 'METRC_API_KEY_PASSWORD')
                     ])
                     {
                         dir('inventory') {
@@ -102,6 +104,16 @@ pipeline {
                             // Replace the qr ddomain if provided
                             if (params.BASE_QR_DOMAIN) {
                                 sh "sed -i 's|^base\\.qr\\.domain=.*|base.qr.domain=${env.BASE_QR_DOMAIN}|' src/main/resources/application.properties"
+                            }
+
+                            // Replace metrc.api-key-username if provided
+                            if (params.METRC_API_KEY_USERNAME) {
+                                sh "sed -i 's/^metrc\\.api-key-username=.*/metrc.api-key-username=${params.METRC_API_KEY_USERNAME}/' src/main/resources/application.properties"
+                            }
+
+                            // Replace metrc.api-key-password if provided
+                            if (params.METRC_API_KEY_PASSWORD) {
+                                sh "sed -i 's/^metrc\\.api-key-password=.*/metrc.api-key-password=${params.METRC_API_KEY_PASSWORD}/' src/main/resources/application.properties"
                             }
 
                             sh "sed -i 's/^twilio\\.api\\.username=.*/twilio.api.username=${TWILIO_API_USER}/' src/main/resources/application.properties"
