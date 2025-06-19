@@ -222,8 +222,12 @@
         <div class="row mb-3">
             <div class="col-md-4" style="margin-bottom: 5px;">
                 <label class="form-label required">Vendor</label>
-                <select class="form-control" th:field="${product.vendorvo}" id="vendorid">
-                    <option th:each="vendor : ${vendors}" th:value="${product.vendorvo.vendorid}" th:text="${vendor.name}"></option>
+                <select class="form-control" th:field="*{vendorvo}" id="vendorid">
+                    <option value="">Select Vendor</option>
+                    <option th:each="vendor : ${vendors}"
+                            th:value="${vendor.vendorid}"
+                            th:text="${vendor.name}">
+                    </option>
                 </select>
             </div>
             <div class="col-md-4">

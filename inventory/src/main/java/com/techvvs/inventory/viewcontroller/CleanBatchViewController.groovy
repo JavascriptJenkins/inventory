@@ -237,8 +237,6 @@ public class CleanBatchViewController {
                 System.out.println("log 2: ");
                 product.get()?.vendorvo?.name; // Access any property to initialize
                 System.out.println("log 3: ");
-            } else {
-                product.get().vendorvo = new VendorVO(vendorid: 0, name: "Select A Vendor");
             }
             model.addAttribute("product", product.get());
             model.addAttribute("editmode", true);
