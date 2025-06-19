@@ -231,6 +231,7 @@ public class CleanBatchViewController {
 //            product = productRepo.findByIdWithVendor(productid.get());
             product = productService.getProductWithLazyFieldsLoaded(productid.get());
             System.out.println("log 1: ");
+            System.out.println("log 1: productid.isPresent(): "+productid.isPresent());
             // 🚨 Force loading of vendorvo BEFORE returning to view
             if (product.get()?.vendorvo != null) {
                 System.out.println("log 2: ");
