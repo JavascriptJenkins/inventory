@@ -1,5 +1,19 @@
 # inventory
 
+## ALPHA TODO CHECKLIST:
+    1) Implement a Tenant Table that is tied to the SystemUser
+    2) Magic Login Link over email
+    3) Price Change Table so people can change prices ater a transaction has executed
+    4) Integrate some Payment Gateways (venmo, google pay, cash app, paypal, coinbase)
+    5) Make sure all fields have correct javascript validation
+    6) Investigate/Fix the quantity bug when creating new products
+    7) Make more buttons for "accessing last item edited" etc. (last menu, etc)
+    8) Make video encoding correct format for partial load
+    9) Clean up media viewing on the UI
+    10) Make a Terms of Service to keep compliance with payment gateways and apis
+    11) Add vendor dropdown to the edit product ui along with fancyform validation
+    12) Add default product types for each industry type
+
 ## 
 
     Note: Read these deployment notes before pushing to prod.  If you are pushing to prod 
@@ -26,4 +40,9 @@
 
     - 1/23/25
     - Make sure to load the ref data so we have the new location types
+
+    - 6/19/25
+    org.hibernate.tool.schema.spi.CommandAcceptanceException: Error executing DDL "alter table discount add column quantity int4 not null" via JDBC Statement
+
+    ALTER TABLE discount ADD COLUMN quantity int4 NOT NULL DEFAULT 1;
 
