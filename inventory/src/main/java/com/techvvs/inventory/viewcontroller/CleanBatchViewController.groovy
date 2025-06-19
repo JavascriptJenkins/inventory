@@ -230,15 +230,20 @@ public class CleanBatchViewController {
         if(productid.isPresent() && productid.get() != 0 && productid.get() != null) {
 //            product = productRepo.findByIdWithVendor(productid.get());
             product = productService.getProductWithLazyFieldsLoaded(productid.get());
+            System.out.println("log 1: ");
             // 🚨 Force loading of vendorvo BEFORE returning to view
             if (product.get()?.vendorvo != null) {
+                System.out.println("log 2: ");
                 product.get()?.vendorvo?.name; // Access any property to initialize
+                System.out.println("log 3: ");
             }
             model.addAttribute("product", product.get());
             model.addAttribute("editmode", true);
+            System.out.println("log 4: ");
         } else {
             model.addAttribute("product", new ProductVO());
             model.addAttribute("editmode", false);
+            System.out.println("log 5: ");
         }
 
         // now go get the list of paginated products in the batch
@@ -262,6 +267,7 @@ public class CleanBatchViewController {
         bindBatches(model)
         bindVendors(model)
         techvvsAuthService.checkuserauth(model)
+        System.out.println("log 6: ");
         return "batch/admin.html";
     }
 
