@@ -214,6 +214,10 @@
     </div>
     <br>
 
+    <a th:href="@{/product?batchid=__${batch.batchid}__}" class="btn btn-primary btn-lg" style="margin-bottom: 20px;">
+        Click here to create another product
+    </a>
+
     <div th:if="${editmode == 'no'}">
         <form th:action="@{/product/createNewProduct}" th:object="${product}" method="post">
             <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
@@ -395,6 +399,10 @@
             <input type="hidden" th:field="*{crate}">
             <input type="hidden" th:field="*{crateposition}">
             <input type="hidden" th:field="*{bagcolor}">
+            <input type="hidden" th:field="*{vendorvo}">
+            <input type="hidden" th:field="*{menu_list}">
+            <input type="hidden" th:field="*{package_list}">
+            <input type="hidden" th:field="*{transaction_list}">
 
             <button style="margin-top:5px;" type="submit" class="btn btn-primary">Submit Edit</button>
             <input type="hidden" th:field="*{batch}">
@@ -509,6 +517,10 @@
                     <input type="hidden" th:field="*{crate}">
                     <input type="hidden" th:field="*{crateposition}">
                     <input type="hidden" th:field="*{bagcolor}">
+                    <input type="hidden" th:field="*{vendorvo}">
+                    <input type="hidden" th:field="*{menu_list}">
+                    <input type="hidden" th:field="*{package_list}">
+                    <input type="hidden" th:field="*{transaction_list}">z
                 </div>
                 <br>
 

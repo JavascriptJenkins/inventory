@@ -300,6 +300,7 @@ public class ProductViewController {
         }
         model.addAttribute("batchid", productVO1.batch.batchid);
         model.addAttribute("editmode", editmode);
+        model.addAttribute("product", productVO1);
         bindProductTypes(model)
         bindVendors(model)
         bindAttributes(model)
