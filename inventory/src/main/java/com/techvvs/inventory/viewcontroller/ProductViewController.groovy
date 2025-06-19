@@ -171,7 +171,7 @@ public class ProductViewController {
 
         if(lastCreatedProduct.isPresent()){
             productVOToBind.setProducttypeid(lastCreatedProduct.get().producttypeid)
-            productVOToBind.setVendorvo(lastCreatedProduct.get().vendorvo)
+            productVOToBind.setVendorvo(lastCreatedProduct.get()?.vendorvo)
         } else {
             // do nothing
         }

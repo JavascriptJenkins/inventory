@@ -231,8 +231,8 @@ public class CleanBatchViewController {
 //            product = productRepo.findByIdWithVendor(productid.get());
             product = productService.getProductWithLazyFieldsLoaded(productid.get());
             // 🚨 Force loading of vendorvo BEFORE returning to view
-            if (product.get().vendorvo != null) {
-                product.get().vendorvo.name; // Access any property to initialize
+            if (product.get()?.vendorvo != null) {
+                product.get()?.vendorvo?.name; // Access any property to initialize
             }
             model.addAttribute("product", product.get());
             model.addAttribute("editmode", true);
