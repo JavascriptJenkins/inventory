@@ -241,7 +241,7 @@
             </tr>
             </thead>
             <tbody>
-            <tr th:each="menu, iStat : ${menuPage.content}" th:data-menuid="${menu.menuid}">
+            <tr th:if="${menuPage != null}" th:each="menu, iStat : ${menuPage.content}" th:data-menuid="${menu.menuid}">
                 <td>
                     <a th:href="@{/menu?menuid=__${menu.menuid}__&cartid=0}"
                        th:text="${menu.menuid}"
@@ -790,7 +790,7 @@
 
 
 
-    <nav th:if="${menuPage.totalPages > 0}">
+    <nav th:if="${menuPage != null && menuPage.totalPages > 0}">
         <ul class="pagination">
             <li class="page-item" th:each="pageNumber : ${pageNumbers}">
                 <a class="page-link"
