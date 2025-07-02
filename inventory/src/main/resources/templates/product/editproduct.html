@@ -304,7 +304,7 @@
             </div>
 
             <div class="alert alert-warning" role="alert">
-                <a th:href="@{/product/editform?product_id=__${product.product_id}__&editmode=yes&menuid=__${menuid}__}">Click here to edit this form</a>
+                <a th:href="@{/product/editform?product_id=__${product.product_id}__&editmode=yes&menuid=__${menuid != null ? menuid : 0}__}">Click here to edit this form</a>
             </div>
             <button style="margin-top:5px;" type="submit" class="btn btn-primary" disabled>Submit</button>
             <input type="hidden" th:field="*{batch}">
