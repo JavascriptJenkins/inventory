@@ -92,6 +92,7 @@
             <th scope="col">Batch Number</th>
             <th scope="col">Batch Name</th>
             <th scope="col">Batch Desc</th>
+            <th scope="col">Delete</th>
         </tr>
         </thead>
         <tbody>
@@ -107,6 +108,19 @@
             </td>
             <td th:text="${batch.name}"></td>
             <td th:text="${batch.description}"></td>
+            <td>
+                <form method="POST" action="/batch/delete" class="delete-form">
+                    <input type="hidden" name="batchid" th:value="${batch.batchid}" />
+                    <button type="button"
+                            class="btn btn-danger btn-sm delete-button"
+                            data-bs-toggle="modal"
+                            data-bs-target="#deleteConfirmModal"
+                            th:data-batchid="${batch.batchid}"
+                            th:data-batchname="${batch.name}">
+                        <i class="bi bi-trash-fill"></i>
+                    </button>
+                </form>
+            </td>
         </tr>
         </tbody>
     </table>
@@ -126,6 +140,46 @@
     <br>
     <br>
 </div>
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-white">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteConfirmModalLabel">Confirm Delete</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete batch <strong id="modalBatchId"></strong> named <strong id="modalBatchName"></strong>?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button id="confirmDeleteBtn" type="button" class="btn btn-danger">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let targetForm;
+
+    document.querySelectorAll('.delete-button').forEach(button => {
+        button.addEventListener('click', function () {
+            const batchId = this.getAttribute('data-batchid');
+            const batchName = this.getAttribute('data-batchname');
+
+            document.getElementById('modalBatchId').textContent = batchId;
+            document.getElementById('modalBatchName').textContent = batchName;
+
+            targetForm = this.closest('form');
+        });
+    });
+
+    document.getElementById('confirmDeleteBtn').addEventListener('click', function () {
+        if (targetForm) {
+            targetForm.submit();
+        }
+    });
+</script>
 
 </body>
 </html>

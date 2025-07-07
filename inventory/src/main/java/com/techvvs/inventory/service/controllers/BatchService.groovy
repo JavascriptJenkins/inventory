@@ -122,6 +122,72 @@ class BatchService {
 
 
 
+    boolean validateDeleteBatch(BatchVO batchVO){
+
+        // check to make sure that any products in the batch are not in a cart or transaction - and therefore the batch can be deleted
+
+        for(ProductVO productVO : batchVO.product_set){
+            if(
+                    productVO.cart_list.size() > 0 || productVO.transaction_list.size() > 0
+            ){
+                return false // if any products are in carts or in a transaction, do not allow the batch to be deleted
+            }
+        }
+
+
+        return true
+    }
+
+
+    @Transactional
+    boolean deleteBatch(Integer batchid){
+
+        BatchVO batchVO = batchRepo.findById(batchid).get()
+        if(batchVO?.batchid == 0 || batchVO?.batchid == null){
+            return false
+        } else {
+
+            boolean canDelete = validateDeleteBatch(batchVO)
+
+            if(!canDelete){
+                return false // return early if the batch cannot be deleted
+            }
+
+            try {
+
+
+                BatchVO existingBatch = batchRepo.findById(batchid).get()
+
+                for(ProductVO existingProduct : existingBatch.product_set){
+                    Optional<ProductVO> productVO = productRepo.findById(existingProduct.product_id)
+
+                    if(productVO.present){
+                        // delete the product associated with the batch
+                        productRepo.delete(productVO.get())
+                    }
+                }
+
+                // now we have to remove the association to the batchType before deleting the batch
+                existingBatch.batch_type_id = null
+
+
+
+            } catch (Exception e){
+                System.out.println("Caught Exception While Deleting Batch: " + e)
+                return false
+            } finally{
+
+                batchRepo.deleteById(batchid) // only delete the batch if all products have been deleted and everything else above processed smoothly
+
+            }
+
+
+
+            return true
+        }
+    }
+
+
 
 
 }

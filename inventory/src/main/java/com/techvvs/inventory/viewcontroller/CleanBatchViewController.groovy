@@ -164,34 +164,9 @@ public class CleanBatchViewController {
                        @RequestParam("page") Optional<Integer> page,
                        @RequestParam("size") Optional<Integer> size ){
 
-        // https://www.baeldung.com/spring-data-jpa-pagination-sorting
-        //pagination
-        int currentPage = page.orElse(0);
-        int pageSize = 5;
-        Pageable pageable;
-        if(currentPage == 0){
-            pageable = PageRequest.of(0 , pageSize, Sort.by(Sort.Direction.DESC, "batchid"));
-        } else {
-            pageable = PageRequest.of(currentPage - 1, pageSize, Sort.by(Sort.Direction.DESC, "batchid"));
-        }
-
-        Page<BatchVO> pageOfBatch = batchRepo.findAll(pageable);
-
-        int totalPages = pageOfBatch.getTotalPages();
-
-        List<Integer> pageNumbers = new ArrayList<>();
-
-        while(totalPages > 0){
-            pageNumbers.add(totalPages);
-            totalPages = totalPages - 1;
-        }
-
-        model.addAttribute("pageNumbers", pageNumbers);
-        model.addAttribute("page", currentPage);
-        model.addAttribute("size", pageOfBatch.getTotalPages());
-        model.addAttribute("batchPage", pageOfBatch);
         techvvsAuthService.checkuserauth(model)
-        model.addAttribute("batch", new BatchVO());
+        bindViewDataForEditBatchPage(model, page, size)
+
         return "batch/managebatch.html";
     }
 
@@ -1005,6 +980,65 @@ public class CleanBatchViewController {
         techvvsAuthService.checkuserauth(model)
         batchControllerHelper.bindBatchTypes(model)
         return "batch/batch.html";
+    }
+
+
+    @PostMapping ("/delete")
+    String deleteBatch(
+            @RequestParam("batchid") Integer batchid,
+            Model model,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size,
+            HttpServletRequest req){
+
+        if(rbacEnforcer.enforceAdminRights(model,req)) {
+            // do nothing, proceed.  We have injected a value into the model for viewing admin buttons on the ui too
+        } else {
+            return "auth/index.html" // return to home page, will send user to logout page if they have expired cookie i think
+        }
+
+        boolean result = batchService.deleteBatch(batchid);
+
+        if(result){
+            model.addAttribute("successMessage","Success deleting Batch with id: "+batchid+". All Products associated with this batch have also been deleted.  ");
+            bindViewDataForEditBatchPage(model, page, size)
+
+        } else {
+            model.addAttribute("errorMessage","Error while deleting record. Check to see if any products in this batch exist in a cart or transaction.  ");
+            bindViewDataForEditBatchPage(model, page, size)
+        }
+        return "batch/managebatch.html"
+
+    }
+
+    void bindViewDataForEditBatchPage(Model model, Optional<Integer> page, Optional<Integer> size){
+        // https://www.baeldung.com/spring-data-jpa-pagination-sorting
+        //pagination
+        int currentPage = page.orElse(0);
+        int pageSize = 10;
+        Pageable pageable;
+        if(currentPage == 0){
+            pageable = PageRequest.of(0 , pageSize, Sort.by(Sort.Direction.DESC, "batchid"));
+        } else {
+            pageable = PageRequest.of(currentPage - 1, pageSize, Sort.by(Sort.Direction.DESC, "batchid"));
+        }
+
+        Page<BatchVO> pageOfBatch = batchRepo.findAll(pageable);
+
+        int totalPages = pageOfBatch.getTotalPages();
+
+        List<Integer> pageNumbers = new ArrayList<>();
+
+        while(totalPages > 0){
+            pageNumbers.add(totalPages);
+            totalPages = totalPages - 1;
+        }
+
+        model.addAttribute("pageNumbers", pageNumbers);
+        model.addAttribute("page", currentPage);
+        model.addAttribute("size", pageOfBatch.getTotalPages());
+        model.addAttribute("batchPage", pageOfBatch);
+        model.addAttribute("batch", new BatchVO());
     }
 
 
