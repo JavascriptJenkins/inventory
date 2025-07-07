@@ -16,6 +16,8 @@ import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.security.web.access.AccessDeniedHandler;
+import org.thymeleaf.extras.springsecurity5.dialect.SpringSecurityDialect;
+
 import static com.techvvs.inventory.security.WhiteListUriConstants.*;
 
 
@@ -158,6 +160,20 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
       }
     };
   }
+
+
+  /* This allows us to do things like the below in native thymeleaf templates
+  * ROLE_VIEW_METRC_RETAIL
+  * <div sec:authorize="hasAuthority('ROLE_ADMIN')">
+    <!-- Only visible to ROLE_ADMIN -->
+</div>
+  *
+  * */
+  @Bean
+  public SpringSecurityDialect springSecurityDialect(){
+    return new SpringSecurityDialect();
+  }
+
 
 
 
