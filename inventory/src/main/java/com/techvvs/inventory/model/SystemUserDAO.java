@@ -2,11 +2,17 @@ package com.techvvs.inventory.model;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.techvvs.inventory.model.metrc.MetrcLicenseVO;
 import com.techvvs.inventory.security.Role;
+import com.techvvs.inventory.service.metrc.constants.LicenseType;
 
 import javax.annotation.Nullable;
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name="systemuser")
@@ -42,6 +48,10 @@ public class SystemUserDAO {
 
     @Column(name="isuseractive")
     Integer isuseractive;
+
+    // each systemuser may administrate multiple metrc license's from a single TULIP account
+    @OneToMany(mappedBy = "systemUserDAO", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    List<MetrcLicenseVO> metrcLicenseVOS;
 
     @JsonProperty
     LocalDateTime updatedtimestamp;
@@ -137,6 +147,28 @@ public class SystemUserDAO {
         this.tenant = tenant;
     }
 
+
+
+    public List<LicenseType> getLicenseTypes() {
+        if (metrcLicenseVOS == null) {
+            return Collections.emptyList();
+        }
+
+        return metrcLicenseVOS.stream()
+                .map(MetrcLicenseVO::getLicensetype)
+                .filter(Objects::nonNull)
+                .map(String::toUpperCase)
+                .map(type -> {
+                    try {
+                        return LicenseType.valueOf(type);
+                    } catch (IllegalArgumentException e) {
+                        return null; // Skip unrecognized types
+                    }
+                })
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+    }
 
 
 
