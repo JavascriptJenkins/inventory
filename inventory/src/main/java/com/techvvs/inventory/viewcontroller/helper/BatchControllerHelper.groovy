@@ -27,6 +27,7 @@ import org.apache.poi.common.usermodel.HyperlinkType
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
@@ -853,5 +854,15 @@ class BatchControllerHelper {
         model.addAttribute("productPage", pageOfProduct);
         model.addAttribute("productNameSearchValue", name);
     }
+
+    // This is so we can pass in a list of products and get back a pageable object for displaying in a data table on the UI
+    public Page<ProductVO> getPageOfProducts(List<ProductVO> productList, int page, int size) {
+        int start = Math.min(page * size, productList.size());
+        int end = Math.min(start + size, productList.size());
+        List<ProductVO> subList = productList.subList(start, end);
+        Pageable pageable = PageRequest.of(page, size);
+        return new PageImpl<>(subList, pageable, productList.size());
+    }
+
 
 }

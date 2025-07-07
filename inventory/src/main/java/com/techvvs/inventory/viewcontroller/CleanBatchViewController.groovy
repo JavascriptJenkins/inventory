@@ -230,21 +230,15 @@ public class CleanBatchViewController {
         if(productid.isPresent() && productid.get() != 0 && productid.get() != null) {
 //            product = productRepo.findByIdWithVendor(productid.get());
             product = productService.getProductWithLazyFieldsLoaded(productid.get());
-            System.out.println("log 1: ");
-            System.out.println("log 1: productid.isPresent(): "+productid.isPresent());
             // 🚨 Force loading of vendorvo BEFORE returning to view
             if (product.get()?.vendorvo != null) {
-                System.out.println("log 2: ");
                 product.get()?.vendorvo?.name; // Access any property to initialize
-                System.out.println("log 3: ");
             }
             model.addAttribute("product", product.get());
             model.addAttribute("editmode", true);
-            System.out.println("log 4: ");
         } else {
             model.addAttribute("product", new ProductVO());
             model.addAttribute("editmode", false);
-            System.out.println("log 5: ");
         }
 
         // now go get the list of paginated products in the batch
@@ -268,7 +262,6 @@ public class CleanBatchViewController {
         bindBatches(model)
         bindVendors(model)
         techvvsAuthService.checkuserauth(model)
-        System.out.println("log 6: ");
         return "batch/admin.html";
     }
 
@@ -436,12 +429,12 @@ public class CleanBatchViewController {
 
     // todo: make sure this cannot be done for products that already have started selling...
     // Admin page for moving products between batches
-    @GetMapping("/admin/move/product")
+    @PostMapping("/admin/move/product")
     String moveProduct(@ModelAttribute( "batch" ) BatchVO batchVO,
                  Model model,
                  @RequestParam("batchid") Optional<Integer> batchid,
                  @RequestParam("productnamesearch") Optional<String> productnamesearch,
-                 @RequestParam("productid") Optional<Integer> productid,
+                 @RequestParam Map<String, String> selectedProducts,
                  @RequestParam("page") Optional<Integer> page,
                  @RequestParam("size") Optional<Integer> size,
                  HttpServletRequest req){
@@ -461,35 +454,82 @@ public class CleanBatchViewController {
         if(batchid.isPresent()){
             batch = batchRepo.findById(batchid.get());
             model.addAttribute("batch", batch.get());
+            model.addAttribute("carrierProduct", new ProductVO(batch: new BatchVO(batchid: batchid.get()))); // bind into blank carrier productVO
         }
 
-        Optional<String> filtertablename = Optional.empty()
-        // bind the product into scope
-        if(productid.isPresent() && productid.get() != 0 && productid.get() != null) {
-            product = productRepo.findById(productid.get());
-            filtertablename = Optional.of(product.get().name) // this will filter the table below
-            model.addAttribute("product", product.get());
+
+        // we have to filter out any extra paramters that may have been passed in the form submission
+        Map<String, String> filteredProducts = selectedProducts.findAll { key, value ->
+            key.startsWith("selectedProducts-")
+        }
+
+        StringBuilder sb = new StringBuilder("Cannot move these product(s), as they exist in a transaction or in a cart -> \n")
+        boolean hasProductsThatCannotBeMoved = false
+
+        if(filteredProducts.size() > 0){
+
+
+            List products = new ArrayList();
+            for (Map.Entry<String, String> entry : filteredProducts.entrySet()) {
+                Optional<ProductVO> productVO = productRepo.findById(Integer.valueOf(entry.getValue())) // find the product
+
+                // first we need to run a check to make sure that none of these products have been sold / are in a transaction
+                if(productVO.present &&
+                        (productVO.get().transaction_list.size() == 0 || productVO.get().transaction_list == null) &&
+                        (productVO.get().cart_list.size() == 0 || productVO.get().cart_list == null)
+
+                ) {
+                    productVO.present ? products.add(productVO.get()) : null // add product to the list if it exists
+                } else {
+                    // add the products that already exist in a transaction to a warning message so user knows which ones cannot be moved.
+                    productVO.present ? sb.append(productVO.get().name + " : " + productVO.get().product_id + " | " + "\n") : null
+                    hasProductsThatCannotBeMoved = true
+                }
+
+            }
+
+            hasProductsThatCannotBeMoved ? model.addAttribute("warningMessage", sb.toString()) : null // add a warningMessage if we have products that cannot be moved
+
+            Page<ProductVO> pageOfProduct = batchControllerHelper.getPageOfProducts(products, 0, products.size())
+
+            model.addAttribute("pageNumbers", 0); // we will always be displaying the whole list of products being moved
+            model.addAttribute("page", 0);
+            model.addAttribute("size", pageOfProduct.getTotalPages());
+            model.addAttribute("productPage", pageOfProduct);
             model.addAttribute("editmode", true);
-        } else {
-            model.addAttribute("product", new ProductVO());
-            model.addAttribute("editmode", false);
         }
+        // end binding the selected products into the next UI
 
-        // now go get the list of paginated products in the batch
-        if(productnamesearch.isPresent() && productnamesearch.get() != null && productnamesearch.get() != "" && productnamesearch.get() != "null") {
-            batchControllerHelper.bindFilterProductsLikeSearchForCheckoutUI(
-                    model,
-                    page,
-                    size,
-                    productnamesearch.get()
-            )
-        } else if(filtertablename.isPresent() && !filtertablename.isEmpty()) {
-            // default behavior is to bind a list of all the products in the batch to a table for display
-            batchControllerHelper.bindFilterProductsLikeSearchForMoveProductUI(model, page, size, filtertablename.get(), batch.get())
-        } else {
-            // default behavior is to bind a list of all the products in the batch to a table for display
-            batchControllerHelper.bindAllProducts(model, page, size, batch.get())
-        }
+        // start remove this code
+//        Optional<String> filtertablename = Optional.empty()
+//        // bind the product into scope
+//        if(productid.isPresent() && productid.get() != 0 && productid.get() != null) {
+//            product = productRepo.findById(productid.get());
+//            filtertablename = Optional.of(product.get().name) // this will filter the table below
+//            model.addAttribute("product", product.get());
+//            model.addAttribute("editmode", true);
+//        } else {
+//            model.addAttribute("product", new ProductVO());
+//            model.addAttribute("editmode", false);
+//        }
+        // end remove this code
+
+//        // now go get the list of paginated products in the batch
+//        if(productnamesearch.isPresent() && productnamesearch.get() != null && productnamesearch.get() != "" && productnamesearch.get() != "null") {
+//            batchControllerHelper.bindFilterProductsLikeSearchForCheckoutUI(
+//                    model,
+//                    page,
+//                    size,
+//                    productnamesearch.get()
+//            )
+//        } else if(filtertablename.isPresent() && !filtertablename.isEmpty()) {
+//            // default behavior is to bind a list of all the products in the batch to a table for display
+//            batchControllerHelper.bindFilterProductsLikeSearchForMoveProductUI(model, page, size, filtertablename.get(), batch.get())
+//            batchControllerHelper.getPageOfProducts()
+//        } else {
+//            // default behavior is to bind a list of all the products in the batch to a table for display
+//            batchControllerHelper.bindAllProducts(model, page, size, batch.get())
+//        }
 
         bindBatches(model)
         bindVendors(model)
@@ -500,6 +540,7 @@ public class CleanBatchViewController {
     }
 
 
+    // todo: modify this to accept a list of productids
     // todo: make sure this cannot be done for products that already have started selling...
     // Admin page for moving products between batches
     @PostMapping("/admin/product/move")
@@ -508,9 +549,10 @@ public class CleanBatchViewController {
                        @RequestParam("batchid") Optional<Integer> batchid,
                        @RequestParam("productnamesearch") Optional<String> productnamesearch,
                        @RequestParam("productid") Optional<Integer> productid,
-                       @ModelAttribute( "product" ) ProductVO productVO,
+                       @ModelAttribute( "carrierProduct" ) ProductVO carrrierProductVO, // using this as a carrier object to bind the batchid from the ui
                        @RequestParam("page") Optional<Integer> page,
                        @RequestParam("size") Optional<Integer> size,
+                       @RequestParam Map<String, String> selectedProducts,
                        HttpServletRequest req){
 
 
@@ -524,41 +566,82 @@ public class CleanBatchViewController {
         Optional<BatchVO> batch = Optional.empty()
         Optional<ProductVO> product = Optional.empty()
 
-        if(batchid.present){
-            int targetbatchid = productVO.batch.batchid
-            // here we have to parse the incoming productVO and see what the batchid is and move it
-            batch = Optional.of(batchService.moveProductToNewBatch(batchid.get(), productVO))
-            model.addAttribute("successMessage", "Product moved successfully from batch: "+batchid.get() + " to batch: "+targetbatchid)
-        }
+        StringBuilder sb = new StringBuilder("Moved these products to new batch: \n");
 
-        // bind the batch into scope
-        if(batchid.isPresent() && batch.isEmpty()){
-            batch = batchRepo.findById(batchid.get());
-            model.addAttribute("batch", batch.get());
+        Map<String, String> filteredProducts = selectedProducts.findAll { key, value ->
+            key.startsWith("selectedProducts-")
         }
+        if(filteredProducts.size() > 0) {
+            List products = new ArrayList();
+            for (Map.Entry<String, String> entry : filteredProducts.entrySet()) {
+                Optional<ProductVO> productVO = productRepo.findById(Integer.valueOf(entry.getValue()))
+                // find the product
+//                productVO.present ? productsToMove.add(productVO.get()) : null
 
-        // bind the product into scope
-        if(productid.isPresent() && productid.get() != 0 && productid.get() != null) {
-            product = productRepo.findById(productid.get());
-            model.addAttribute("product", product.get());
+                if(batchid.present && productVO.present) {
+                    int targetbatchid = carrrierProductVO.batch.batchid
+                    carrrierProductVO.product_id = productVO.get().product_id // bind in the product id for the move logic
+                    // here we have to parse the incoming productVO and see what the batchid is and move it
+                    batch = Optional.of(batchService.moveProductToNewBatch(batchid.get(), carrrierProductVO, products, carrrierProductVO.batch.batchid))
+                    sb.append(" | Product: "+productVO.get().name + " - " +productVO.get().product_id+ " moved successfully from batch: "+batchid.get() + " to batch: "+targetbatchid + " \n ")
+                }
+
+            }
+
+
+            // bind the successMessage generated above
+            model.addAttribute("successMessage", sb.toString())
+
+            // bind the products that were moved into a data table
+            Page<ProductVO> pageOfProduct = batchControllerHelper.getPageOfProducts(products, 0, products.size())
+            model.addAttribute("pageNumbers", 0); // we will always be displaying the whole list of products being moved
+            model.addAttribute("page", 0);
+            model.addAttribute("size", pageOfProduct.getTotalPages());
+            model.addAttribute("productPage", pageOfProduct);
             model.addAttribute("editmode", true);
-        } else {
-            model.addAttribute("product", new ProductVO());
-            model.addAttribute("editmode", false);
+
         }
 
-        // now go get the list of paginated products in the batch
-        if(productnamesearch.isPresent() && productnamesearch.get() != null && productnamesearch.get() != "" && productnamesearch.get() != "null") {
-            batchControllerHelper.bindFilterProductsLikeSearchForCheckoutUI(
-                    model,
-                    page,
-                    size,
-                    productnamesearch.get()
-            )
-        } else {
-            // default behavior is to bind a list of all the products in the batch to a table for display
-            batchControllerHelper.bindAllProducts(model, page, size, batch.get())
-        }
+
+
+
+
+        // below is old code
+//        if(batchid.present){
+//            int targetbatchid = productVO.batch.batchid
+//            // here we have to parse the incoming productVO and see what the batchid is and move it
+//            batch = Optional.of(batchService.moveProductToNewBatch(batchid.get(), productVO))
+//            model.addAttribute("successMessage", "Product moved successfully from batch: "+batchid.get() + " to batch: "+targetbatchid)
+//        }
+//
+//        // bind the batch into scope
+//        if(batchid.isPresent() && batch.isEmpty()){
+//            batch = batchRepo.findById(batchid.get());
+//            model.addAttribute("batch", batch.get());
+//        }
+//
+//        // bind the product into scope
+//        if(productid.isPresent() && productid.get() != 0 && productid.get() != null) {
+//            product = productRepo.findById(productid.get());
+//            model.addAttribute("product", product.get());
+//            model.addAttribute("editmode", true);
+//        } else {
+//            model.addAttribute("product", new ProductVO());
+//            model.addAttribute("editmode", false);
+//        }
+//
+//        // now go get the list of paginated products in the batch
+//        if(productnamesearch.isPresent() && productnamesearch.get() != null && productnamesearch.get() != "" && productnamesearch.get() != "null") {
+//            batchControllerHelper.bindFilterProductsLikeSearchForCheckoutUI(
+//                    model,
+//                    page,
+//                    size,
+//                    productnamesearch.get()
+//            )
+//        } else {
+//            // default behavior is to bind a list of all the products in the batch to a table for display
+//            batchControllerHelper.bindAllProducts(model, page, size, batch.get())
+//        }
 
         bindBatches(model)
         bindVendors(model)

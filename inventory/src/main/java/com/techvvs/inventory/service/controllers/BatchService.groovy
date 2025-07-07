@@ -68,7 +68,7 @@ class BatchService {
     }
 
 
-    BatchVO moveProductToNewBatch(Integer originalBatchId, ProductVO productVO) {
+    BatchVO moveProductToNewBatch(Integer originalBatchId, ProductVO productVO, List products, int targetBatchId) {
 
         // Fetch the original and target batches
         BatchVO originalBatch = batchRepo.findByBatchid(originalBatchId);
@@ -89,7 +89,7 @@ class BatchService {
             if (product.getProduct_id().equals(productVO.getProduct_id())) {
                 iterator.remove();  // Remove the product safely
                 productToRemove = product
-                targetbatchid = product.getBatch().getBatchid() // set it to value that came in from the ui
+                targetbatchid = targetBatchId // set it to value that came in from the ui
                 productToRemove.batch.batchid = originalBatchId /// need to reset this from the ui
                 productRemoved = true;
                 break;
@@ -114,6 +114,8 @@ class BatchService {
         // Add the product to the target batch and save
         targetBatch.getProduct_set().add(productVO);
         targetBatch = batchRepo.save(targetBatch);
+
+        products.add(productVO) // add it to a list for displaying after products have been moved on confirmation screen
 
         return originalBatch
     }

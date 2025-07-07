@@ -590,5 +590,52 @@ class ProductService {
     }
 
 
+    @Transactional
+    void addSelectedProducts(MenuVO boundMenu,
+                             Model model,
+                             Map<String, String> selectedProducts
+    ){
+        // parse out any param with name containing selectedProducts-
+        // Filter and collect only values of parameters that start with "selectedProducts-"
+        List<Integer> filteredProductValues = selectedProducts.findAll { String key, String value ->
+            key.startsWith("selectedProducts-")
+        }.values().collect { it.toInteger() }
+
+        // Print or process the filtered list
+        println "Filtered Selected Products: $filteredProductValues"
+
+        boolean success = productService.addProductsToMenu(boundMenu.menuid, filteredProductValues)
+
+        if(success){
+            model.addAttribute("successMessage", "Products Added Successfully: "+filteredProductValues)
+        } else {
+            model.addAttribute("errorMessage", filteredProductValues)
+        }
+
+    }
+
+    @Transactional
+    void removeSelectedProducts(MenuVO boundMenu,
+                                Model model,
+                                Map<String, String> selectedProducts
+    ){
+        // Filter and collect only values of parameters that start with "selectedProducts-"
+        List<Integer> filteredProductValues = selectedProducts.findAll { String key, String value ->
+            key.startsWith("selectedProducts-")
+        }.values().collect { it.toInteger() }
+
+        // Print or process the filtered list
+        println "Filtered Selected Products: $filteredProductValues"
+
+        boolean success = productService.removeProductsToMenu(boundMenu.menuid, filteredProductValues)
+
+        if(success){
+            model.addAttribute("successMessage","Products Removed Successfully: "+ filteredProductValues)
+        } else {
+            model.addAttribute("errorMessage", filteredProductValues)
+        }
+
+    }
+
 
 }

@@ -198,7 +198,13 @@
         Error
     </div>
 
-    <form th:action="@{/batch/admin/product/move?batchid=__${batch.batchid}__}" method="post" th:object="${product}">
+    <div class="alert alert-warning" role="alert" th:if="${warningMessage}" th:text="${warningMessage}">
+        Warning
+    </div>
+
+
+    <!--    <form th:action="@{/batch/admin/product/move?batchid=__${batch.batchid}__}" method="post" th:object="${product}">-->
+    <form th:action="@{/batch/admin/product/move?batchid=__${batch.batchid}__}" th:object="${carrierProduct}" method="post">
 
 
         <div class="row mb-3">
@@ -222,108 +228,84 @@
         </div>
 
 
-        <!-- set the id of the product to 0 so the backend knows it is a create -->
-        <input th:if="${product.product_id == null && !editmode}"
-               type="hidden"
-               name="product_id"
-               th:attr="value=${product.product_id == null ? 0 : product.product_id}">
-
-        <!-- Need to account for all fields not displayed on the product object, and also editmode-->
-        <input th:if="${product.product_id != null && product.product_id != 0 && editmode}" type="hidden" th:field="*{product_id}">
-        <input th:if="${product.product_id != null && product.product_id != 0 && editmode}" type="hidden" th:field="*{batch}">
-        <input th:if="${product.product_id != null && product.product_id != 0 && editmode}" type="hidden" th:field="*{cart_list}">
-        <input th:if="${product.product_id != null && product.product_id != 0 && editmode}" type="hidden" th:field="*{transaction_list}">
-        <input th:if="${product.product_id != null && product.product_id != 0 && editmode}" type="hidden" th:field="*{package_list}">
-        <input th:if="${product.product_id != null && product.product_id != 0 && editmode}" type="hidden" th:field="*{menu_list}">
-        <input th:if="${product.product_id != null && product.product_id != 0 && editmode}" type="hidden" th:field="*{productnumber}">
-        <input th:if="${product.product_id != null && product.product_id != 0 && editmode}" type="hidden" th:field="*{vendorquantity}">
-        <input th:if="${product.product_id != null && product.product_id != 0 && editmode}" type="hidden" th:field="*{bagcolor}">
-        <input th:if="${product.product_id != null && product.product_id != 0 && editmode}" type="hidden" th:field="*{crate}">
-        <input th:if="${product.product_id != null && product.product_id != 0 && editmode}" type="hidden" th:field="*{crateposition}">
-        <input th:if="${product.product_id != null && product.product_id != 0 && editmode}" type="hidden" th:field="*{salePrice}">
-        <input th:if="${product.product_id != null && product.product_id != 0 && editmode}" type="hidden" th:field="*{laborCostPricePerUnit}">
-        <input th:if="${product.product_id != null && product.product_id != 0 && editmode}" type="hidden" th:field="*{marginPercent}">
-        <input th:if="${product.product_id != null && product.product_id != 0 && editmode}" type="hidden" th:field="*{weight}">
-        <input th:if="${product.product_id != null && product.product_id != 0 && editmode}" type="hidden" th:field="*{unitofmeasure}">
         <div class="text-end">
-            <button type="submit" class="btn btn-secondary">Save Changes</button>
+            <button th:if="${successMessage == null}" type="submit" class="btn btn-secondary">Click To Move Products To Selected Batch</button>
         </div>
 
+
+    <br>
+
+    <div th:if="${successMessage == null}" class="tip-box">Products In Scope Below</div>
+    <div th:if="${successMessage != null}" class="tip-box">You have successfully moved the products to different batch. </div>
+
+    <br>
+    <br>
+
+        <!-- This table will display with product info based on case insensitive search from popup -->
+        <div class="col-md-12" th:if="${productPage != null && productPage.content.size() > 0}">
+            <table th:if="${successMessage == null}" class="table table-hover table-striped table-dark" style="margin-top: 20px">
+                <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Barcode</th>
+                    <th scope="col">Product Name</th>
+                    <th scope="col">Quantity</th>
+                    <th scope="col">Quantity Remaining</th>
+                    <th scope="col">Price</th>
+                    <th scope="col">Batch Name</th>
+                    <th scope="col">Batch ID</th>
+                    <th scope="col">Create Date</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="product, iStat : ${productPage.content}"
+                    th:style="${iStat.odd}? 'font-weight: bold;'"
+                    th:alt-title="${iStat.even}? 'even' : 'odd'">
+                    <td th:text="${product.product_id}"></td>
+                    <td>
+                        <a th:href="@{/batch/admin?size=__${#lists.size(productPage.content) > 5 ? #lists.size(productPage.content) : 5}__&page=__${page == null ? 0 : page}__&batchid=__${batch != null ? batch.batchid : '0'}__&productnamesearch=__${productNameSearchValue == null ? '' : productNameSearchValue}__&productid=__${product.product_id == null ? 0 : product.product_id}__}"
+                           th:text="${product.barcode}"
+                           th:data-barcode="${product.barcode}"
+                           id="barcode-${product.product_id}"
+                           class="btn btn-secondary btn-sm" th:classappend="disabled">
+                        </a>
+                        <!-- Button to copy barcode -->
+                        <button type="button" class="btn btn-dark-custom btn-sm"
+                                onclick="copyToClipboard(this)"
+                                th:data-barcode="${product.barcode}"
+                                th:data-productname="${product.name}"
+                        >
+                            Copy
+                        </button>
+                    </td>
+                    <td th:text="${product.name}"></td>
+                    <td th:text="${product.quantity}"></td>
+                    <td th:text="${product.quantityremaining}"></td>
+                    <td th:text="${product.price}"></td>
+                    <td th:text="${product.batch.name}"></td>
+                    <td th:text="${product.batch.batchid}"></td>
+                    <td th:text="${product.createTimeStamp}"></td>
+
+
+
+                </tr>
+                </tbody>
+            </table>
+        <!--        <nav th:if="${productPage.totalPages > 0}">-->
+        <!--            <ul class="pagination justify-content-center">-->
+        <!--                <li class="page-item" th:each="pageNumber : ${pageNumbers}">-->
+        <!--                    <a class="page-link btn btn-secondary btn-sm mx-1"-->
+        <!--                       th:href="@{/batch/admin?size=__${#lists.size(productPage.content) > 5 ? #lists.size(productPage.content) : 5}__&page=__${pageNumber}__&batchid=__${batch != null ? batch.batchid : '0'}__&productnamesearch=__${productNameSearchValue}__}"-->
+        <!--                       th:text="${pageNumber}"-->
+        <!--                       th:classappend="${pageNumber==productPage.number + 1} ? 'active'">-->
+        <!--                    </a>-->
+        <!--                </li>-->
+        <!--            </ul>-->
+        <!--        </nav>-->
+        </div>
+        <input type="hidden" th:each="product : ${productPage.content}" th:name="'selectedProducts-' + ${product.product_id}" th:value="${product.product_id}" />
+
     </form>
-
-
-
-    <br>
-
-    <div th:if="${successMessage == null}" class="tip-box">Product In Scope Below</div>
-    <div th:if="${successMessage != null}" class="tip-box">You have successfully moved the product to different batch. </div>
-
-    <br>
-    <br>
-
-    <!-- This table will display with product info based on case insensitive search from popup -->
-    <div class="col-md-12" th:if="${productPage != null && productPage.content.size() > 0}">
-        <table th:if="${successMessage == null}" class="table table-hover table-striped table-dark" style="margin-top: 20px">
-            <thead>
-            <tr>
-                <th scope="col">#</th>
-                <th scope="col">Barcode</th>
-                <th scope="col">Product Name</th>
-                <th scope="col">Quantity</th>
-                <th scope="col">Quantity Remaining</th>
-                <th scope="col">Price</th>
-                <th scope="col">Batch Name</th>
-                <th scope="col">Batch ID</th>
-                <th scope="col">Create Date</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="product, iStat : ${productPage.content}"
-                th:style="${iStat.odd}? 'font-weight: bold;'"
-                th:alt-title="${iStat.even}? 'even' : 'odd'">
-                <td th:text="${product.product_id}"></td>
-                <td>
-                    <a th:href="@{/batch/admin?size=__${#lists.size(productPage.content) > 5 ? #lists.size(productPage.content) : 5}__&page=__${page == null ? 0 : page}__&batchid=__${batch != null ? batch.batchid : '0'}__&productnamesearch=__${productNameSearchValue == null ? '' : productNameSearchValue}__&productid=__${product.product_id == null ? 0 : product.product_id}__}"
-                       th:text="${product.barcode}"
-                       th:data-barcode="${product.barcode}"
-                       id="barcode-${product.product_id}"
-                       class="btn btn-secondary btn-sm" th:classappend="disabled">
-                    </a>
-                    <!-- Button to copy barcode -->
-                    <button type="button" class="btn btn-dark-custom btn-sm"
-                            onclick="copyToClipboard(this)"
-                            th:data-barcode="${product.barcode}"
-                            th:data-productname="${product.name}"
-                    >
-                        Copy
-                    </button>
-                </td>
-                <td th:text="${product.name}"></td>
-                <td th:text="${product.quantity}"></td>
-                <td th:text="${product.quantityremaining}"></td>
-                <td th:text="${product.price}"></td>
-                <td th:text="${product.batch.name}"></td>
-                <td th:text="${product.batch.batchid}"></td>
-                <td th:text="${product.createTimeStamp}"></td>
-
-
-
-            </tr>
-            </tbody>
-        </table>
-<!--        <nav th:if="${productPage.totalPages > 0}">-->
-<!--            <ul class="pagination justify-content-center">-->
-<!--                <li class="page-item" th:each="pageNumber : ${pageNumbers}">-->
-<!--                    <a class="page-link btn btn-secondary btn-sm mx-1"-->
-<!--                       th:href="@{/batch/admin?size=__${#lists.size(productPage.content) > 5 ? #lists.size(productPage.content) : 5}__&page=__${pageNumber}__&batchid=__${batch != null ? batch.batchid : '0'}__&productnamesearch=__${productNameSearchValue}__}"-->
-<!--                       th:text="${pageNumber}"-->
-<!--                       th:classappend="${pageNumber==productPage.number + 1} ? 'active'">-->
-<!--                    </a>-->
-<!--                </li>-->
-<!--            </ul>-->
-<!--        </nav>-->
-    </div>
-
     <br>
     <br>
 </div>
