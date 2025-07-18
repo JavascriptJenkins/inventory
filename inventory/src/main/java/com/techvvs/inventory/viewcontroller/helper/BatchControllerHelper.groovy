@@ -602,7 +602,7 @@ class BatchControllerHelper {
         ArrayList<ProductVO> listofproductsinstock = new ArrayList()
         System.out.println("size of batch set: "+batchVO.product_set)
         batchVO.product_set.each{ item ->
-            listofproductsinstock.add(item)
+            item.quantityremaining > 0 ? listofproductsinstock.add(item) : item.quantityremaining
         }
 
         ProductVO.sortProductsByPrice(listofproductsinstock)
