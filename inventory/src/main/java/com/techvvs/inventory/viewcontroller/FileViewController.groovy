@@ -221,6 +221,8 @@ public class FileViewController {
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size) {
 
+        techvvsAuthService.checkuserauth(model)
+
         menuoption = fileViewHelper.sanitizeTransients(menuoption)
         batchid = batchid ?: "0"
         BatchVO batchVO = batchControllerHelper.loadBatch(batchid, model)

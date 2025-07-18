@@ -754,6 +754,8 @@ public class CleanBatchViewController {
             @RequestParam("size") Optional<Integer> size
     ){
 
+        techvvsAuthService.checkuserauth(model)
+
         model = batchControllerHelper.processModel(model,  batchid, editmode, page, productTypeVO, true, false);
         // I need to do here is build a pdf / excel document, store it in uploads folder, then send a download link back to the user
 
