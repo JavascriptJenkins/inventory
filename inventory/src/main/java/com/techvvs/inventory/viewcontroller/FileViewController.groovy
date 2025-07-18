@@ -15,10 +15,15 @@ import com.techvvs.inventory.viewcontroller.helper.FileViewHelper
 import com.techvvs.inventory.viewcontroller.helper.TransactionHelper
 import com.techvvs.inventory.xlsx.impl.MenuGenerator
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.core.io.InputStreamResource
 import org.springframework.data.domain.Page
+import org.springframework.http.HttpHeaders
+import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.servlet.ModelAndView
 
 
 @RequestMapping("/viewfiles")
@@ -153,8 +158,63 @@ public class FileViewController {
 
 
 
+//    @PostMapping("/textemailinvoice")
+//    String textemailinvoice(
+//            @RequestParam("batchid") String batchid,
+//            @ModelAttribute("menuoption") MenuOptionVO menuoption,
+//            Model model,
+//            @RequestParam("page") Optional<Integer> page,
+//            @RequestParam("size") Optional<Integer> size) {
+//
+//        menuoption = fileViewHelper.sanitizeTransients(menuoption)
+//
+//        batchid = batchid == null ? "0" : String.valueOf(batchid)
+//        BatchVO batchVO = batchControllerHelper.loadBatch(batchid, model)
+//
+//        String selected = menuoption.selected
+//        String filename = menuoption.filenametosend
+//
+//        filename = filename.replaceAll(",", "")
+//        String contentsofinvoice = ""
+//
+//        String dir = appConstants.PARENT_LEVEL_DIR + batchVO.batchnumber + selected + "/" + filename
+//        File file = new File(dir)
+//
+//        if (menuoption.action.contains(appConstants.TEXT_INVOICE)) {
+//            transactionHelper.sendTextMessageWithDownloadLink(menuoption.phonenumber, dir)
+//        } else if (menuoption.action.contains(appConstants.EMAIL_INVOICE)) {
+//            transactionHelper.sendEmailWithDownloadLink(menuoption.email, dir)
+//        } else if (menuoption.action.contains(appConstants.VIEW_INVOICE)) {
+//            // Check if the file is larger than 1MB
+//            if (file.exists() && file.length() > (1 * 1024 * 1024)) {
+//                // Instead of base64, provide a public blob download link (e.g., from a /download endpoint)
+//                //     // href="https://domain/file/inappdownload?filename=sample_inventory_template.xlsx"
+//                contentsofinvoice = "/file/inappdownload?filename=" + URLEncoder.encode(filename, "UTF-8")
+//                model.addAttribute("isBlobDownload", true)
+//            } else {
+//                // Safe to use base64
+//                contentsofinvoice = techvvsFileHelper.readPdfAsBase64String(dir)
+//                model.addAttribute("isBlobDownload", false)
+//            }
+//        }
+//
+//        // Handle paging
+//        Page<FileVO> filePage = filePagingService.getFilePage(batchVO, page.get(), size.get(), selected)
+//        filePagingService.bindPageAttributesToModel(model, filePage, page, size)
+//
+//        model.addAttribute(controllerConstants.MENU_OPTIONS_DIRECTORIES, controllerConstants.DIRECTORIES_FOR_BATCH_UI)
+//        model.addAttribute("menuoption", new MenuOptionVO(selected: selected))
+//        model.addAttribute("invoicecontent", contentsofinvoice)
+//
+//        if (model.getAttribute("errorMessage") == null && contentsofinvoice.length() == 0) {
+//            model.addAttribute("successMessage", "Successfully sent file: " + filename + " using method: " + menuoption.action)
+//        }
+//
+//        return "files/batchfiles.html"
+//    }
+
     @PostMapping("/textemailinvoice")
-    String textemailinvoice(
+    ResponseEntity<?> textemailinvoice(
             @RequestParam("batchid") String batchid,
             @ModelAttribute("menuoption") MenuOptionVO menuoption,
             Model model,
@@ -162,38 +222,46 @@ public class FileViewController {
             @RequestParam("size") Optional<Integer> size) {
 
         menuoption = fileViewHelper.sanitizeTransients(menuoption)
-
-        batchid = batchid == null ? "0" : String.valueOf(batchid)
+        batchid = batchid ?: "0"
         BatchVO batchVO = batchControllerHelper.loadBatch(batchid, model)
 
         String selected = menuoption.selected
-        String filename = menuoption.filenametosend
-
-        filename = filename.replaceAll(",", "")
-        String contentsofinvoice = ""
-
+        String filename = menuoption.filenametosend?.replaceAll(",", "")
         String dir = appConstants.PARENT_LEVEL_DIR + batchVO.batchnumber + selected + "/" + filename
         File file = new File(dir)
 
+        // Check for direct .xlsx or .pdf download if VIEW_INVOICE is selected
+        if (menuoption.action.contains(appConstants.VIEW_INVOICE) && file.exists()) {
+            String lower = filename.toLowerCase()
+            if (lower.endsWith(".xlsx") || lower.endsWith(".pdf")) {
+                InputStreamResource resource = new InputStreamResource(new FileInputStream(file))
+                MediaType contentType = lower.endsWith(".xlsx") ?
+                        MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") :
+                        MediaType.APPLICATION_PDF
+
+                return ResponseEntity.ok()
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                        .contentLength(file.length())
+                        .contentType(contentType)
+                        .body(resource)
+            }
+        }
+
+        String contentsofinvoice = ""
         if (menuoption.action.contains(appConstants.TEXT_INVOICE)) {
             transactionHelper.sendTextMessageWithDownloadLink(menuoption.phonenumber, dir)
         } else if (menuoption.action.contains(appConstants.EMAIL_INVOICE)) {
             transactionHelper.sendEmailWithDownloadLink(menuoption.email, dir)
         } else if (menuoption.action.contains(appConstants.VIEW_INVOICE)) {
-            // Check if the file is larger than 1MB
             if (file.exists() && file.length() > (1 * 1024 * 1024)) {
-                // Instead of base64, provide a public blob download link (e.g., from a /download endpoint)
-                //     // href="https://domain/file/inappdownload?filename=sample_inventory_template.xlsx"
                 contentsofinvoice = "/file/inappdownload?filename=" + URLEncoder.encode(filename, "UTF-8")
                 model.addAttribute("isBlobDownload", true)
             } else {
-                // Safe to use base64
                 contentsofinvoice = techvvsFileHelper.readPdfAsBase64String(dir)
                 model.addAttribute("isBlobDownload", false)
             }
         }
 
-        // Handle paging
         Page<FileVO> filePage = filePagingService.getFilePage(batchVO, page.get(), size.get(), selected)
         filePagingService.bindPageAttributesToModel(model, filePage, page, size)
 
@@ -201,11 +269,11 @@ public class FileViewController {
         model.addAttribute("menuoption", new MenuOptionVO(selected: selected))
         model.addAttribute("invoicecontent", contentsofinvoice)
 
-        if (model.getAttribute("errorMessage") == null && contentsofinvoice.length() == 0) {
+        if (!model.getAttribute("errorMessage") && contentsofinvoice.length() == 0) {
             model.addAttribute("successMessage", "Successfully sent file: " + filename + " using method: " + menuoption.action)
         }
 
-        return "files/batchfiles.html"
+        return ResponseEntity.ok().body(new ModelAndView("files/batchfiles.html", model.asMap()))
     }
 
 
