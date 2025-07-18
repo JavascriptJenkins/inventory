@@ -323,7 +323,12 @@ class BatchControllerHelper {
 
 
         model.addAttribute("options", ["5", "10", "20", "100", "1000"]);
-        model.addAttribute(controllerConstants.MENU_OPTIONS_TEXT_XLSX, [0.00, 0.50, 100.00, 150.00, 200.00, 250.00, 300.00, -0.50, -100.00, -150.00, -200.00, -250.00, -300.00]);
+        model.addAttribute(controllerConstants.MENU_OPTIONS_TEXT_XLSX, [
+                -1000, -950, -900, -850, -800, -750, -700, -650, -600, -550, -500,
+                -450, -400, -350, -300, -250, -200, -150, -100, -50, 0,
+                50, 100, 150, 200, 250, 300, 350, 400, 450, 500,
+                550, 600, 650, 700, 750, 800, 850, 900, 950, 1000
+        ]);
         model.addAttribute(controllerConstants.MENU_OPTIONS_BARCODE, ["All", "Single Menu"]);
         model.addAttribute(controllerConstants.MENU_OPTIONS_QR_CODES, ["All", "Single Menu"]);
         model.addAttribute(controllerConstants.MENU_OPTIONS_WEIGHT_LABELS, [controllerConstants.SINGLE_PAGE]);
