@@ -6,8 +6,11 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-kQtW33rZJAHjgefvhyyzcGF3C5TFyBQBA13V1RKPf4uH+bwyzQxZ6CmMZHmNBEfJ" crossorigin="anonymous"></script>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Bundle JS (Includes Popper.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <link rel="stylesheet" type="text/css" media="all" href="/css/table.css" th:href="@{/css/table.css}" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
@@ -136,6 +139,36 @@
             color: #000;  /* Changed to black */
         }
     </style>
+    <style>
+        .file-input-hidden {
+          display: none;
+        }
+
+        .custom-file-label {
+          display: inline-block;
+          padding: 0.75rem 1.5rem;
+          font-size: 1.2rem;
+          font-weight: 600;
+          color: #212529;
+          background-color: #ffc107;
+          border: none;
+          border-radius: 0.5rem;
+          cursor: pointer;
+          text-align: center;
+          box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+          transition: background-color 0.2s ease;
+          margin-top: 30px;
+        }
+
+        .custom-file-label:hover {
+          background-color: #e0a800;
+        }
+
+        .custom-file-label:active {
+          background-color: #c69500;
+        }
+    </style>
+
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -224,6 +257,13 @@
     </a>
 
     <div th:if="${editmode == 'no'}">
+        <div class="alert alert-warning d-flex justify-content-center" role="alert">
+            <a th:href="@{/product/editform(product_id=${product.product_id}, editmode='yes', menuid=${menuid != null ? menuid : 0})}"
+               class="btn btn-warning btn-lg d-flex align-items-center px-4 py-3 shadow">
+                <i class="bi bi-pencil-square me-2" style="font-size: 1.5rem;"></i>
+                Click here to edit product and upload files
+            </a>
+        </div>
         <form th:action="@{/product/createNewProduct}" th:object="${product}" method="post">
             <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
             <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
@@ -296,6 +336,19 @@
             </div>
 
             <div class="row" style="margin-bottom: 5px;">
+                <div class="col-md-12">
+                    <label class="form-label required">Attributes</label>
+                    <div id="selectedAttributesContainer"
+                         class="d-flex flex-wrap align-items-center">
+                        <span th:each="attribute : ${product.attribute_list}"
+                              class="badge bg-warning text-dark rounded-pill px-4 py-3 fs-4 d-inline-flex align-items-center me-2 mb-2">
+                            <span class="me-2" th:text="${attribute.name + ' | ' + attribute.value}"></span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row" style="margin-bottom: 5px;">
                 <div class="alert alert-info" role="alert">Notes</div>
                 <div class="col" style="margin-bottom: 5px;">
                     <label class="form-label">Notes</label>
@@ -303,9 +356,6 @@
                 </div>
             </div>
 
-            <div class="alert alert-warning" role="alert">
-                <a th:href="@{/product/editform?product_id=__${product.product_id}__&editmode=yes&menuid=__${menuid != null ? menuid : 0}__}">Click here to edit this form</a>
-            </div>
             <button style="margin-top:5px;" type="submit" class="btn btn-primary" disabled>Submit</button>
             <input type="hidden" th:field="*{batch}">
         </form>
@@ -380,6 +430,39 @@
                         <option th:each="producttype : ${producttypes}" th:value="${producttype.producttypeid}" th:text="${producttype.name}"></option>
                     </select>
                 </div>
+            </div>
+
+            <div class="row" style="margin-bottom: 5px;">
+                <div class="col-md-4" style="margin-bottom: 5px;">
+                    <label class="form-label required">Attributes</label>
+                    <select class="form-control" id="attributeSelect" th:field="${product.attribute_list}" multiple>
+                        <option th:each="attribute : ${attributes}"
+                                th:value="${attribute.attributeid}"
+                                th:text="${attribute.name} +' | ' + ${attribute.value}"></option>
+                    </select>
+                    <button type="button" id="addAttributesBtn" class="btn btn-lg btn-primary mt-2">Add Attribute(s)</button>
+                </div>
+
+
+                <!-- Inline display of selected attributes -->
+                <div id="selectedAttributesContainer">
+                  <span th:each="attribute : ${product.attribute_list}" class="badge bg-secondary me-2 mb-2 px-3 py-2 fs-5 d-inline-flex align-items-center">
+                    <span th:text="${attribute.name + ' | ' + attribute.value}" class="me-2"></span>
+                    <i class="bi bi-x-circle remove-attribute"
+                       style="cursor: pointer; font-size: 1.25rem;"
+                       th:attr="data-attribute-id=${attribute.attributeid}"></i>
+                  </span>
+                </div>
+
+                <!-- Hidden inputs for form submission -->
+                <div id="hiddenAttributesContainer">
+                    <input type="hidden" name="attributeIds"
+                           th:each="attr : ${product.attribute_list}"
+                           th:value="${attr.attributeid}"
+                           th:attr="data-id=${attr.attributeid}" />
+                </div>
+
+
             </div>
 
             <div class="row" style="margin-bottom: 5px;">
@@ -471,38 +554,40 @@
 
     </div>
 
-    <div style="margin-bottom: 5px;" class="container mt-4 ">
+    <div th:if="${filePage != null || editmode == 'yes'}" style="margin-bottom: 5px;" class="container mt-4 ">
         <div class="alert alert-info" role="alert">Upload a file
             <!-- pass the product object to the upload file controller to get the correct ID to save it under -->
             <form id="uploadForm" method="post" th:object="${product}" th:action="@{/file/media/upload}" enctype="multipart/form-data">
                 <div class="form-group">
 
-                    <div class="d-flex flex-wrap justify-content-start align-items-center gap-3">
-                        <div class="form-check">
-                            <input type="checkbox" id="isPrimaryCheckbox" class="form-check-input">
-                            <label for="isPrimaryCheckbox" class="form-check-label">Set as Primary (.jpg only)</label>
+                    <div class="d-flex flex-wrap justify-content-start align-items-center gap-4">
+                        <div class="form-check form-switch fs-5">
+                            <input type="checkbox" id="isPrimaryCheckbox" class="form-check-input" style="transform: scale(1.5); cursor: pointer;">
+                            <label for="isPrimaryCheckbox" class="form-check-label ms-2">Set as Primary (.jpg only)</label>
                         </div>
-                        <div class="form-check">
-                            <input type="checkbox" id="isVideoCheckbox" class="form-check-input">
-                            <label for="isVideoCheckbox" class="form-check-label">Video File (.mp4/.mov only)</label>
+                        <div class="form-check form-switch fs-5">
+                            <input type="checkbox" id="isVideoCheckbox" class="form-check-input" style="transform: scale(1.5); cursor: pointer;">
+                            <label for="isVideoCheckbox" class="form-check-label ms-2">Video File (.mp4/.mov only)</label>
                         </div>
-                        <div class="form-check">
-                            <input type="checkbox" id="isDocumentCheckbox" class="form-check-input">
-                            <label for="isDocumentCheckbox" class="form-check-label">Document File (.pdf only)</label>
+                        <div class="form-check form-switch fs-5">
+                            <input type="checkbox" id="isDocumentCheckbox" class="form-check-input" style="transform: scale(1.5); cursor: pointer;">
+                            <label for="isDocumentCheckbox" class="form-check-label ms-2">Document File (.pdf only)</label>
                         </div>
-                        <div class="form-check">
-                            <input type="checkbox" id="isPhotoCheckbox" class="form-check-input">
-                            <label for="isPhotoCheckbox" class="form-check-label">Photo File (.jpg only)</label>
+                        <div class="form-check form-switch fs-5">
+                            <input type="checkbox" id="isPhotoCheckbox" class="form-check-input" style="transform: scale(1.5); cursor: pointer;">
+                            <label for="isPhotoCheckbox" class="form-check-label ms-2">Photo File (.jpg/.png only)</label>
                         </div>
                     </div>
+
 
 
                     <div th:if="${disableupload}">
-                        <input type="file" disabled="disabled" name="file" class="form-control-file">
+                        <label class="custom-file-label" disabled>Choose File (Upload Disabled)</label>
                     </div>
 
                     <div th:if="${disableupload == null}">
-                        <input type="file" name="file" class="form-control-file">
+                        <label for="fileUpload" class="custom-file-label">📁 Choose File</label>
+                        <input type="file" id="fileUpload" name="file" class="file-input-hidden" />
                     </div>
 
                     <!-- NOTE: this is not nessesary on other pages.  this page is just coded like crap -->
@@ -529,7 +614,8 @@
                     <input type="hidden" th:field="*{vendorvo}">
                     <input type="hidden" th:field="*{menu_list}">
                     <input type="hidden" th:field="*{package_list}">
-                    <input type="hidden" th:field="*{transaction_list}">z
+                    <input type="hidden" th:field="*{transaction_list}">
+                    <input type="hidden" th:field="*{attribute_list}">
                 </div>
                 <br>
 
@@ -541,12 +627,74 @@
                 </div>
         </div>
                 <!-- if it is first download then it is ok.  second download will throw 403 if upload is performed right after  -->
-                <div th:if="${disableupload == null}">
-                    <button type="submit" class="btn btn-primary">Upload File</button>
-                </div>
+        <div th:if="${disableupload == null}" class="mt-3 mb-5" style="margin-bottom: 100px;">
+            <button type="submit" class="btn btn-success btn-lg d-flex align-items-center px-4 py-3 shadow">
+                <i class="bi bi-cloud-arrow-up-fill me-2" style="font-size: 1.5rem;"></i>
+                Upload File
+            </button>
+        </div>
+
+
             </form>
 
     </div>
 </div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+      const selectedContainer = $('#selectedAttributesContainer');
+      const hiddenContainer = $('#hiddenAttributesContainer');
+      const selectedIds = new Set();
+
+      // Initialize from existing Thymeleaf-rendered attributes
+      selectedContainer.find('.remove-attribute').each(function () {
+        selectedIds.add($(this).data('attribute-id') || $(this).data('id'));
+      });
+
+    $('#addAttributesBtn').click(function () {
+      $('#attributeSelect option:selected').each(function () {
+        const id = $(this).val();
+        const name = $(this).text();
+
+        // Check if badge exists
+        if ($(`#selectedAttributesContainer [data-attribute-id="${id}"]`).length === 0 & $(`#selectedAttributesContainer [data-id="${id}"]`).length === 0) {
+          selectedIds.add(id);
+          addAttributeBadge(id, name);
+          addHiddenInput(id);
+        } else {
+                  alert(`This attribute "${name}" is already added.`);
+        }
+
+
+        // ✅ This ensures the option gets unselected so it can be reselected later
+        $(this).prop('selected', false);
+      });
+    });
+
+
+    function addAttributeBadge(id, name) {
+      const badge = $(`
+        <span class="badge bg-warning text-dark rounded-pill px-4 py-3 fs-4 d-inline-flex align-items-center me-2 mb-2">
+          <span class="me-3">${name}</span>
+          <i class="bi bi-x-circle remove-attribute" style="cursor: pointer; font-size: 1.5rem;" data-id="${id}"></i>
+        </span>
+      `);
+      selectedContainer.append(badge);
+    }
+
+
+      function addHiddenInput(id) {
+        hiddenContainer.append(`<input type="hidden" name="attributeIds" value="${id}" data-id="${id}">`);
+      }
+
+      selectedContainer.on('click', '.remove-attribute', function () {
+        const id = $(this).data('id') || $(this).data('attribute-id');
+        selectedIds.delete(id);
+        $(this).closest('.badge').remove();
+        hiddenContainer.find(`input[data-id="${id}"]`).remove();
+        $(`#attributeSelect option[value="${id}"]`).prop('selected', false);
+      });
+    });
+</script>
 </body>
 </html>

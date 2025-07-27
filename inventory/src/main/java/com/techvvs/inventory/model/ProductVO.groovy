@@ -31,7 +31,7 @@ class ProductVO implements Serializable, Comparable<ProductVO> {
     @ManyToMany(mappedBy = "product_cart_list")
     List<CartVO> cart_list
     @JsonProperty
-    @ManyToMany(mappedBy = "product_attribute_list") // this is like product sub category but functions as a list of searchable product attributes
+    @ManyToMany(mappedBy = "product_attribute_list", fetch = FetchType.LAZY) // this is like product sub category but functions as a list of searchable product attributes
     List<AttributeVO> attribute_list
     @JsonProperty
     @ManyToMany(mappedBy = "product_list")
@@ -168,6 +168,37 @@ class ProductVO implements Serializable, Comparable<ProductVO> {
 
     VendorVO getVendorvo() {
         return this.vendorvo
+    }
+
+
+    @Transient
+    String getAttributeDataString() {
+        if (attribute_list == null) return ""
+        return attribute_list.collect { "${it.name}:${it.value}" }.join(',')
+    }
+
+
+    static void copyUpdatableFields(ProductVO source, ProductVO target) {
+        target.name = source.name
+        target.description = source.description
+        target.notes = source.notes
+        target.price = source.price
+        target.cost = source.cost
+        target.quantity = source.quantity
+        target.quantityremaining = source.quantityremaining
+        target.vendorquantity = source.vendorquantity
+        target.vendor = source.vendor
+        target.bagcolor = source.bagcolor
+        target.crate = source.crate
+        target.crateposition = source.crateposition
+        target.barcode = source.barcode
+        target.salePrice = source.salePrice
+        target.laborCostPricePerUnit = source.laborCostPricePerUnit
+        target.marginPercent = source.marginPercent
+        target.weight = source.weight
+        target.unitofmeasure = source.unitofmeasure
+        target.producttypeid = source.producttypeid
+        target.vendorvo = source.vendorvo
     }
 
 

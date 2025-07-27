@@ -9,6 +9,7 @@ import com.techvvs.inventory.jparepo.MenuRepo
 import com.techvvs.inventory.jparepo.ProductRepo
 import com.techvvs.inventory.jparepo.ProductTypeRepo
 import com.techvvs.inventory.jparepo.SystemUserRepo
+import com.techvvs.inventory.model.AttributeVO
 import com.techvvs.inventory.model.CartVO
 import com.techvvs.inventory.model.CustomerVO
 import com.techvvs.inventory.model.DiscountVO
@@ -28,6 +29,7 @@ import com.techvvs.inventory.service.transactional.CartDeleteService
 import com.techvvs.inventory.util.TwilioTextUtil
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwt
+import org.hibernate.Hibernate
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
 import org.springframework.data.domain.Page
@@ -338,6 +340,18 @@ class MenuHelper {
     MenuVO getExistingMenu(String menuid){
 
         Optional<MenuVO> menuVO = menuRepo.findById(Integer.valueOf(menuid))
+//        Optional<MenuVO> menuVO = menuRepo.findByIdWithAttributes(Integer.valueOf(menuid));
+// Once you get the menu
+        if (menuVO.isPresent()) {
+            MenuVO menu = menuVO.get();
+            List<ProductVO> products = menu.getMenu_product_list();
+
+            // Force-initialize attributes using Hibernate or manually query them
+            for (ProductVO product : products) {
+                Hibernate.initialize(product.getAttribute_list());
+            }
+        }
+
 
         if(!menuVO.empty){
             return menuVO.get()
@@ -472,6 +486,10 @@ class MenuHelper {
             model.addAttribute("producttypes", producttypes)
 
 
+            List<AttributeVO> uniqueAttributes = extractUniqueAttributes(menuVO.menu_product_list)
+            model.addAttribute("uniqueAttributeList", uniqueAttributes)
+
+
             return menuVO
         }
     }
@@ -488,6 +506,29 @@ class MenuHelper {
         }
 
         return result
+    }
+
+    List<AttributeVO> extractUniqueAttributes(List<ProductVO> products) {
+
+//        for (ProductVO product : products) {
+//            Hibernate.initialize(product.getAttribute_list());
+//        }
+
+        Set<String> seenAttributes = new HashSet<>()
+        List<AttributeVO> uniqueAttributes = []
+
+        for (ProductVO product : products) {
+            if (product.attribute_list != null) {
+                for (AttributeVO attr : product.attribute_list) {
+                    String key = attr.name + "::" + attr.value
+                    if (seenAttributes.add(key)) {
+                        uniqueAttributes.add(attr)
+                    }
+                }
+            }
+        }
+
+        return uniqueAttributes
     }
 
 

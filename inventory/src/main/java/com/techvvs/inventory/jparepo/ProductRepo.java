@@ -107,6 +107,9 @@ public interface ProductRepo extends JpaRepository<ProductVO, Integer> {
     Optional<ProductVO> findTopByOrderByCreateTimeStampDesc();
 
 
+    @Query("SELECT p FROM ProductVO p LEFT JOIN FETCH p.attribute_list WHERE p.product_id = :id")
+    Optional<ProductVO> findByIdWithAttributes(@Param("id") Integer id);
+
 
 
 

@@ -16,6 +16,7 @@ import com.techvvs.inventory.model.VendorVO
 import com.techvvs.inventory.modelnonpersist.FileVO
 import com.techvvs.inventory.service.attribute.constants.AttributeNameEnum
 import com.techvvs.inventory.service.auth.TechvvsAuthService
+import com.techvvs.inventory.service.controllers.ProductService
 import com.techvvs.inventory.service.paging.FilePagingService
 import com.techvvs.inventory.util.TechvvsFileHelper
 import com.techvvs.inventory.validation.ValidateProduct
@@ -81,6 +82,9 @@ public class ProductViewController {
 
     @Autowired
     BarcodeGenerator barcodeGenerator
+
+    @Autowired
+    ProductService productService
 
 
     SecureRandom secureRandom = new SecureRandom();
@@ -298,9 +302,7 @@ public class ProductViewController {
         }
         ProductVO productVO1 = new ProductVO(product_id: 0)
         if(product_id.isPresent()){
-            System.out.println("Searching data by productnumber");
-            productVO1 = productRepo.findById(product_id.get()).get()
-
+            productVO1 = productService.getProductWithAttributesLoaded(product_id.get())
         }
 
 
@@ -325,6 +327,7 @@ public class ProductViewController {
     String editProduct(
             @ModelAttribute( "product" ) ProductVO productVO,
             @RequestParam("menuid") Optional<Integer> menuid,
+            @RequestParam(value = "attributeIds", required = false) String[] attributeIds,
                                 Model model
     ){
 
@@ -347,7 +350,7 @@ public class ProductViewController {
         } else {
 
 
-            productresult = productDao.updateProduct(productVO)
+            productresult = productDao.updateProduct(productVO, attributeIds)
 
 
             // check to see if there are files uploaded related to this productnumber
@@ -375,7 +378,10 @@ public class ProductViewController {
     }
 
     @PostMapping ("/createNewProduct")
-    String createNewProduct(@ModelAttribute( "product" ) ProductVO productVO,@ModelAttribute( "batch" ) BatchVO batchVO,
+    String createNewProduct(
+            @ModelAttribute( "product" ) ProductVO productVO,
+            @ModelAttribute( "batch" ) BatchVO batchVO,
+            @RequestParam(value = "attributeIds", required = false) String[] attributeIds,
                                 Model model,
                                 HttpServletResponse response
     ){
@@ -394,7 +400,7 @@ public class ProductViewController {
             productVO.setBatch(batchVO)
 
             // add the product to the database
-            ProductVO result = saveNewProduct(model, productVO, batchVO)
+            ProductVO result = saveNewProduct(model, productVO, batchVO, attributeIds)
 
             // add the product to the batch
             batchVO = addProductToBatch(batchVO,result)
@@ -431,19 +437,33 @@ public class ProductViewController {
 
     }
 
-    ProductVO saveNewProduct(Model model, ProductVO productVO, BatchVO batchVO) {
 
 
-        productVO =  generateTimestampsAndBarcode(productVO, batchVO)
+    ProductVO saveNewProduct(Model model, ProductVO productVO, BatchVO batchVO, String[] attributeIds) {
 
-        // the second save saves the barcode i think .... this may be redundant
-        ProductVO result = productRepo.save(productVO);
+        productVO = generateTimestampsAndBarcode(productVO, batchVO)
 
-        model.addAttribute("successMessage","Record Successfully Saved. ");
-        model.addAttribute("product", result);
+        // Always do the first save
+        ProductVO result = productRepo.save(productVO)
+
+        // If attribute IDs are present, fetch and assign them
+        if (attributeIds && attributeIds.length > 0) {
+            List<Integer> ids = attributeIds.collect { it as Integer }
+            List<AttributeVO> attributes = attributeRepo.findAllById(ids)
+            result.attribute_list = attributes
+            attributes.each { it.product_attribute_list.add(result) }
+
+            // Save again to persist many-to-many join
+            result = productRepo.save(result)
+        }
+
+        model.addAttribute("successMessage", "Record Successfully Saved.")
+        model.addAttribute("product", result)
+
         return result
-
     }
+
+
 
 
     ProductVO generateTimestampsAndBarcode(ProductVO productVO, BatchVO batchVO){

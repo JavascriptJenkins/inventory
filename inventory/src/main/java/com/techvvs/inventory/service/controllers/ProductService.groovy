@@ -22,6 +22,7 @@ import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.validation.StringSecurityValidator
 import com.techvvs.inventory.validation.generic.ObjectValidator
 import org.apache.commons.math3.stat.descriptive.summary.Product
+import org.hibernate.Hibernate
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import org.springframework.ui.Model
@@ -637,5 +638,12 @@ class ProductService {
 
     }
 
+
+    @Transactional
+    ProductVO getProductWithAttributesLoaded(int product_id){
+        ProductVO productVO1 = productRepo.findByIdWithAttributes(product_id).get()
+        return productVO1
+
+    }
 
 }
