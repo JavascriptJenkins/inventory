@@ -286,17 +286,15 @@
                     <label class="form-label required">Quantity</label>
                     <input id="quantity"  type="number" th:field="*{quantity}" class="form-control" placeholder="quantity" aria-label="quantity">
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-4" th:if="${product.quantityremaining != null}">
                     <label class="form-label">Quantity Remaining</label>
-                    <input th:if="${product.quantityremaining != null}" type="number" th:field="*{quantityremaining}" id="quantityremaining" class="form-control edit-validation-group" placeholder="Quantity Remaining">
-                    <input th:if="${product.quantityremaining == null}" type="number" th:field="*{quantityremaining}" id="quantityremaining" class="form-control" placeholder="Generated upon create" readonly>
+                    <input type="number"
+                           th:field="*{quantityremaining}"
+                           id="quantityremaining"
+                           class="form-control edit-validation-group"
+                           placeholder="Quantity Remaining">
                 </div>
-                <div class="col-md-4" style="margin-bottom: 5px;">
-                    <label class="form-label required">Vendor</label>
-                    <select class="form-control" th:field="${product.vendorvo}" id="vendorid">
-                        <option th:each="vendor : ${vendors}" th:value="${vendor.vendorid}" th:text="${vendor.name}"></option>
-                    </select>
-                </div>
+
             </div>
 
             <div class="row" style="margin-bottom: 5px;">
@@ -307,6 +305,12 @@
                 <div class="col-md-4" style="margin-bottom: 5px;">
                     <label class="form-label">Cost</label>
                     <input id="cost" type="number" th:field="*{cost}" class="form-control" placeholder="cost" aria-label="cost">
+                </div>
+                <div class="col-md-4" style="margin-bottom: 5px;">
+                    <label class="form-label required">Vendor</label>
+                    <select class="form-control" th:field="${product.vendorvo}" id="vendorid">
+                        <option th:each="vendor : ${vendors}" th:value="${vendor.vendorid}" th:text="${vendor.name}"></option>
+                    </select>
                 </div>
             </div>
 

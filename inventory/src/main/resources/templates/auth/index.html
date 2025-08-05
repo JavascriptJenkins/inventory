@@ -240,8 +240,10 @@
                 <th scope="col">Send Menu</th>
             </tr>
             </thead>
-            <tbody>
-            <tr th:if="${menuPage != null && menuPage.totalPages > 0}" th:each="menu, iStat : ${menuPage.content}" th:data-menuid="${menu.menuid}">
+            <tbody th:if="${menuPage != null and menuPage.content != null and #lists.size(menuPage.content) > 0}">
+            <tr th:each="menu, iStat : ${menuPage.content}" th:data-menuid="${menu.menuid}">
+                <!-- table columns -->
+
                 <td>
                     <a th:href="@{/menu?menuid=__${menu.menuid}__&cartid=0}"
                        th:text="${menu.menuid}"
@@ -311,7 +313,11 @@
 
 
 <!--    <div th:each="menu, iStat : ${menuPage.content}" th:data-menuid="${menu.menuid}" th:id="menuid-hidden-element-278" style="display: none;">-->
-    <div th:each="menu, iStat : ${menuPage2.content}" th:data-menuid="${menu.menuid}" th:id="${'menuid-hidden-element-'+menu.menuid}" style="display: none;">
+    <div th:if="${menuPage2 != null and menuPage2.content != null and !menuPage2.content.isEmpty()}">
+        <div th:each="menu, iStat : ${menuPage2.content}"
+             th:data-menuid="${menu.menuid}"
+             th:id="${'menuid-hidden-element-'+menu.menuid}"
+             style="display: none;">
         <h3>Menu Details</h3>
         <p>This is the content for Menu ID <span th:text="${menu.menuid}"></span></p>
         <p th:text="${menu.name}"></p>
@@ -794,7 +800,7 @@
         <ul class="pagination">
             <li class="page-item" th:each="pageNumber : ${pageNumbers}">
                 <a class="page-link"
-                   th:href="@{/dashboard/index?size=__${#lists.size(menuPage.content)}__&page=__${pageNumber}__}"
+                   th:href="@{/dashboard/index(size=${menuPage.content != null ? #lists.size(menuPage.content) : 0}, page=${pageNumber})}"
                    th:text="${pageNumber}"
                    th:classappend="${pageNumber==menuPage.number + 1} ? 'active'">
                 </a>
