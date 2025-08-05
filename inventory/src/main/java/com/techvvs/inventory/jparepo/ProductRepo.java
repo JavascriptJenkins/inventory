@@ -43,6 +43,7 @@ public interface ProductRepo extends JpaRepository<ProductVO, Integer> {
     List<ProductVO> findAllByName(String name);
     Page<ProductVO> findAllByProducttypeidAndBatch(ProductTypeVO producttypeid, BatchVO batchVO, Pageable pageable);
 
+    Page<ProductVO> findAllByNameContainingIgnoreCaseAndBatch(String searchTerm, BatchVO batchVO, Pageable pageable);
     Page<ProductVO> findAllByNameContainingAndBatch(String searchTerm, BatchVO batchVO, Pageable pageable);
 
 

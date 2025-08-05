@@ -30,6 +30,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Component
 import org.springframework.ui.Model
 
@@ -401,9 +402,9 @@ class BatchControllerHelper {
         int pageSize = productTypeVO?.pagesize == null ? 5 : productTypeVO.pagesize;
         Pageable pageable;
         if(currentPage == 0){
-            pageable = PageRequest.of(0 , pageSize);
+            pageable = PageRequest.of(0 , pageSize, Sort.by("name").ascending()) // <-- Sorting alphabetically A-Z);
         } else {
-            pageable = PageRequest.of(currentPage - 1, pageSize);
+            pageable = PageRequest.of(currentPage - 1, pageSize, Sort.by("name").ascending()) // <-- Sorting alphabetically A-Z);
         }
 
 
@@ -433,12 +434,12 @@ class BatchControllerHelper {
         int pageSize = productTypeVO?.pagesize == null ? 5 : productTypeVO.pagesize;
         Pageable pageable;
         if(currentPage == 0){
-            pageable = PageRequest.of(0 , pageSize);
+            pageable = PageRequest.of(0 , pageSize, Sort.by("name").ascending()) // <-- Sorting alphabetically A-Z););
         } else {
-            pageable = PageRequest.of(currentPage - 1, pageSize);
+            pageable = PageRequest.of(currentPage - 1, pageSize, Sort.by("name").ascending()) // <-- Sorting alphabetically A-Z););
         }
 
-        Page<ProductVO> pageOfProduct = productRepo.findAllByNameContainingAndBatch(name, batchVO, pageable);
+        Page<ProductVO> pageOfProduct = productRepo.findAllByNameContainingIgnoreCaseAndBatch(name, batchVO, pageable);
 
 
         int totalPages = pageOfProduct.getTotalPages();
@@ -465,9 +466,9 @@ class BatchControllerHelper {
         int pageSize = productTypeVO?.pagesize == null ? 5 : productTypeVO.pagesize;;
         Pageable pageable;
         if(currentPage == 0){
-            pageable = PageRequest.of(0 , pageSize);
+            pageable = PageRequest.of(0 , pageSize, Sort.by("name").ascending()) // <-- Sorting alphabetically A-Z););
         } else {
-            pageable = PageRequest.of(currentPage - 1, pageSize);
+            pageable = PageRequest.of(currentPage - 1, pageSize, Sort.by("name").ascending()) // <-- Sorting alphabetically A-Z););
         }
 
         Page<ProductVO> pageOfProduct = productRepo.findAllByProducttypeidAndBatch(productTypeVO, batchVO, pageable);
