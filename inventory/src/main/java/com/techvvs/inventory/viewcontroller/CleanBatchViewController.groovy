@@ -120,11 +120,12 @@ public class CleanBatchViewController {
             @RequestParam("editmode") String editmode,
             @RequestParam("batchid") String batchid,
             @RequestParam("page") Optional<Integer> page,
-            @RequestParam("size") Optional<Integer> size
+            @RequestParam("size") Optional<Integer> size,
+            @RequestParam("vendorid") Optional<Integer> vendorid
 
     ){
 
-        model = batchControllerHelper.processModel(model,  batchid, editmode, page, null, false , false);
+        model = batchControllerHelper.processModel(model,  batchid, editmode, page, null, false , false, vendorid);
         return "batch/batch.html";
     }
 
@@ -715,7 +716,7 @@ public class CleanBatchViewController {
 
     ){
 
-        model = batchControllerHelper.processModel(model,  batchid, editmode, page, productTypeVO, true, false);
+        model = batchControllerHelper.processModel(model,  batchid, editmode, page, productTypeVO, true, false, Optional.empty());
         return "batch/batch.html";
     }
 
@@ -730,7 +731,7 @@ public class CleanBatchViewController {
             @RequestParam("size") Optional<Integer> size
     ){
 
-        model = batchControllerHelper.processModel(model,  batchid, editmode, page, productTypeVO, true, false);
+        model = batchControllerHelper.processModel(model,  batchid, editmode, page, productTypeVO, true, false, Optional.empty());
         // I need to do here is build a pdf / excel document, store it in uploads folder, then send a download link back to the user
 
 
@@ -756,7 +757,7 @@ public class CleanBatchViewController {
 
         techvvsAuthService.checkuserauth(model)
 
-        model = batchControllerHelper.processModel(model,  batchid, editmode, page, productTypeVO, true, false);
+        model = batchControllerHelper.processModel(model,  batchid, editmode, page, productTypeVO, true, false, Optional.empty());
         // I need to do here is build a pdf / excel document, store it in uploads folder, then send a download link back to the user
 
 
@@ -783,7 +784,7 @@ public class CleanBatchViewController {
 
     ){
 
-        model = batchControllerHelper.processModel(model,  batchid, editmode, page, productTypeVO, true, true);
+        model = batchControllerHelper.processModel(model,  batchid, editmode, page, productTypeVO, true, true, Optional.empty());
         return "batch/batch.html";
     }
 
@@ -806,7 +807,7 @@ public class CleanBatchViewController {
 
         boolean success = false
 
-        model = batchControllerHelper.processModel(model,  batchid, editmode, page, productTypeVO, true, false);
+        model = batchControllerHelper.processModel(model,  batchid, editmode, page, productTypeVO, true, false, Optional.empty());
 
         switch(productTypeVO.menutype){
             case controllerConstants.ALL:
@@ -847,7 +848,7 @@ public class CleanBatchViewController {
         // todo: all we are doing is routing the button to this method and then generating the barcode sheets for this batch
 
 
-        model = batchControllerHelper.processModel(model,  batchid, editmode, page, productTypeVO, true, false);
+        model = batchControllerHelper.processModel(model,  batchid, editmode, page, productTypeVO, true, false, Optional.empty());
 
         switch(productTypeVO.menutype){
             case controllerConstants.ALL:
@@ -881,7 +882,7 @@ public class CleanBatchViewController {
         // todo: all we are doing is routing the button to this method and then generating the barcode sheets for this batch
 
 
-        model = batchControllerHelper.processModel(model,  batchid, editmode, page, productTypeVO, true, false);
+        model = batchControllerHelper.processModel(model,  batchid, editmode, page, productTypeVO, true, false, Optional.empty());
 
         switch(productTypeVO.menutype){
             case controllerConstants.SINGLE_PAGE:

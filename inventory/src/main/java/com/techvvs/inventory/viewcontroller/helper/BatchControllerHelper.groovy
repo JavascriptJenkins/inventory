@@ -7,6 +7,7 @@ import com.techvvs.inventory.jparepo.BatchTypeRepo
 import com.techvvs.inventory.jparepo.ProductRepo
 import com.techvvs.inventory.jparepo.ProductTypeRepo
 import com.techvvs.inventory.jparepo.SystemUserRepo
+import com.techvvs.inventory.jparepo.VendorRepo
 import com.techvvs.inventory.labels.service.LabelPrintingService
 import com.techvvs.inventory.model.BatchTypeVO
 import com.techvvs.inventory.model.BatchVO
@@ -15,6 +16,7 @@ import com.techvvs.inventory.model.ProductTypeVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.SystemUserDAO
 import com.techvvs.inventory.model.TransactionVO
+import com.techvvs.inventory.model.VendorVO
 import com.techvvs.inventory.modelnonpersist.FileVO
 import com.techvvs.inventory.qrcode.QrCodeService
 import com.techvvs.inventory.qrcode.impl.QrCodeBuilder
@@ -59,6 +61,9 @@ class BatchControllerHelper {
 
     @Autowired
     ProductTypeRepo productTypeRepo
+
+    @Autowired
+    VendorRepo vendorRepo
 
     @Autowired
     BatchRepo batchRepo
@@ -195,7 +200,8 @@ class BatchControllerHelper {
                        Optional<Integer> page,
                        ProductTypeVO productTypeVO,
                        boolean isFilteredView,
-                       boolean isProductNameLikeSearch
+                       boolean isProductNameLikeSearch,
+                       Optional<Integer> vendorid
 
     ){
 
@@ -210,11 +216,11 @@ class BatchControllerHelper {
             } else if (hasProductTypeId) {
                 bindFilterProducts(model, page, productTypeVO, batchVO);
             } else {
-                bindProducts(model, page, productTypeVO, batchVO);
+                bindProducts(model, page, productTypeVO, batchVO, vendorid);
             }
             model.addAttribute("searchproducttype", productTypeVO); // use the existing object for submitting a search term
         } else {
-            bindProducts(model, page, productTypeVO, batchVO);
+            bindProducts(model, page, productTypeVO, batchVO, vendorid);
             model.addAttribute("searchproducttype", new ProductTypeVO()); // create a new object for submitting a search term
         }
 
@@ -337,6 +343,7 @@ class BatchControllerHelper {
         model.addAttribute("batch", result);
         bindBatchTypes(model)
         bindProductTypes(model)
+        bindVendors(model)
         // once products are bound, add the static data
         calculateStaticPageData(model, result)
         return result
@@ -353,6 +360,12 @@ class BatchControllerHelper {
         // get all the batchtype objects and bind them to select dropdown
         List<ProductTypeVO> productTypeVOS = productTypeRepo.findAll();
         model.addAttribute("producttypelist", productTypeVOS);
+    }
+
+    void bindVendors(Model model){
+        // get all the batchtype objects and bind them to select dropdown
+        List<VendorVO> vendorList = vendorRepo.findAll();
+        model.addAttribute("vendors", vendorList);
     }
 
 
@@ -394,8 +407,8 @@ class BatchControllerHelper {
         model.addAttribute("productPage", pageOfProduct);
     }
 
-    void bindProducts(Model model, Optional<Integer> page,ProductTypeVO productTypeVO, BatchVO batchVO){
-
+    void bindProducts(Model model, Optional<Integer> page,ProductTypeVO productTypeVO, BatchVO batchVO, Optional<Integer> vendorid){
+        Integer parsedVendorId = (vendorid.present && vendorid.get() > 0) ? vendorid.get() : null
 
         //pagination
         int currentPage = page.orElse(0);
@@ -409,7 +422,8 @@ class BatchControllerHelper {
 
 
         // this needs to only find these based on their batchid
-        Page<ProductVO> pageOfProduct = productRepo.findAllByBatch(batchVO,pageable);
+        Page<ProductVO> pageOfProduct = productRepo.findAllByBatchAndOptionalVendor(batchVO,parsedVendorId,pageable);
+//        Page<ProductVO> pageOfProduct = productRepo.findAllByBatch(batchVO,pageable);
 
         int totalPages = pageOfProduct.getTotalPages();
 
@@ -419,6 +433,8 @@ class BatchControllerHelper {
             pageNumbers.add(totalPages);
             totalPages = totalPages - 1;
         }
+
+        model.addAttribute("vendorid", parsedVendorId)
 
         model.addAttribute("pageNumbers", pageNumbers);
         model.addAttribute("page", currentPage);

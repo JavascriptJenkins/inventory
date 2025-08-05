@@ -60,6 +60,20 @@ public interface ProductRepo extends JpaRepository<ProductVO, Integer> {
 
     Page<ProductVO> findAllByBatch(BatchVO batchVO, Pageable pageable);
 
+    @Query("""
+    SELECT p
+    FROM ProductVO p
+    WHERE p.batch = :batch
+      AND (:vendorid IS NULL OR :vendorid = 0 OR p.vendorvo.vendorid = :vendorid)
+""")
+    Page<ProductVO> findAllByBatchAndOptionalVendor(
+            @Param("batch") BatchVO batch,
+            @Param("vendorid") Integer vendorid,
+            Pageable pageable
+    );
+
+
+
     @Query("SELECT p FROM ProductVO p WHERE p.batch = :batchVO AND LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))")
     Page<ProductVO> searchByBatchAndName(@Param("batchVO") BatchVO batchVO, @Param("name") String name, Pageable pageable);
 
