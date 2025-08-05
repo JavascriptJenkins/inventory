@@ -399,7 +399,7 @@ class BatchControllerHelper {
 
         //pagination
         int currentPage = page.orElse(0);
-        int pageSize = productTypeVO?.pagesize == null ? 5 : productTypeVO.pagesize;
+        int pageSize = productTypeVO?.pagesize == null ? 200 : productTypeVO.pagesize;
         Pageable pageable;
         if(currentPage == 0){
             pageable = PageRequest.of(0 , pageSize, Sort.by("name").ascending()) // <-- Sorting alphabetically A-Z);
