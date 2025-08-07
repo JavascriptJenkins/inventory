@@ -5,6 +5,7 @@ import com.techvvs.inventory.jparepo.ProductRepo
 import com.techvvs.inventory.jparepo.ReturnRepo
 import com.techvvs.inventory.jparepo.SystemUserRepo
 import com.techvvs.inventory.jparepo.TransactionRepo
+import com.techvvs.inventory.model.CustomerVO
 import com.techvvs.inventory.model.DiscountVO
 import com.techvvs.inventory.model.ProductVO
 import com.techvvs.inventory.model.ReturnVO
@@ -139,6 +140,19 @@ class TransactionHelper {
         return transactionRepo.findFilteredTransactions(custId, prodId, batchId, pageable)
     }
 
+    @Transactional
+    void sendTextMessageWithContactInfo(CustomerVO customerVO){
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        SystemUserDAO systemUserDAO = systemUserRepo.findByEmail(authentication.getPrincipal().username)
+
+        boolean isDev1 = appConstants.DEV_1.equals(env.getProperty("spring.profiles.active"));
+
+        // SystemUserDAO systemUserDAO, String token, boolean isDev1
+        // send a text message with a download link
+        textUtil.sendOutCustomerInfoFromConferenceSMS(systemUserDAO.phone, customerVO, isDev1)
+    }
 
 
     @Transactional

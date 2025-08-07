@@ -4,6 +4,7 @@ package com.techvvs.inventory.util;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.techvvs.inventory.jparepo.SystemUserRepo;
 import com.techvvs.inventory.jparepo.TokenRepo;
+import com.techvvs.inventory.model.CustomerVO;
 import com.techvvs.inventory.model.SystemUserDAO;
 import com.techvvs.inventory.model.TokenDAO;
 import com.techvvs.inventory.security.JwtTokenProvider;
@@ -76,6 +77,29 @@ public class TwilioTextUtil {
 
         return "success";
     }
+
+    public String sendCustomerInfoFromConferenceToMyPhone(String phone, String message, boolean isDev1) {
+
+        if(!isDev1){
+            send(phone, message);
+        } else {
+            System.out.println("NOT sending your customer info because we are in dev1");
+        }
+
+        return "success";
+    }
+
+    public String sendCustomerInfoFromConferenceWelcomeMessage(String phone, String message, boolean isDev1) {
+
+        if(!isDev1){
+            send(phone, message);
+        } else {
+            System.out.println("NOT sending welcome text because we are in dev1");
+        }
+
+        return "success";
+    }
+
 
     // todo: enforce country code
     public String sendValidationText(SystemUserDAO systemUserDAO, String token, boolean isDev1) {
@@ -353,5 +377,70 @@ public class TwilioTextUtil {
             e.printStackTrace();
             return null;
         }
+    }
+
+
+
+    public String sendOutCustomerInfoFromConferenceSMS(String phonenumber, CustomerVO customerVO, boolean isDev1){
+        // save a token value to a username and then send a text message
+
+        String cellphonetoken = "";
+        String result = "";
+        String messagetext = "";
+        boolean hasphone = false;
+        try {
+
+            // get the customer info and put it in a message here
+
+            StringBuilder sb = new StringBuilder();
+
+            sb.append("Newsletter Signup Info: ");
+
+            sb.append("\nName: ");
+            sb.append(customerVO.getName());
+            sb.append("\nEmail: ");
+            sb.append(customerVO.getEmail());
+
+            if (customerVO.getPhone() != null && !customerVO.getPhone().trim().isEmpty()) {
+                sb.append("\nPhone: ");
+                sb.append(customerVO.getPhone());
+                hasphone = true;
+            }
+
+            if (customerVO.getNotes() != null && !customerVO.getNotes().trim().isEmpty()) {
+                sb.append("\nNotes: ");
+                sb.append(customerVO.getNotes());
+            }
+
+
+
+            messagetext = sb.toString();
+
+
+
+        } catch(Exception ex){
+            System.out.println("error inserting token into database");
+        } finally{
+            // only send the text message after everything else went smoothly
+            if(!isDev1){
+                result = sendCustomerInfoFromConferenceToMyPhone(phonenumber, messagetext, isDev1);
+
+
+                if(hasphone){
+                    messagetext = "Hey "+customerVO.getName()+" it was great to meet you at the conference.  Call or text me anytime to talk about stocking your dispensary and getting access to my METRC compliance POS system! " +
+                            "My name is Peter McMahon and my email is admin@techvvs.io!" +
+                            "";
+                    result = sendCustomerInfoFromConferenceWelcomeMessage(customerVO.getPhone(), messagetext, isDev1);
+                }
+
+
+            } else {
+                result = "success"; // set it to success if we are in dev1 and skipped sending the validation text
+                System.out.println("Did NOT send customer info text because we in dev1");
+            }
+            System.out.println("Send Customer Info Text with result: "+result);
+        }
+
+        return "success";
     }
 }
