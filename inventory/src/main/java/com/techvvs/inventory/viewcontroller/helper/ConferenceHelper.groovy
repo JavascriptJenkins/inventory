@@ -14,7 +14,7 @@ class ConferenceHelper {
     boolean sendCustomerInfoToMyPhoneAndEmail(CustomerVO customerVO){
 
         transactionHelper.sendTextMessageWithContactInfo(customerVO)
-//        transactionHelper.sendEmailWithDownloadLink(menuoption.email, dir)
+        transactionHelper.sendEmailWithCustomerInfo(customerVO)
 
 
         return true

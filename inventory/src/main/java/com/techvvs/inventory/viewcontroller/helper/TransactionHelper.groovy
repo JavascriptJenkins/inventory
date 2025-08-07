@@ -175,6 +175,10 @@ class TransactionHelper {
         emailService.sendDownloadLinkEmail(email, filename)
     }
 
+    void sendEmailWithCustomerInfo(CustomerVO customerVO){
+        emailService.sendConferenceEmailToMeAndCustomer(customerVO)
+    }
+
     void viewInvoice(String email, String filename){
        // emailService.sendDownloadLinkEmail(email, filename)
     }

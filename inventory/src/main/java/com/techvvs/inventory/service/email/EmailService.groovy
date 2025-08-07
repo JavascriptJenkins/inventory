@@ -2,6 +2,7 @@ package com.techvvs.inventory.service.email
 
 import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.jparepo.TokenRepo
+import com.techvvs.inventory.model.CustomerVO
 import com.techvvs.inventory.model.SystemUserDAO
 import com.techvvs.inventory.model.TokenDAO
 import com.techvvs.inventory.security.JwtTokenProvider
@@ -57,6 +58,55 @@ class EmailService {
 
 
 
+
+    boolean sendConferenceEmailToMeAndCustomer(CustomerVO customerVO) {
+
+
+        boolean hasphone = false
+        // get the customer info and put it in a message here
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("Newsletter Signup Info: ");
+
+        sb.append("\nName: ");
+        sb.append(customerVO.getName());
+        sb.append("\nEmail: ");
+        sb.append(customerVO.getEmail());
+
+        if (customerVO.getPhone() != null && !customerVO.getPhone().trim().isEmpty()) {
+            sb.append("\nPhone: ");
+            sb.append(customerVO.getPhone());
+            hasphone = true;
+        }
+
+        if (customerVO.getNotes() != null && !customerVO.getNotes().trim().isEmpty()) {
+            sb.append("\nNotes: ");
+            sb.append(customerVO.getNotes());
+        }
+
+
+
+        String messagetext = sb.toString();
+
+
+
+        // send email to me with the info
+        emailUtil.sendEmail(messagetext,
+                "admin@techvvs.io",
+                "New Tulip Conference Signup");
+
+
+        messagetext = "Hey great to meet you "+customerVO.getName()+"! " + "Email me anytime to gain access to the " +
+                "Tulip METRC compliance platform, or to stock your dispensary in MN! "
+
+        // send email to the customer
+        emailUtil.sendEmail(messagetext,
+                customerVO.getEmail(),
+                "Tulip Wholesale and METRC compliance platform for MN");
+
+        return true
+    }
 
 
 }
