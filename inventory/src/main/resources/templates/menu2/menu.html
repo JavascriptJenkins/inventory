@@ -461,6 +461,33 @@
 
     </style>
 
+    <style>
+        .attribute-filter {
+          font-size: 1.1rem;
+          padding: 0.6rem 1.2rem;
+          border-radius: 12px;
+          transition: all 0.3s ease;
+        }
+
+        .attribute-filter.active {
+          background-color: #0d6efd !important;
+          color: #fff !important;
+          box-shadow: 0 0 0.5rem 0.25rem rgba(13, 110, 253, 0.5);
+          animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+          0% {
+            box-shadow: 0 0 0.5rem 0.25rem rgba(13, 110, 253, 0.5);
+          }
+          50% {
+            box-shadow: 0 0 1.25rem 0.5rem rgba(13, 110, 253, 0.3);
+          }
+          100% {
+            box-shadow: 0 0 0.5rem 0.25rem rgba(13, 110, 253, 0.5);
+          }
+        }
+    </style>
 
 
 
@@ -606,6 +633,31 @@
     <!-- MENU GRID ENDS -->
 
 
+    <!-- START THE FILTER BUBBLES -->
+<!--    <div class="d-flex flex-wrap mb-4" id="attributeFilters">-->
+<!--        <button class="btn btn-sm btn-outline-light me-2 mb-2"-->
+<!--                th:each="attr : ${uniqueAttributeList}"-->
+<!--                th:text="${attr.name + ': ' + attr.value}"-->
+<!--                th:attr="data-filter=${attr.name + ':' + attr.value}">Filter</button>-->
+
+<!--        <button class="btn btn-sm btn-secondary mb-2" id="clearFilters">Clear Filters</button>-->
+<!--    </div>-->
+
+        <div style="margin-top: 40px; " class="d-flex flex-wrap mb-4" id="attributeFilters">
+
+            <button class="btn btn-outline-light me-2 mb-2 attribute-filter"
+                    th:each="attr : ${uniqueAttributeList}"
+                    th:text="${attr.name + ': ' + attr.value}"
+                    th:attr="data-attribute=${attr.name + ':' + attr.value}">
+                Filter
+            </button>
+            <button class="btn btn-secondary mb-2" id="clearAttributeFilters">Clear Filters</button>
+        </div>
+
+
+
+    <!-- END THE FILTER BUBBLES -->
+
     <!-- NEW PRODUCT GRID -->
     <div class="container mt-5">
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -619,16 +671,20 @@
             </select>
         </div>
         <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
-            <div class="col" th:each="product : ${menu.menu_product_list}"
+            <div class="col menu-product"
+                 th:each="product : ${menu.menu_product_list}"
                  th:attr="data-type=${product.producttypeid?.producttypeid},
-              data-quantity=${product.quantityremaining}">
+              data-quantity=${product.quantityremaining},
+              data-attributes=${product.attributeDataString}">
+
+
                 <div class="card h-100" style="background-color: rgba(34, 139, 34, 0.85); border-radius: 15px;">
                     <div th:if="${product.primaryphoto}">
                         <img th:src="${product.primaryphoto}" class="card-img-top" alt="Product Image"
                              style="height: 280px; object-fit: cover;">
                     </div>
                     <div th:if="${product.primaryphoto == null}" class="no-photo">No photo found</div>
-                    <div class="card-body text-white text-center">
+                    <div class="card-body text-white text-center ">
                         <h5 class="card-title" th:text="${product.name}">Product Name</h5>
                         <p class="card-text"><strong>Qty:</strong> <span th:text="${product.quantityremaining}"></span></p>
 <!--                        <p>DEBUG NoPricesView: <span th:text="'[' + ${NoPricesView} + ']'"></span></p>-->
@@ -640,7 +696,8 @@
                             <a th:href="@{/video/product(productid=${product.product_id}, menuid=${menu.menuid}, shoppingtoken=${shoppingtoken})}" class="btn btn-outline-light">Videos</a>
                             <a th:href="@{/photo/product(productid=${product.product_id}, menuid=${menu.menuid}, shoppingtoken=${shoppingtoken})}" class="btn btn-outline-light">Photos</a>
                             <a th:href="@{/document/product(productid=${product.product_id}, menuid=${menu.menuid}, shoppingtoken=${shoppingtoken})}" class="btn btn-outline-light">Documents</a>
-                            <a href="javascript:void(0);" class="btn btn-warning add-to-cart-btn mt-2"
+                            <a href="javascript:void(0);" class="menu-product btn btn-warning add-to-cart-btn mt-2"
+                               th:data-attributes="${product.attributeDataString}"
                                th:data-product-id="${product.product_id}"
                                th:data-cart-id="${cartid}"
                                th:data-shopping-token-id="${shoppingtoken}"
@@ -1053,6 +1110,30 @@
         </div>
     </div>
 
+    <!-- START JAVASCRIPT FOR FILTER BUBBLES PRODUCT ATTRIBUTES -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const filterButtons = document.querySelectorAll('#attributeFilters [data-filter]');
+            const clearButton = document.getElementById('clearFilters');
+            const allProducts = document.querySelectorAll('[data-attributes]');
+
+            filterButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const filter = button.getAttribute('data-filter');
+                    allProducts.forEach(card => {
+                        const attrs = card.getAttribute('data-attributes') || '';
+                        card.style.display = attrs.includes(filter) ? '' : 'none';
+                    });
+                });
+            });
+
+            clearButton.addEventListener('click', () => {
+                allProducts.forEach(card => card.style.display = '');
+            });
+        });
+    </script>
+
+    <!-- END JAVASCRIPT FOR FILTER BUBBLES PRODUCT ATTRIBUTES -->
 
     <script>
         // JavaScript for toggle animations
@@ -1818,6 +1899,125 @@
       scrollBtn.style.display = (window.scrollY > 100) ? "block" : "none";
     });
 </script>
+
+<!--<script>-->
+<!--    const activeFilters = new Set();-->
+
+<!--    function applyFilters() {-->
+<!--      const allProducts = document.querySelectorAll('.menu-product');-->
+
+<!--      allProducts.forEach(product => {-->
+<!--        const productAttributes = product.dataset.attributes?.split(',') || [];-->
+
+<!--        // Show if product includes ALL active filters-->
+<!--        const matches = [...activeFilters].every(filter =>-->
+<!--          productAttributes.includes(filter)-->
+<!--        );-->
+
+<!--        product.style.display = matches || activeFilters.size === 0 ? 'block' : 'none';-->
+<!--      });-->
+<!--    }-->
+
+<!--    // Handle filter button clicks-->
+<!--    document.querySelectorAll('#attributeFilters button[data-filter]').forEach(button => {-->
+<!--      button.addEventListener('click', function () {-->
+<!--        const filter = this.dataset.filter;-->
+
+<!--        if (activeFilters.has(filter)) {-->
+<!--          activeFilters.delete(filter);-->
+<!--          this.classList.remove('btn-light');-->
+<!--          this.classList.add('btn-outline-light');-->
+<!--        } else {-->
+<!--          activeFilters.add(filter);-->
+<!--          this.classList.remove('btn-outline-light');-->
+<!--          this.classList.add('btn-light');-->
+<!--        }-->
+
+<!--        applyFilters();-->
+<!--      });-->
+<!--    });-->
+
+<!--    // Clear filters-->
+<!--    document.getElementById('clearFilters').addEventListener('click', () => {-->
+<!--      activeFilters.clear();-->
+<!--      document.querySelectorAll('#attributeFilters button[data-filter]').forEach(btn => {-->
+<!--        btn.classList.remove('btn-light');-->
+<!--        btn.classList.add('btn-outline-light');-->
+<!--      });-->
+
+<!--      applyFilters();-->
+<!--    });-->
+<!--</script>-->
+<script>
+    const activeAttributeFilters = new Set();
+    let selectedTypeFilter = null;
+
+    function applyFilters() {
+      document.querySelectorAll('.menu-product').forEach(product => {
+        const productType = product.getAttribute('data-type');
+        const attributeString = product.getAttribute('data-attributes') || "";
+        const productAttributes = attributeString.split(',').map(a => a.trim().toLowerCase());
+
+        const matchesType = !selectedTypeFilter || productType === selectedTypeFilter;
+        const matchesAttributes = activeAttributeFilters.size === 0 ||
+          [...activeAttributeFilters].some(filter => productAttributes.includes(filter.toLowerCase()));
+
+        product.classList.toggle('d-none', !(matchesType && matchesAttributes));
+      });
+    }
+
+    // Attribute filters
+    document.querySelectorAll('.attribute-filter').forEach(button => {
+      button.addEventListener('click', function () {
+        const attr = this.getAttribute('data-attribute');
+        if (activeAttributeFilters.has(attr)) {
+          activeAttributeFilters.delete(attr);
+          this.classList.remove('btn-light', 'active');
+
+          this.classList.add('btn-outline-light');
+        } else {
+          activeAttributeFilters.add(attr);
+          this.classList.remove('btn-outline-light');
+          this.classList.add('btn-light', 'active'); // ✅ includes .active for styling
+
+        }
+        applyFilters();
+      });
+    });
+
+    document.getElementById('clearAttributeFilters').addEventListener('click', () => {
+      activeAttributeFilters.clear();
+      document.querySelectorAll('.attribute-filter').forEach(btn => {
+        btn.classList.remove('btn-light', 'active');  // 🧼 removes aura and light styling
+        btn.classList.add('btn-outline-light');
+      });
+      applyFilters();
+    });
+
+    // Product type filters (you already have this part working)
+    document.querySelectorAll('.product-type-filter').forEach(button => {
+      button.addEventListener('click', function () {
+        selectedTypeFilter = this.getAttribute('data-type');
+        document.querySelectorAll('.product-type-filter').forEach(btn => btn.classList.remove('active'));
+        this.classList.add('active');
+        applyFilters();
+      });
+    });
+
+    document.getElementById('clearTypeFilter').addEventListener('click', function () {
+      selectedTypeFilter = null;
+      document.querySelectorAll('.product-type-filter').forEach(btn => btn.classList.remove('active'));
+      applyFilters();
+    });
+</script>
+
+
+
+
+
+
+
+
 </body>
 
 </html>
