@@ -334,6 +334,87 @@
             background-color: #555;
             transform: scale(1.1);
         }
+#scrollTopBtn {
+  font-size: 3.5rem;
+  padding: 24px;
+  background-color: rgba(242, 94, 90, 0.9) !important;
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0 0 18px rgba(242, 94, 90, 0.7);
+  animation: scrollPulse 1.6s ease-in-out infinite;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+#scrollTopBtn:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 30px rgba(242, 94, 90, 1);
+}
+
+/* Normal slow pulse */
+@keyframes scrollPulse {
+  0%   { box-shadow: 0 0 15px rgba(242, 94, 90, 0.5); }
+  50%  { box-shadow: 0 0 35px rgba(242, 94, 90, 1); }
+  100% { box-shadow: 0 0 15px rgba(242, 94, 90, 0.5); }
+}
+
+/* Faster pulse for urgent state */
+@keyframes scrollPulseFast {
+  0%   { box-shadow: 0 0 15px rgba(242, 94, 90, 0.5); }
+  50%  { box-shadow: 0 0 40px rgba(242, 94, 90, 1); }
+  100% { box-shadow: 0 0 15px rgba(242, 94, 90, 0.5); }
+}
+
+/* Class to trigger faster animation */
+#scrollTopBtn.fast-pulse {
+  animation: scrollPulseFast 0.8s ease-in-out infinite;
+}
+
+.clear-filters-btn {
+    background-color: #6c757d; /* Default Bootstrap secondary */
+    background-color: #b23b3b; /* Distinct reddish tone */
+    color: #fff;
+    font-size: 1.2rem; /* Bigger text */
+    padding: 0.75rem 1.5rem; /* Bigger click area */
+    border-radius: 10px;
+    transition: all 0.2s ease;
+}
+
+.clear-filters-btn:hover {
+    background-color: #d94b4b; /* Brighter red on hover */
+    transform: scale(1.05);
+}
+
+.clear-filters-btn i {
+    font-size: 1.3rem; /* Make icon match the text size */
+    vertical-align: middle;
+}
+#productTypeFilter {
+    font-size: 1.2rem;
+    padding: 0.6rem 1.2rem;
+    border-radius: 10px;
+    background-color: #2b2b2b;
+    color: #fff;
+    border: 1px solid rgba(242, 94, 90, 0.6);
+    transition: all 0.3s ease;
+    box-shadow: none; /* default, no glow */
+}
+
+#productTypeFilter.active {
+    box-shadow: 0 0 15px rgba(242, 94, 90, 0.7);
+    animation: dropdownPulse 1.8s ease-in-out infinite;
+}
+
+#productTypeFilter:hover {
+    box-shadow: 0 0 25px rgba(242, 94, 90, 1);
+}
+
+/* Pulsing red animation */
+@keyframes dropdownPulse {
+    0%   { box-shadow: 0 0 12px rgba(242, 94, 90, 0.5); }
+    50%  { box-shadow: 0 0 28px rgba(242, 94, 90, 1); }
+    100% { box-shadow: 0 0 12px rgba(242, 94, 90, 0.5); }
+}
+
     </style>
 
     <style>
@@ -487,6 +568,135 @@
             box-shadow: 0 0 0.5rem 0.25rem rgba(13, 110, 253, 0.5);
           }
         }
+
+
+        .gameboy-font-class {
+          font-family: 'Press Start 2P', cursive;
+          color: #f25e5a;
+          text-align: center;
+          margin: -10px 0 40px 0;
+          font-size: 2rem;
+          text-shadow: 2px 2px 0 #000;
+          animation: pulseText 2s infinite ease-in-out;
+        }
+
+        @keyframes pulseText {
+          0%   { transform: scale(1); }
+          50%  { transform: scale(1.1); }
+          100% { transform: scale(1); }
+        }
+
+        #productTypeFilter {
+            font-size: 1.5rem;   /* Larger text */
+            padding: 1rem 2rem;  /* Taller & wider */
+            min-width: 250px;    /* Wider box */
+        }
+
+        #attributeFilters .attribute-filter,
+        #clearAttributeFilters {
+            font-size: 1.4rem;           /* Bigger text */
+            padding: 0.8rem 1.6rem;      /* Bigger click area */
+            border-radius: 12px;         /* Rounded edges */
+            text-shadow: 0 0 8px #f25e5a; /* Glow effect for text */
+            box-shadow: 0 0 15px rgba(242, 94, 90, 0.7); /* Outer glow */
+            transition: all 0.3s ease;
+        }
+
+        #attributeFilters .attribute-filter:hover,
+        #clearAttributeFilters:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 25px rgba(242, 94, 90, 1); /* Stronger glow on hover */
+        }
+
+
+        :root {
+  --accent: #f25e5a; /* same red as gameboy-font-class */
+}
+
+#scrollTopBtn {
+  font-size: 3.5rem;
+  padding: 24px;
+  background-color: rgba(242, 94, 90, 0.9) !important;
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0 0 18px rgba(242, 94, 90, 0.7);
+  animation: scrollPulse 1.6s ease-in-out infinite;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, font-size 0.2s ease, padding 0.2s ease;
+}
+
+#scrollTopBtn:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 30px rgba(242, 94, 90, 1);
+}
+
+/* Normal slow pulse */
+@keyframes scrollPulse {
+  0%   { box-shadow: 0 0 15px rgba(242, 94, 90, 0.5); }
+  50%  { box-shadow: 0 0 35px rgba(242, 94, 90, 1); }
+  100% { box-shadow: 0 0 15px rgba(242, 94, 90, 0.5); }
+}
+
+/* Faster pulse for urgent state */
+@keyframes scrollPulseFast {
+  0%   { box-shadow: 0 0 15px rgba(242, 94, 90, 0.5); }
+  50%  { box-shadow: 0 0 40px rgba(242, 94, 90, 1); }
+  100% { box-shadow: 0 0 15px rgba(242, 94, 90, 0.5); }
+}
+
+/* Fast mode = bigger and faster */
+#scrollTopBtn.fast-pulse {
+  font-size: 4rem;      /* bigger arrow */
+  padding: 28px;        /* bigger click area */
+  animation: scrollPulseFast 0.8s ease-in-out infinite;
+}
+/* Active filter = reddish glow */
+.attribute-filter.active {
+  background-color: rgba(242, 94, 90, 0.25) !important;
+  color: #fff !important;
+  border-color: #f25e5a !important;
+  box-shadow: 0 0 12px rgba(242, 94, 90, 0.9);
+  text-shadow: none;
+  animation: none; /* stop pulsing when active */
+}
+
+/* Default pulsing glow for non-active filters */
+.attribute-filter {
+  font-size: 1.4rem;
+  padding: 0.85rem 1.75rem;
+  border-radius: 12px;
+  text-shadow: 0 0 8px #f25e5a;
+  box-shadow: 0 0 15px rgba(242, 94, 90, 0.7);
+  animation: filterPulse 1.8s ease-in-out infinite;
+  border: 1px solid rgba(242, 94, 90, 0.6);
+  transition: all 0.3s ease;
+}
+
+@keyframes filterPulse {
+  0%   { box-shadow: 0 0 10px rgba(242, 94, 90, 0.45); }
+  50%  { box-shadow: 0 0 22px rgba(242, 94, 90, 0.9); }
+  100% { box-shadow: 0 0 10px rgba(242, 94, 90, 0.45); }
+}
+/* ---- Click-to-enlarge overlay (matches your red glow theme) ---- */
+.menu-photo { cursor: zoom-in; }
+#photoPopupOverlay {
+  position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85);
+  display: none; justify-content: center; align-items: center; z-index: 1050;
+}
+#photoPopupOverlay .popup-content {
+  position: relative; background: #1a1a1a; padding: 16px; border-radius: 14px;
+  max-width: 92%; max-height: 92%;
+  box-shadow: 0 0 24px rgba(242, 94, 90, 0.45); border: 1px solid #333;
+}
+#photoPopupOverlay .popup-img {
+  max-width: 100%; max-height: 78vh; border-radius: 10px; border: 4px solid #676767;
+}
+#photoPopupOverlay .popup-close {
+  position: absolute; top: 10px; right: 10px; width: 36px; height: 36px;
+  border-radius: 50%; display: grid; place-items: center; cursor: pointer;
+  color: #fff; font-size: 24px; font-weight: bold;
+  background: rgba(242, 94, 90, 0.15); border: 1px solid rgba(242, 94, 90, .6);
+}
+
     </style>
 
 
@@ -536,6 +746,7 @@
             });
         });
     </script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
 
 
@@ -548,7 +759,7 @@
 
 <div class="container">
     <!-- Modernized menu header -->
-    <div class="menu-header">Menu</div>
+    <div class="gameboy-font-class" style="margin-top: 5rem;">Menu</div>
 
 
 
@@ -574,7 +785,8 @@
                                  style="background-color: rgba(34, 139, 34, 0.85); border-radius: 15px;">
                                 <div th:if="${product.primaryphoto}">
                                     <img th:src="${product.primaryphoto}"
-                                         class="card-img-top"
+                                         class="card-img-top menu-photo"
+                                         th:attr="data-photo-url=${product.primaryphoto}"
                                          alt="Product Image"
                                          style="height: 280px; object-fit: cover;">
                                 </div>
@@ -642,17 +854,20 @@
 
 <!--        <button class="btn btn-sm btn-secondary mb-2" id="clearFilters">Clear Filters</button>-->
 <!--    </div>-->
+    <h4 class="gameboy-font-class" style="margin-top: 40px">Quick Filter Buttons</h4>
+    <div style="margin-top: 40px;" class="d-flex flex-wrap justify-content-center mb-4" id="attributeFilters">
+        <button class="btn btn-outline-light me-2 mb-2 attribute-filter"
+                th:each="attr : ${uniqueAttributeList}"
+                th:text="${attr.name + ': ' + attr.value}"
+                th:attr="data-attribute=${attr.name + ':' + attr.value}">
+            Filter
+        </button>
+        <button class="btn btn-secondary mb-2" id="clearAttributeFilters">
+            <i class="bi bi-sliders me-1"></i> Clear Filters
+        </button>
 
-        <div style="margin-top: 40px; " class="d-flex flex-wrap mb-4" id="attributeFilters">
+    </div>
 
-            <button class="btn btn-outline-light me-2 mb-2 attribute-filter"
-                    th:each="attr : ${uniqueAttributeList}"
-                    th:text="${attr.name + ': ' + attr.value}"
-                    th:attr="data-attribute=${attr.name + ':' + attr.value}">
-                Filter
-            </button>
-            <button class="btn btn-secondary mb-2" id="clearAttributeFilters">Clear Filters</button>
-        </div>
 
 
 
@@ -660,16 +875,18 @@
 
     <!-- NEW PRODUCT GRID -->
     <div class="container mt-5">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h4 class="text-white">Full Product Menu</h4>
-            <select id="productTypeFilter" class="form-select w-auto">
-                <option value="all">All Types</option>
+        <div class="text-center mb-4">
+            <h4 class="gameboy-font-class">Product Type Filter</h4>
+            <select id="productTypeFilter" class="form-select form-select-lg w-auto d-inline-block mt-2">
+                <option value="all">Show All Product Types</option>
                 <option th:each="type : ${producttypes}"
                         th:value="${type.producttypeid}"
                         th:text="${type.name}">
                 </option>
             </select>
         </div>
+
+
         <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
             <div class="col menu-product"
                  th:each="product : ${menu.menu_product_list}"
@@ -680,9 +897,13 @@
 
                 <div class="card h-100" style="background-color: rgba(34, 139, 34, 0.85); border-radius: 15px;">
                     <div th:if="${product.primaryphoto}">
-                        <img th:src="${product.primaryphoto}" class="card-img-top" alt="Product Image"
+                        <img th:src="${product.primaryphoto}"
+                             class="card-img-top menu-photo"
+                             th:attr="data-photo-url=${product.primaryphoto}"
+                             alt="Product Image"
                              style="height: 280px; object-fit: cover;">
                     </div>
+
                     <div th:if="${product.primaryphoto == null}" class="no-photo">No photo found</div>
                     <div class="card-body text-white text-center ">
                         <h5 class="card-title" th:text="${product.name}">Product Name</h5>
@@ -1868,6 +2089,14 @@
         <a th:href="${successLink}" th:text="${successMessage}" class="text-success" style="text-decoration: none;"></a>
     </h1>
 </div>
+
+<div id="photoPopupOverlay">
+    <div class="popup-content">
+        <div class="popup-close" id="popupCloseBtn">&times;</div>
+        <img id="popupPhotoDisplay" class="popup-img" src="" alt="Enlarged Photo" />
+    </div>
+</div>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
       const filter = document.getElementById('productTypeFilter');
@@ -1886,6 +2115,19 @@
 
 
     });
+
+    const typeFilterSelect = document.getElementById('productTypeFilter');
+
+if (typeFilterSelect) {
+    typeFilterSelect.addEventListener('change', function () {
+        if (this.value !== 'all') {
+            this.classList.add('active'); // Start pulsing glow
+        } else {
+            this.classList.remove('active'); // Stop pulsing glow
+        }
+    });
+}
+
 </script>
 
 
@@ -2015,8 +2257,76 @@
 
 
 
+<script>
+    window.addEventListener('scroll', () => {
+      const scrollBtn = document.getElementById('scrollTopBtn');
+      if (window.scrollY > 1500) {
+        scrollBtn.classList.add('fast-pulse');
+      } else {
+        scrollBtn.classList.remove('fast-pulse');
+      }
+    });
+
+    document.getElementById('clearAttributeFilters').addEventListener('click', () => {
+  // Clear attribute filters
+  activeAttributeFilters.clear();
+  document.querySelectorAll('.attribute-filter').forEach(btn => {
+    btn.classList.remove('btn-light', 'active');
+    btn.classList.add('btn-outline-light');
+  });
+
+  // ✅ Reset the product type dropdown to "all"
+  const typeFilterSelect = document.getElementById('productTypeFilter');
+  if (typeFilterSelect) {
+    typeFilterSelect.value = 'all';
+typeFilterSelect.dispatchEvent(new Event('change'));
+
+    selectedTypeFilter = null; // reset JS filter state
+  }
+
+  applyFilters(); // re-run filter logic
+});
+
+</script>
 
 
+<script>
+    (function () {
+      const overlay = document.getElementById('photoPopupOverlay');
+      const imgEl   = document.getElementById('popupPhotoDisplay');
+      const closeEl = document.getElementById('popupCloseBtn');
+
+      function openPhoto(url) {
+        if (!url) return;
+        imgEl.src = url;
+        overlay.style.display = 'flex';
+      }
+
+      function closePhoto() {
+        overlay.style.display = 'none';
+        imgEl.src = '';
+      }
+
+      // Click on any .menu-photo (event delegation in case items render later)
+      document.addEventListener('click', function (e) {
+        const target = e.target.closest('.menu-photo');
+        if (target) {
+          const url = target.getAttribute('data-photo-url') || target.getAttribute('src');
+          openPhoto(url);
+        }
+      });
+
+      // Close controls
+      closeEl.addEventListener('click', closePhoto);
+      overlay.addEventListener('click', (e) => {
+        // close when clicking the dark backdrop (not when clicking inner content)
+        if (e.target === overlay) closePhoto();
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closePhoto();
+      });
+    })();
+</script>
 
 </body>
 
