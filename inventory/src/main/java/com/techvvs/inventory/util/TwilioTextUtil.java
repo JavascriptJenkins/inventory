@@ -128,7 +128,7 @@ public class TwilioTextUtil {
             new MessageCreator(
                     new PhoneNumber(to),
                     new PhoneNumber("+1 866 720 6310"),
-                    message
+                    message+" | Reply STOP to opt out."
             ).create(client);
 
         } catch(Exception ex){
