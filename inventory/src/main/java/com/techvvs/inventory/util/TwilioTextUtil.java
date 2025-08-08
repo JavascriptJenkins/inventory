@@ -123,6 +123,7 @@ public class TwilioTextUtil {
         client = new TwilioRestClient.Builder(env.getProperty("twilio.api.username"), env.getProperty("twilio.api.password")).build();
 
         try{
+            System.out.println("sending twilio sms: "+to+"||"+message);
             // to and from respectively
             new MessageCreator(
                     new PhoneNumber(to),
@@ -425,6 +426,7 @@ public class TwilioTextUtil {
             if(!isDev1){
                 result = sendCustomerInfoFromConferenceToMyPhone(phonenumber, messagetext, isDev1);
 
+                System.out.println("Hasphone: "+hasphone);
 
                 if(hasphone){
                     messagetext = "Hey "+customerVO.getName()+" it was great to meet you at the conference.  Call or text me anytime to talk about stocking your dispensary and getting access to my METRC compliance POS system! " +
