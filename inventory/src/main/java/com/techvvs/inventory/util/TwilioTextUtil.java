@@ -424,14 +424,14 @@ public class TwilioTextUtil {
         } finally{
             // only send the text message after everything else went smoothly
             if(!isDev1){
-                result = sendCustomerInfoFromConferenceToMyPhone(phonenumber, messagetext, isDev1);
+//                result = sendCustomerInfoFromConferenceToMyPhone(phonenumber, messagetext, isDev1);
 
                 System.out.println("Hasphone: "+hasphone);
 
                 if(hasphone){
-                    messagetext = "Hey "+customerVO.getName()+" it was great to meet you at the conference.  Call or text me anytime to talk about stocking your dispensary and getting access to my METRC compliance POS system! " +
+                    String messagetext2 = "Hey "+customerVO.getName()+" it was great to meet you at the conference.  Call or text me anytime to talk about stocking your dispensary and getting access to my METRC compliance POS system! " +
                             "My name is Peter McMahon and my email is admin@techvvs.io!";
-                    result = sendCustomerInfoFromConferenceWelcomeMessage(customerVO.getPhone(), messagetext, isDev1);
+                    result = sendCustomerInfoFromConferenceWelcomeMessage(customerVO.getPhone(), messagetext2, isDev1);
                 }
 
 
