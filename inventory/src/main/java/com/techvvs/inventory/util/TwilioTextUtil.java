@@ -430,8 +430,7 @@ public class TwilioTextUtil {
 
                 if(hasphone){
                     messagetext = "Hey "+customerVO.getName()+" it was great to meet you at the conference.  Call or text me anytime to talk about stocking your dispensary and getting access to my METRC compliance POS system! " +
-                            "My name is Peter McMahon and my email is admin@techvvs.io!" +
-                            "";
+                            "My name is Peter McMahon and my email is admin@techvvs.io!";
                     result = sendCustomerInfoFromConferenceWelcomeMessage(customerVO.getPhone(), messagetext, isDev1);
                 }
 
