@@ -352,6 +352,29 @@
   text-shadow: 2px 2px 0 #000;
   animation: pulseText 2s infinite ease-in-out;
 }
+.category-btn {
+    background-color: var(--brand-color);
+    color: white;
+    font-family: 'Press Start 2P', cursive;
+    border: none;
+    padding: 0.75rem 1.25rem;
+    border-radius: 12px;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 0 15px var(--brand-color);
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.category-btn:hover {
+    background-color: var(--brand-dark);
+    transform: scale(1.05);
+}
+.category-btn.active {
+  background-color: var(--brand-dark);
+  box-shadow: 0 0 18px var(--brand-color), inset 0 0 8px rgba(0,0,0,0.25);
+  transform: scale(1.03);
+}
 
     </style>
 
@@ -418,6 +441,21 @@
                        class="form-control edit-validation-group phone"
                        placeholder="Phone" />
             </div>
+
+            <!-- Category Buttons -->
+            <div class="w-100 px-4 my-3 text-center">
+                <div id="categoryButtons" class="d-flex flex-wrap justify-content-center gap-3">
+                    <button type="button" class="category-btn">Retail</button>
+                    <button type="button" class="category-btn">Wholesale</button>
+                    <button type="button" class="category-btn">Manufacturer</button>
+                    <button type="button" class="category-btn">Transport</button>
+                    <button type="button" class="category-btn">Delivery</button>
+                    <button type="button" class="category-btn">Cultivation</button>
+                    <button type="button" class="category-btn">Packaging</button>
+                    <button type="button" class="category-btn">Events</button>
+                </div>
+            </div>
+
 
             <!-- Notes -->
             <div class="form-group w-100 px-4">
@@ -500,6 +538,72 @@
         e.target.submit();
       }, 5000);
     });
+</script>
+
+
+<script>
+    (function () {
+      const notes = document.getElementById("notes");
+      const buttons = Array.from(document.querySelectorAll(".category-btn"));
+
+      function escRegExp(s) {
+        return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      }
+
+      function hasTag(text, label) {
+        const re = new RegExp(`\\|${escRegExp(label)}\\|`, "i");
+        return re.test(text);
+      }
+
+      function addTag(text, label) {
+        const tag = `|${label}|`;
+        let t = text || "";
+        // ensure a space before if needed
+        if (t.length > 0 && !/\s$/.test(t)) t += " ";
+        t += tag;
+        // ensure a trailing space after the tag
+        if (!/\s$/.test(t)) t += " ";
+        return t;
+      }
+
+      function removeTag(text, label) {
+        // remove with any surrounding spaces, then collapse extra spaces
+        const re = new RegExp(`\\s*\\|${escRegExp(label)}\\|\\s*`, "gi");
+        let t = (text || "").replace(re, " ");
+        // collapse multiple spaces, keep newlines intact
+        t = t.replace(/[ \t]{2,}/g, " ").trim();
+        // if there's text left, add single trailing space for nicer appends later
+        return t.length ? t + " " : "";
+      }
+
+      function refreshActiveStates() {
+        const value = notes.value;
+        buttons.forEach(btn => {
+          const label = btn.innerText.trim();
+          btn.classList.toggle("active", hasTag(value, label));
+        });
+      }
+
+      // Toggle on click
+      buttons.forEach(btn => {
+        btn.addEventListener("click", () => {
+          const label = btn.innerText.trim();
+          if (hasTag(notes.value, label)) {
+            notes.value = removeTag(notes.value, label);
+          } else {
+            notes.value = addTag(notes.value, label);
+          }
+          refreshActiveStates();
+          notes.focus();
+        });
+      });
+
+      // If user types manually, keep button states in sync
+      notes.addEventListener("input", refreshActiveStates);
+
+      // Initialize on load
+      document.addEventListener("DOMContentLoaded", refreshActiveStates);
+    })();
 </script>
 
 
