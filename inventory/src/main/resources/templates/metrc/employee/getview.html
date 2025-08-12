@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>METRC Employees View</title>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-kQtW33rZJAHjgefvhyyzcGF3C5TFyBQBA13V1RKPf4uH+bwyzQxZ6CmMZHmNBEfJ" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            color: #fff;
+            font-family: 'Roboto', sans-serif;
+            background-color: #343a40;
+        }
+        .alert-primary {
+            background-color: #343a40;
+            color: #fff;
+            border-color: #343a40;
+        }
+        .alert-warning {
+            background-color: transparent;
+            border: none;
+        }
+        .alert-warning .btn-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            color: #fff;
+            font-size: 1.5rem;
+            text-decoration: none;
+        }
+        .alert-warning .btn-link i {
+            color: #fff;
+        }
+        .alert-warning .btn-link:hover {
+            background-color: #555;
+            border-color: #fff;
+            text-decoration: none;
+        }
+        .required:after {
+            content: " *";
+            color: red;
+        }
+        .card {
+            background-color: #495057;
+            border: 1px solid #6c757d;
+        }
+        .card-header {
+            background-color: #343a40;
+            border-bottom: 1px solid #6c757d;
+        }
+        .table-dark {
+            background-color: #495057;
+        }
+        .table-dark th {
+            background-color: #343a40;
+            border-color: #6c757d;
+        }
+        .table-dark td {
+            border-color: #6c757d;
+        }
+        .badge {
+            font-size: 0.75em;
+        }
+        .employee-details {
+            background-color: #495057;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .employee-details h6 {
+            color: #17a2b8;
+            margin-bottom: 10px;
+        }
+        .employee-details p {
+            margin-bottom: 5px;
+        }
+        .role-badge {
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+        .pagination .page-link {
+            background-color: #495057;
+            border-color: #6c757d;
+            color: #fff;
+        }
+        .pagination .page-link:hover {
+            background-color: #6c757d;
+            border-color: #6c757d;
+            color: #fff;
+        }
+        .pagination .page-item.active .page-link {
+            background-color: #17a2b8;
+            border-color: #17a2b8;
+        }
+    </style>
+</head>
+<body>
+
+<div th:insert="fragments/metrcnavbar.html :: metrcnavbarfragment"> </div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-auto">
+            <div class="alert alert-warning" role="alert">
+                <a th:href="@{/metrc/admin}" class="btn btn-link">
+                    <i class="bi bi-arrow-left"></i>
+                </a>
+            </div>
+        </div>
+        <div class="col">
+            <div class="alert alert-primary" role="alert">
+                <h4 class="alert-heading">
+                    <i class="bi bi-people"></i> METRC Employees Management
+                </h4>
+                <p class="mb-0" th:if="${licenseNumber != null && licenseNumber != ''}">
+                    Viewing employees for license: <strong th:text="${licenseNumber}"></strong>
+                </p>
+                <p class="mb-0" th:if="${licenseNumber == null || licenseNumber == ''}">
+                    Comprehensive view of all employees under management.
+                </p>
+            </div>
+        </div>
+        <div class="col-auto">
+            <a th:href="@{/metrc/admin}" class="btn btn-outline-light">
+                <i class="bi bi-building"></i> Back to Facilities
+            </a>
+        </div>
+    </div>
+
+    <!-- Error Message Display -->
+    <div class="row" th:if="${errorMessage != null}">
+        <div class="col-12">
+            <div class="alert alert-danger" role="alert">
+                <i class="bi bi-exclamation-triangle"></i>
+                <span th:text="${errorMessage}"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Employees Overview -->
+    <div class="row" th:if="${employees != null && employees.data != null && employees.data.size() > 0}">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list-ul"></i>
+                        Employees Overview (<span th:text="${employees.totalRecords}">0</span> total)
+                        <span th:if="${licenseNumber != null && licenseNumber != ''}" class="badge bg-info ms-2">
+                            License: <span th:text="${licenseNumber}"></span>
+                        </span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Full Name</th>
+                                    <th>License Number</th>
+                                    <th>License Type</th>
+                                    <th>Roles</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="employee : ${employees.data}">
+                                    <td th:text="${employee.fullName}"></td>
+                                    <td th:text="${employee.license != null ? employee.license.number : 'N/A'}"></td>
+                                    <td th:text="${employee.license != null ? employee.license.licenseType : 'N/A'}"></td>
+                                    <td>
+                                        <span th:if="${employee.owner}" class="badge bg-primary role-badge">Owner</span>
+                                        <span th:if="${employee.manager}" class="badge bg-success role-badge">Manager</span>
+                                        <span th:if="${employee.industryAdmin}" class="badge bg-warning role-badge">Industry Admin</span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-info"
+                                                th:attr="data-employee-name=${employee.fullName}"
+                                                onclick="showEmployeeDetails(this.getAttribute('data-employee-name'))">
+                                            <i class="bi bi-eye"></i> Details
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <div class="row" th:if="${employees.totalPages > 1}">
+                        <div class="col-12">
+                            <nav aria-label="Employee pagination">
+                                <ul class="pagination justify-content-center">
+                                    <!-- Previous page -->
+                                    <li class="page-item" th:classappend="${employees.currentPage == 1} ? 'disabled'">
+                                        <a class="page-link" th:href="@{/metrc/admin/employees(licenseNumber=${licenseNumber}, page=${employees.currentPage - 1}, size=${pageSize})}" 
+                                           th:if="${employees.currentPage > 1}">Previous</a>
+                                        <span class="page-link" th:if="${employees.currentPage == 1}">Previous</span>
+                                    </li>
+                                    
+                                    <!-- Page numbers -->
+                                    <li class="page-item" th:each="pageNum : ${#numbers.sequence(1, employees.totalPages)}"
+                                        th:classappend="${pageNum == employees.currentPage} ? 'active'">
+                                        <a class="page-link" th:href="@{/metrc/admin/employees(licenseNumber=${licenseNumber}, page=${pageNum}, size=${pageSize})}"
+                                           th:text="${pageNum}"></a>
+                                    </li>
+                                    
+                                    <!-- Next page -->
+                                    <li class="page-item" th:classappend="${employees.currentPage == employees.totalPages} ? 'disabled'">
+                                        <a class="page-link" th:href="@{/metrc/admin/employees(licenseNumber=${licenseNumber}, page=${employees.currentPage + 1}, size=${pageSize})}"
+                                           th:if="${employees.currentPage < employees.totalPages}">Next</a>
+                                        <span class="page-link" th:if="${employees.currentPage == employees.totalPages}">Next</span>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                    
+                    <!-- Page size selector -->
+                    <div class="row">
+                        <div class="col-12 text-center">
+                            <div class="btn-group" role="group">
+                                <a th:href="@{/metrc/admin/employees(licenseNumber=${licenseNumber}, page=1, size=10)}" 
+                                   class="btn btn-outline-light" th:classappend="${pageSize == 10} ? 'active'">10</a>
+                                <a th:href="@{/metrc/admin/employees(licenseNumber=${licenseNumber}, page=1, size=25)}" 
+                                   class="btn btn-outline-light" th:classappend="${pageSize == 25} ? 'active'">25</a>
+                                <a th:href="@{/metrc/admin/employees(licenseNumber=${licenseNumber}, page=1, size=50)}" 
+                                   class="btn btn-outline-light" th:classappend="${pageSize == 50} ? 'active'">50</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Employee Information -->
+    <div class="row" th:if="${employees != null && employees.data != null && employees.data.size() > 0}">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle"></i> Detailed Employee Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row" th:each="employee : ${employees.data}">
+                        <div class="col-12">
+                            <div class="employee-details" th:attr="data-employee-name=${employee.fullName}">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6><i class="bi bi-person"></i> Basic Information</h6>
+                                        <p><strong>Full Name:</strong> <span th:text="${employee.fullName}"></span></p>
+                                        
+                                        <h6><i class="bi bi-shield-check"></i> Roles & Permissions</h6>
+                                        <p><strong>Owner:</strong> <span th:text="${employee.owner ? 'Yes' : 'No'}" th:class="${employee.owner ? 'text-success' : 'text-danger'}"></span></p>
+                                        <p><strong>Manager:</strong> <span th:text="${employee.manager ? 'Yes' : 'No'}" th:class="${employee.manager ? 'text-success' : 'text-danger'}"></span></p>
+                                        <p><strong>Industry Admin:</strong> <span th:text="${employee.industryAdmin ? 'Yes' : 'No'}" th:class="${employee.industryAdmin ? 'text-success' : 'text-danger'}"></span></p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6><i class="bi bi-card-text"></i> License Information</h6>
+                                        <p th:if="${employee.license != null}">
+                                            <strong>License Number:</strong> <span th:text="${employee.license.number}"></span><br>
+                                            <strong>License Type:</strong> <span th:text="${employee.license.licenseType}"></span><br>
+                                            <strong>Start Date:</strong> <span th:text="${employee.license.startDate}"></span><br>
+                                            <strong>End Date:</strong> <span th:text="${employee.license.endDate}"></span>
+                                        </p>
+                                        <p th:if="${employee.license == null}"><em>No license information available</em></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- No Employees Message -->
+    <div class="row" th:if="${employees == null || employees.data == null || employees.data.size() == 0}">
+        <div class="col-12">
+            <div class="alert alert-info" role="alert">
+                <i class="bi bi-info-circle"></i>
+                No employees found. Please check your METRC configuration and license number.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showEmployeeDetails(employeeName) {
+    // Scroll to the employee details section
+    const employeeElement = document.querySelector(`[data-employee-name="${employeeName}"]`);
+    if (employeeElement) {
+        employeeElement.scrollIntoView({ behavior: 'smooth' });
+    }
+}
+</script>
+
+</body>
+</html>

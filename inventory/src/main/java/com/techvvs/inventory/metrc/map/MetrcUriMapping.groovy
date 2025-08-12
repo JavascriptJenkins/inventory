@@ -91,7 +91,7 @@ class MetrcUriMapping {
         uriMap.put(
                 MetrcCallEnum.POST_LOCATION_CREATE,
                 new RequestMetaData(
-                        uri: "/locations/v2/create",
+                        uri: "/locations/v2/",
                         httpMethod: "POST",
                         baseUri: isDev1
                                 ? "https://sandbox-api-mn.metrc.com"

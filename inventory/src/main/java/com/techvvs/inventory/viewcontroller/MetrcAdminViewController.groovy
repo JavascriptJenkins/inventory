@@ -130,18 +130,26 @@ public class MetrcAdminViewController {
 
         String license = licenseNumber.orElse("")
 
+        // Always initialize these to prevent null pointer exceptions
+        PagedLocationsVO locations = new PagedLocationsVO(data: [])
+        PagedLocationTypesVO locationTypes = new PagedLocationTypesVO(data: [])
+        
         try {
-            PagedLocationsVO locations = metrcGlobal.getActiveLocations(license)
-            model.addAttribute("locations", locations)
-            model.addAttribute("licenseNumber", license)
-            model.addAttribute("locationType", "Active")
-            
-            // Fetch location types for the dropdown
-            PagedLocationTypesVO locationTypes = metrcGlobal.getLocationTypes(license)
-            model.addAttribute("locationTypes", locationTypes)
+            locations = metrcGlobal.getActiveLocations(license)
         } catch (Exception e) {
             model.addAttribute("errorMessage", "Error retrieving active locations: " + e.getMessage())
         }
+        
+        try {
+            locationTypes = metrcGlobal.getLocationTypes(license)
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", (model.getAttribute("errorMessage") ?: "") + " Error fetching location types: " + e.getMessage())
+        }
+
+        model.addAttribute("locations", locations)
+        model.addAttribute("licenseNumber", license)
+        model.addAttribute("locationType", "Active")
+        model.addAttribute("locationTypes", locationTypes)
 
         return "metrc/location/getview.html";
     }
@@ -156,18 +164,26 @@ public class MetrcAdminViewController {
 
         String license = licenseNumber.orElse("")
 
+        // Always initialize these to prevent null pointer exceptions
+        PagedLocationsVO locations = new PagedLocationsVO(data: [])
+        PagedLocationTypesVO locationTypes = new PagedLocationTypesVO(data: [])
+        
         try {
-            PagedLocationsVO locations = metrcGlobal.getInactiveLocations(license)
-            model.addAttribute("locations", locations)
-            model.addAttribute("licenseNumber", license)
-            model.addAttribute("locationType", "Inactive")
-            
-            // Fetch location types for the dropdown
-            PagedLocationTypesVO locationTypes = metrcGlobal.getLocationTypes(license)
-            model.addAttribute("locationTypes", locationTypes)
+            locations = metrcGlobal.getInactiveLocations(license)
         } catch (Exception e) {
             model.addAttribute("errorMessage", "Error retrieving inactive locations: " + e.getMessage())
         }
+        
+        try {
+            locationTypes = metrcGlobal.getLocationTypes(license)
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", (model.getAttribute("errorMessage") ?: "") + " Error fetching location types: " + e.getMessage())
+        }
+
+        model.addAttribute("locations", locations)
+        model.addAttribute("licenseNumber", license)
+        model.addAttribute("locationType", "Inactive")
+        model.addAttribute("locationTypes", locationTypes)
 
         return "metrc/location/getview.html";
     }
@@ -179,23 +195,35 @@ public class MetrcAdminViewController {
             @ModelAttribute("location") LocationDto locationDto
     ){
         techvvsAuthService.checkuserauth(model)
-
+        String license = locationDto.getLicenseNumber()
+        
         try {
             LocationVO createdLocation = metrcGlobal.createLocation(locationDto)
-            model.addAttribute("successMessage", "Location created successfully")
-            model.addAttribute("licenseNumber", locationDto.getLicenseNumber())
-            
-            // Redirect to active locations view
-            PagedLocationsVO locations = metrcGlobal.getActiveLocations(locationDto.getLicenseNumber())
-            model.addAttribute("locations", locations)
-            model.addAttribute("locationType", "Active")
-            
-            // Fetch location types for the dropdown
-            PagedLocationTypesVO locationTypes = metrcGlobal.getLocationTypes(locationDto.getLicenseNumber())
-            model.addAttribute("locationTypes", locationTypes)
+            model.addAttribute("successMessage", "Location created successfully!")
         } catch (Exception e) {
             model.addAttribute("errorMessage", "Error creating location: " + e.getMessage())
         }
+
+        // Always initialize these to prevent null pointer exceptions
+        PagedLocationsVO locations = new PagedLocationsVO(data: [])
+        PagedLocationTypesVO locationTypes = new PagedLocationTypesVO(data: [])
+        
+        try {
+            locations = metrcGlobal.getActiveLocations(license)
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", (model.getAttribute("errorMessage") ?: "") + " Error fetching active locations: " + e.getMessage())
+        }
+        
+        try {
+            locationTypes = metrcGlobal.getLocationTypes(license)
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", (model.getAttribute("errorMessage") ?: "") + " Error fetching location types: " + e.getMessage())
+        }
+
+        model.addAttribute("locations", locations)
+        model.addAttribute("locationType", "Active")
+        model.addAttribute("licenseNumber", license)
+        model.addAttribute("locationTypes", locationTypes)
 
         return "metrc/location/getview.html";
     }
@@ -207,23 +235,35 @@ public class MetrcAdminViewController {
             @ModelAttribute("location") LocationDto locationDto
     ){
         techvvsAuthService.checkuserauth(model)
+        String license = locationDto.getLicenseNumber()
 
         try {
             LocationVO updatedLocation = metrcGlobal.updateLocation(locationDto)
-            model.addAttribute("successMessage", "Location updated successfully")
-            model.addAttribute("licenseNumber", locationDto.getLicenseNumber())
-            
-            // Redirect to active locations view
-            PagedLocationsVO locations = metrcGlobal.getActiveLocations(locationDto.getLicenseNumber())
-            model.addAttribute("locations", locations)
-            model.addAttribute("locationType", "Active")
-            
-            // Fetch location types for the dropdown
-            PagedLocationTypesVO locationTypes = metrcGlobal.getLocationTypes(locationDto.getLicenseNumber())
-            model.addAttribute("locationTypes", locationTypes)
+            model.addAttribute("successMessage", "Location updated successfully!")
         } catch (Exception e) {
             model.addAttribute("errorMessage", "Error updating location: " + e.getMessage())
         }
+
+        // Always initialize these to prevent null pointer exceptions
+        PagedLocationsVO locations = new PagedLocationsVO(data: [])
+        PagedLocationTypesVO locationTypes = new PagedLocationTypesVO(data: [])
+        
+        try {
+            locations = metrcGlobal.getActiveLocations(license)
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", (model.getAttribute("errorMessage") ?: "") + " Error fetching active locations: " + e.getMessage())
+        }
+        
+        try {
+            locationTypes = metrcGlobal.getLocationTypes(license)
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", (model.getAttribute("errorMessage") ?: "") + " Error fetching location types: " + e.getMessage())
+        }
+
+        model.addAttribute("locations", locations)
+        model.addAttribute("locationType", "Active")
+        model.addAttribute("licenseNumber", license)
+        model.addAttribute("locationTypes", locationTypes)
 
         return "metrc/location/getview.html";
     }
@@ -239,20 +279,31 @@ public class MetrcAdminViewController {
 
         try {
             metrcGlobal.archiveLocation(locationId, licenseNumber)
-            model.addAttribute("successMessage", "Location archived successfully")
-            model.addAttribute("licenseNumber", licenseNumber)
-            
-            // Redirect to active locations view
-            PagedLocationsVO locations = metrcGlobal.getActiveLocations(licenseNumber)
-            model.addAttribute("locations", locations)
-            model.addAttribute("locationType", "Active")
-            
-            // Fetch location types for the dropdown
-            PagedLocationTypesVO locationTypes = metrcGlobal.getLocationTypes(licenseNumber)
-            model.addAttribute("locationTypes", locationTypes)
+            model.addAttribute("successMessage", "Location archived successfully!")
         } catch (Exception e) {
             model.addAttribute("errorMessage", "Error archiving location: " + e.getMessage())
         }
+
+        // Always initialize these to prevent null pointer exceptions
+        PagedLocationsVO locations = new PagedLocationsVO(data: [])
+        PagedLocationTypesVO locationTypes = new PagedLocationTypesVO(data: [])
+        
+        try {
+            locations = metrcGlobal.getActiveLocations(licenseNumber)
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", (model.getAttribute("errorMessage") ?: "") + " Error fetching active locations: " + e.getMessage())
+        }
+        
+        try {
+            locationTypes = metrcGlobal.getLocationTypes(licenseNumber)
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", (model.getAttribute("errorMessage") ?: "") + " Error fetching location types: " + e.getMessage())
+        }
+
+        model.addAttribute("locations", locations)
+        model.addAttribute("locationType", "Active")
+        model.addAttribute("licenseNumber", licenseNumber)
+        model.addAttribute("locationTypes", locationTypes)
 
         return "metrc/location/getview.html";
     }

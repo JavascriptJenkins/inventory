@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>METRC Facilities View</title>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-kQtW33rZJAHjgefvhyyzcGF3C5TFyBQBA13V1RKPf4uH+bwyzQxZ6CmMZHmNBEfJ" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            color: #fff;
+            font-family: 'Roboto', sans-serif;
+            background-color: #343a40;
+        }
+        .alert-primary {
+            background-color: #343a40;
+            color: #fff;
+            border-color: #343a40;
+        }
+        .alert-warning {
+            background-color: transparent;
+            border: none;
+        }
+        .alert-warning .btn-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            color: #fff;
+            font-size: 1.5rem;
+            text-decoration: none;
+        }
+        .alert-warning .btn-link i {
+            color: #fff;
+        }
+        .alert-warning .btn-link:hover {
+            background-color: #555;
+            border-color: #fff;
+            text-decoration: none;
+        }
+        .required:after {
+            content: " *";
+            color: red;
+        }
+        .card {
+            background-color: #495057;
+            border: 1px solid #6c757d;
+        }
+        .card-header {
+            background-color: #343a40;
+            border-bottom: 1px solid #6c757d;
+        }
+        .table-dark {
+            background-color: #495057;
+        }
+        .table-dark th {
+            background-color: #343a40;
+            border-color: #6c757d;
+        }
+        .table-dark td {
+            border-color: #6c757d;
+        }
+        .badge {
+            font-size: 0.75em;
+        }
+        .facility-details {
+            background-color: #495057;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .facility-details h6 {
+            color: #17a2b8;
+            margin-bottom: 10px;
+        }
+        .facility-details p {
+            margin-bottom: 5px;
+        }
+        .capability-badge {
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div th:insert="fragments/metrcnavbar.html :: metrcnavbarfragment"> </div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-auto">
+            <div class="alert alert-warning" role="alert">
+                <a th:href="@{/metrc/admin}" class="btn btn-link">
+                    <i class="bi bi-arrow-left"></i>
+                </a>
+            </div>
+        </div>
+        <div class="col">
+            <div class="alert alert-primary" role="alert">
+                <h4 class="alert-heading">
+                    <i class="bi bi-building"></i> METRC Facilities Management
+                </h4>
+                <p class="mb-0">Comprehensive view of all facilities under management.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Message Display -->
+    <div class="row" th:if="${errorMessage != null}">
+        <div class="col-12">
+            <div class="alert alert-danger" role="alert">
+                <i class="bi bi-exclamation-triangle"></i>
+                <span th:text="${errorMessage}"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Facilities Overview -->
+    <div class="row" th:if="${facilities != null && facilities.size() > 0}">
+        <div class="col-12">
+            <div class="card">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list-ul"></i>
+                        Facilities Overview (<span th:text="${facilities.size()}">0</span> total)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Facility ID</th>
+                                    <th>Name</th>
+                                    <th>Display Name</th>
+                                    <th>Alias</th>
+                                    <th>Email</th>
+                                    <th>Type</th>
+                                    <th>License</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="facility : ${facilities}">
+                                    <td th:text="${facility.facilityId}"></td>
+                                    <td th:text="${facility.name}"></td>
+                                    <td th:text="${facility.displayName}"></td>
+                                    <td th:text="${facility.alias}"></td>
+                                    <td th:text="${facility.email}"></td>
+                                    <td>
+                                        <span th:if="${facility.facilityType != null && facility.facilityType.isMedical}" class="badge bg-primary">Medical</span>
+                                        <span th:if="${facility.facilityType != null && facility.facilityType.isRetail}" class="badge bg-success">Retail</span>
+                                        <span th:if="${facility.facilityType != null && facility.facilityType.isHemp}" class="badge bg-warning">Hemp</span>
+                                    </td>
+                                    <td th:text="${facility.license != null ? facility.license.number : 'N/A'}"></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-info" 
+                                                th:onclick="'showFacilityDetails(' + ${facility.facilityId} + ')'">
+                                            <i class="bi bi-eye"></i> Details
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Facility Information -->
+    <div class="row" th:if="${facilities != null && facilities.size() > 0}">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle"></i> Detailed Facility Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row" th:each="facility : ${facilities}">
+                        <div class="col-12">
+                            <div class="facility-details" th:attr="data-facility-id=${facility.facilityId}">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6><i class="bi bi-building"></i> Basic Information</h6>
+                                        <p><strong>Facility ID:</strong> <span th:text="${facility.facilityId}"></span></p>
+                                        <p><strong>Name:</strong> <span th:text="${facility.name}"></span></p>
+                                        <p><strong>Display Name:</strong> <span th:text="${facility.displayName}"></span></p>
+                                        <p><strong>Alias:</strong> <span th:text="${facility.alias}"></span></p>
+                                        <p><strong>Email:</strong> <span th:text="${facility.email}"></span></p>
+                                        <p><strong>Hire Date:</strong> <span th:text="${facility.hireDate}"></span></p>
+                                        <p><strong>Credentialed Date:</strong> <span th:text="${facility.credentialedDate}"></span></p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6><i class="bi bi-shield-check"></i> Roles & Permissions</h6>
+                                        <p><strong>Owner:</strong> <span th:text="${facility.isOwner ? 'Yes' : 'No'}" th:class="${facility.isOwner ? 'text-success' : 'text-danger'}"></span></p>
+                                        <p><strong>Manager:</strong> <span th:text="${facility.isManager ? 'Yes' : 'No'}" th:class="${facility.isManager ? 'text-success' : 'text-danger'}"></span></p>
+                                        <p><strong>Financial Contact:</strong> <span th:text="${facility.isFinancialContact ? 'Yes' : 'No'}" th:class="${facility.isFinancialContact ? 'text-success' : 'text-danger'}"></span></p>
+                                        
+                                        <h6><i class="bi bi-card-text"></i> License Information</h6>
+                                        <p th:if="${facility.license != null}">
+                                            <strong>License Number:</strong> <span th:text="${facility.license.number}"></span><br>
+                                            <strong>License Type:</strong> <span th:text="${facility.license.licenseType}"></span><br>
+                                            <strong>Start Date:</strong> <span th:text="${facility.license.startDate}"></span><br>
+                                            <strong>End Date:</strong> <span th:text="${facility.license.endDate}"></span>
+                                        </p>
+                                        <p th:if="${facility.license == null}"><em>No license information available</em></p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Facility Type Capabilities -->
+                                <div class="row" th:if="${facility.facilityType != null}">
+                                    <div class="col-12">
+                                        <h6><i class="bi bi-gear"></i> Facility Capabilities</h6>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <strong>Plant Operations:</strong><br>
+                                                <span th:if="${facility.facilityType.canGrowPlants}" class="badge bg-success capability-badge">Can Grow Plants</span>
+                                                <span th:if="${facility.facilityType.canClonePlantBatches}" class="badge bg-success capability-badge">Can Clone Plants</span>
+                                                <span th:if="${facility.facilityType.canTagPlantBatches}" class="badge bg-success capability-badge">Can Tag Plants</span>
+                                                <span th:if="${facility.facilityType.canTrackVegetativePlants}" class="badge bg-success capability-badge">Can Track Vegetative</span>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <strong>Package Operations:</strong><br>
+                                                <span th:if="${facility.facilityType.canCreateOpeningBalancePackages}" class="badge bg-info capability-badge">Opening Balance</span>
+                                                <span th:if="${facility.facilityType.canCreateDerivedPackages}" class="badge bg-info capability-badge">Derived Packages</span>
+                                                <span th:if="${facility.facilityType.canCreatePartialPackages}" class="badge bg-info capability-badge">Partial Packages</span>
+                                                <span th:if="${facility.facilityType.canInfuseProducts}" class="badge bg-info capability-badge">Can Infuse</span>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <strong>Sales Operations:</strong><br>
+                                                <span th:if="${facility.facilityType.canSellToConsumers}" class="badge bg-warning capability-badge">Sell to Consumers</span>
+                                                <span th:if="${facility.facilityType.canSellToPatients}" class="badge bg-warning capability-badge">Sell to Patients</span>
+                                                <span th:if="${facility.facilityType.canDeliverSalesToConsumers}" class="badge bg-warning capability-badge">Can Deliver</span>
+                                                <span th:if="${facility.facilityType.advancedSales}" class="badge bg-warning capability-badge">Advanced Sales</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Occupations -->
+                                <div class="row" th:if="${facility.occupations != null && facility.occupations.size() > 0}">
+                                    <div class="col-12">
+                                        <h6><i class="bi bi-person-badge"></i> Occupations</h6>
+                                        <span th:each="occupation : ${facility.occupations}" class="badge bg-secondary capability-badge" th:text="${occupation}"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- No Facilities Message -->
+    <div class="row" th:if="${facilities == null || facilities.size() == 0}">
+        <div class="col-12">
+            <div class="alert alert-info" role="alert">
+                <i class="bi bi-info-circle"></i>
+                No facilities found. Please check your METRC configuration.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showFacilityDetails(facilityId) {
+    // Scroll to the facility details section
+    const facilityElement = document.querySelector(`[data-facility-id="${facilityId}"]`);
+    if (facilityElement) {
+        facilityElement.scrollIntoView({ behavior: 'smooth' });
+    }
+}
+</script>
+
+</body>
+</html>
