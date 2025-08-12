@@ -13,10 +13,9 @@ public enum AttributeNameEnum {
     Weight,
     Strain,
     Weight_Unit,
-    Sativa,
-    Indica,
-    Hybrid,
-    Sleepy,
-    Energetic
+    Effect,
+    Origin,
+    Flavor,
+    Strain_Type
 
 }
