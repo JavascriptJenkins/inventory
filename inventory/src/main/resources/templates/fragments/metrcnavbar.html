@@ -57,6 +57,9 @@
 <!--                        <a class="nav-link" th:href="@{/systemuser/myprofile}">User Profile</a>-->
 <!--                    </li>-->
                     <li class="nav-item">
+                        <a class="nav-link" th:href="@{/metrc/admin}">Metrc Home</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" th:href="@{/metrc/metrclicense}">Metrc Licenses</a>
                     </li>
                     <li sec:authorize="hasAuthority('ROLE_VIEW_METRC_WHOLESALE')" class="nav-item dropdown">

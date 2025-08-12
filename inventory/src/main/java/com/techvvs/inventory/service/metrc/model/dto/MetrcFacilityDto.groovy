@@ -1,4 +1,4 @@
-package com.techvvs.inventory.metrc.model;
+package com.techvvs.inventory.service.metrc.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -7,335 +7,335 @@ import java.util.List;
 public class MetrcFacilityDto {
 
     @JsonProperty("FacilityId")
-    private int facilityId;
+     int facilityId;
 
     @JsonProperty("HireDate")
-    private String hireDate;
+     String hireDate;
 
     @JsonProperty("IsOwner")
-    private boolean isOwner;
+     boolean isOwner;
 
     @JsonProperty("IsManager")
-    private boolean isManager;
+     boolean isManager;
 
     @JsonProperty("IsFinancialContact")
-    private boolean isFinancialContact;
+     boolean isFinancialContact;
 
     @JsonProperty("Email")
-    private String email;
+     String email;
 
     @JsonProperty("Occupations")
-    private List<String> occupations;
+     List<String> occupations;
 
     @JsonProperty("Name")
-    private String name;
+     String name;
 
     @JsonProperty("Alias")
-    private String alias;
+     String alias;
 
     @JsonProperty("DisplayName")
-    private String displayName;
+     String displayName;
 
     @JsonProperty("CredentialedDate")
-    private String credentialedDate;
+     String credentialedDate;
 
     @JsonProperty("SupportActivationDate")
-    private String supportActivationDate;
+     String supportActivationDate;
 
     @JsonProperty("SupportExpirationDate")
-    private String supportExpirationDate;
+     String supportExpirationDate;
 
     @JsonProperty("FacilityType")
-    private FacilityType facilityType;
+     FacilityType facilityType;
 
     @JsonProperty("License")
-    private License license;
+     License license;
 
     // Nested classes for FacilityType and License
     public static class FacilityType {
 
         @JsonProperty("IsMedical")
-        private boolean isMedical;
+         boolean isMedical;
 
         @JsonProperty("IsRetail")
-        private boolean isRetail;
+         boolean isRetail;
 
         @JsonProperty("IsHemp")
-        private boolean isHemp;
+         boolean isHemp;
 
         @JsonProperty("RestrictHarvestPlantRestoreTimeHours")
-        private Integer restrictHarvestPlantRestoreTimeHours;
+         Integer restrictHarvestPlantRestoreTimeHours;
 
         @JsonProperty("TotalMemberPatientsAllowed")
-        private Integer totalMemberPatientsAllowed;
+         Integer totalMemberPatientsAllowed;
 
         @JsonProperty("RestrictWholesalePriceEditDays")
-        private Integer restrictWholesalePriceEditDays;
+         Integer restrictWholesalePriceEditDays;
 
         @JsonProperty("RestrictPlantBatchAdjustmentTimeHours")
-        private Integer restrictPlantBatchAdjustmentTimeHours;
+         Integer restrictPlantBatchAdjustmentTimeHours;
 
         @JsonProperty("CanGrowPlants")
-        private boolean canGrowPlants;
+         boolean canGrowPlants;
 
         @JsonProperty("CanCreateOpeningBalancePlantBatches")
-        private boolean canCreateOpeningBalancePlantBatches;
+         boolean canCreateOpeningBalancePlantBatches;
 
         @JsonProperty("CanClonePlantBatches")
-        private boolean canClonePlantBatches;
+         boolean canClonePlantBatches;
 
         @JsonProperty("CanTagPlantBatches")
-        private boolean canTagPlantBatches;
+         boolean canTagPlantBatches;
 
         @JsonProperty("CanAssignLocationsToPlantBatches")
-        private boolean canAssignLocationsToPlantBatches;
+         boolean canAssignLocationsToPlantBatches;
 
         @JsonProperty("PlantsRequirePatientAffiliation")
-        private boolean plantsRequirePatientAffiliation;
+         boolean plantsRequirePatientAffiliation;
 
         @JsonProperty("PlantBatchesCanContainMotherPlants")
-        private boolean plantBatchesCanContainMotherPlants;
+         boolean plantBatchesCanContainMotherPlants;
 
         @JsonProperty("CanUpdatePlantStrains")
-        private boolean canUpdatePlantStrains;
+         boolean canUpdatePlantStrains;
 
         @JsonProperty("CanTrackVegetativePlants")
-        private boolean canTrackVegetativePlants;
+         boolean canTrackVegetativePlants;
 
         @JsonProperty("CanCreateImmaturePlantPackagesFromPlants")
-        private boolean canCreateImmaturePlantPackagesFromPlants;
+         boolean canCreateImmaturePlantPackagesFromPlants;
 
         @JsonProperty("CanPackageVegetativePlants")
-        private boolean canPackageVegetativePlants;
+         boolean canPackageVegetativePlants;
 
         @JsonProperty("CanPackageWaste")
-        private boolean canPackageWaste;
+         boolean canPackageWaste;
 
         @JsonProperty("CanReportHarvestSchedules")
-        private boolean canReportHarvestSchedules;
+         boolean canReportHarvestSchedules;
 
         @JsonProperty("CanSubmitHarvestsForTesting")
-        private boolean canSubmitHarvestsForTesting;
+         boolean canSubmitHarvestsForTesting;
 
         @JsonProperty("CanRequireHarvestSampleLabTestBatches")
-        private boolean canRequireHarvestSampleLabTestBatches;
+         boolean canRequireHarvestSampleLabTestBatches;
 
         @JsonProperty("CanReportStrainProperties")
-        private boolean canReportStrainProperties;
+         boolean canReportStrainProperties;
 
         @JsonProperty("CanCreateOpeningBalancePackages")
-        private boolean canCreateOpeningBalancePackages;
+         boolean canCreateOpeningBalancePackages;
 
         @JsonProperty("CanCreateDerivedPackages")
-        private boolean canCreateDerivedPackages;
+         boolean canCreateDerivedPackages;
 
         @JsonProperty("CanAssignLocationsToPackages")
-        private boolean canAssignLocationsToPackages;
+         boolean canAssignLocationsToPackages;
 
         @JsonProperty("CanUpdateLocationsOnPackages")
-        private boolean canUpdateLocationsOnPackages;
+         boolean canUpdateLocationsOnPackages;
 
         @JsonProperty("PackagesRequirePatientAffiliation")
-        private boolean packagesRequirePatientAffiliation;
+         boolean packagesRequirePatientAffiliation;
 
         @JsonProperty("CanCreateTradeSamplePackages")
-        private boolean canCreateTradeSamplePackages;
+         boolean canCreateTradeSamplePackages;
 
         @JsonProperty("CanDonatePackages")
-        private boolean canDonatePackages;
+         boolean canDonatePackages;
 
         @JsonProperty("CanSubmitPackagesForTesting")
-        private boolean canSubmitPackagesForTesting;
+         boolean canSubmitPackagesForTesting;
 
         @JsonProperty("CanCreateProcessValidationPackages")
-        private boolean canCreateProcessValidationPackages;
+         boolean canCreateProcessValidationPackages;
 
         @JsonProperty("CanRequirePackageSampleLabTestBatches")
-        private boolean canRequirePackageSampleLabTestBatches;
+         boolean canRequirePackageSampleLabTestBatches;
 
         @JsonProperty("CanRequestProductRemediation")
-        private boolean canRequestProductRemediation;
+         boolean canRequestProductRemediation;
 
         @JsonProperty("CanRemediatePackagesWithFailedLabResults")
-        private boolean canRemediatePackagesWithFailedLabResults;
+         boolean canRemediatePackagesWithFailedLabResults;
 
         @JsonProperty("CanRequestProductDecontamination")
-        private boolean canRequestProductDecontamination;
+         boolean canRequestProductDecontamination;
 
         @JsonProperty("CanDecontaminatePackagesWithFailedLabResults")
-        private boolean canDecontaminatePackagesWithFailedLabResults;
+         boolean canDecontaminatePackagesWithFailedLabResults;
 
         @JsonProperty("CanInfuseProducts")
-        private boolean canInfuseProducts;
+         boolean canInfuseProducts;
 
         @JsonProperty("CanRecordProcessingJobs")
-        private boolean canRecordProcessingJobs;
+         boolean canRecordProcessingJobs;
 
         @JsonProperty("CanRecordProductForDestruction")
-        private boolean canRecordProductForDestruction;
+         boolean canRecordProductForDestruction;
 
         @JsonProperty("CanDestroyProduct")
-        private boolean canDestroyProduct;
+         boolean canDestroyProduct;
 
         @JsonProperty("CanTestPackages")
-        private boolean canTestPackages;
+         boolean canTestPackages;
 
         @JsonProperty("TestsRequireLabSample")
-        private boolean testsRequireLabSample;
+         boolean testsRequireLabSample;
 
         @JsonProperty("CanTransferFromExternalFacilities")
-        private boolean canTransferFromExternalFacilities;
+         boolean canTransferFromExternalFacilities;
 
         @JsonProperty("CanSellToConsumers")
-        private boolean canSellToConsumers;
+         boolean canSellToConsumers;
 
         @JsonProperty("CanSellToPatients")
-        private boolean canSellToPatients;
+         boolean canSellToPatients;
 
         @JsonProperty("CanSellToExternalPatients")
-        private boolean canSellToExternalPatients;
+         boolean canSellToExternalPatients;
 
         @JsonProperty("CanSellToCaregivers")
-        private boolean canSellToCaregivers;
+         boolean canSellToCaregivers;
 
         @JsonProperty("AdvancedSales")
-        private boolean advancedSales;
+         boolean advancedSales;
 
         @JsonProperty("SalesRequirePatientNumber")
-        private boolean salesRequirePatientNumber;
+         boolean salesRequirePatientNumber;
 
         @JsonProperty("SalesRequireExternalPatientNumber")
-        private boolean salesRequireExternalPatientNumber;
+         boolean salesRequireExternalPatientNumber;
 
         @JsonProperty("SalesRequireExternalPatientIdentificationMethod")
-        private boolean salesRequireExternalPatientIdentificationMethod;
+         boolean salesRequireExternalPatientIdentificationMethod;
 
         @JsonProperty("SalesRequireCaregiverNumber")
-        private boolean salesRequireCaregiverNumber;
+         boolean salesRequireCaregiverNumber;
 
         @JsonProperty("SalesRequireCaregiverPatientNumber")
-        private boolean salesRequireCaregiverPatientNumber;
+         boolean salesRequireCaregiverPatientNumber;
 
         @JsonProperty("CanDeliverSalesToConsumers")
-        private boolean canDeliverSalesToConsumers;
+         boolean canDeliverSalesToConsumers;
 
         @JsonProperty("SalesDeliveryAllowPlannedRoute")
-        private boolean salesDeliveryAllowPlannedRoute;
+         boolean salesDeliveryAllowPlannedRoute;
 
         @JsonProperty("SalesDeliveryAllowAddress")
-        private boolean salesDeliveryAllowAddress;
+         boolean salesDeliveryAllowAddress;
 
         @JsonProperty("SalesDeliveryAllowCity")
-        private boolean salesDeliveryAllowCity;
+         boolean salesDeliveryAllowCity;
 
         @JsonProperty("SalesDeliveryAllowState")
-        private boolean salesDeliveryAllowState;
+         boolean salesDeliveryAllowState;
 
         @JsonProperty("SalesDeliveryAllowCounty")
-        private boolean salesDeliveryAllowCounty;
+         boolean salesDeliveryAllowCounty;
 
         @JsonProperty("SalesDeliveryAllowZip")
-        private boolean salesDeliveryAllowZip;
+         boolean salesDeliveryAllowZip;
 
         @JsonProperty("SalesDeliveryRequireZone")
-        private boolean salesDeliveryRequireZone;
+         boolean salesDeliveryRequireZone;
 
         @JsonProperty("EnableExternalIdentifier")
-        private boolean enableExternalIdentifier;
+         boolean enableExternalIdentifier;
 
         @JsonProperty("SalesDeliveryRequireConsumerId")
-        private boolean salesDeliveryRequireConsumerId;
+         boolean salesDeliveryRequireConsumerId;
 
         @JsonProperty("CanDeliverSalesToPatients")
-        private boolean canDeliverSalesToPatients;
+         boolean canDeliverSalesToPatients;
 
         @JsonProperty("SalesDeliveryRequirePatientNumber")
-        private boolean salesDeliveryRequirePatientNumber;
+         boolean salesDeliveryRequirePatientNumber;
 
         @JsonProperty("SalesDeliveryRequireRecipientName")
-        private boolean salesDeliveryRequireRecipientName;
+         boolean salesDeliveryRequireRecipientName;
 
         @JsonProperty("IsSalesDeliveryHub")
-        private boolean isSalesDeliveryHub;
+         boolean isSalesDeliveryHub;
 
         @JsonProperty("CanHaveMemberPatients")
-        private boolean canHaveMemberPatients;
+         boolean canHaveMemberPatients;
 
         @JsonProperty("CanReportPatientCheckIns")
-        private boolean canReportPatientCheckIns;
+         boolean canReportPatientCheckIns;
 
         @JsonProperty("CanSpecifyPatientSalesLimitExemption")
-        private boolean canSpecifyPatientSalesLimitExemption;
+         boolean canSpecifyPatientSalesLimitExemption;
 
         @JsonProperty("CanReportPatientsAdverseResponses")
-        private boolean canReportPatientsAdverseResponses;
+         boolean canReportPatientsAdverseResponses;
 
         @JsonProperty("RetailerDelivery")
-        private boolean retailerDelivery;
+         boolean retailerDelivery;
 
         @JsonProperty("RetailerDeliveryAllowTradeSamples")
-        private boolean retailerDeliveryAllowTradeSamples;
+         boolean retailerDeliveryAllowTradeSamples;
 
         @JsonProperty("RetailerDeliveryAllowDonations")
-        private boolean retailerDeliveryAllowDonations;
+         boolean retailerDeliveryAllowDonations;
 
         @JsonProperty("RetailerDeliveryRequirePrice")
-        private boolean retailerDeliveryRequirePrice;
+         boolean retailerDeliveryRequirePrice;
 
         @JsonProperty("RetailerDeliveryAllowPartialPackages")
-        private boolean retailerDeliveryAllowPartialPackages;
+         boolean retailerDeliveryAllowPartialPackages;
 
         @JsonProperty("CanCreatePartialPackages")
-        private boolean canCreatePartialPackages;
+         boolean canCreatePartialPackages;
 
         @JsonProperty("CanAdjustSourcePackagesWithPartials")
-        private boolean canAdjustSourcePackagesWithPartials;
+         boolean canAdjustSourcePackagesWithPartials;
 
         @JsonProperty("CanReportOperationalExceptions")
-        private boolean canReportOperationalExceptions;
+         boolean canReportOperationalExceptions;
 
         @JsonProperty("CanReportAdulteration")
-        private boolean canReportAdulteration;
+         boolean canReportAdulteration;
 
         @JsonProperty("CanDownloadProductLabel")
-        private boolean canDownloadProductLabel;
+         boolean canDownloadProductLabel;
 
         @JsonProperty("CanReceiveAssociateProductLabel")
-        private boolean canReceiveAssociateProductLabel;
+         boolean canReceiveAssociateProductLabel;
 
         @JsonProperty("CanUseComplianceLabel")
-        private boolean canUseComplianceLabel;
+         boolean canUseComplianceLabel;
 
         @JsonProperty("CanViewSourcePackages")
-        private boolean canViewSourcePackages;
+         boolean canViewSourcePackages;
 
         @JsonProperty("EnableSublocations")
-        private boolean enableSublocations;
+         boolean enableSublocations;
 
         @JsonProperty("TaxExemptReportingFeesFacilityType")
-        private boolean taxExemptReportingFeesFacilityType;
+         boolean taxExemptReportingFeesFacilityType;
 
         @JsonProperty("TaxExemptTagOrdersFacilityType")
-        private boolean taxExemptTagOrdersFacilityType;
+         boolean taxExemptTagOrdersFacilityType;
 
         @JsonProperty("CanAccessCatalog")
-        private boolean canAccessCatalog;
+         boolean canAccessCatalog;
 
         // Getters and Setters for this nested class
     }
 
     public static class License {
         @JsonProperty("Number")
-        private String number;
+         String number;
 
         @JsonProperty("StartDate")
-        private String startDate;
+         String startDate;
 
         @JsonProperty("EndDate")
-        private String endDate;
+         String endDate;
 
         @JsonProperty("LicenseType")
-        private String licenseType;
+         String licenseType;
 
         // Getters and Setters for this nested class
     }

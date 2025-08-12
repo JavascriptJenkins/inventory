@@ -1,4 +1,4 @@
-package com.techvvs.inventory.metrc.config;
+package com.techvvs.inventory.service.metrc.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;

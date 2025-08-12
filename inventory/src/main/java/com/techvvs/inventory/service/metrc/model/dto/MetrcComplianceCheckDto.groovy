@@ -1,4 +1,4 @@
-package com.techvvs.inventory.metrc.model;
+package com.techvvs.inventory.service.metrc.model.dto;
 
 public class MetrcComplianceCheckDto {
     private String entityId;

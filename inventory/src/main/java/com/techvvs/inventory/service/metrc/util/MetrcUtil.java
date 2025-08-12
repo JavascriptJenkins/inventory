@@ -1,4 +1,4 @@
-package com.techvvs.inventory.metrc.util;
+package com.techvvs.inventory.service.metrc.util;
 
 import java.time.Instant;
 import java.time.ZoneOffset;

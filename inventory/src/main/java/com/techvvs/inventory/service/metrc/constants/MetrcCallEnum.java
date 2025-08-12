@@ -1,0 +1,19 @@
+package com.techvvs.inventory.service.metrc.constants;
+
+/* Enum of uri call keys */
+public enum MetrcCallEnum {
+
+    GET_FACILITIES,
+    GET_EMPLOYEES,
+    GET_LOCATIONS_ACTIVE,
+    GET_LOCATIONS_INACTIVE,
+    GET_LOCATION_TYPES,
+    POST_LOCATION_CREATE,
+    PUT_LOCATION_UPDATE,
+    DELETE_LOCATION_ARCHIVE,
+    GET_TRANSFERS_INCOMING,
+    POST_RECEIVE_TRANSFER,
+    POST_CREATE_TRANSFER_FOR_SANDBOX
+
+
+}
