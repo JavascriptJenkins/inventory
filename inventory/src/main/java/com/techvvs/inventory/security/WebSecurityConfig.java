@@ -105,6 +105,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .antMatchers(MENU_SHOP_URI_2_33).permitAll()
             .antMatchers(DELIVERY_ITEM).permitAll()
             .antMatchers(DELIVERY_ITEM_33).permitAll()
+            .antMatchers(KALE_MOVIE_33).permitAll()
+            .antMatchers(KALE_MOVIE).permitAll()
 //            .antMatchers("/login/systemuser").permitAll()//
             // Add other routes that should be publicly accessible
             // Disallow everything else..

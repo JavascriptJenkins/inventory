@@ -61,6 +61,10 @@ class WhiteListUriConstants {
     public static final String DELIVERY_ITEM_33 = "/delivery/item/**";
     public static final String DELIVERY_ITEM = "/delivery/item"
 
+    // todo: remove these from here
+    public static final String KALE_MOVIE_33 = "/kalemovie/**";
+    public static final String KALE_MOVIE = "/kalemovie"
+
 
 
 }
