@@ -20,6 +20,15 @@ class ConferenceHelper {
         return true
     }
 
+    boolean sendCustomerInfoToMyPhoneAndEmailBottleneck(CustomerVO customerVO){
+
+        transactionHelper.sendTextMessageWithContactInfoBottleneck(customerVO)
+        transactionHelper.sendEmailWithCustomerInfoBottleneck(customerVO)
+
+
+        return true
+    }
+
 
 
 }

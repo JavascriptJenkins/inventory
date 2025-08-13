@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Contact Info Page</title>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" type="text/css" media="all" href="/css/table.css" th:href="@{/css/table.css}" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Bundle JS (Includes Popper.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
+
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+
+    <style>
+        .glowing-valid {
+            box-shadow: 0 0 8px 2px #00ffff !important;
+        }
+        .glowing-invalid {
+            box-shadow: 0 0 8px 2px #ff0000 !important;
+        }
+    </style>
+    <style>
+        .table-hover tbody tr:hover {
+            background-color: #e0f7fa;
+        }
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: #f1f8fa;
+        }
+        .table-dark thead {
+            background-color: #343a40;
+            color: #fff;
+        }
+        .btn-secondary {
+            color: #fff;
+            background-color: #343a40;
+            border-color: #343a40;
+        }
+        .btn-secondary:hover {
+            background-color: #23272b;
+            border-color: #1d2124;
+        }
+<!--        .header-dark {-->
+<!--            background-color: #343a40;-->
+<!--            color: #fff;-->
+<!--            padding: 15px;-->
+<!--            border-radius: 5px;-->
+<!--            text-align: center;-->
+<!--            margin-bottom: 15px;-->
+<!--            font-family: 'Roboto', sans-serif;-->
+<!--            border: 1px solid transparent;-->
+<!--            border-image: linear-gradient(to right, #c0c0c0, #ffffff);-->
+<!--            border-image-slice: 1;-->
+<!--            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);-->
+<!--        }-->
+        .tip-box {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: #00ffff;
+            text-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff, 0 0 15px #00ffff;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: rgba(0, 0, 0, 0.7);
+            margin-bottom: 15px;
+            animation: glow 1.5s infinite alternate;
+        }
+        .btn-dark-custom {
+            background-color: #343a40;
+            color: #fff;
+            border: 1px solid #343a40;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .btn-dark-custom:hover {
+            background-color: #1d2124; /* Darker shade on hover */
+            color: #f8f9fa; /* Lighter text on hover */
+        }
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff, 0 0 15px #00ffff;
+            }
+            to {
+                text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px #00ffff;
+            }
+        }
+        .record-selector {
+            margin-bottom: 15px;
+            background-color: #343a40;
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            display: inline-block;
+        }
+        .record-selector select {
+            background-color: #23272b;
+            color: #fff;
+            border: 1px solid #343a40;
+        }
+        .record-selector select:focus {
+            border-color: #1d2124;
+            box-shadow: none;
+        }
+    </style>
+
+    <style>
+        :root {
+          --brand-color: #f25e5a;
+          --brand-dark: #e24a47;
+          --input-bg: #fff;
+        }
+
+        body {
+          margin: 0;
+          padding: 0;
+          font-family: 'Segoe UI', sans-serif;
+          background: linear-gradient(135deg, #fff0f0, #ffe3e3);
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .header-dark {
+          background-color: var(--brand-color);
+          color: white;
+          padding: 25px 40px;
+          border-radius: 20px;
+          text-align: center;
+          margin: 20px 0 20px 0;
+          font-weight: bold;
+          font-size: 2rem;
+          box-shadow: 0 0 30px var(--brand-color);
+          animation: headerGlow 2s infinite alternate;
+          border: none !important;
+        }
+
+        @keyframes headerGlow {
+          0% {
+            box-shadow: 0 0 10px var(--brand-color);
+          }
+          100% {
+            box-shadow: 0 0 30px var(--brand-color);
+          }
+        }
+
+        .logo-img {
+          display: block;
+          margin: 40px auto;
+          max-width: 1200px;
+        }
+
+        form {
+          width: 100%;
+          max-width: 500px;
+          padding: 20px;
+        }
+
+        form .row.mb-3 {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+
+        form .row.mb-3 .col-md-4 {
+          width: 100%;
+          margin-bottom: 20px;
+        }
+
+        .form-control {
+          padding-left: 2.5rem;
+          border-radius: 10px;
+        }
+
+        .form-group {
+          position: relative;
+        }
+
+        .form-group i {
+          position: absolute;
+          left: 10px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #888;
+          font-size: 1rem;
+        }
+
+        .btn-secondary {
+          font-size: 1.2rem;
+          padding: 0.75rem 1.5rem;
+          border-radius: 12px;
+          background-color: var(--brand-color);
+          border: none;
+          width: 100%;
+        }
+
+        .btn-secondary:hover {
+          background-color: var(--brand-dark);
+        }
+        textarea.form-control {
+          padding-left: 2.5rem;
+          padding-top: 1rem;
+          padding-bottom: 1rem;
+          min-height: 120px;
+        }
+        .form-group i {
+          pointer-events: none;
+          z-index: 2;
+        }
+
+        .form-control:focus {
+          border-color: var(--brand-color);
+          box-shadow: 0 0 5px var(--brand-color);
+        }
+
+        @media (max-width: 600px) {
+          .header-dark {
+            font-size: 1.5rem;
+            padding: 20px;
+          }
+        }
+
+        form {
+          margin-top: auto;
+          margin-bottom: auto;
+        }
+
+        .btn-success {
+          background-color: #28a745;
+          border: none;
+          padding: 0.75rem 1.5rem;
+          border-radius: 12px;
+          font-size: 1.25rem;
+          box-shadow: 0 4px 10px rgba(40, 167, 69, 0.4);
+          transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+
+        .btn-success:hover {
+          background-color: #218838;
+          transform: scale(1.03);
+          box-shadow: 0 6px 14px rgba(40, 167, 69, 0.6);
+        }
+
+        form {
+          margin-top: 0 !important;
+        }
+
+        .header-dark h1 {
+          font-size: 2.5rem;
+          font-weight: 900;
+          text-transform: uppercase;
+          letter-spacing: 2px;
+          background: linear-gradient(90deg, #ffffff, #f25e5a, #ffffff);
+          background-size: 200% auto;
+          color: transparent;
+          background-clip: text;
+          -webkit-background-clip: text;
+          animation: gradientText 3s linear infinite;
+          margin: 0;
+        }
+
+        @keyframes gradientText {
+          0% { background-position: 0% center; }
+          100% { background-position: 200% center; }
+        }
+        .form-label {
+          font-family: 'Press Start 2P', cursive;
+          font-size: 1.3rem;
+          color: #333;
+          margin-bottom: 0.25rem;
+        }
+        .form-label {
+          color: var(--brand-color);
+        }
+
+        .form-label {
+          margin-top: 10px;
+        }
+        .form-label {
+<!--          text-align: center;-->
+  font-weight: bold;
+  font-size: 2.25rem;
+
+          display: block;
+          width: 100%;
+          margin-top: 10px;
+        }
+
+@keyframes pulseEffect {
+  0%   { transform: scale(1); opacity: 1; }
+  50%  { transform: scale(1.15); opacity: 0.85; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.pulse-wrapper {
+  animation: pulseEffect 1.5s ease-in-out infinite;
+}
+
+#spinnerOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(242, 94, 90, 0.95);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  flex-direction: column;
+  color: white;
+  text-align: center;
+  pointer-events: all;
+  padding: 2rem;
+}
+
+.spinner-content p {
+  max-width: 90%;
+}
+
+.gameboy-header {
+  font-family: 'Press Start 2P', cursive;
+  color: #f25e5a;
+  text-align: center;
+  margin: -10px 0 40px 0;
+  font-size: 2rem;
+  text-shadow: 2px 2px 0 #000;
+}
+@keyframes pulseText {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.gameboy-header {
+  font-family: 'Press Start 2P', cursive;
+  color: #f25e5a;
+  text-align: center;
+  margin: -10px 0 40px 0;
+  font-size: 2rem;
+  text-shadow: 2px 2px 0 #000;
+  animation: pulseText 2s infinite ease-in-out;
+}
+.category-btn {
+    background-color: var(--brand-color);
+    color: white;
+    font-family: 'Press Start 2P', cursive;
+    border: none;
+    padding: 0.75rem 1.25rem;
+    border-radius: 12px;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 0 15px var(--brand-color);
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.category-btn:hover {
+    background-color: var(--brand-dark);
+    transform: scale(1.05);
+}
+.category-btn.active {
+  background-color: var(--brand-dark);
+  box-shadow: 0 0 18px var(--brand-color), inset 0 0 8px rgba(0,0,0,0.25);
+  transform: scale(1.03);
+}
+
+    </style>
+
+
+</head>
+<body>
+
+
+<div class="container d-flex justify-content-center align-items-center flex-column" style="min-height: 100vh;">
+
+
+
+
+    <img src="/image/images/photos/bottleneck_logo.png" class="logo-img" alt="Logo">
+    <h2 class="gameboy-header">BOTTLENECK</h2>
+
+    <div class="header-dark" style="margin-top:30px;">
+        <h1>Sign up for the Bottleneck Newsletter</h1>
+    </div>
+
+<!--    <div class="tip-box">Tulip early access </div>-->
+
+    <div id="successDiv" class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">
+        Success
+    </div>
+
+    <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">
+        Error
+    </div>
+
+
+    <form th:if="${successMessage == null}" th:action="@{/kalemovie/create}" method="post" th:object="${customer}">
+        <!-- Ensure Bootstrap Icons are loaded in your <head> -->
+        <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet"> -->
+
+        <div class="row mb-3 d-flex flex-column align-items-center">
+
+            <!-- Name -->
+            <div class="form-group w-100 px-4">
+                <label class="form-label" for="name">Name</label>
+                <input type="text"
+                       th:field="*{name}"
+                       id="name"
+                       class="form-control edit-validation-group"
+                       placeholder="Name"
+                       autofocus />
+            </div>
+
+
+            <!-- Email -->
+            <div class="form-group w-100 px-4">
+                <label class="form-label" for="email">Email</label>
+                <input type="text"
+                       th:field="*{email}"
+                       id="email"
+                       class="form-control edit-validation-group email"
+                       placeholder="Email" />
+            </div>
+
+            <!-- Phone -->
+            <div class="form-group w-100 px-4">
+                <label class="form-label" for="phone">Phone</label>
+                <input type="tel"
+                       th:field="*{phone}"
+                       id="phone"
+                       class="form-control edit-validation-group phone"
+                       placeholder="Phone" />
+            </div>
+
+            <!-- Category Buttons -->
+            <div class="w-100 px-4 my-3 text-center">
+                <div id="categoryButtons" class="d-flex flex-wrap justify-content-center gap-3">
+                    <button type="button" class="category-btn">Audio</button>
+                    <button type="button" class="category-btn">Actor</button>
+                    <button type="button" class="category-btn">Investor</button>
+                    <button type="button" class="category-btn">Advisor</button>
+                    <button type="button" class="category-btn">Set Operations</button>
+                    <button type="button" class="category-btn">Casting</button>
+                    <button type="button" class="category-btn">Interested In Project</button>
+                </div>
+            </div>
+
+
+            <!-- Notes -->
+            <div class="form-group w-100 px-4">
+                <label class="form-label" for="notes">Notes</label>
+                <textarea th:field="*{notes}"
+                          id="notes"
+                          class="form-control edit-validation-group"
+                          rows="5"
+                          placeholder="Enter notes here..."></textarea>
+            </div>
+
+        </div>
+
+
+
+        <div class="d-flex justify-content-center mt-4" th:if="${successMessage == null}">
+            <button type="submit" class="btn btn-secondary btn-success btn-lg d-flex align-items-center justify-content-center gap-2" >
+                <i class="bi bi-check-circle-fill fs-3"></i>
+                <span>Submit</span>
+            </button>
+        </div>
+
+    </form>
+
+    <br>
+
+
+
+    <div th:if="${successMessage != null}" class="text-center mt-5">
+        <a th:href="@{/kalemovie}" class="btn btn-success btn-lg px-5 py-3">
+            <i class="bi bi-arrow-clockwise me-2"></i> Refresh
+        </a>
+    </div>
+
+
+
+</div>
+
+
+<!-- Spinner Overlay -->
+<div id="spinnerOverlay" style="display: none;">
+    <div class="spinner-content text-center">
+        <div class="pulse-wrapper mb-4">
+            <div class="spinner-border text-light" role="status" style="width: 6rem; height: 6rem;"></div>
+        </div>
+        <p class="fs-2 fw-bold pulse-wrapper">
+            Thank you for supporting Bottleneck!!!
+        </p>
+    </div>
+</div>
+
+
+
+
+<div th:insert="fragments/validation.html :: validationfragment"> </div>
+<script>
+    const inputFields = [
+        'name',
+        'email',
+        'phone',
+        'notes'
+    ];
+
+    const optionalFields = ['notes', 'phone'];
+
+    document.addEventListener("DOMContentLoaded", () => {
+        initializeValidation(inputFields, optionalFields);
+    });
+</script>
+
+<script>
+    document.querySelector("form").addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const overlay = document.getElementById("spinnerOverlay");
+      overlay.style.display = "flex";
+      document.body.style.pointerEvents = "none";
+
+      setTimeout(() => {
+        e.target.submit();
+      }, 5000);
+    });
+</script>
+
+
+<script>
+    (function () {
+      const notes = document.getElementById("notes");
+      const buttons = Array.from(document.querySelectorAll(".category-btn"));
+
+      function escRegExp(s) {
+        return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      }
+
+      function hasTag(text, label) {
+        const re = new RegExp(`\\|${escRegExp(label)}\\|`, "i");
+        return re.test(text);
+      }
+
+      function addTag(text, label) {
+        const tag = `|${label}|`;
+        let t = text || "";
+        // ensure a space before if needed
+        if (t.length > 0 && !/\s$/.test(t)) t += " ";
+        t += tag;
+        // ensure a trailing space after the tag
+        if (!/\s$/.test(t)) t += " ";
+        return t;
+      }
+
+      function removeTag(text, label) {
+        // remove with any surrounding spaces, then collapse extra spaces
+        const re = new RegExp(`\\s*\\|${escRegExp(label)}\\|\\s*`, "gi");
+        let t = (text || "").replace(re, " ");
+        // collapse multiple spaces, keep newlines intact
+        t = t.replace(/[ \t]{2,}/g, " ").trim();
+        // if there's text left, add single trailing space for nicer appends later
+        return t.length ? t + " " : "";
+      }
+
+      function refreshActiveStates() {
+        const value = notes.value;
+        buttons.forEach(btn => {
+          const label = btn.innerText.trim();
+          btn.classList.toggle("active", hasTag(value, label));
+        });
+      }
+
+      // Toggle on click
+      buttons.forEach(btn => {
+        btn.addEventListener("click", () => {
+          const label = btn.innerText.trim();
+          if (hasTag(notes.value, label)) {
+            notes.value = removeTag(notes.value, label);
+          } else {
+            notes.value = addTag(notes.value, label);
+          }
+          refreshActiveStates();
+          notes.focus();
+        });
+      });
+
+      // If user types manually, keep button states in sync
+      notes.addEventListener("input", refreshActiveStates);
+
+      // Initialize on load
+      document.addEventListener("DOMContentLoaded", refreshActiveStates);
+    })();
+</script>
+
+
+
+</body>
+</html>
