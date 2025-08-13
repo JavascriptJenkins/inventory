@@ -2,10 +2,11 @@
 package com.techvvs.inventory.metrc.adapter
 
 import com.techvvs.inventory.metrc.impl.MetrcServiceImpl
-import com.techvvs.inventory.metrc.model.MetrcItemDto
-import com.techvvs.inventory.metrc.model.MetrcPackageDto
-import com.techvvs.inventory.metrc.model.MetrcProductDto
+import com.techvvs.inventory.service.metrc.model.dto.MetrcItemDto
+import com.techvvs.inventory.service.metrc.model.dto.MetrcPackageDto
+import com.techvvs.inventory.service.metrc.model.dto.MetrcProductDto
 import com.techvvs.inventory.metrc.service.MetrcService
+import com.techvvs.inventory.service.metrc.adapter.MetrcAdapter
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import spock.lang.Specification;

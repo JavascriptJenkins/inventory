@@ -1,6 +1,6 @@
 package com.techvvs.inventory.metrc.service;
 
-import com.techvvs.inventory.metrc.model.*;
+import com.techvvs.inventory.service.metrc.model.dto.*;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

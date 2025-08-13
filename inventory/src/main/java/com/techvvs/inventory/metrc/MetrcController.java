@@ -1,12 +1,9 @@
 package com.techvvs.inventory.metrc;
 
-import com.techvvs.inventory.metrc.model.MetrcItemDto;
-import com.techvvs.inventory.metrc.model.MetrcPackageDto;
-import com.techvvs.inventory.metrc.model.MetrcProductDto;
+import com.techvvs.inventory.service.metrc.model.dto.MetrcItemDto;
+import com.techvvs.inventory.service.metrc.model.dto.MetrcPackageDto;
+import com.techvvs.inventory.service.metrc.model.dto.MetrcProductDto;
 import com.techvvs.inventory.metrc.service.MetrcService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

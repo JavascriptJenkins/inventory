@@ -1,8 +1,8 @@
 package com.techvvs.inventory.metrc.impl;
 
-import com.techvvs.inventory.metrc.adapter.MetrcAdapter;
-import com.techvvs.inventory.metrc.model.*;
+import com.techvvs.inventory.service.metrc.adapter.MetrcAdapter;
 import com.techvvs.inventory.metrc.service.MetrcService;
+import com.techvvs.inventory.service.metrc.model.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

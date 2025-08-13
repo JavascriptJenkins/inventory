@@ -109,4 +109,53 @@ class EmailService {
     }
 
 
+    boolean sendConferenceEmailToMeAndCustomerBottleneck(CustomerVO customerVO) {
+
+
+        boolean hasphone = false
+        // get the customer info and put it in a message here
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("Newsletter Signup Info: ");
+
+        sb.append("\nName: ");
+        sb.append(customerVO.getName());
+        sb.append("\nEmail: ");
+        sb.append(customerVO.getEmail());
+
+        if (customerVO.getPhone() != null && !customerVO.getPhone().trim().isEmpty()) {
+            sb.append("\nPhone: ");
+            sb.append(customerVO.getPhone());
+            hasphone = true;
+        }
+
+        if (customerVO.getNotes() != null && !customerVO.getNotes().trim().isEmpty()) {
+            sb.append("\nNotes: ");
+            sb.append(customerVO.getNotes());
+        }
+
+
+
+        String messagetext = sb.toString();
+
+
+
+        // send email to me with the info
+        emailUtil.sendEmail(messagetext,
+                "admin@techvvs.io",
+                "New Bottleneck Signup");
+
+
+        messagetext = "Hey great to meet you "+customerVO.getName()+"! " + "Now you will be informed of any Bottleneck Movie Production Updates. " +
+                "My name is Kale Eickhof and it was great to have you at the movie theater in Crookston! "
+
+        // send email to the customer
+        emailUtil.sendEmail(messagetext,
+                customerVO.getEmail(),
+                "Bottleneck Movie Production and Investor Updates");
+
+        return true
+    }
+
 }
