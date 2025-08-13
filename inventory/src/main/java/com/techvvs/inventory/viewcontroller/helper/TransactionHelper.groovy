@@ -154,6 +154,20 @@ class TransactionHelper {
         textUtil.sendOutCustomerInfoFromConferenceSMS(systemUserDAO.phone, customerVO, isDev1)
     }
 
+    @Transactional
+    void sendTextMessageWithContactInfoBottleneck(CustomerVO customerVO){
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+//        SystemUserDAO systemUserDAO = systemUserRepo.findByEmail(authentication.getPrincipal().username)
+
+        boolean isDev1 = appConstants.DEV_1.equals(env.getProperty("spring.profiles.active"));
+
+        // SystemUserDAO systemUserDAO, String token, boolean isDev1
+        // send a text message with a download link
+        textUtil.sendOutCustomerInfoFromConferenceSMS("3234936496", customerVO, isDev1)
+    }
+
 
     @Transactional
     void sendTextMessageWithDownloadLink(String phonenumber, String filename){
@@ -177,6 +191,10 @@ class TransactionHelper {
 
     void sendEmailWithCustomerInfo(CustomerVO customerVO){
         emailService.sendConferenceEmailToMeAndCustomer(customerVO)
+    }
+
+    void sendEmailWithCustomerInfoBottleneck(CustomerVO customerVO){
+        emailService.sendConferenceEmailToMeAndCustomerBottleneck(customerVO)
     }
 
     void viewInvoice(String email, String filename){
