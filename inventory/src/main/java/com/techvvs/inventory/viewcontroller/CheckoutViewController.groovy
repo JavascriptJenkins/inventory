@@ -247,6 +247,7 @@ public class CheckoutViewController {
                 
                 @RequestParam("cartid") String cartid,
                 @RequestParam("barcode") String barcode,
+                @RequestParam(value = "quantityOfProductToDelete", required = false) Optional<Integer> quantityOfProductToDelete,
                 @RequestParam("page") Optional<Integer> page,
                 @RequestParam("size") Optional<Integer> size){
 
@@ -254,7 +255,15 @@ public class CheckoutViewController {
 
         CartVO cartVO = checkoutHelper.getExistingCart(cartid)
 
-        cartVO = cartDeleteService.deleteProductFromCart(cartVO, barcode)
+        int qtyToDelete = quantityOfProductToDelete.orElse(1)
+        if(qtyToDelete <= 1){
+            cartVO = cartDeleteService.deleteProductFromCart(cartVO, barcode)
+        } else {
+            // delete multiple occurrences one by one
+            for(int i = 0; i < qtyToDelete; i++){
+                cartVO = cartDeleteService.deleteProductFromCart(cartVO, barcode)
+            }
+        }
 
         cartVO = checkoutHelper.hydrateTransientQuantitiesForDisplay(cartVO)
 

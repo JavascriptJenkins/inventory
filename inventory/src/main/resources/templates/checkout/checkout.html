@@ -280,18 +280,47 @@
             }
         });
 
+        let pendingDeleteBarcode = null;
+
         function deleteItemFromCart(element) {
             event.preventDefault();
-            const barcode = element.closest('tr').getAttribute('data-barcode');
-            const form = document.getElementById('deleteItemFromCartForm');
+            const row = element.closest('tr');
+            const barcode = row.getAttribute('data-barcode');
+            const isQuantityMode = $('#quantityModeCheckbox').is(':checked');
 
-            const hiddenInput = document.createElement('input');
-            hiddenInput.type = 'hidden';
-            hiddenInput.name = 'barcode';
-            hiddenInput.value = barcode;
-            form.appendChild(hiddenInput);
+            if (!isQuantityMode) {
+                const form = document.getElementById('deleteItemFromCartForm');
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'barcode';
+                hiddenInput.value = barcode;
+                form.appendChild(hiddenInput);
+                form.submit();
+                return;
+            }
 
-            form.submit();
+            // Quantity mode: show modal to select how many to delete
+            pendingDeleteBarcode = barcode;
+            const productName = (row.querySelector('td:nth-child(1)')?.textContent || '').trim();
+            const qtyText = (row.querySelector('td:nth-child(3)')?.textContent || '1').trim();
+            const maxQty = Math.max(parseInt(qtyText, 10) || 1, 1);
+
+            const nameSpan = document.getElementById('deleteProductNameSpan');
+            const select = document.getElementById('quantityToDeleteSelect');
+            if (nameSpan) nameSpan.textContent = productName;
+            if (select) {
+                select.innerHTML = '';
+                for (let i = 1; i <= maxQty; i++) {
+                    const opt = document.createElement('option');
+                    opt.value = i;
+                    opt.textContent = i;
+                    select.appendChild(opt);
+                }
+            }
+
+            const modalEl = document.getElementById('deleteQuantityModal');
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
         }
     </script>
 
@@ -356,6 +385,38 @@
                 input.dispatchEvent(evt);
             }
         }
+
+        // Confirm delete from modal
+        document.addEventListener('DOMContentLoaded', function() {
+            var confirmBtn = document.getElementById('confirmDeleteQuantityBtn');
+            if (confirmBtn) {
+                confirmBtn.addEventListener('click', function() {
+                    var qtySelect = document.getElementById('quantityToDeleteSelect');
+                    var qty = qtySelect ? parseInt(qtySelect.value, 10) : 1;
+                    var form = document.getElementById('deleteItemFromCartForm');
+
+                    // attach barcode
+                    var barcodeInput = document.createElement('input');
+                    barcodeInput.type = 'hidden';
+                    barcodeInput.name = 'barcode';
+                    barcodeInput.value = pendingDeleteBarcode || '';
+                    form.appendChild(barcodeInput);
+
+                    // attach quantityOfProductToDelete
+                    var qInput = document.createElement('input');
+                    qInput.type = 'hidden';
+                    qInput.name = 'quantityOfProductToDelete';
+                    qInput.value = isNaN(qty) || qty < 1 ? 1 : qty;
+                    form.appendChild(qInput);
+
+                    // hide modal then submit
+                    var modalEl = document.getElementById('deleteQuantityModal');
+                    var modal = bootstrap.Modal.getInstance(modalEl);
+                    if (modal) modal.hide();
+                    form.submit();
+                });
+            }
+        });
 
     </script>
 
@@ -615,6 +676,30 @@
 
 
 
+
+<!-- Delete Quantity Modal -->
+<div class="modal fade" id="deleteQuantityModal" tabindex="-1" aria-labelledby="deleteQuantityModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteQuantityModalLabel">Delete Items</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p style="color:black;">How many of <strong id="deleteProductNameSpan"></strong> would you like to delete?</p>
+                <label for="quantityToDeleteSelect" class="form-label" style="color:black;">Quantity</label>
+                <select id="quantityToDeleteSelect" class="form-select"></select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteQuantityBtn">
+                    <i class="bi bi-trash-fill"></i>
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 </body>
 </html>
