@@ -5,8 +5,12 @@
     <title>Checkout</title>
 
     <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-kQtW33rZJAHjgefvhyyzcGF3C5TFyBQBA13V1RKPf4uH+bwyzQxZ6CmMZHmNBEfJ" crossorigin="anonymous"></script>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Bundle JS (Includes Popper.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
     <link rel="stylesheet" type="text/css" media="all" href="/css/table.css" th:href="@{/css/table.css}" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -341,6 +345,18 @@
             alert("Copied: " + barcodeValue + " | " + productNameValue);
         }
 
+        function scanToBarcodeInput(buttonElement) {
+            var barcodeValue = buttonElement.getAttribute('data-barcode');
+            var input = document.getElementById('barcodeInput');
+            if (input) {
+                input.value = (barcodeValue || '').toString();
+                input.focus();
+                // trigger input event so existing listeners/processors can react
+                var evt = new Event('input', { bubbles: true });
+                input.dispatchEvent(evt);
+            }
+        }
+
     </script>
 
 </head>
@@ -351,13 +367,21 @@
         <div class="back-button">
             <a th:href="@{/dashboard/index}"><i class="bi bi-arrow-left-circle"></i></a>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-3">
             <h1>Checkout</h1>
             <p>Scan Products to Checkout</p>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-3">
             <h3>Total Units:
                 <span th:text="${cart.displayquantitytotal}"></span>
+            </h3>
+        </div>
+        <div th:if="${productNameInScope != null && quantityInScope != null}" class="col-md-3">
+            <h3>Last Scanned:
+                <span th:text="${productNameInScope}"></span>
+            </h3>
+            <h3>Quantity:
+                <span th:text="${quantityInScope}"></span>
             </h3>
         </div>
     </div>
@@ -421,6 +445,7 @@
                             <th>Item</th>
                             <th>Price</th>
                             <th>Quantity</th>
+                            <th>Delete</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -429,7 +454,10 @@
                             <td th:text="${item.price}">Price</td>
                             <td th:text="${item.displayquantity}">Quantity</td>
                             <td>
-                                <a id="deleteItemID" href="#" onclick="deleteItemFromCart(this)">X</a>
+                                <button type="button" id="deleteItemID" class="btn btn-danger btn-sm d-inline-flex align-items-center gap-1" onclick="deleteItemFromCart(this)">
+                                    <i class="bi bi-trash-fill"></i>
+                                    <span>Delete</span>
+                                </button>
                             </td>
                         </tr>
                         </tbody>
@@ -448,7 +476,10 @@
     <form id="submitTransactionForm" th:action="@{/checkout/reviewcart?cartid=__${cart.cartid != null ? cart.cartid : '0'}__}" th:object="${cart}" method="post">
         <input type="hidden" th:field="*{product_cart_list}">
         <input type="hidden" th:field="*{customer.customerid}">
-        <button style="margin-top: 5px;" type="submit" class="btn btn-dark-theme">Review Cart</button>
+        <button style="margin-top: 5px;" type="submit" class="btn btn-success btn-lg d-inline-flex align-items-center gap-2">
+            <i class="bi bi-cart-check-fill fs-4"></i>
+            <span>Review Cart</span>
+        </button>
     </form>
 
 
@@ -466,6 +497,7 @@
                 <th scope="col">Batch Name</th>
                 <th scope="col">Batch ID</th>
                 <th scope="col">Create Date</th>
+                <th scope="col">Scan</th>
             </tr>
             </thead>
             <tbody>
@@ -476,7 +508,7 @@
                 <td>
                     <span th:text="${product.barcode}"></span>
                     <!-- Button to copy barcode -->
-                    <button type="button" class="btn btn-dark-custom btn-sm"
+                    <button type="button" class="btn btn-outline-light btn-sm"
                             onclick="copyToClipboard(this)"
                             th:data-barcode="${product.barcode}"
                             th:data-productname="${product.name}"
@@ -491,6 +523,13 @@
                 <td th:text="${product.batch.name}"></td>
                 <td th:text="${product.batch.batchid}"></td>
                 <td th:text="${product.createTimeStamp}"></td>
+                <td>
+                    <button type="button" class="btn btn-outline-light btn-sm"
+                            onclick="scanToBarcodeInput(this)"
+                            th:data-barcode="${product.barcode}">
+                        Scan
+                    </button>
+                </td>
             </tr>
             </tbody>
         </table>
@@ -536,6 +575,11 @@
         searchBtn.addEventListener("click", function (e) {
             e.preventDefault();
             popup.style.display = "flex";
+            // focus the input inside the popup after it is visible
+            const si = document.getElementById("searchInput");
+            if (si) {
+                setTimeout(() => { si.focus(); si.select(); }, 50);
+            }
         });
 
         closeBtn.addEventListener("click", function () {

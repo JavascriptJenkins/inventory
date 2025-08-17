@@ -183,6 +183,10 @@ class ProductService {
             cartVO.updateTimeStamp = LocalDateTime.now()
             cartVO = cartRepo.save(cartVO)
             model.addAttribute("successMessage","Product: "+productVO.get().name + " added successfully. Quantity: "+counter)
+            model.addAttribute("productNameInScope",productVO.get().name)
+            model.addAttribute("quantityInScope",counter)
+
+
         } else {
             // need to bind the selected customer here otherwise the dropdown wont work
             cartVO.customer = customerRepo.findById(cartVO.customer.customerid).get()
