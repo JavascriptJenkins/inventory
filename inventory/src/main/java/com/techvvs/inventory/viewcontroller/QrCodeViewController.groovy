@@ -41,8 +41,11 @@ public class QrCodeViewController {
     @GetMapping
     String viewQrInfo(
             Model model,
-            TransactionVO transactionVO
+            TransactionVO transactionVO,
+            Optional<String> productkey
     ){
+        // productkey controls which product test results and info to show
+        productkey.present ? model.addAttribute("productkey", productkey.get()) : model.addAttribute("productkey", "")
 
         model.addAttribute("transaction", new TransactionVO())
         return "public/qrinfo.html";
