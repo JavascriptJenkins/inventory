@@ -813,7 +813,7 @@
                     + `&noPrices=${encodeURIComponent(noPricesValue)}`
                     + `&includeOutOfStock=${encodeURIComponent(includeOutOfStockValue)}`
                     + `&tokenlength=${encodeURIComponent(tokenLength)}`
-                    + (useCustomUriValue === 'yes' ? `&useCustomUri=yes&customUriValue=${encodeURIComponent(customUriValue)}` : '');
+                    + (useCustomUriValue === 'yes' ? `&useCustomUri=yes&customUriValue=${encodeURIComponent(customUriValue)}` : '&useCustomUri=no&customUriValue=no');
 
                 // Safely submit the form
                 popupForm.setAttribute('action', actionUri);
