@@ -537,7 +537,7 @@ public class MenuViewController {
 
         // if all values present, send token
         if(menuid.isPresent() && customerid.isPresent() && phonenumber.isPresent() && tokenlength.isPresent() && mediaOnly.isPresent())  {
-            menuHelper.sendShoppingToken(menuid.get(), customerid.get(), phonenumber.get(), tokenlength.get(), mediaOnly.get(), model)
+            menuHelper.sendShoppingToken(menuid.get(), customerid.get(), phonenumber.get(), tokenlength.get(), mediaOnly.get(),  "", "", "", "",model)
         } else {
             model.addAttribute("errorMessage", "menuid, customerid, phonenumber, and tokenlength are required")
         }

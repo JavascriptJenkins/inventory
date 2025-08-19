@@ -235,7 +235,9 @@ public class TwilioTextUtil {
     public String sendShoppingTokenLinkSMS(String phonenumber,
                                            boolean isDev1,
                                            String menuid,
-                                           String shoppingtoken
+                                           String shoppingtoken,
+                                           String useCustomUri,
+                                           String customUriValue
     ) {
         // Save a token value to a username and then send a text message
 
@@ -251,7 +253,12 @@ public class TwilioTextUtil {
             // Only send the text message after everything else went smoothly
             if (!isDev1) {
 
-                String baseuri = env.getProperty("base.qr.domain");
+                String baseuri = "";
+                if("yes".equals(useCustomUri)){
+                    baseuri = customUriValue;
+                } else {
+                    baseuri = env.getProperty("base.qr.domain");
+                }
 
                 // need to encode the jwt for links over sms so the periods don't screw things up
                 String encodedSmsToken = encodeJwt(shoppingtoken);

@@ -543,6 +543,8 @@ public class Menu2ViewController {
             @RequestParam("mediaOnly") Optional<String> mediaOnly,
             @RequestParam("noPrices") Optional<String> noPrices,
             @RequestParam("includeOutOfStock") Optional<String> includeOutOfStock,
+            @RequestParam("useCustomUri") Optional<String> useCustomUri,
+            @RequestParam("customUriValue") Optional<String> customUriValue,
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size
     ){
@@ -556,7 +558,9 @@ public class Menu2ViewController {
                 tokenlength.isPresent() &&
                 mediaOnly.isPresent() &&
                 noPrices.isPresent() &&
-                includeOutOfStock.isPresent()
+                includeOutOfStock.isPresent() &&
+                useCustomUri.isPresent() &&
+                customUriValue
         )  {
             menuHelper.sendShoppingToken(
                     menuid.get(),
@@ -566,6 +570,8 @@ public class Menu2ViewController {
                     mediaOnly.get(),
                     noPrices.get(),
                     includeOutOfStock.get(),
+                    useCustomUri.get(),
+                    customUriValue.get(),
                     model
             )
         } else {

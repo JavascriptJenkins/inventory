@@ -589,6 +589,8 @@ class MenuHelper {
                            String mediaOnly,
                            String noPrices,
                            String includeOutOfStock,
+                           String useCustomUri,
+                           String customUriValue,
                            Model model
 
     ){
@@ -622,10 +624,10 @@ class MenuHelper {
 
         if(systemUserDAO.phone.equals(String.valueOf(numberfromui))){
             // if the phone number entered is the same as the logged in user, just send a single token out
-            twilioTextUtil.sendShoppingTokenLinkSMS(phonenumber,isDev1, menuid, customerVO.shoppingtoken)
+            twilioTextUtil.sendShoppingTokenLinkSMS(phonenumber,isDev1, menuid, customerVO.shoppingtoken, useCustomUri, customUriValue)
         } else {
             // send a copy of the token to the system user logged in number and also to the customer phone number
-            twilioTextUtil.sendShoppingTokenLinkSMS(phonenumber,isDev1, menuid, customerVO.shoppingtoken)
+            twilioTextUtil.sendShoppingTokenLinkSMS(phonenumber,isDev1, menuid, customerVO.shoppingtoken, useCustomUri, customUriValue)
 
             twilioTextUtil.sendShoppingTokenLinkSMSWithCustomMessage(
                     systemUserDAO.phone,isDev1, menuid, customerVO.shoppingtoken, "Menu for Customer: "+customerVO.name+"              ")

@@ -367,7 +367,7 @@
                         <label for="tokenLengthSelect" class="form-label required">Token Length (Hours)</label>
                         <select id="tokenLengthSelect" name="tokenLength" class="form-select">
                             <option value="" selected>Select Hour Amt</option>
-                            <option th:each="hour : ${#numbers.sequence(1,76)}" th:value="${hour}" th:text="${hour}"></option>
+                            <option th:each="hour : ${#numbers.sequence(1,1000)}" th:value="${hour}" th:text="${hour}"></option>
                         </select>
                     </div>
 
@@ -399,6 +399,20 @@
                             <input type="checkbox" id="includeOutOfStockCheckbox" class="form-check-input">
                             <label class="form-check-label" for="includeOutOfStockCheckbox">Include Out of Stock Items</label>
                         </div>
+                    </div>
+
+                    <!-- Custom URI Toggle -->
+                    <div class="col-md-12">
+                        <div class="form-check">
+                            <input type="checkbox" id="useCustomUriCheckbox" class="form-check-input">
+                            <label class="form-check-label" for="useCustomUriCheckbox">Custom Uri</label>
+                        </div>
+                    </div>
+
+                    <!-- Custom URI Value (hidden unless checked) -->
+                    <div class="col-md-12" id="customUriValueGroup" style="display: none;">
+                        <label for="customUriValue" class="form-label">URI Value</label>
+                        <input type="text" id="customUriValue" class="form-control" placeholder="https://example.com/path?param=value">
                     </div>
 
 
@@ -706,6 +720,9 @@
             const mediaOnlyCheckbox = document.getElementById('mediaOnlyCheckbox');
             const noPricesCheckbox = document.getElementById('noPricesCheckbox');
             const includeOutOfStockCheckbox = document.getElementById('includeOutOfStockCheckbox');
+            const useCustomUriCheckbox = document.getElementById('useCustomUriCheckbox');
+            const customUriValueInput = document.getElementById('customUriValue');
+            const customUriValueGroup = document.getElementById('customUriValueGroup');
 
             let currentMenuId = null; // To store the correct menu ID for the popup
 
@@ -746,6 +763,13 @@
                 submitBtn.disabled = !(isCustomerSelected && isTokenLengthSelected && isPhoneNumberValid);
             }
 
+            // Toggle visibility for Custom URI value input
+            if (useCustomUriCheckbox && customUriValueGroup) {
+                useCustomUriCheckbox.addEventListener('change', function() {
+                    customUriValueGroup.style.display = this.checked ? 'block' : 'none';
+                });
+            }
+
             // Handle submit button click
             submitBtn.addEventListener('click', function (event) {
                 event.preventDefault(); // Prevent default form submission
@@ -756,6 +780,8 @@
                 let mediaOnlyValue = "no";
                 let noPricesValue = "no";
                 let includeOutOfStockValue = "no";
+                let useCustomUriValue = "no";
+                let customUriValue = "";
 
                 if(mediaOnlyCheckbox.checked) {
                     mediaOnlyValue = "yes";
@@ -767,6 +793,11 @@
 
                 if(includeOutOfStockCheckbox.checked) {
                     includeOutOfStockValue = "yes";
+                }
+
+                if (useCustomUriCheckbox && useCustomUriCheckbox.checked) {
+                    useCustomUriValue = "yes";
+                    customUriValue = (customUriValueInput?.value || "").trim();
                 }
 
                 if (!currentMenuId || !customerId || !tokenLength || !phoneNumber) {
@@ -781,7 +812,8 @@
                     + `&mediaOnly=${encodeURIComponent(mediaOnlyValue)}`
                     + `&noPrices=${encodeURIComponent(noPricesValue)}`
                     + `&includeOutOfStock=${encodeURIComponent(includeOutOfStockValue)}`
-                    + `&tokenlength=${encodeURIComponent(tokenLength)}`;
+                    + `&tokenlength=${encodeURIComponent(tokenLength)}`
+                    + (useCustomUriValue === 'yes' ? `&useCustomUri=yes&customUriValue=${encodeURIComponent(customUriValue)}` : '');
 
                 // Safely submit the form
                 popupForm.setAttribute('action', actionUri);
