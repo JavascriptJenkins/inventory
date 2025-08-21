@@ -756,6 +756,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
 
+    <!-- PayPal JS SDK -->
+<!--    <script src="https://www.paypal.com/sdk/js?client-id=YOUR_CLIENT_ID&components=buttons&currency=USD"></script>-->
+    <script th:src="@{https://www.paypal.com/sdk/js(client-id=${paypalClientID},components='buttons',currency='USD')}"></script>
 
 
 </head>
@@ -1173,9 +1176,12 @@
 
 
 
-                        <div th:if="${IncludePayPalView == 'yes'}">
-                            HEYYYY!!!!
-                        </div>
+                        <div th:if="${IncludePayPalView == 'yes'}" class="mt-3">
+                            <div id="paypal-button-container">
+
+
+                            </div>
+                         </div>
 
 
 
@@ -2210,6 +2216,39 @@ typeFilterSelect.dispatchEvent(new Event('change'));
       });
     })();
 </script>
+    <script>
+        // You'll pass the cart/order identifier your server understands
+        const cartId = window.cartId || '1234';
+
+        paypal.Buttons({
+          createOrder: () => {
+            // Ask YOUR SERVER to create the PayPal order from the DB amount
+            return fetch(`/api/paypal/orders?cartId=${encodeURIComponent(cartId)}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' }
+            })
+            .then(r => r.json())
+            .then(d => d.orderId); // return the PayPal order ID to the JS SDK
+          },
+
+          onApprove: (data) => {
+            // Buyer approved. Tell YOUR SERVER to capture the payment.
+            return fetch(`/api/paypal/orders/${data.orderID}/capture`, {
+              method: 'POST'
+            })
+            .then(r => r.json())
+            .then(result => {
+              // success path
+              window.location = `/thank-you?orderId=${encodeURIComponent(data.orderID)}`;
+            });
+          },
+
+          onError: (err) => {
+            console.error('PayPal error', err);
+            alert('Payment could not be completed. Please try again.');
+          }
+        }).render('#paypal-button-container');
+    </script>
 
 </body>
 

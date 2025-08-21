@@ -134,7 +134,7 @@ public class Menu3ViewController {
 
 
 
-
+        processRestOfStuff(menuid, shoppingtoken, model, tokenused)
         //techvvsAuthService.checkuserauth(model)
         return "menu3/menu.html";
     }
@@ -516,7 +516,10 @@ public class Menu3ViewController {
         checkoutHelper.getAllCustomers(model)
 
 
+        List<String> authorities = jwtTokenProvider.extractAuthorities(shoppingtoken.get())
+        injectAuthoritiesIntoModel(model, authorities)
 
+        model.addAttribute("paypalClientID", env.getProperty("paypal.client-id"))
     }
 
     // todo: modify this to parse user cookie from request and check user permissions
