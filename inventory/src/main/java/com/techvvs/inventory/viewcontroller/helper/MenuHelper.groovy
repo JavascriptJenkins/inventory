@@ -591,6 +591,7 @@ class MenuHelper {
                            String includeOutOfStock,
                            String useCustomUri,
                            String customUriValue,
+                           String enablePaypal, // todo: handle this in the token minting
                            Model model
 
     ){
@@ -607,6 +608,11 @@ class MenuHelper {
 
         if("yes".equals(includeOutOfStock)){
             roles.add(Role.ROLE_INCLUDE_OUT_OF_STOCK)
+        }
+
+        if("yes".equals(enablePaypal)){
+            roles.add(Role.ROLE_PAYPAL_ENABLED)
+//            sec:authorize="hasAuthority('ROLE_PAYPAL_ENABLED')"
         }
 
 

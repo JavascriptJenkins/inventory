@@ -326,7 +326,7 @@ public class Menu2ViewController {
                     model
             )
 
-            model.addAttribute("ordercomplete", "yes")
+            model.addAttribute("ordercomplete", "yes") // NOTE: this is what hides the menu after an order is complete so the delivery link can be exposed
             model.addAttribute("successMessage", "Click HERE to monitor your delivery!")
             List<Role> roles = Arrays.asList(Role.ROLE_CLIENT, Role.ROLE_DELIVERY_VIEW_TOKEN);
             String token = jwtTokenProvider.createDeliveryViewToken(transactionVO.customervo.email, roles, 96,
@@ -545,6 +545,7 @@ public class Menu2ViewController {
             @RequestParam("includeOutOfStock") Optional<String> includeOutOfStock,
             @RequestParam("useCustomUri") Optional<String> useCustomUri,
             @RequestParam("customUriValue") Optional<String> customUriValue,
+            @RequestParam("enablePaypal") Optional<String> enablePaypal,
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size
     ){
@@ -559,7 +560,7 @@ public class Menu2ViewController {
                 mediaOnly.isPresent() &&
                 noPrices.isPresent() &&
                 includeOutOfStock.isPresent() &&
-                useCustomUri.isPresent() &&
+                enablePaypal.isPresent() &&
                 customUriValue
         )  {
             menuHelper.sendShoppingToken(
@@ -572,6 +573,7 @@ public class Menu2ViewController {
                     includeOutOfStock.get(),
                     useCustomUri.get(),
                     customUriValue.get(),
+                    enablePaypal.get(),
                     model
             )
         } else {

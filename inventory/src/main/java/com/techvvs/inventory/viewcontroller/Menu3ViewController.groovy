@@ -15,7 +15,7 @@ import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.*
 
-/* Here we have the menu2 controller, which is used for serving the mobile friendly menus.
+/* Here we have the menu3 controller, which is used for serving the mobile friendly menus.
 * We are not using stupid chatgpt for any functionality on the htmls being served here..... .SMFH
 *  */
 
@@ -84,7 +84,7 @@ public class Menu3ViewController {
         // fetch all customers from database and bind them to model
         checkoutHelper.getAllCustomers(model)
         //techvvsAuthService.checkuserauth(model)
-        return "menu2/menu.html";
+        return "menu3/menu.html";
     }
 
     // todo: open this up on the firewall
@@ -117,16 +117,8 @@ public class Menu3ViewController {
 
         System.out.println("DEBUGGGGG: shoppingtoken.get(): "+shoppingtoken.get())
         List<String> authorities = jwtTokenProvider.extractAuthorities(shoppingtoken.get())
-        if(jwtTokenProvider.hasRole(authorities, String.valueOf(Role.ROLE_MEDIA_ONLY))){
-            model.addAttribute("MediaOnlyView", "yes") // this will remove the add to cart button and only allow clients to view media on the menu
-        }
+        injectAuthoritiesIntoModel(model, authorities)
 
-        if(jwtTokenProvider.hasRole(authorities, String.valueOf(Role.ROLE_NO_PRICES))){
-            model.addAttribute("NoPricesView", "yes") // remove the price listing
-        }
-        if(jwtTokenProvider.hasRole(authorities, String.valueOf(Role.ROLE_INCLUDE_OUT_OF_STOCK))){
-            model.addAttribute("IncludeOutOfStockView", "yes") // include showing the out of stock items
-        }
 
         System.out.println("DEBUGGGGG222: menuid.isPresent(): "+menuid.isPresent())
         System.out.println("DEBUGGGGG222: shoppingtoken.isPresent(): "+shoppingtoken.isPresent())
@@ -144,10 +136,25 @@ public class Menu3ViewController {
 
 
         //techvvsAuthService.checkuserauth(model)
-        return "menu2/menu.html";
+        return "menu3/menu.html";
     }
 
 
+    void injectAuthoritiesIntoModel(Model model, List<String> authorities) {
+        if(jwtTokenProvider.hasRole(authorities, String.valueOf(Role.ROLE_MEDIA_ONLY))){
+            model.addAttribute("MediaOnlyView", "yes") // this will remove the add to cart button and only allow clients to view media on the menu
+        }
+
+        if(jwtTokenProvider.hasRole(authorities, String.valueOf(Role.ROLE_NO_PRICES))){
+            model.addAttribute("NoPricesView", "yes") // remove the price listing
+        }
+        if(jwtTokenProvider.hasRole(authorities, String.valueOf(Role.ROLE_INCLUDE_OUT_OF_STOCK))){
+            model.addAttribute("IncludeOutOfStockView", "yes") // include showing the out of stock items
+        }
+        if(jwtTokenProvider.hasRole(authorities, String.valueOf(Role.ROLE_PAYPAL_ENABLED))){
+            model.addAttribute("IncludePayPalView", "yes") // include showing the out of stock items
+        }
+    }
     // allow user to shop menu with shopping token
     @PostMapping("/shop/product/cart/add")
     String addProductToCart(
@@ -188,7 +195,7 @@ public class Menu3ViewController {
         processRestOfStuff(menuid, shoppingtoken, model, tokenused)
 
 
-        return "menu2/menu.html";
+        return "menu3/menu.html";
     }
 
     @PostMapping("/shop/product/cart/subtract")
@@ -225,7 +232,7 @@ public class Menu3ViewController {
         }
 
         processRestOfStuff(menuid, shoppingtoken, model, tokenused)
-        return "menu2/menu.html";
+        return "menu3/menu.html";
     }
 
     @PostMapping("/shop/empty/cart")
@@ -262,7 +269,7 @@ public class Menu3ViewController {
         }
 
         processRestOfStuff(menuid, shoppingtoken, model, tokenused)
-        return "menu2/menu.html";
+        return "menu3/menu.html";
     }
 
 
@@ -272,7 +279,7 @@ public class Menu3ViewController {
     String checkoutCartFromMenuToCartReview(
             Model model,
             @RequestParam("menuid") Optional<String> menuid,
-            @RequestParam("shoppingtoken") Optional<String> shoppingtoken,
+            @RequestParam("shoppingtoken") Optional<String> shoppingtoken, // this contains which payment options to allow
             @RequestParam("cartid") Optional<String> cartid,
             @RequestParam("productid") Optional<String> productid,
             @RequestParam("quantityselected") Optional<String> quantityselected,
@@ -358,7 +365,7 @@ public class Menu3ViewController {
         }
 
         processRestOfStuff(menuid, shoppingtoken, model, tokenused)
-        return "menu2/menu.html";
+        return "menu3/menu.html";
     }
 
     @PostMapping("/shop/checkout")
@@ -451,7 +458,7 @@ public class Menu3ViewController {
         }
 
         processRestOfStuff(menuid, shoppingtoken, model, tokenused)
-        return "menu2/menu.html";
+        return "menu3/menu.html";
     }
 
     LocationVO prepLocationObject(
@@ -532,9 +539,9 @@ public class Menu3ViewController {
             if(batchVO.menu_set.size() == 1){
                 menuid = String.valueOf(batchVO.menu_set[0].menuid) // grab the default menu id
             } else {
-                for(MenuVO menu222 : batchVO.menu_set){
-                    if(menu222.isdefault == 1){
-                        menuid = String.valueOf(menu222.menuid) // find the default menu and serve it
+                for(MenuVO menu322 : batchVO.menu_set){
+                    if(menu322.isdefault == 1){
+                        menuid = String.valueOf(menu322.menuid) // find the default menu and serve it
                         break
                     }
                 }
@@ -552,7 +559,7 @@ public class Menu3ViewController {
         // fetch all customers from database and bind them to model
         //checkoutHelper.getAllCustomers(model)
         //techvvsAuthService.checkuserauth(model)
-        return "menu2/menu.html";
+        return "menu3/menu.html";
     }
 
     @PostMapping("/pricechange")
@@ -627,7 +634,7 @@ public class Menu3ViewController {
 
         model.addAttribute("baseqrdomain", env.getProperty("base.qr.domain"))
 
-        return "menu2/activeshoppingtokens.html";
+        return "menu3/activeshoppingtokens.html";
     }
 
     @PostMapping("/shoppingtoken/send")
@@ -726,7 +733,7 @@ public class Menu3ViewController {
         // fetch all customers from database and bind them to model
         checkoutHelper.getAllCustomers(model)
 
-        return "menu2/menu.html";
+        return "menu3/menu.html";
     }
 
 
