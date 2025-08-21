@@ -2214,11 +2214,12 @@ typeFilterSelect.dispatchEvent(new Event('change'));
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') closePhoto();
       });
-    })();
-</script>
-    <script>
-        // You'll pass the cart/order identifier your server understands
-        const cartId = window.cartId || '1234';
+         })();
+ </script>
+ 
+ <script>
+     // You'll pass the cart/order identifier your server understands
+     const cartId = window.cartId || '[[${cartid}]]';
 
         paypal.Buttons({
           createOrder: () => {
