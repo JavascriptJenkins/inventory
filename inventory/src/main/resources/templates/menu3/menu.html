@@ -756,9 +756,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
 
-    <!-- PayPal JS SDK -->
-<!--    <script src="https://www.paypal.com/sdk/js?client-id=YOUR_CLIENT_ID&components=buttons&currency=USD"></script>-->
-    <script th:src="@{https://www.paypal.com/sdk/js(client-id=${paypalClientID},components='buttons',currency='USD')}"></script>
 
 
 </head>
@@ -1176,12 +1173,6 @@
 
 
 
-                        <div th:if="${IncludePayPalView == 'yes'}" class="mt-3">
-                            <div id="paypal-button-container">
-
-
-                            </div>
-                         </div>
 
 
 
@@ -1189,7 +1180,7 @@
 
                     <div class="modal-footer">
                         <button type="button" class="btn btn-danger" id="cancelOrder">Cancel</button>
-                        <button type="button" id="confirmOrder" class="btn btn-primary" disabled>Confirm Order</button>
+                        <button type="button" id="confirmOrder" class="btn btn-primary">Confirm Order</button>
                     </div>
                 </div>
             </div>
@@ -1416,13 +1407,9 @@
                 $('#cartReviewModal').fadeIn();
     
                 // Disable the confirm order button initially
-                $('#confirmOrder').prop('disabled', true);
+<!--                $('#confirmOrder').prop('disabled', true);-->
     
-                // Enable the confirm order button when the user types more than 5 characters in the delivery notes
-                $('#deliveryNotes').on('input', function () {
-                    const deliveryNotesLength = $(this).val().length;
-                    $('#confirmOrder').prop('disabled', deliveryNotesLength <= 5);
-                });
+
             });
     
             // Close cart review modal
@@ -1434,33 +1421,8 @@
     
             // Handle Confirm Order click
             $('#confirmOrder').on('click', function () {
-                const isDelivery = $('#deliveryCheckbox').is(':checked');
-                const isLocationDropdownVisible = $('#locationDropdown').is(':visible');
-                const isLocationSelected = $('#locationSelect').val() !== null && $('#locationSelect').val() !== '0';
-    
-                let selectedLocation = '0';
-                if(isDelivery && isLocationDropdownVisible && isLocationSelected){
-                    selectedLocation = $('#locationSelect').val();
-                }
-    
-                // Default selectedLocation to 0 if undefined or invalid
-                if (selectedLocation === undefined || selectedLocation === 'default') {
-                    selectedLocation = 0;
-                }
-    
-                let deliveryNotes = $('#deliveryNotes').val().trim();
-    
-                // Validate inputs
-                if (deliveryNotes.length <= 5 && isDelivery) {
-                    alert('Please select a valid delivery location and ensure delivery notes are more than 5 characters.');
-                    return;
-                }
-    
-    <!--            // need to set this to a blank string explicitly for pickup so it processes right....-->
-    <!--            if(!isDelivery){-->
-    <!--                deliveryNotes = " ";-->
-    <!--            }-->
-    
+
+
                 // Fetch parameters from the cart
                 const firstCartRow = $('#cartRows .cart-row').first();
                 const shoppingToken = firstCartRow.attr('data-shopping-token-id');
@@ -1481,28 +1443,13 @@
                 const form = document.createElement('form');
                 form.method = 'POST';
                 form.action = '/menu3/shop/checkout'; // Adjust to your backend endpoint
-    
-                // get the values from the form on cart review
-                let type = $('#deliveryCheckbox').is(':checked') ? 'delivery' : 'pickup';
-                let address1 = $('#address1').val();
-                let address2 = $('#address2').val();
-                let city = $('#city').val();
-                let state = $('#state').val();
-                let zipcode = $('#zipcode').val();
+
     
                 // Append necessary parameters as hidden input fields
                 const fields = [
                     { name: 'shoppingtoken', value: shoppingToken },
                     { name: 'menuid', value: menuId },
                     { name: 'cartid', value: cartId },
-                    { name: 'deliverynotes', value: deliveryNotes },
-                    { name: 'locationid', value: selectedLocation },
-                    { name: 'type', value: type },
-                    { name: 'address1', value: address1 },
-                    { name: 'address2', value: address2 },
-                    { name: 'city', value: city },
-                    { name: 'state', value: state },
-                    { name: 'zipcode', value: zipcode },
                 ];
     
                 fields.forEach(field => {
@@ -1704,44 +1651,7 @@
                     }
                 }
     
-                function validateForm() {
-                    const isDelivery = $('#deliveryCheckbox').is(':checked');
-                    const isLocationDropdownVisible = $('#locationDropdown').is(':visible');
-    
-                    // Declare variables outside the if block
-                    let address1Valid = true;
-                    let cityValid = true;
-                    let stateValid = true;
-                    let zipcodeValid = true;
-                    let deliveryNotesValid = true;
-    
-                    const isLocationSelected = $('#locationSelect').val() !== null && $('#locationSelect').val() !== '0';
-    
-    
-                    // Validate fields only if Delivery is checked and the location is not selected
-                    if (isDelivery && !isLocationSelected) {
-                        console.log('validating with location not selected');
-                        address1Valid = $('#address1').val() !== null && $('#address1').val().length > 0;
-                        cityValid = $('#city').val() !== null && $('#city').val().length >= 3;
-                        console.log('cityValid: '+cityValid);
-                        stateValid = $('#state').val() !== null && $('#state').val() !== '';
-                        zipcodeValid = $('#zipcode').val() !== null && /^\d{5}$/.test($('#zipcode').val());
-                        deliveryNotesValid = $('#deliveryNotes').val() !== null && $('#deliveryNotes').val().length > 5;
-                    }
-    
-                    if(isDelivery && isLocationSelected){
-                       console.log('validating WITH location selected');
-                      deliveryNotesValid = $('#deliveryNotes').val() !== null && $('#deliveryNotes').val().length > 5;
-                      console.log('deliveryNotesValid: '+deliveryNotesValid)
-                    }
-    
-                    // Combine all validation checks
-                    const allValid = !isDelivery || (address1Valid && cityValid && stateValid && zipcodeValid && deliveryNotesValid);
-    
-                    // Enable or disable the Confirm Order button based on validation
-                    $('#confirmOrder').prop('disabled', !allValid);
-    
-                }
+
     
     
                 // Toggle Delivery Fields
@@ -1799,27 +1709,9 @@
                     $('#cartReviewModal').fadeOut();
                 });
     
-                // Enable Confirm Order when Pickup is selected
-                $('#pickupCheckbox').on('change', function () {
-                    const isChecked = $(this).is(':checked');
-                    $('#confirmOrder').prop('disabled', !isChecked);
+
     
-                    // Ensure Delivery checkbox is unchecked
-                    if (isChecked) {
-                        $('#deliveryCheckbox').prop('checked', false);
-                        $('#deliveryFields').hide(); // Hide delivery fields if visible
-                    }
-                });
-    
-                // Reset Confirm Order button state on Delivery checkbox change
-                $('#deliveryCheckbox').on('change', function () {
-                    if ($(this).is(':checked')) {
-                        $('#pickupCheckbox').prop('checked', false);
-                        validateForm();
-    
-    <!--                    $('#confirmOrder').prop('disabled', true); // Disable for Delivery until fields are valid-->
-                    }
-                });
+
             });
 
 
@@ -1859,24 +1751,7 @@
                 }
     
     
-                function updateConfirmOrderButtonState() {
-                    const isDeliveryChecked = $('#deliveryCheckbox').is(':checked');
-                    const isPickupChecked = $('#pickupCheckbox').is(':checked');
-                    const confirmOrderButton = $('#confirmOrder');
-    
-                    // If Delivery is checked, validate all fields
-                    if (isDeliveryChecked) {
-                        confirmOrderButton.prop('disabled', !validateDeliveryFields());
-                    }
-                    // If Pickup is checked, enable the button
-                    else if (isPickupChecked) {
-                        confirmOrderButton.prop('disabled', false);
-                    }
-                    // Otherwise, disable the button
-                    else {
-                        confirmOrderButton.prop('disabled', true);
-                    }
-                }
+
     
                 // Attach the validation logic to the change event of checkboxes
                 $('#deliveryCheckbox, #pickupCheckbox').on('change', function () {
@@ -1898,9 +1773,6 @@
                     updateConfirmOrderButtonState();
                 });
     
-                // Set the initial state of the Confirm Order button and delivery fields
-                updateConfirmOrderButtonState();
-                $('#deliveryFields').hide(); // Hide delivery fields by default
             });
         </script>
 
@@ -1947,23 +1819,10 @@
                                 $(this).siblings('.validation-icon').html('').css('color', ''); // Remove validation icons
                             });
     
-                            $('#confirmOrder').prop('disabled', true); // Disable the Confirm Order button
-    
+
                         });
                     }
-    
-                    // Hide or show address fields and button based on the dropdown value
-                    if (isLocationSelected) {
-                        $(addressFieldsClass).hide(); // Hide address fields
-                        newLocationButton.fadeIn(); // Show the "New Location" button
-                    } else {
-                        $(addressFieldsClass).show(); // Show address fields
-                        newLocationButton.fadeOut(); // Hide the button
-                    }
-    
-                    // Validate delivery notes
-                    const deliveryNotesLength = $('#deliveryNotes').val().length;
-                    $('#confirmOrder').prop('disabled', deliveryNotesLength <= 5);
+
                 });
             });
         </script>
@@ -2216,40 +2075,7 @@ typeFilterSelect.dispatchEvent(new Event('change'));
       });
          })();
  </script>
- 
- <script>
-     // You'll pass the cart/order identifier your server understands
-     const cartId = window.cartId || '[[${cartid}]]';
 
-        paypal.Buttons({
-          createOrder: () => {
-            // Ask YOUR SERVER to create the PayPal order from the DB amount
-            return fetch(`/api/paypal/orders?cartId=${encodeURIComponent(cartId)}`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' }
-            })
-            .then(r => r.json())
-            .then(d => d.orderId); // return the PayPal order ID to the JS SDK
-          },
-
-          onApprove: (data) => {
-            // Buyer approved. Tell YOUR SERVER to capture the payment.
-            return fetch(`/api/paypal/orders/${data.orderID}/capture`, {
-              method: 'POST'
-            })
-            .then(r => r.json())
-            .then(result => {
-              // success path
-              window.location = `/thank-you?orderId=${encodeURIComponent(data.orderID)}`;
-            });
-          },
-
-          onError: (err) => {
-            console.error('PayPal error', err);
-            alert('Payment could not be completed. Please try again.');
-          }
-        }).render('#paypal-button-container');
-    </script>
 
 </body>
 

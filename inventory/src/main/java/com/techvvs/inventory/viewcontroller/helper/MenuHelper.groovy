@@ -996,7 +996,26 @@ class MenuHelper {
         return customerVO
     }
 
+    @Transactional
+    TransactionVO checkoutCartWithNoLocation(
+            Integer cartid,
+            Integer menuid,
+            String token,
+            Model model
+    ){
+        if(!validateShoppingToken(String.valueOf(menuid), token, model)){
+            return false
+        }
 
+        System.out.println("BUGFIX DEBUG: 3")
+        // get the existing cart
+        CartVO cartVO = cartRepo.findById(cartid).get()
+        System.out.println("BUGFIX DEBUG: 4")
+        // generate a new transaction
+        TransactionVO transactionVO = transactionService.processCartGenerateNewTransactionForPaymentLandingPage(cartVO)
+
+        return transactionVO
+    }
 
     @Transactional
     TransactionVO checkoutCart(

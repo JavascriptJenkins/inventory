@@ -163,6 +163,88 @@ class TransactionService {
     }
 
 
+
+
+    // this is for transactions running through the payment landing page that have no location
+    @Transactional
+    TransactionVO processCartGenerateNewTransactionForPaymentLandingPage(CartVO cartVO) {
+
+        Double taxpercentage = environment.getProperty("tax.percentage", Double.class)
+        System.out.println("BUGFIX DEBUG: 5")
+        double originalprice = cartService.calculateTotalPriceOfProductList(cartVO.product_cart_list)
+
+        double totalwithtax = 0.00
+
+        totalwithtax = formattingUtil.calculateTotalWithTax(originalprice, taxpercentage, 0.00)
+        System.out.println("BUGFIX DEBUG: 6")
+        ArrayList<ProductVO> newlist = cartVO.product_cart_list
+
+        TransactionVO newtransaction = new TransactionVO(
+
+                product_list: newlist,
+                cart: cartVO,
+                updateTimeStamp: LocalDateTime.now(),
+                createTimeStamp: LocalDateTime.now(),
+                customervo: cartVO.customer,
+                total: cartVO.total,
+                originalprice: originalprice,
+                totalwithtax: totalwithtax,
+//                totalwithtax: cartVO.total,
+                paid: 0.00,
+                taxpercentage: techvvsAppUtil.dev1 ? 0 : 0, // we are not going to set a tax percentage here in non dev environments
+                isprocessed: 0
+
+        )
+
+        newtransaction = transactionRepo.save(newtransaction)
+        System.out.println("BUGFIX DEBUG: 7")
+        // only save the cart after transaction is created
+        productService.saveProductAssociations(newtransaction)
+
+        // save the cart with processed=1
+        cartVO.isprocessed = 1
+        cartVO.updateTimeStamp = LocalDateTime.now()
+        cartVO = cartRepo.save(newtransaction.cart)
+
+        System.out.println("BUGFIX DEBUG: 8")
+        // create a delivery instance for the transaction so it will show up in the delivery que
+        DeliveryVO deliveryVO = new DeliveryVO(
+                transaction: newtransaction,
+                name: cartVO.customer.name+" | Order " + " | " +newtransaction.transactionid,
+                description: "typical order description",
+                deliverybarcode: productService.generateBarcodeForSplitProduct(generateEightDigitNumber()),
+                deliveryqrlink: "", // this contains the deliveryid, has to be set after the delivery is created
+//                location: setLocation(deliverynotes, locationid, locationVO, type, cartVO.customer),
+                notes: "Order from a payment landing page",
+                iscanceled: 0,
+                isprocessed: 0,
+                ispickup: 0,
+                status: appConstants.DELIVERY_STATUS_CREATED,
+                total: newtransaction.total,
+                updateTimeStamp: LocalDateTime.now(),
+                createTimeStamp: LocalDateTime.now()
+
+        )
+        deliveryVO = deliveryRepo.save(deliveryVO)
+        System.out.println("BUGFIX DEBUG: 9")
+
+        // now set the delivery qr link on the delivery object
+        deliveryVO.deliveryqrlink = qrCodeGenerator.buildQrLinkForDeliveryItem(String.valueOf(deliveryVO.deliveryid))
+        deliveryVO.package_list = createNewPackage(newtransaction, deliveryVO)
+        System.out.println("BUGFIX DEBUG: 10")
+        deliveryVO = deliveryRepo.save(deliveryVO)
+
+        // todo: should we text the user the delivery qr link upon creation?   will just display in work que ui for now
+
+        newtransaction.delivery = deliveryVO // binding this here just so the upstream methods will have it and we don't have to do another fetch to the database
+
+        return newtransaction
+
+    }
+
+
+
+
     // todo: holy crap this method is ridiculous.  god willing inshallah it shall be refactored
     @Transactional
     TransactionVO processCartGenerateNewTransactionForDelivery(CartVO cartVO, int locationid, String deliverynotes, LocationVO locationVO, type) {

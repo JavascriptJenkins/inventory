@@ -1,11 +1,14 @@
 package com.techvvs.inventory.viewcontroller
 
+import com.techvvs.inventory.jparepo.CartRepo
 import com.techvvs.inventory.jparepo.TransactionRepo
+import com.techvvs.inventory.model.CartVO
 import com.techvvs.inventory.model.CustomerVO
 import com.techvvs.inventory.model.PaymentVO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.printers.PrinterService
 import com.techvvs.inventory.service.auth.TechvvsAuthService
+import com.techvvs.inventory.service.controllers.CartService
 import com.techvvs.inventory.service.controllers.PaymentService
 import com.techvvs.inventory.service.controllers.TransactionService
 import com.techvvs.inventory.viewcontroller.helper.CheckoutHelper
@@ -40,6 +43,8 @@ public class PaymentViewController {
     @Autowired
     TransactionService transactionService
 
+    @Autowired
+    CartRepo cartRepo
 
 
 
@@ -129,6 +134,32 @@ public class PaymentViewController {
     }
 
 
+
+    //default home mapping
+    @GetMapping("/landingpage")
+    String viewPaymentLandingPage(
+            Model model,
+            @RequestParam("cartid") Optional<String> cartid
+    ){
+
+        // bind the CartVO to preparer for paypal checkout
+        CartVO cartVO
+        if(cartid.isPresent()) {
+            cartVO = cartRepo.findById(Integer.valueOf(cartid.get())).get()
+            model.addAttribute("cart", cartVO)
+            model.addAttribute("customer", cartVO.customer)
+            model.addAttribute("cartid", cartVO.cartid)
+        } else {
+            cartVO = new CartVO(cartid: 0)
+            model.addAttribute("cart", cartVO)
+            model.addAttribute("customer", new CustomerVO(customerid: 0))
+            model.addAttribute("cartid", cartVO.cartid)
+        }
+
+        // fetch all customers from database and bind them to model
+        techvvsAuthService.checkuserauth(model)
+        return "payment/payment_landing.html";
+    }
 
 
 

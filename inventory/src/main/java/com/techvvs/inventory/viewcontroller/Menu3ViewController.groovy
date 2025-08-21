@@ -368,24 +368,16 @@ public class Menu3ViewController {
         return "menu3/menu.html";
     }
 
-    @PostMapping("/shop/checkout")
-    String checkoutCartFromMenu(
+
+
+    @PostMapping("/shop/checkout/transaction")
+    String checkoutCartFromMenuCreateTransaction(
             Model model,
             @RequestParam("menuid") Optional<String> menuid,
             @RequestParam("shoppingtoken") Optional<String> shoppingtoken,
             @RequestParam("cartid") Optional<String> cartid,
             @RequestParam("productid") Optional<String> productid,
             @RequestParam("quantityselected") Optional<String> quantityselected,
-            @RequestParam("deliverynotes") Optional<String> deliverynotes,
-            @RequestParam("locationid") Optional<String> locationid,
-
-            @RequestParam("address1") Optional<String> address1,
-            @RequestParam("address2") Optional<String> address2,
-            @RequestParam("city") Optional<String> city,
-            @RequestParam("state") Optional<String> state,
-            @RequestParam("zipcode") Optional<String> zipcode,
-            @RequestParam("type") Optional<String> type, // "delivery" or "pickup"
-
             @RequestParam("size") Optional<String> size,
             @ModelAttribute( "cart" ) CartVO cartVO
     ){
@@ -393,8 +385,6 @@ public class Menu3ViewController {
         System.out.println("DEBUG LOGGING START: ")
         System.out.println("shoppingtoken: "+shoppingtoken)
         System.out.println("cartid: "+cartid)
-        System.out.println("deliverynotes: "+deliverynotes)
-        System.out.println("deliverynotes.present: "+deliverynotes.present)
 
         System.out.println("DEBUG LOGGING END")
 
@@ -408,25 +398,16 @@ public class Menu3ViewController {
         }
 
         // first we need to check if we have all required items
-        if(shoppingtoken.present && cartid.present && menuid.present && locationid.present && deliverynotes.present
-
-            && type.present // if type is present and is "delivery" and locationid is "0" then we have a new incoming location
-
-            && !tokenused
+        if(shoppingtoken.present && cartid.present && menuid.present
+                && !tokenused
         ){
-
-            LocationVO locationVO = prepLocationObject(address1, address2, city, state, zipcode, type, locationid, model)
 
             System.out.println("BUGFIX DEBUG: 2")
             // now we will checkout this cart and turn it into a transaction
-            TransactionVO transactionVO = menuHelper.checkoutCart(
+            TransactionVO transactionVO = menuHelper.checkoutCartWithNoLocation(
                     Integer.valueOf(cartid.get()),
                     Integer.valueOf(menuid.get()),
-                    Integer.valueOf(locationid.get()),
-                    deliverynotes.get(),
                     shoppingtoken.get(),
-                    locationVO,
-                    type.get(),
                     model
             )
 
@@ -458,7 +439,42 @@ public class Menu3ViewController {
         }
 
         processRestOfStuff(menuid, shoppingtoken, model, tokenused)
-        return "menu3/menu.html";
+        return "payment/payment_landing.html";
+    }
+
+    @PostMapping("/shop/checkout")
+    String checkoutCartFromMenu(
+            Model model,
+            @RequestParam("menuid") Optional<String> menuid,
+            @RequestParam("shoppingtoken") Optional<String> shoppingtoken,
+            @RequestParam("cartid") Optional<String> cartid,
+            @RequestParam("productid") Optional<String> productid,
+            @RequestParam("quantityselected") Optional<String> quantityselected,
+            @RequestParam("size") Optional<String> size,
+            @ModelAttribute( "cart" ) CartVO cartVO
+    ){
+
+        System.out.println("DEBUG LOGGING START: ")
+        System.out.println("shoppingtoken: "+shoppingtoken)
+        System.out.println("cartid: "+cartid)
+
+        System.out.println("DEBUG LOGGING END")
+
+        boolean tokenused = true;
+        if(shoppingtoken.isPresent()) {
+            shoppingtoken = Optional.of(
+                    techvvsAuthService.checkAndDecodeJwtFromBase64(shoppingtoken.get())
+            )
+            tokenused = techvvsAuthService.isTokenUsed(shoppingtoken.get())
+            model.addAttribute("shoppingtoken", shoppingtoken)
+        }
+
+        menuHelper.loadCart(Integer.valueOf(cartid.get()), model)
+        // hydrate hidden values for passing into the post methods like token etc
+        menuHelper.bindHiddenValues(model, shoppingtoken.get(), menuid.get())
+
+        processRestOfStuff(menuid, shoppingtoken, model, tokenused)
+        return "payment/payment_landing.html";
     }
 
     LocationVO prepLocationObject(
