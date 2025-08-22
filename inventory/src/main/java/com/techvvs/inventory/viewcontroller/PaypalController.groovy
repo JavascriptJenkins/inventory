@@ -25,38 +25,38 @@ public class PaypalController {
     CartRepo cartRepo;
 
 
-    @PostMapping("/orders/{cartId}")
-    public ResponseEntity<?> createOrder(@PathVariable Integer cartId) {
+    @PostMapping("/orders")
+    public ResponseEntity<?> createOrder(@RequestParam Integer cartId, @RequestParam String shoppingtoken) {
         try {
             logger.info("Creating PayPal order for cart ID: {}", cartId);
-            
+
             Optional<CartVO> cartOptional = cartRepo.findById(cartId);
             if (cartOptional.isEmpty()) {
                 return ResponseEntity.badRequest().body("Cart not found with ID: " + cartId);
             }
-            
+
             CartVO cart = cartOptional.get();
-            
+
             // Validate cart has items
             if (cart.product_cart_list == null || cart.product_cart_list.isEmpty()) {
                 return ResponseEntity.badRequest().body("Cart is empty");
             }
-            
+
             // Validate cart has a total
             if (cart.total == null || cart.total <= 0) {
                 return ResponseEntity.badRequest().body("Cart total is invalid");
             }
-            
+
             PaypalRestClient.PaypalOrderResponse order = paypalCheckoutService.createOrderFromCart(cart);
             Optional<String> approveUrl = paypalCheckoutService.findApproveUrl(order);
-            
+
             if (approveUrl.isEmpty()) {
                 return ResponseEntity.badRequest().body("Failed to get PayPal approval URL");
             }
-            
+
             CreateOrderResponse response = new CreateOrderResponse(order.id, approveUrl.get());
             return ResponseEntity.ok(response);
-            
+
         } catch (Exception e) {
             logger.error("Error creating PayPal order for cart {}: {}", cartId, e.getMessage(), e);
             return ResponseEntity.internalServerError().body("Error creating PayPal order: " + e.getMessage());
@@ -126,12 +126,12 @@ public class PaypalController {
      * JS SDK calls this to create an Order from the server-side cart total.
      * Returns just the PayPal order ID (the JS SDK needs this).
      */
-    @PostMapping("/orders")
-    ResponseEntity<Map<String, String>> create(@RequestParam String cartId) {
-        CartVO cart = cartRepo.findById(Integer.valueOf(cartId)).get() // load latest totals server-side
-        def order = paypalCheckoutService.createOrderFromCart(cart)  // returns PaypalOrderResponse
-        return ResponseEntity.ok([orderId: order.id as String])
-    }
+//    @PostMapping("/orders")
+//    ResponseEntity<Map<String, String>> create(@RequestParam String cartId) {
+//        CartVO cart = cartRepo.findById(Integer.valueOf(cartId)).get() // load latest totals server-side
+//        def order = paypalCheckoutService.createOrderFromCart(cart)  // returns PaypalOrderResponse
+//        return ResponseEntity.ok([orderId: order.id as String])
+//    }
 
     /**
      * JS SDK calls this after onApprove to capture the payment.

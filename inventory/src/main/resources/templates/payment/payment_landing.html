@@ -265,9 +265,12 @@
                 <!-- Cart Total -->
                 <div class="cart-total">
                     <div class="total-amount">TOTAL: <span th:text="${'$' + #numbers.formatDecimal(cart.total, 1, 2)}">$0.00</span></div>
-                    <button class="payment-button" onclick="proceedToPayment()">
-                        <i class="bi bi-credit-card"></i> PROCEED TO PAYMENT
-                    </button>
+
+                    <div th:if="${IncludePayPalView == 'yes'}" class="mt-3">
+                        <div class="d-flex justify-content-center">
+                            <div id="paypal-button-container"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -282,12 +285,7 @@
             </div>
         </div>
 
-        <div th:if="${IncludePayPalView == 'yes'}" class="mt-3">
-            <div id="paypal-button-container">
 
-
-            </div>
-        </div>
 
     </div>
 
@@ -303,13 +301,14 @@
     <script>
         // You'll pass the cart/order identifier your server understands
         const cartId = window.cartId || '[[${cartid}]]';
+        const shoppingtoken = window.shoppingtoken || '[[${shoppingtoken}]]';
 
            paypal.Buttons({
              createOrder: () => {
                // Ask YOUR SERVER to create the PayPal order from the DB amount
-               return fetch(`/api/paypal/orders?cartId=${encodeURIComponent(cartId)}`, {
-                 method: 'POST',
-                 headers: { 'Content-Type': 'application/json' }
+                return fetch(`/api/paypal/orders?cartId=${encodeURIComponent(cartId)}&shoppingtoken=${encodeURIComponent(shoppingtoken)}`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' }
                })
                .then(r => r.json())
                .then(d => d.orderId); // return the PayPal order ID to the JS SDK

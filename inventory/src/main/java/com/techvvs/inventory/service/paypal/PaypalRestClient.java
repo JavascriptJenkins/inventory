@@ -26,37 +26,54 @@ public class PaypalRestClient {
         this.clientId = clientId;
         this.clientSecret = clientSecret;
     }
-    
+
+    private volatile long accessTokenExpEpochSec;
+
+
     private String getAccessToken() {
-        if (accessToken != null) {
-            return accessToken;
+        long now = System.currentTimeMillis() / 1000;
+        if (accessToken != null && now < (accessTokenExpEpochSec - 60)) {
+            return accessToken; // still valid (60s safety margin)
         }
-        
+
         try {
             HttpHeaders headers = new HttpHeaders();
+            headers.setBasicAuth(clientId.trim(), clientSecret.trim()); // builds proper Basic header
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-            headers.setBasicAuth(clientId, clientSecret);
-            
-            String body = "grant_type=client_credentials";
-            
-            HttpEntity<String> request = new HttpEntity<>(body, headers);
-            
-            ResponseEntity<PaypalTokenResponse> response = restTemplate.postForEntity(
-                baseUrl + "/v1/oauth2/token",
-                request,
-                PaypalTokenResponse.class
-            );
-            
-            if (response.getBody() != null) {
-                accessToken = response.getBody().accessToken;
+            headers.setAccept(java.util.List.of(MediaType.APPLICATION_JSON));
+
+            org.springframework.util.MultiValueMap<String,String> form =
+                    new org.springframework.util.LinkedMultiValueMap<>();
+            form.add("grant_type", "client_credentials");
+
+            HttpEntity<org.springframework.util.MultiValueMap<String,String>> req =
+                    new HttpEntity<>(form, headers);
+
+            ResponseEntity<PaypalTokenResponse> resp =
+                    restTemplate.postForEntity(baseUrl + "/v1/oauth2/token", req, PaypalTokenResponse.class);
+
+            logger.info("PayPal token OK; type={}, expiresIn={}s", resp.getBody().tokenType, resp.getBody().expiresIn);
+
+            PaypalTokenResponse body = resp.getBody();
+            if (body != null && body.accessToken != null) {
+                accessToken = body.accessToken;
+                long ttl = (body.expiresIn != null ? body.expiresIn : 28800L);
+                accessTokenExpEpochSec = now + ttl;
                 return accessToken;
+            } else {
+                throw new IllegalStateException("Empty token response");
             }
+
+        } catch (org.springframework.web.client.RestClientResponseException ex) {
+            // shows why PayPal said no (status + response body)
+            logger.error("PayPal token error {} {}: {}", ex.getRawStatusCode(), ex.getStatusText(),
+                    ex.getResponseBodyAsString());
         } catch (Exception e) {
-            logger.error("Error getting PayPal access token: {}", e.getMessage());
+            logger.error("PayPal token error", e);
         }
-        
         throw new RuntimeException("Failed to get PayPal access token");
     }
+
     
     public PaypalOrderResponse createOrder(PaypalOrderRequest orderRequest) {
         try {
@@ -130,32 +147,57 @@ public class PaypalRestClient {
         public String tokenType;
         
         @JsonProperty("expires_in")
-        public int expiresIn;
+        public Long expiresIn;
     }
-    
+
     public static class PaypalOrderRequest {
         public String intent = "CAPTURE";
-        public PaypalApplicationContext applicationContext;
+
+        @JsonProperty("purchase_units")
         public PaypalPurchaseUnit[] purchaseUnits;
+
+        @JsonProperty("application_context")
+        public PaypalApplicationContext applicationContext;
     }
-    
+
     public static class PaypalApplicationContext {
-        public String brandName;
+        @JsonProperty("return_url")
         public String returnUrl;
+
+        @JsonProperty("cancel_url")
         public String cancelUrl;
+
+        @JsonProperty("brand_name")
+        public String brandName;
+
+        @JsonProperty("user_action")
+        public String userAction; // e.g., "PAY_NOW"
     }
-    
+
     public static class PaypalPurchaseUnit {
-        public PaypalAmount amount;
+        @JsonProperty("reference_id")
         public String referenceId;
+
+        public PaypalAmount amount;
+
+        // Optional but common:
         public PaypalItem[] items;
     }
-    
     public static class PaypalAmount {
+        @JsonProperty("currency_code")
         public String currencyCode;
         public String value;
-        public PaypalBreakdown breakdown;
+
+        public PaypalAmountBreakdown breakdown;  // <— add this
     }
+    public static class PaypalAmountBreakdown {
+        @JsonProperty("item_total")        public PaypalMoney itemTotal;
+        @JsonProperty("shipping")          public PaypalMoney shipping;           // optional
+        @JsonProperty("tax_total")         public PaypalMoney taxTotal;           // optional
+        @JsonProperty("discount")          public PaypalMoney discount;           // optional, subtracts from total
+        @JsonProperty("shipping_discount") public PaypalMoney shippingDiscount;   // optional, subtracts from shipping
+    }
+
     
     public static class PaypalBreakdown {
         public PaypalMoney itemTotal;
@@ -166,20 +208,23 @@ public class PaypalRestClient {
         public PaypalMoney shippingDiscount;
         public PaypalMoney discount;
     }
-    
+
     public static class PaypalMoney {
+        @JsonProperty("currency_code")
         public String currencyCode;
         public String value;
     }
-    
+
+
     public static class PaypalItem {
         public String name;
-        public String unitAmount;
-        public String tax;
-        public int quantity;
-        public String description;
-        public String sku;
-        public String category;
+        public String quantity; // string like "1"
+
+        @JsonProperty("unit_amount")
+        public PaypalMoney unitAmount; // must be an object, not a string
+
+        public String sku;       // optional
+        public String category;  // e.g. "PHYSICAL_GOODS"
     }
     
     public static class PaypalOrderResponse {
@@ -194,4 +239,5 @@ public class PaypalRestClient {
         public String rel;
         public String method;
     }
+
 }

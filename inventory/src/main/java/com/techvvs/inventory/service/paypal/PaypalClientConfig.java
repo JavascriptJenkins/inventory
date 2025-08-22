@@ -13,10 +13,10 @@ import java.time.Duration;
 @Configuration
 public class PaypalClientConfig {
     
-    @Value("${paypal.clientId:}")
+    @Value("${paypal.client-id:}")
     private String clientId;
     
-    @Value("${paypal.clientSecret:}")
+    @Value("${paypal.client-secret:}")
     private String clientSecret;
     
     @Value("${paypal.environment:SANDBOX}")
@@ -35,7 +35,7 @@ public class PaypalClientConfig {
         String baseUrl = "PRODUCTION".equalsIgnoreCase(environment) 
             ? "https://api-m.paypal.com" 
             : "https://api-m.sandbox.paypal.com";
-        
+
         return new PaypalRestClient(paypalRestTemplate, baseUrl, clientId, clientSecret);
     }
 }

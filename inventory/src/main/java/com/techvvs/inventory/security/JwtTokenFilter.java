@@ -178,7 +178,10 @@ public class JwtTokenFilter extends OncePerRequestFilter implements CsrfTokenRep
               DELIVERY_ITEM.equals(path) ||
               DELIVERY_ITEM_33.equals(path) ||
               KALE_MOVIE.equals(path) ||
-              KALE_MOVIE_33.equals(path))
+              KALE_MOVIE_33.equals(path) ||
+              PAYPAL_JSON_API_1_33.equals(path) ||
+              PAYPAL_JSON_API_1.equals(path)
+      )
       {
           filterChain.doFilter(httpServletRequest, httpServletResponse);
           return;

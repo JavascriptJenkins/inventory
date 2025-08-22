@@ -42,42 +42,41 @@ public class PaypalCheckoutService {
         PaypalRestClient.PaypalAmount amount = new PaypalRestClient.PaypalAmount();
         amount.currencyCode = "USD";
         amount.value = formatAmount(cart.total != null ? cart.total : 0.0);
-        
+
         // Build items from cart products
         List<PaypalRestClient.PaypalItem> items = new ArrayList<>();
-        if (cart.product_cart_list != null) {
-            for (ProductVO product : cart.product_cart_list) {
-                PaypalRestClient.PaypalItem item = new PaypalRestClient.PaypalItem();
-                item.name = product.name != null ? product.name : "Product";
-                item.unitAmount = formatAmount(product.price != null ? product.price : 0.0);
-                item.tax = "0.00";
-                item.quantity = 1;
-                item.description = product.description != null ? product.description : "";
-                item.sku = product.product_id != null ? product.product_id.toString() : "";
-                item.category = "PHYSICAL_GOODS";
-                items.add(item);
-            }
+        for (ProductVO p : cart.product_cart_list) {
+            PaypalRestClient.PaypalMoney money = new PaypalRestClient.PaypalMoney();
+            money.currencyCode = "USD";
+            money.value = formatAmount(p.price != null ? p.price : 0.0);
+
+            PaypalRestClient.PaypalItem it = new PaypalRestClient.PaypalItem();
+            it.name = (p.name != null ? p.name : "Product");
+            it.quantity = String.valueOf(p.quantity != null ? p.quantity : 1);
+            it.unitAmount = money;
+            it.category = "PHYSICAL_GOODS"; // optional
+            items.add(it);
         }
         
         // Build purchase unit
-        PaypalRestClient.PaypalPurchaseUnit purchaseUnit = new PaypalRestClient.PaypalPurchaseUnit();
-        purchaseUnit.amount = amount;
-        purchaseUnit.referenceId = "CART-" + cart.cartid;
-        purchaseUnit.items = items.toArray(new PaypalRestClient.PaypalItem[0]);
-        
+        PaypalRestClient.PaypalPurchaseUnit pu = new PaypalRestClient.PaypalPurchaseUnit();
+        pu.referenceId = "CART-" + cart.cartid;
+        pu.amount = amount;
+        pu.items = items.toArray(new PaypalRestClient.PaypalItem[0]);
+
         // Build application context
         PaypalRestClient.PaypalApplicationContext appContext = new PaypalRestClient.PaypalApplicationContext();
         appContext.brandName = brandName;
         appContext.returnUrl = baseuri+returnUrl + "?cartId=" + cart.cartid;
         appContext.cancelUrl = baseuri+cancelUrl + "?cartId=" + cart.cartid;
+        appContext.userAction = "PAY_NOW";
         
         // Build order request
-        PaypalRestClient.PaypalOrderRequest orderRequest = new PaypalRestClient.PaypalOrderRequest();
-        orderRequest.intent = "CAPTURE";
-        orderRequest.applicationContext = appContext;
-        orderRequest.purchaseUnits = [purchaseUnit] as PaypalRestClient.PaypalPurchaseUnit[]
-        
-        return paypalRestClient.createOrder(orderRequest);
+        PaypalRestClient.PaypalOrderRequest reqBody = new PaypalRestClient.PaypalOrderRequest();
+        reqBody.intent = "CAPTURE";
+        reqBody.purchaseUnits = [pu] as PaypalRestClient.PaypalPurchaseUnit[]
+        reqBody.applicationContext = appContext;
+        return paypalRestClient.createOrder(reqBody);
     }
     
     public PaypalRestClient.PaypalOrderResponse captureOrder(String orderId) throws Exception {
