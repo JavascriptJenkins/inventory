@@ -34,50 +34,74 @@ public class PaypalCheckoutService {
     @Value('${base.qr.domain:http://localhost:8080}')
     private String baseuri;
 
-    
+
     public PaypalRestClient.PaypalOrderResponse createOrderFromCart(CartVO cart) throws Exception {
-        logger.info("Creating PayPal order for cart ID: {}", cart.cartid);
-        
-        // Build purchase unit amount from cart
-        PaypalRestClient.PaypalAmount amount = new PaypalRestClient.PaypalAmount();
-        amount.currencyCode = "USD";
-        amount.value = formatAmount(cart.total != null ? cart.total : 0.0);
+        logger.info("Creating PayPal order for cart ID: {}", cart.cartid)
 
-        // Build items from cart products
-        List<PaypalRestClient.PaypalItem> items = new ArrayList<>();
-        for (ProductVO p : cart.product_cart_list) {
-            PaypalRestClient.PaypalMoney money = new PaypalRestClient.PaypalMoney();
-            money.currencyCode = "USD";
-            money.value = formatAmount(p.price != null ? p.price : 0.0);
+        def currency = "USD"
 
-            PaypalRestClient.PaypalItem it = new PaypalRestClient.PaypalItem();
-            it.name = (p.name != null ? p.name : "Product");
-            it.quantity = String.valueOf(p.quantity != null ? p.quantity : 1);
-            it.unitAmount = money;
-            it.category = "PHYSICAL_GOODS"; // optional
-            items.add(it);
+        // ------ Build items & compute totals ------
+        BigDecimal itemsTotal = 0G
+        List<PaypalRestClient.PaypalItem> items = []
+
+        cart?.product_cart_list?.each { ProductVO p ->
+            BigDecimal unit = BigDecimal.valueOf(p?.price ?: 0.0).setScale(2, RoundingMode.HALF_UP)
+            int qty = (p?.quantity ?: 1) as int
+            itemsTotal = itemsTotal.add(unit.multiply(BigDecimal.valueOf(qty)))
+
+            def unitMoney = new PaypalRestClient.PaypalMoney()
+            unitMoney.currencyCode = currency
+            unitMoney.value = unit.toPlainString()
+
+            def it = new PaypalRestClient.PaypalItem()
+            it.name = p?.name ?: "Product"
+            it.quantity = String.valueOf(qty)           // PayPal expects a string
+            it.unitAmount = unitMoney                   // { currency_code, value }
+            it.category = "PHYSICAL_GOODS"              // optional
+            items << it
         }
-        
-        // Build purchase unit
-        PaypalRestClient.PaypalPurchaseUnit pu = new PaypalRestClient.PaypalPurchaseUnit();
-        pu.referenceId = "CART-" + cart.cartid;
-        pu.amount = amount;
-        pu.items = items.toArray(new PaypalRestClient.PaypalItem[0]);
 
-        // Build application context
-        PaypalRestClient.PaypalApplicationContext appContext = new PaypalRestClient.PaypalApplicationContext();
-        appContext.brandName = brandName;
-        appContext.returnUrl = baseuri+returnUrl + "?cartId=" + cart.cartid;
-        appContext.cancelUrl = baseuri+cancelUrl + "?cartId=" + cart.cartid;
-        appContext.userAction = "PAY_NOW";
-        
-        // Build order request
-        PaypalRestClient.PaypalOrderRequest reqBody = new PaypalRestClient.PaypalOrderRequest();
-        reqBody.intent = "CAPTURE";
+        // ------ Amount + breakdown ------
+        def amount = new PaypalRestClient.PaypalAmount()
+        amount.currencyCode = currency
+        // If you don't have shipping/tax/discount fields yet, make total == items_total:
+        amount.value = itemsTotal.setScale(2, RoundingMode.HALF_UP).toPlainString()
+
+        def itemTotalMoney = new PaypalRestClient.PaypalMoney()
+        itemTotalMoney.currencyCode = currency
+        itemTotalMoney.value = amount.value
+
+        def breakdown = new PaypalRestClient.PaypalAmountBreakdown()
+        breakdown.itemTotal = itemTotalMoney
+        // If/when you have these numbers, uncomment & set:
+        // breakdown.shipping = money(currency, new BigDecimal("4.00"))
+        // breakdown.taxTotal = money(currency, new BigDecimal("0.00"))
+        // breakdown.discount = money(currency, new BigDecimal("0.00"))
+
+        amount.breakdown = breakdown
+
+        // ------ Purchase unit ------
+        def pu = new PaypalRestClient.PaypalPurchaseUnit()
+        pu.referenceId = "CART-${cart.cartid}"
+        pu.amount = amount
+        pu.items = (items ?: []) as PaypalRestClient.PaypalItem[]
+
+        // ------ Application context ------
+        def appContext = new PaypalRestClient.PaypalApplicationContext()
+        appContext.brandName = brandName
+        appContext.returnUrl = "${baseuri}${returnUrl}?cartId=${cart.cartid}"
+        appContext.cancelUrl = "${baseuri}${cancelUrl}?cartId=${cart.cartid}"
+        appContext.userAction = "PAY_NOW"
+
+        // ------ Final request ------
+        def reqBody = new PaypalRestClient.PaypalOrderRequest()
+        reqBody.intent = "CAPTURE"
         reqBody.purchaseUnits = [pu] as PaypalRestClient.PaypalPurchaseUnit[]
-        reqBody.applicationContext = appContext;
-        return paypalRestClient.createOrder(reqBody);
+        reqBody.applicationContext = appContext
+
+        return paypalRestClient.createOrder(reqBody)
     }
+
     
     public PaypalRestClient.PaypalOrderResponse captureOrder(String orderId) throws Exception {
         logger.info("Capturing PayPal order: {}", orderId);

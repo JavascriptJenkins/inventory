@@ -187,8 +187,7 @@ public class PaypalRestClient {
         @JsonProperty("currency_code")
         public String currencyCode;
         public String value;
-
-        public PaypalAmountBreakdown breakdown;  // <— add this
+        public PaypalAmountBreakdown breakdown;   // <— add this
     }
     public static class PaypalAmountBreakdown {
         @JsonProperty("item_total")        public PaypalMoney itemTotal;

@@ -64,6 +64,8 @@ class WhiteListUriConstants {
     public static final String DOCUMENT_DOCUMENTS_33 = "/document/documents/**";
     public static final String DELIVERY_ITEM_33 = "/delivery/item/**";
     public static final String DELIVERY_ITEM = "/delivery/item"
+    public static final String PAYPAL_JSON_API_1_33 = "/api/paypal/";
+    public static final String PAYPAL_JSON_API_1 = "/api/paypal/**";
 
     // todo: remove these from here
     public static final String KALE_MOVIE_33 = "/kalemovie/**";
