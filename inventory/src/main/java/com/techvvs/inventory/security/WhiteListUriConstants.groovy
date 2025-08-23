@@ -1,6 +1,7 @@
 package com.techvvs.inventory.security
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 
 @Component
@@ -66,8 +67,15 @@ class WhiteListUriConstants {
     public static final String DELIVERY_ITEM = "/delivery/item"
     public static final String PAYPAL_JSON_API_1_33 = "/api/paypal/";
     public static final String PAYPAL_JSON_API_1 = "/api/paypal/**";
+    public static final String PAYPAL_CANCEL_API_1_33 = "/payment/paypal/cancel/";
+    public static final String PAYPAL_CANCEL_API_1 = "/payment/paypal/cancel/**";
+    public static final String PAYPAL_RETURN_API_1_33 = "/payment/paypal/return/";
+    public static final String PAYPAL_RETURN_API_1 = "/payment/paypal/return/**";
+    public static final String PAYPAL_THANKYOU_API_1_33 = "/payment/paypal/thank-you/";
+    public static final String PAYPAL_THANKYOU_API_1 = "/payment/paypal/thank-you/**";
+    public static final String PAYPAL_CAPTURE_API_1 = "/api/paypal/orders/**/capture/";
+    public static final String PAYPAL_CAPTURE_API_1_33 = "/api/paypal/orders/**/capture/**";
 
-    // todo: remove these from here
     public static final String KALE_MOVIE_33 = "/kalemovie/**";
     public static final String KALE_MOVIE = "/kalemovie"
 

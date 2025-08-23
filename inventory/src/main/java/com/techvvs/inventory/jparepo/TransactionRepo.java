@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface TransactionRepo extends JpaRepository<TransactionVO, Integer> {
 
@@ -128,6 +129,10 @@ public interface TransactionRepo extends JpaRepository<TransactionVO, Integer> {
     Page<TransactionVO> findDistinctTransactionsByProductIdAndBatchId(@Param("productId") int productId,
                                                                       @Param("batchid") int batchid,
                                                                       Pageable pageable);
+
+
+    Optional<TransactionVO> findByPaypalOrderId(String paypalOrderId);
+
 
 
 

@@ -35,7 +35,7 @@ public class PaypalCheckoutService {
     private String baseuri;
 
 
-    public PaypalRestClient.PaypalOrderResponse createOrderFromCart(CartVO cart) throws Exception {
+    public PaypalRestClient.PaypalOrderResponse createOrderFromCart(CartVO cart, String base64ShoppingToken) throws Exception {
         logger.info("Creating PayPal order for cart ID: {}", cart.cartid)
 
         def currency = "USD"
@@ -89,8 +89,8 @@ public class PaypalCheckoutService {
         // ------ Application context ------
         def appContext = new PaypalRestClient.PaypalApplicationContext()
         appContext.brandName = brandName
-        appContext.returnUrl = "${baseuri}${returnUrl}?cartId=${cart.cartid}"
-        appContext.cancelUrl = "${baseuri}${cancelUrl}?cartId=${cart.cartid}"
+        appContext.returnUrl = "${baseuri}${returnUrl}?cartId=${cart.cartid}&shoppingtoken=${base64ShoppingToken}"
+        appContext.cancelUrl = "${baseuri}${cancelUrl}?cartId=${cart.cartid}&shoppingtoken=${base64ShoppingToken}"
         appContext.userAction = "PAY_NOW"
 
         // ------ Final request ------

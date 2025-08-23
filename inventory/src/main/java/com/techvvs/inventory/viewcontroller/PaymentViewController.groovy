@@ -7,6 +7,8 @@ import com.techvvs.inventory.model.CustomerVO
 import com.techvvs.inventory.model.PaymentVO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.printers.PrinterService
+import com.techvvs.inventory.security.JwtTokenProvider
+import com.techvvs.inventory.security.Role
 import com.techvvs.inventory.service.auth.TechvvsAuthService
 import com.techvvs.inventory.service.controllers.CartService
 import com.techvvs.inventory.service.controllers.PaymentService
@@ -46,6 +48,11 @@ public class PaymentViewController {
     @Autowired
     CartRepo cartRepo
 
+    @Autowired
+    JwtTokenProvider jwtTokenProvider
+
+    @Autowired
+    TransactionRepo transactionRepo
 
 
     //default home mapping
@@ -135,6 +142,7 @@ public class PaymentViewController {
 
 
 
+    // todo: make sure security is enforced here....
     //default home mapping
     @GetMapping("/landingpage")
     String viewPaymentLandingPage(
@@ -159,6 +167,97 @@ public class PaymentViewController {
         // fetch all customers from database and bind them to model
         techvvsAuthService.checkuserauth(model)
         return "payment/payment_landing.html";
+    }
+
+
+    @GetMapping("/paypal/cancel")
+    String viewCancelFromPaypal(
+            Model model,
+            @RequestParam("cartid") Optional<String> cartid,
+            @RequestParam("shoppingtoken") Optional<String> shoppingtoken
+    ){
+
+
+        List<String> authorities = jwtTokenProvider.extractAuthorities(
+                shoppingtoken.get().contains(".") ? shoppingtoken.get() : techvvsAuthService.decodeShoppingToken(shoppingtoken))
+        if(jwtTokenProvider.hasRole(authorities, String.valueOf(Role.ROLE_PAYPAL_ENABLED))) {
+
+
+            // bind the CartVO to preparer for paypal checkout
+            CartVO cartVO
+            if (cartid.isPresent()) {
+                cartVO = cartRepo.findById(Integer.valueOf(cartid.get())).get()
+                model.addAttribute("cart", cartVO)
+                model.addAttribute("customer", cartVO.customer)
+                model.addAttribute("cartid", cartVO.cartid)
+            } else {
+                cartVO = new CartVO(cartid: 0)
+                model.addAttribute("cart", cartVO)
+                model.addAttribute("customer", new CustomerVO(customerid: 0))
+                model.addAttribute("cartid", cartVO.cartid)
+            }
+        } else{
+            model.addAttribute("errorMessage", "You do not have permission to view this page")
+        }
+
+        return "payment/payment_landing.html";
+    }
+
+    @GetMapping("/paypal/return")
+    String viewReturnFromPaypal(
+            Model model,
+            @RequestParam("cartid") Optional<String> cartid,
+            @RequestParam("shoppingtoken") Optional<String> shoppingtoken
+    ){
+        List<String> authorities = jwtTokenProvider.extractAuthorities(
+                shoppingtoken.get().contains(".") ? shoppingtoken.get() : techvvsAuthService.decodeShoppingToken(shoppingtoken))
+        if(jwtTokenProvider.hasRole(authorities, String.valueOf(Role.ROLE_PAYPAL_ENABLED))) {
+
+            // bind the CartVO to preparer for paypal checkout
+            CartVO cartVO
+            if (cartid.isPresent()) {
+                cartVO = cartRepo.findById(Integer.valueOf(cartid.get())).get()
+                model.addAttribute("cart", cartVO)
+                model.addAttribute("customer", cartVO.customer)
+                model.addAttribute("cartid", cartVO.cartid)
+            } else {
+                cartVO = new CartVO(cartid: 0)
+                model.addAttribute("cart", cartVO)
+                model.addAttribute("customer", new CustomerVO(customerid: 0))
+                model.addAttribute("cartid", cartVO.cartid)
+            }
+        } else{
+            model.addAttribute("errorMessage", "You do not have permission to view this page")
+        }
+        return "payment/payment_landing.html";
+    }
+
+
+    @GetMapping("/paypal/thank-you")
+    String viewCaptureFromPaypal(
+            Model model,
+            @RequestParam("orderId") Optional<String> orderId,
+            @RequestParam("shoppingtoken") Optional<String> shoppingtoken
+    ){
+        List<String> authorities = jwtTokenProvider.extractAuthorities(
+                shoppingtoken.get().contains(".") ? shoppingtoken.get() : techvvsAuthService.decodeShoppingToken(shoppingtoken))
+        if(jwtTokenProvider.hasRole(authorities, String.valueOf(Role.ROLE_PAYPAL_ENABLED))) {
+
+            // bind the CartVO to preparer for paypal checkout
+            TransactionVO transactionVO
+            if (orderId.isPresent()) {
+                transactionVO = transactionRepo.findByPaypalOrderId(orderId.get()).get()
+                model.addAttribute("transaction", transactionVO)
+                model.addAttribute("customer", transactionVO.customervo)
+            } else {
+                model.addAttribute("transaction", null)
+                model.addAttribute("customer", null)
+                model.addAttribute("errorMessage", "Transaction not found.  This is bad and should not happen.  Please contact support.")
+            }
+        } else{
+            model.addAttribute("errorMessage", "You do not have permission to view this page")
+        }
+        return "payment/payment_success.html";
     }
 
 

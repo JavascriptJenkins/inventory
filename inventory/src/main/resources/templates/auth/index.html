@@ -415,7 +415,13 @@
                         <input type="text" id="customUriValue" class="form-control" placeholder="https://example.com/path?param=value">
                     </div>
 
-
+                    <!-- Custom URI Toggle -->
+                    <div class="col-md-12">
+                        <div class="form-check">
+                            <input type="checkbox" id="enablePaypalCheckbox" class="form-check-input">
+                            <label class="form-check-label" for="enablePaypalCheckbox">Enable Paypal</label>
+                        </div>
+                    </div>
 
                     <!-- Submit and Close Buttons -->
                     <div class="col-12 d-flex justify-content-between" style="margin-top: 50px;">
@@ -721,6 +727,7 @@
             const noPricesCheckbox = document.getElementById('noPricesCheckbox');
             const includeOutOfStockCheckbox = document.getElementById('includeOutOfStockCheckbox');
             const useCustomUriCheckbox = document.getElementById('useCustomUriCheckbox');
+            const enablePaypalCheckbox = document.getElementById('enablePaypalCheckbox');
             const customUriValueInput = document.getElementById('customUriValue');
             const customUriValueGroup = document.getElementById('customUriValueGroup');
 
@@ -782,6 +789,7 @@
                 let includeOutOfStockValue = "no";
                 let useCustomUriValue = "no";
                 let customUriValue = "";
+                let enablePaypalValue = "no";
 
                 if(mediaOnlyCheckbox.checked) {
                     mediaOnlyValue = "yes";
@@ -800,6 +808,10 @@
                     customUriValue = (customUriValueInput?.value || "").trim();
                 }
 
+                if (enablePaypalCheckbox && enablePaypalCheckbox.checked) {
+                    enablePaypalValue = "yes";
+                }
+
                 if (!currentMenuId || !customerId || !tokenLength || !phoneNumber) {
                     alert('All fields must be completed.');
                     return;
@@ -812,6 +824,7 @@
                     + `&mediaOnly=${encodeURIComponent(mediaOnlyValue)}`
                     + `&noPrices=${encodeURIComponent(noPricesValue)}`
                     + `&includeOutOfStock=${encodeURIComponent(includeOutOfStockValue)}`
+                    + `&enablePaypal=${encodeURIComponent(enablePaypalValue)}`
                     + `&tokenlength=${encodeURIComponent(tokenLength)}`
                     + (useCustomUriValue === 'yes' ? `&useCustomUri=yes&customUriValue=${encodeURIComponent(customUriValue)}` : '&useCustomUri=no&customUriValue=no');
 

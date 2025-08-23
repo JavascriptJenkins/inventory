@@ -526,4 +526,17 @@ class TechvvsAuthService {
         }
 
     }
+
+
+    String decodeShoppingToken(Optional<String> shoppingtoken) {
+        if(shoppingtoken.isPresent()) {
+            shoppingtoken = Optional.of(
+                    checkAndDecodeJwtFromBase64(shoppingtoken.get())
+            )
+            return shoppingtoken
+        }    else {
+            return null
+        }
+
+    }
 }

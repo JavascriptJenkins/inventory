@@ -28,6 +28,7 @@ import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.model.nonpersist.Totals
 import com.techvvs.inventory.printers.PrinterService
 import com.techvvs.inventory.qrcode.impl.QrCodeGenerator
+import com.techvvs.inventory.service.paypal.PaypalRestClient
 import com.techvvs.inventory.service.transactional.CheckoutService
 import com.techvvs.inventory.util.FormattingUtil
 import com.techvvs.inventory.util.TechvvsAppUtil
@@ -167,7 +168,7 @@ class TransactionService {
 
     // this is for transactions running through the payment landing page that have no location
     @Transactional
-    TransactionVO processCartGenerateNewTransactionForPaymentLandingPage(CartVO cartVO) {
+    TransactionVO processCartGenerateNewTransactionForPaymentLandingPage(CartVO cartVO, PaypalRestClient.PaypalOrderResponse paypalOrderResponse) {
 
         Double taxpercentage = environment.getProperty("tax.percentage", Double.class)
         System.out.println("BUGFIX DEBUG: 5")
@@ -190,6 +191,7 @@ class TransactionService {
                 originalprice: originalprice,
                 totalwithtax: totalwithtax,
 //                totalwithtax: cartVO.total,
+                paypalOrderId: paypalOrderResponse.id,
                 paid: 0.00,
                 taxpercentage: techvvsAppUtil.dev1 ? 0 : 0, // we are not going to set a tax percentage here in non dev environments
                 isprocessed: 0
