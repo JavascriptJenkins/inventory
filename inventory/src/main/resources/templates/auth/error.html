@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>No Permission</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
     <script
             src="https://code.jquery.com/jquery-3.6.0.js"
@@ -23,11 +24,15 @@
         body {
             background-color: #f8f9fa;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
         }
         .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
+            max-width: 100%;
+            margin: 0;
+            padding: 10px;
+            min-height: 100vh;
         }
         .alert {
             border-radius: 8px;
@@ -81,10 +86,11 @@
         }
 
         .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 40px 20px;
+            max-width: 100%;
+            margin: 0;
+            padding: 20px 10px;
             text-align: center;
+            min-height: 100vh;
         }
 
         .error-header {
@@ -143,7 +149,7 @@
             display: inline-block;
             background: var(--brand-color);
             color: white;
-            padding: 15px 30px;
+            padding: 20px 30px;
             border-radius: 12px;
             text-decoration: none;
             font-family: 'Press Start 2P', cursive;
@@ -154,6 +160,8 @@
             margin-top: 20px;
             text-transform: uppercase;
             letter-spacing: 1px;
+            min-height: 60px;
+            touch-action: manipulation;
         }
 
         .error-link:hover {
@@ -186,8 +194,9 @@
                 padding: 20px;
             }
             .error-link {
-                font-size: 0.6rem;
-                padding: 12px 20px;
+                font-size: 0.7rem;
+                padding: 25px 35px;
+                min-height: 70px;
             }
         }
     </style>

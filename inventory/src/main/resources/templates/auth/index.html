@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Home</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
     <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
     <link rel="stylesheet" type="text/css" media="all" href="/css/table.css" th:href="@{/css/table.css}" />
@@ -15,6 +16,9 @@
         body {
             color: #fff;
             font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
         }
         .table-hover tbody tr:hover {
             background-color: #e0f7fa;
@@ -30,6 +34,11 @@
             color: #fff;
             background-color: #343a40;
             border-color: #343a40;
+            padding: 15px 25px;
+            font-size: 18px;
+            min-height: 50px;
+            border-radius: 10px;
+            touch-action: manipulation;
         }
         .btn-secondary:hover, .btn-primary:hover {
             background-color: #23272b;
@@ -39,6 +48,9 @@
             background-color: #343a40;
             color: #fff;
             border: 1px solid #343a40;
+            padding: 15px;
+            font-size: 16px;
+            min-height: 50px;
         }
         .form-control:focus, .form-select:focus {
             background-color: #343a40;
@@ -183,6 +195,24 @@
             margin-right: 1.5rem;
             margin-top: 3rem;
             margin-left: 3rem;
+            min-width: 25px;
+            min-height: 25px;
+        }
+        
+        @media (max-width: 768px) {
+            .btn-secondary, .btn-primary {
+                padding: 20px 30px;
+                font-size: 20px;
+                min-height: 60px;
+            }
+            .form-control, .form-select {
+                padding: 20px;
+                font-size: 18px;
+                min-height: 60px;
+            }
+            .table {
+                font-size: 18px;
+            }
         }
     </style>
 
@@ -210,11 +240,6 @@
             color: #fff;
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
 
         .header-dark {
             background: var(--brand-color);
@@ -314,12 +339,16 @@
 
         .btn {
             font-family: 'Press Start 2P', cursive;
-            font-size: 0.7rem;
+            font-size: 0.8rem;
             border: 3px solid #000;
             box-shadow: 0 4px 0 #000;
             transition: all 0.2s ease;
             text-transform: uppercase;
             letter-spacing: 1px;
+            margin: 8px;
+            padding: 20px 30px;
+            min-height: 60px;
+            touch-action: manipulation;
         }
 
         .btn:hover {
@@ -373,8 +402,10 @@
             border: 3px solid #000;
             border-radius: 8px;
             font-family: 'Press Start 2P', cursive;
-            font-size: 0.6rem;
+            font-size: 0.7rem;
             box-shadow: 0 3px 0 #000;
+            padding: 15px;
+            min-height: 50px;
         }
 
         .form-control:focus, .form-select:focus {
@@ -398,6 +429,8 @@
             margin-left: 1rem;
             border: 2px solid #000;
             box-shadow: 0 2px 0 #000;
+            min-width: 25px;
+            min-height: 25px;
         }
 
         .btn-hover {
@@ -477,10 +510,17 @@
                 padding: 20px;
             }
             .btn {
-                font-size: 0.6rem;
+                font-size: 0.7rem;
+                padding: 25px 35px;
+                min-height: 70px;
             }
             .form-control, .form-select {
-                font-size: 0.5rem;
+                font-size: 0.6rem;
+                padding: 20px;
+                min-height: 60px;
+            }
+            .table {
+                font-size: 18px;
             }
         }
     </style>
@@ -500,13 +540,17 @@
 
     <br>
 
-    <!-- New Button Added Here -->
     <div class="mb-3">
         <a href="/menu/shoppingtoken/active" class="btn-hover">
             View Active Shopping Tokens
         </a>
     </div>
-    <!-- End of New Button -->
+
+    <div class="mb-3">
+        <a href="/menu3/menusend" class="btn-hover">
+            Send Menu
+        </a>
+    </div>
 
     <div class="alert alert-info" role="alert">Select a Menu option to get started.</div>
     <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
