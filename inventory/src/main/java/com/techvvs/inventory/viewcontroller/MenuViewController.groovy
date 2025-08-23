@@ -510,6 +510,9 @@ public class MenuViewController {
             @RequestParam("size") Optional<Integer> size
     ){
 
+        model.addAttribute("UIMODE", "RETRO")
+
+
         techvvsAuthService.checkuserauth(model)
         //checkoutHelper.getAllCustomers(model)
         customerHelper.addPaginatedData(model, page)

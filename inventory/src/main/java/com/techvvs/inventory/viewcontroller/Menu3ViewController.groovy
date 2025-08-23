@@ -636,6 +636,27 @@ public class Menu3ViewController {
         return "auth/index.html";
     }
 
+    @GetMapping("/menusend")
+    String getMenuSendPage(
+            Model model,
+            @ModelAttribute( "menu" ) MenuVO menuVO,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size
+    ){
+        model.addAttribute("UIMODE", "RETRO");
+
+        techvvsAuthService.checkuserauth(model)
+
+        // bind the menu options here
+        menuHelper.findMenus(model, page, size);
+        checkoutHelper.getAllCustomers(model);
+        model.addAttribute("menu",menuVO);
+
+        model.addAttribute("baseqrdomain", env.getProperty("base.qr.domain"))
+
+        return "menu3/menu_send.html";
+    }
+
     // This returns a list of active shopping tokens so we can copy the token link, and open in a new browser
     // so we can simulate shopping as a customer and see their view/have their permissions
     @GetMapping("/shoppingtoken/active")
