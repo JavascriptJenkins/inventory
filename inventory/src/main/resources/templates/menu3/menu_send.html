@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Menu Send</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" type="text/css" media="all" href="/css/table.css" th:href="@{/css/table.css}" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+    <!-- Standard Styling -->
+    <style th:if="${UIMODE != 'RETRO'}">
+        body {
+            color: #fff;
+            font-family: 'Roboto', sans-serif;
+            background-color: #121212;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 100%;
+            margin: 0;
+            padding: 10px;
+            min-height: 100vh;
+        }
+        .header-dark {
+            background-color: #343a40;
+            color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            border: 1px solid transparent;
+            border-image: linear-gradient(to right, #c0c0c0, #ffffff);
+            border-image-slice: 1;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .table {
+            background-color: #343a40;
+            color: #fff;
+            font-size: 16px;
+        }
+        .btn {
+            margin: 8px;
+            padding: 15px 25px;
+            font-size: 18px;
+            min-height: 50px;
+            border-radius: 10px;
+            touch-action: manipulation;
+        }
+        .btn-sm {
+            padding: 12px 20px;
+            font-size: 16px;
+            min-height: 45px;
+        }
+        .form-control, .form-select {
+            background-color: #343a40;
+            color: #fff;
+            border: 1px solid #343a40;
+            padding: 15px;
+            font-size: 16px;
+            min-height: 50px;
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: #343a40;
+            color: #fff;
+            border-color: #1d2124;
+            box-shadow: none;
+        }
+        .custom-popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        .popup-box {
+            background-color: #fff;
+            color: #333;
+            width: 95%;
+            max-width: 600px;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .form-check-input {
+            transform: scale(2);
+            margin-right: 1rem;
+            min-width: 25px;
+            min-height: 25px;
+        }
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: #00ffff;
+            text-shadow: 0px 0px 10px #00ffff;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border: 2px solid #00ffff;
+            border-radius: 50px;
+            padding: 15px 25px;
+            background: transparent;
+            box-shadow: 0px 0px 15px rgba(0, 255, 255, 0.7);
+            transition: all 0.3s ease;
+            margin: 10px;
+            min-height: 50px;
+        }
+        .back-button:hover {
+            background-color: #203a43;
+            color: #ffffff;
+            box-shadow: 0px 0px 30px rgba(0, 255, 255, 1);
+            transform: scale(1.05);
+        }
+        .back-button i {
+            margin-right: 10px;
+            font-size: 1.5rem;
+        }
+        .alert {
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+            font-size: 16px;
+        }
+        .pagination .page-link {
+            padding: 15px 20px;
+            font-size: 16px;
+            min-height: 50px;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 5px;
+            }
+            .btn {
+                padding: 20px 30px;
+                font-size: 20px;
+                min-height: 60px;
+                margin: 10px 5px;
+            }
+            .table {
+                font-size: 18px;
+            }
+            .popup-box {
+                width: 98%;
+                padding: 20px;
+            }
+        }
+    </style>
+
+    <!-- Retro Gameboy Styling -->
+    <style th:if="${UIMODE == 'RETRO'}">
+        :root {
+            --brand-color: #f25e5a;
+            --brand-dark: #e24a47;
+            --success-color: #28a745;
+            --success-dark: #1e7e34;
+            --warning-color: #ffc107;
+            --warning-dark: #e0a800;
+            --info-color: #17a2b8;
+            --info-dark: #138496;
+            --danger-color: #dc3545;
+            --danger-dark: #c82333;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Press Start 2P', cursive;
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0;
+            padding: 10px;
+            min-height: 100vh;
+        }
+
+        .header-dark {
+            background: var(--brand-color);
+            color: white;
+            padding: 25px 40px;
+            border-radius: 20px;
+            text-align: center;
+            margin: 20px 0;
+            font-weight: bold;
+            font-size: 2rem;
+            box-shadow: 0 0 30px var(--brand-color);
+            animation: headerGlow 2s infinite alternate;
+            border: 3px solid #000;
+            box-shadow: 0 6px 0 #000;
+        }
+
+        @keyframes headerGlow {
+            0% { box-shadow: 0 0 10px var(--brand-color), 0 6px 0 #000; }
+            100% { box-shadow: 0 0 30px var(--brand-color), 0 6px 0 #000; }
+        }
+
+        .table {
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid #000;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 6px 0 #000;
+            font-size: 16px;
+        }
+
+        .table-dark {
+            background: rgba(255, 255, 255, 0.95);
+            color: #222;
+        }
+
+        .table-dark thead {
+            background: var(--brand-color);
+            color: white;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.8rem;
+        }
+
+        .table-dark tbody tr {
+            border-bottom: 2px solid #000;
+        }
+
+        .table-dark tbody tr:nth-of-type(odd) {
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .table-dark tbody tr:hover {
+            background: rgba(242, 94, 90, 0.2);
+            transform: translateY(-1px);
+            transition: all 0.2s ease;
+        }
+
+        .btn {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.8rem;
+            border: 3px solid #000;
+            box-shadow: 0 4px 0 #000;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 8px;
+            padding: 20px 30px;
+            min-height: 60px;
+            touch-action: manipulation;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #000;
+        }
+
+        .btn-primary {
+            background: var(--brand-color);
+            color: white;
+            border-color: #000;
+        }
+
+        .btn-primary:hover {
+            background: var(--brand-dark);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+            border-color: #000;
+        }
+
+        .btn-warning {
+            background: var(--warning-color);
+            color: #000;
+            border-color: #000;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            border-color: #000;
+        }
+
+        .form-control, .form-select {
+            background: rgba(255, 255, 255, 0.95);
+            color: #222;
+            border: 3px solid #000;
+            border-radius: 8px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.7rem;
+            box-shadow: 0 3px 0 #000;
+            padding: 15px;
+            min-height: 50px;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background: rgba(255, 255, 255, 1);
+            color: #222;
+            border-color: var(--brand-color);
+            box-shadow: 0 3px 0 #000, 0 0 10px var(--brand-color);
+        }
+
+        .form-label {
+            color: #fff;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.8rem;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        .form-check-input {
+            transform: scale(2);
+            margin-right: 1rem;
+            border: 2px solid #000;
+            box-shadow: 0 2px 0 #000;
+            min-width: 25px;
+            min-height: 25px;
+        }
+
+        .custom-popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .popup-box {
+            background: rgba(255, 255, 255, 0.95);
+            color: #222;
+            width: 95%;
+            max-width: 700px;
+            padding: 30px;
+            border-radius: 15px;
+            border: 3px solid #000;
+            box-shadow: 0 8px 0 #000;
+            position: relative;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.8rem;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .required:after {
+            content: " *";
+            color: var(--danger-color);
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            background: var(--info-color);
+            color: white;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1rem;
+            border: 3px solid #000;
+            border-radius: 12px;
+            padding: 20px 30px;
+            box-shadow: 0 4px 0 #000;
+            transition: all 0.2s ease;
+            margin: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            min-height: 60px;
+        }
+
+        .back-button:hover {
+            background: var(--info-dark);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #000;
+        }
+
+        .back-button i {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+
+        .alert {
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            border: 3px solid #000;
+            box-shadow: 0 4px 0 #000;
+        }
+
+        .pagination .page-link {
+            background: var(--brand-color);
+            color: white;
+            border: 2px solid #000;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.7rem;
+            box-shadow: 0 2px 0 #000;
+            padding: 15px 20px;
+            min-height: 50px;
+        }
+
+        .pagination .page-link:hover {
+            background: var(--brand-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 3px 0 #000;
+        }
+
+        .pagination .active .page-link {
+            background: var(--success-color);
+            border-color: #000;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .header-dark {
+                font-size: 1.5rem;
+                padding: 20px;
+            }
+            .btn {
+                font-size: 0.7rem;
+                padding: 25px 35px;
+                min-height: 70px;
+            }
+            .form-control, .form-select {
+                font-size: 0.6rem;
+                padding: 20px;
+                min-height: 60px;
+            }
+            .popup-box {
+                width: 98%;
+                padding: 20px;
+            }
+            .table {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-dark">
+        <h1>Menu Send Management</h1>
+    </div>
+
+    <!-- Back Button -->
+    <div class="text-center mb-3">
+        <a href="/dashboard/index" class="back-button">
+            <i class="fas fa-arrow-left"></i>
+            Back To Menu Admin
+        </a>
+    </div>
+
+    <div class="alert alert-info" role="alert">Select a menu to send to customers.</div>
+    <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
+    <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
+
+    <form id="menuSendForm" method="POST" th:action="@{/menu/send}">
+        <table class="table table-hover table-striped table-dark">
+            <thead>
+            <tr>
+                <th scope="col">Menu ID</th>
+                <th scope="col">Menu Name</th>
+                <th scope="col">Actions</th>
+            </tr>
+            </thead>
+            <tbody th:if="${menuPage != null and menuPage.content != null and #lists.size(menuPage.content) > 0}">
+            <tr th:each="menu, iStat : ${menuPage.content}" th:data-menuid="${menu.menuid}" th:data-menu-product-list="${menu.menu_product_list}">
+                <td>
+                    <a th:href="@{/menu?menuid=__${menu.menuid}__&cartid=0}"
+                       th:text="${menu.menuid}"
+                       class="btn btn-secondary btn-sm">
+                    </a>
+                </td>
+                <td th:text="${menu.name}"></td>
+                <td>
+                    <button type="button" class="btn btn-warning send-menu-btn" 
+                            th:data-menuid="${menu.menuid}" 
+                            th:data-menuname="${menu.name}">
+                        <i class="bi bi-send"></i> Send Menu
+                    </button>
+                    <button type="button" class="btn btn-primary add-discount-btn" 
+                            th:data-menuid="${menu.menuid}" 
+                            th:data-menuname="${menu.name}">
+                        <i class="bi bi-plus-circle"></i> Add Discount
+                    </button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </form>
+
+    <!-- Hidden Popup Form for Send Menu -->
+    <div id="popupForm" class="custom-popup-overlay" style="display: none;">
+        <div class="popup-box">
+            <h4 id="popupMenuName" class="text-center mb-4">Send Menu</h4>
+            <form id="shoppingTokenForm" action="/menu/shoppingtoken/send" method="POST">
+                <div class="row g-3">
+                    <!-- Customer Dropdown -->
+                    <div class="col-md-12">
+                        <label for="customerSelect" class="form-label required">Customer</label>
+                        <select id="customerSelect" name="customerId" class="form-select">
+                            <option value="" selected>Select Customer</option>
+                            <option th:each="customer : ${customers}" th:value="${customer.customerid}" th:text="${customer.name}"></option>
+                        </select>
+                    </div>
+
+                    <!-- Token Length Dropdown -->
+                    <div class="col-md-12">
+                        <label for="tokenLengthSelect" class="form-label required">Token Length (Hours)</label>
+                        <select id="tokenLengthSelect" name="tokenLength" class="form-select">
+                            <option value="" selected>Select Hour Amount</option>
+                            <option th:each="hour : ${#numbers.sequence(1,1000)}" th:value="${hour}" th:text="${hour}"></option>
+                        </select>
+                    </div>
+
+                    <!-- Phone Number Input -->
+                    <div class="col-md-12">
+                        <label for="phoneNumber" class="form-label required">Phone Number</label>
+                        <input type="text" id="phoneNumber" name="phoneNumber" class="form-control" maxlength="10" placeholder="Enter 10-digit phone number">
+                    </div>
+
+                    <!-- Options Section -->
+                    <div class="col-md-12">
+                        <h5 class="mt-3 mb-2">Menu Options</h5>
+                    </div>
+
+                    <!-- Media Only -->
+                    <div class="col-md-6">
+                        <div class="form-check">
+                            <input type="checkbox" id="mediaOnlyCheckbox" class="form-check-input">
+                            <label class="form-check-label" for="mediaOnlyCheckbox">Media Only</label>
+                        </div>
+                    </div>
+
+                    <!-- No Prices -->
+                    <div class="col-md-6">
+                        <div class="form-check">
+                            <input type="checkbox" id="noPricesCheckbox" class="form-check-input">
+                            <label class="form-check-label" for="noPricesCheckbox">No Prices</label>
+                        </div>
+                    </div>
+
+                    <!-- Include Out Of Stock Items -->
+                    <div class="col-md-6">
+                        <div class="form-check">
+                            <input type="checkbox" id="includeOutOfStockCheckbox" class="form-check-input">
+                            <label class="form-check-label" for="includeOutOfStockCheckbox">Include Out of Stock Items</label>
+                        </div>
+                    </div>
+
+                    <!-- Enable PayPal -->
+                    <div class="col-md-6">
+                        <div class="form-check">
+                            <input type="checkbox" id="enablePaypalCheckbox" class="form-check-input">
+                            <label class="form-check-label" for="enablePaypalCheckbox">Enable PayPal</label>
+                        </div>
+                    </div>
+
+                    <!-- Custom URI Toggle -->
+                    <div class="col-md-12">
+                        <div class="form-check">
+                            <input type="checkbox" id="useCustomUriCheckbox" class="form-check-input">
+                            <label class="form-check-label" for="useCustomUriCheckbox">Use Custom URI</label>
+                        </div>
+                    </div>
+
+                    <!-- Custom URI Value (hidden unless checked) -->
+                    <div class="col-md-12" id="customUriValueGroup" style="display: none;">
+                        <label for="customUriValue" class="form-label">Custom URI Value</label>
+                        <input type="text" id="customUriValue" class="form-control" placeholder="https://example.com/path?param=value">
+                    </div>
+
+                    <!-- Submit and Close Buttons -->
+                    <div class="col-12 d-flex justify-content-between" style="margin-top: 30px;">
+                        <button type="submit" id="submitBtn" class="btn btn-primary" disabled>Send Menu</button>
+                        <button type="button" class="btn btn-secondary" id="closePopupBtn">Cancel</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Hidden Popup Form for Add Discount -->
+    <div id="discountPopupForm" class="custom-popup-overlay" style="display: none;">
+        <div class="popup-box">
+            <h4 id="discountPopupMenuName" class="text-center mb-4">Add Discount</h4>
+            <form id="priceChangeForm" method="POST" th:action="@{/menu/pricechange}">
+                <div class="row g-3">
+                                         <!-- Amount Dropdown -->
+                     <div class="col-md-12">
+                         <label for="amountDropdown" class="form-label">Discount Amount</label>
+                         <select id="amountDropdown" class="form-select amount-dropdown">
+                             <option value="0.00" selected>0.00</option>
+                             <option value="50.00">25.00</option>
+                             <option value="50.00">50.00</option>
+                             <option value="100.00">100.00</option>
+                             <option value="150.00">150.00</option>
+                             <option value="200.00">200.00</option>
+                             <option value="250.00">250.00</option>
+                             <option value="300.00">300.00</option>
+                             <option value="350.00">350.00</option>
+                             <option value="400.00">400.00</option>
+                             <option value="450.00">450.00</option>
+                             <option value="500.00">500.00</option>
+                         </select>
+                     </div>
+
+                     <!-- Amount Change Button -->
+                     <div class="col-md-12">
+                         <button type="button" class="btn btn-primary amt-change-btn">
+                             <i class="bi bi-arrow-repeat"></i> Amt Change
+                         </button>
+                     </div>
+
+                    <!-- Product Type Dropdown -->
+                    <div class="col-md-12">
+                        <label for="productTypeDropdown" class="form-label">Product Type</label>
+                        <select id="productTypeDropdown" class="form-select product-type-dropdown">
+                            <option value="" disabled selected>Select Product Type</option>
+                            <!-- Will be populated dynamically -->
+                        </select>
+                    </div>
+
+                    <!-- New Menu Checkbox -->
+                    <div class="col-md-12">
+                        <div class="form-check">
+                            <input type="checkbox" id="newMenuCheckbox" class="form-check-input">
+                            <label class="form-check-label" for="newMenuCheckbox">Create New Menu</label>
+                        </div>
+                    </div>
+
+                    <!-- Submit and Close Buttons -->
+                    <div class="col-12 d-flex justify-content-between" style="margin-top: 30px;">
+                        <button type="button" id="discountSubmitBtn" class="btn btn-success" disabled>Submit Discount</button>
+                        <button type="button" class="btn btn-secondary" id="closeDiscountPopupBtn">Cancel</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <nav th:if="${menuPage != null && menuPage.totalPages > 0}" class="mt-4">
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:each="pageNumber : ${pageNumbers}">
+                <a class="page-link"
+                   th:href="@{/menu3/send(size=${menuPage.content != null ? #lists.size(menuPage.content) : 0}, page=${pageNumber})}"
+                   th:text="${pageNumber}"
+                   th:classappend="${pageNumber==menuPage.number + 1} ? 'active'">
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const popupForm = document.getElementById('popupForm');
+        const popupMenuName = document.getElementById('popupMenuName');
+        const closePopupBtn = document.getElementById('closePopupBtn');
+        const customerSelect = document.getElementById('customerSelect');
+        const tokenLengthSelect = document.getElementById('tokenLengthSelect');
+        const phoneNumberInput = document.getElementById('phoneNumber');
+        const submitBtn = document.getElementById('submitBtn');
+        const mediaOnlyCheckbox = document.getElementById('mediaOnlyCheckbox');
+        const noPricesCheckbox = document.getElementById('noPricesCheckbox');
+        const includeOutOfStockCheckbox = document.getElementById('includeOutOfStockCheckbox');
+        const useCustomUriCheckbox = document.getElementById('useCustomUriCheckbox');
+        const enablePaypalCheckbox = document.getElementById('enablePaypalCheckbox');
+        const customUriValueInput = document.getElementById('customUriValue');
+        const customUriValueGroup = document.getElementById('customUriValueGroup');
+
+        let currentMenuId = null;
+
+        // Show popup on "Send Menu" button click
+        document.querySelectorAll('.send-menu-btn').forEach(button => {
+            button.addEventListener('click', function () {
+                currentMenuId = this.getAttribute('data-menuid');
+                const menuname = this.getAttribute('data-menuname');
+                popupMenuName.textContent = `Send Menu: ${menuname}`;
+                popupForm.style.display = 'flex';
+            });
+        });
+
+        // Close popup
+        closePopupBtn.addEventListener('click', function () {
+            popupForm.style.display = 'none';
+            currentMenuId = null;
+        });
+
+        // Validate inputs
+        phoneNumberInput.addEventListener('input', function () {
+            const phoneValue = phoneNumberInput.value;
+            const isValid = /^\d{10}$/.test(phoneValue);
+            phoneNumberInput.style.borderColor = isValid ? 'green' : 'red';
+            toggleSubmitButton();
+        });
+
+        [customerSelect, tokenLengthSelect].forEach(select => {
+            select.addEventListener('change', toggleSubmitButton);
+        });
+
+        function toggleSubmitButton() {
+            const isCustomerSelected = customerSelect.value !== '';
+            const isTokenLengthSelected = tokenLengthSelect.value !== '';
+            const isPhoneNumberValid = /^\d{10}$/.test(phoneNumberInput.value);
+            submitBtn.disabled = !(isCustomerSelected && isTokenLengthSelected && isPhoneNumberValid);
+        }
+
+        // Toggle visibility for Custom URI value input
+        if (useCustomUriCheckbox && customUriValueGroup) {
+            useCustomUriCheckbox.addEventListener('change', function() {
+                customUriValueGroup.style.display = this.checked ? 'block' : 'none';
+            });
+        }
+
+        // Handle submit button click
+        submitBtn.addEventListener('click', function (event) {
+            event.preventDefault();
+
+            const customerId = customerSelect.value;
+            const tokenLength = tokenLengthSelect.value;
+            const phoneNumber = phoneNumberInput.value;
+            let mediaOnlyValue = "no";
+            let noPricesValue = "no";
+            let includeOutOfStockValue = "no";
+            let useCustomUriValue = "no";
+            let customUriValue = "";
+            let enablePaypalValue = "no";
+
+            if(mediaOnlyCheckbox.checked) {
+                mediaOnlyValue = "yes";
+            }
+
+            if(noPricesCheckbox.checked) {
+                noPricesValue = "yes";
+            }
+
+            if(includeOutOfStockCheckbox.checked) {
+                includeOutOfStockValue = "yes";
+            }
+
+            if (useCustomUriCheckbox && useCustomUriCheckbox.checked) {
+                useCustomUriValue = "yes";
+                customUriValue = (customUriValueInput?.value || "").trim();
+            }
+
+            if (enablePaypalCheckbox && enablePaypalCheckbox.checked) {
+                enablePaypalValue = "yes";
+            }
+
+            if (!currentMenuId || !customerId || !tokenLength || !phoneNumber) {
+                alert('All required fields must be completed.');
+                return;
+            }
+
+            // Construct the dynamic URI
+            const actionUri = `/menu2/shoppingtoken/send?menuid=${encodeURIComponent(currentMenuId)}`
+                + `&customerid=${encodeURIComponent(customerId)}`
+                + `&phonenumber=${encodeURIComponent(phoneNumber)}`
+                + `&mediaOnly=${encodeURIComponent(mediaOnlyValue)}`
+                + `&noPrices=${encodeURIComponent(noPricesValue)}`
+                + `&includeOutOfStock=${encodeURIComponent(includeOutOfStockValue)}`
+                + `&enablePaypal=${encodeURIComponent(enablePaypalValue)}`
+                + `&tokenlength=${encodeURIComponent(tokenLength)}`
+                + (useCustomUriValue === 'yes' ? `&useCustomUri=yes&customUriValue=${encodeURIComponent(customUriValue)}` : '&useCustomUri=no&customUriValue=no');
+
+            // Submit the form
+            const form = document.getElementById('shoppingTokenForm');
+            form.setAttribute('action', actionUri);
+            form.submit();
+        });
+    });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Discount popup elements
+        const discountPopupForm = document.getElementById('discountPopupForm');
+        const discountPopupMenuName = document.getElementById('discountPopupMenuName');
+        const closeDiscountPopupBtn = document.getElementById('closeDiscountPopupBtn');
+        const amountDropdown = document.getElementById('amountDropdown');
+        const productTypeDropdown = document.getElementById('productTypeDropdown');
+        const discountSubmitBtn = document.getElementById('discountSubmitBtn');
+        const newMenuCheckbox = document.getElementById('newMenuCheckbox');
+
+        let currentDiscountMenuId = null;
+        let currentDiscountMenuName = null;
+
+        // Amount change values arrays
+        const amtChangeValues1 = ["0.00", "50.00", "100.00", "150.00", "200.00", "250.00", "300.00", "350.00", "400.00", "450.00", "500.00"];
+        const amtChangeValues2 = ["0.00", ".25", ".50", ".75", "1.00", "1.25", "2.00", "3.00", "4.00", "5.00", "6.00", "7.00", "8.00", "9.00", "10.00", "11.00", "12.00", "13.00", "14.00", "15.00", "16.00", "17.00", "18.00", "19.00", "20.00"];
+
+        // Show discount popup on "Add Discount" button click
+        document.querySelectorAll('.add-discount-btn').forEach(button => {
+            button.addEventListener('click', function () {
+                currentDiscountMenuId = this.getAttribute('data-menuid');
+                currentDiscountMenuName = this.getAttribute('data-menuname');
+                
+                // Populate popup title
+                discountPopupMenuName.textContent = `Add Discount: ${currentDiscountMenuName}`;
+                
+                // Populate product type dropdown for this menu
+                populateProductTypeDropdown(currentDiscountMenuId);
+                
+                // Show popup
+                discountPopupForm.style.display = 'flex';
+            });
+        });
+
+        // Close discount popup
+        closeDiscountPopupBtn.addEventListener('click', function () {
+            discountPopupForm.style.display = 'none';
+            currentDiscountMenuId = null;
+            currentDiscountMenuName = null;
+        });
+
+        // Toggle amount dropdown values
+        let isFirstValueSet = true;
+        const amtChangeBtn = document.querySelector('.amt-change-btn');
+        amtChangeBtn.addEventListener('click', function() {
+            const currentValues = Array.from(amountDropdown.options).map(opt => opt.value);
+            const newValues = currentValues.includes("50.00") ? amtChangeValues2 : amtChangeValues1;
+            
+            amountDropdown.innerHTML = "";
+            newValues.forEach(value => {
+                const option = document.createElement('option');
+                option.value = value;
+                option.textContent = value;
+                if (value === "0.00") option.selected = true;
+                amountDropdown.appendChild(option);
+            });
+        });
+
+        // Validate product type selection
+        productTypeDropdown.addEventListener('change', function() {
+            toggleDiscountSubmitButton();
+        });
+
+        function toggleDiscountSubmitButton() {
+            const isProductTypeSelected = productTypeDropdown.value && productTypeDropdown.value !== "";
+            discountSubmitBtn.disabled = !isProductTypeSelected;
+        }
+
+        // Populate product type dropdown
+        function populateProductTypeDropdown(menuId) {
+            // Find the corresponding menu row to get product types
+            const menuRow = document.querySelector(`tr[data-menuid="${menuId}"]`);
+            if (menuRow) {
+                // Clear existing options
+                productTypeDropdown.innerHTML = '<option value="" disabled selected>Select Product Type</option>';
+                
+                // Get product types from the menu data
+                const menuProductListData = menuRow.getAttribute('data-menu-product-list');
+                if (menuProductListData && menuProductListData !== 'null' && menuProductListData !== '[]') {
+                    try {
+                        // Parse the product list data (it should be a JSON string)
+                        const productList = JSON.parse(menuProductListData);
+                        if (Array.isArray(productList)) {
+                            const seenValues = new Set();
+                            productList.forEach(product => {
+                                if (product.producttypeid && !seenValues.has(product.producttypeid.producttypeid)) {
+                                    const option = document.createElement('option');
+                                    option.value = product.producttypeid.producttypeid;
+                                    option.textContent = product.producttypeid.name;
+                                    productTypeDropdown.appendChild(option);
+                                    seenValues.add(product.producttypeid.producttypeid);
+                                }
+                            });
+                        }
+                    } catch (e) {
+                        console.error('Error parsing menu product list:', e);
+                        // Fallback to placeholder options
+                        addPlaceholderProductTypes();
+                    }
+                } else {
+                    // Fallback to placeholder options if no data available
+                    addPlaceholderProductTypes();
+                }
+            }
+        }
+
+        // Add placeholder product types as fallback
+        function addPlaceholderProductTypes() {
+            const productTypes = [
+                { id: 1, name: "Flowers" },
+                { id: 2, name: "Edibles" },
+                { id: 3, name: "Concentrates" },
+                { id: 4, name: "Accessories" }
+            ];
+            
+            productTypes.forEach(productType => {
+                const option = document.createElement('option');
+                option.value = productType.id;
+                option.textContent = productType.name;
+                productTypeDropdown.appendChild(option);
+            });
+        }
+
+        // Handle discount submit
+        discountSubmitBtn.addEventListener('click', function(event) {
+            event.preventDefault();
+            
+            const dropdownValue = amountDropdown.value;
+            const productTypeValue = productTypeDropdown.value;
+            const isNew = newMenuCheckbox.checked;
+
+            if (!currentDiscountMenuId || !productTypeValue) {
+                alert('Please select a product type.');
+                return;
+            }
+
+            const form = document.getElementById('priceChangeForm');
+            let actionUri = `/menu/pricechange?menuid=${currentDiscountMenuId}&amount=${dropdownValue}&producttype=${productTypeValue}`;
+
+            if (isNew) {
+                const userInput = prompt("Enter menu name:");
+                if (!userInput) {
+                    alert("Menu name cannot be empty.");
+                    return;
+                }
+                const sanitizedInput = userInput
+                    .replace(/[\s-]+/g, "_")
+                    .replace(/[^a-zA-Z0-9_]/g, "");
+                if (sanitizedInput === "") {
+                    alert("Invalid menu name. Please enter a valid name.");
+                    return;
+                }
+                actionUri += `&isnew=yes&newname=${sanitizedInput}`;
+            }
+
+            form.action = actionUri;
+            form.submit();
+        });
+
+        // Remove duplicate product type options (if any)
+        function removeDuplicateProductTypes() {
+            const seenValues = new Set();
+            const options = Array.from(productTypeDropdown.options);
+            
+            options.forEach(option => {
+                if (seenValues.has(option.value) && option.value !== "") {
+                    option.remove();
+                } else {
+                    seenValues.add(option.value);
+                }
+            });
+        }
+    });
+</script>
+
+</body>
+</html>
