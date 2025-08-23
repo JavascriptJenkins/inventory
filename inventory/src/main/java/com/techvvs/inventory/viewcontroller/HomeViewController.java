@@ -45,6 +45,8 @@ public class HomeViewController {
         System.out.println("hit the dashboard index page");
 
 
+        // todo: pull this from the logged in systemuser?  or pull it from a new table UICONFIG
+        model.addAttribute("UIMODE", "RETRO");
 
         // bind the menu options here
         menuHelper.findMenus(model, page, size);

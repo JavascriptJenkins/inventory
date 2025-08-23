@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.*
 import javax.persistence.TransactionRequiredException
 import java.nio.charset.StandardCharsets
 
-
+// todo: figure out how to get the amount of tax paypal charged and add it to the transaction
 @RequestMapping("/payment")
 @Controller
 public class PaymentViewController {
