@@ -9,6 +9,7 @@ import com.techvvs.inventory.jparepo.MenuRepo
 import com.techvvs.inventory.jparepo.ProductRepo
 import com.techvvs.inventory.jparepo.ProductTypeRepo
 import com.techvvs.inventory.jparepo.SystemUserRepo
+import com.techvvs.inventory.jparepo.TransactionRepo
 import com.techvvs.inventory.model.AttributeVO
 import com.techvvs.inventory.model.CartVO
 import com.techvvs.inventory.model.CustomerVO
@@ -25,6 +26,7 @@ import com.techvvs.inventory.security.Role
 import com.techvvs.inventory.service.controllers.CustomerService
 import com.techvvs.inventory.service.controllers.ProductService
 import com.techvvs.inventory.service.controllers.TransactionService
+import com.techvvs.inventory.service.paypal.PaypalRestClient
 import com.techvvs.inventory.service.transactional.CartDeleteService
 import com.techvvs.inventory.util.TwilioTextUtil
 import io.jsonwebtoken.Claims
@@ -101,6 +103,9 @@ class MenuHelper {
 
     @Autowired
     SystemUserRepo systemUserRepo
+
+    @Autowired
+    TransactionRepo transactionRepo
 
     @Transactional
     MenuVO changePrice(
@@ -996,23 +1001,41 @@ class MenuHelper {
         return customerVO
     }
 
+
+    // todo: handle tax accounting here....
+    // todo: think about the deliveryVO that is attached to this transaction and update it aswell if need be
+    @Transactional
+    TransactionVO setPaypalTransactionAsPaidAndProcessed(
+            String orderId
+    ){
+
+        // get the existing transaction
+        Optional<TransactionVO> transactionVO = transactionRepo.findByPaypalOrderId(orderId)
+        if(transactionVO.isPresent()){
+            transactionVO.get().setIsprocessed(1)
+            double total = transactionVO.get().total
+            transactionVO.get().setPaid(total)
+            return transactionRepo.save(transactionVO.get())
+        } else {
+            throw new RuntimeException("Transaction not found for paypal orderId: " + orderId)
+        }
+
+    }
+
+
     @Transactional
     TransactionVO checkoutCartWithNoLocation(
             Integer cartid,
-            Integer menuid,
-            String token,
-            Model model
+            PaypalRestClient.PaypalOrderResponse paypalOrderResponse
     ){
-        if(!validateShoppingToken(String.valueOf(menuid), token, model)){
-            return false
-        }
+
 
         System.out.println("BUGFIX DEBUG: 3")
         // get the existing cart
         CartVO cartVO = cartRepo.findById(cartid).get()
         System.out.println("BUGFIX DEBUG: 4")
         // generate a new transaction
-        TransactionVO transactionVO = transactionService.processCartGenerateNewTransactionForPaymentLandingPage(cartVO)
+        TransactionVO transactionVO = transactionService.processCartGenerateNewTransactionForPaymentLandingPage(cartVO, paypalOrderResponse)
 
         return transactionVO
     }
