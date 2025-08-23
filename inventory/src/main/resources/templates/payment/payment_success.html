@@ -20,6 +20,8 @@
         :root {
             --brand-color: #f25e5a;
             --brand-dark: #e24a47;
+            --success-color: #28a745;
+            --success-dark: #1e7e34;
             --input-bg: #fff;
         }
 
@@ -36,7 +38,7 @@
 
         .header,
         .header-bubble {
-            background-color: var(--brand-color);
+            background-color: var(--success-color);
             color: white;
             padding: 25px 40px;
             border-radius: 20px;
@@ -44,7 +46,7 @@
             margin: 20px 0 20px 0;
             font-weight: bold;
             font-size: 2rem;
-            box-shadow: 0 0 30px var(--brand-color);
+            box-shadow: 0 0 30px var(--success-color);
             animation: headerGlow 2s infinite alternate;
             border: none !important;
             font-family: 'Press Start 2P', cursive;
@@ -56,18 +58,18 @@
 
         @keyframes headerGlow {
             0% {
-                box-shadow: 0 0 10px var(--brand-color);
+                box-shadow: 0 0 10px var(--success-color);
             }
             100% {
-                box-shadow: 0 0 30px var(--brand-color);
+                box-shadow: 0 0 30px var(--success-color);
             }
         }
 
-        .cart-container {
+        .success-container {
             background: rgba(255, 255, 255, 0.9);
             color: #222;
             border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(242, 94, 90, 0.25);
+            box-shadow: 0 10px 30px rgba(40, 167, 69, 0.25);
             backdrop-filter: blur(10px);
             padding: 30px;
             margin: 20px 0;
@@ -75,7 +77,7 @@
             max-width: 980px;
         }
 
-        .cart-item {
+        .success-item {
             background: rgba(255, 255, 255, 0.95);
             border: 3px solid #000;
             border-radius: 12px;
@@ -88,7 +90,7 @@
             transition: transform 0.2s ease;
         }
 
-        .cart-item:hover {
+        .success-item:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 0 #000;
         }
@@ -98,32 +100,34 @@
             text-align: left;
         }
 
-        .item-name {
+        .item-label {
             font-family: 'Press Start 2P', cursive;
-            font-size: 1rem;
-            color: var(--brand-color);
+            font-size: 0.8rem;
+            color: var(--success-color);
             margin-bottom: 8px;
             text-shadow: 1px 1px 0 #000;
         }
 
-        .item-price {
+        .item-value {
             font-size: 1.2rem;
             font-weight: bold;
             color: #333;
         }
 
-        .item-quantity {
-            background: var(--brand-color);
+        .success-badge {
+            background: var(--success-color);
             color: white;
             padding: 8px 12px;
             border-radius: 8px;
             font-weight: bold;
             border: 2px solid #000;
             box-shadow: 0 2px 0 #000;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.7rem;
         }
 
-        .cart-total {
-            background: var(--brand-color);
+        .transaction-summary {
+            background: var(--success-color);
             color: white;
             padding: 25px;
             border-radius: 15px;
@@ -139,14 +143,14 @@
             margin-bottom: 10px;
         }
 
-        .payment-button {
+        .action-button {
             background-color: var(--brand-color);
             color: white;
             border: none;
             padding: 20px 40px;
             text-align: center;
             border-radius: 12px;
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             margin-top: 20px;
             text-decoration: none;
             transition: all 0.3s ease;
@@ -157,20 +161,24 @@
             cursor: pointer;
             border: 3px solid #000;
             box-shadow: 0 6px 0 #000;
+            margin: 10px;
         }
 
-        .payment-button:hover {
+        .action-button:hover {
             background-color: var(--brand-dark);
             color: white;
             transform: translateY(-2px);
             box-shadow: 0 8px 0 #000;
         }
 
-        .empty-cart {
+        .error-message {
             text-align: center;
             padding: 40px;
             font-size: 1.2rem;
-            color: #666;
+            color: #dc3545;
+            background: rgba(220, 53, 69, 0.1);
+            border-radius: 15px;
+            border: 3px solid #dc3545;
         }
 
         .retro-title {
@@ -182,7 +190,7 @@
         .header h1.retro-title {
             font-size: 2.25rem;
             letter-spacing: 2px;
-            background: linear-gradient(90deg, #ffffff, var(--brand-color), #ffffff);
+            background: linear-gradient(90deg, #ffffff, var(--success-color), #ffffff);
             background-size: 200% auto;
             color: transparent;
             -webkit-background-clip: text;
@@ -202,6 +210,50 @@
             100% { transform: scale(1); }
         }
 
+        .product-list {
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid #000;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 6px 0 #000;
+        }
+
+        .product-item {
+            background: rgba(255, 255, 255, 0.8);
+            border: 2px solid #000;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 3px 0 #000;
+        }
+
+        .product-name {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.8rem;
+            color: var(--brand-color);
+            text-shadow: 1px 1px 0 #000;
+        }
+
+        .product-price {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .product-quantity {
+            background: var(--brand-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-weight: bold;
+            border: 2px solid #000;
+            box-shadow: 0 2px 0 #000;
+            font-size: 0.8rem;
+        }
+
         /* Responsive tweaks */
         @media (max-width: 576px) {
             .header,
@@ -212,7 +264,7 @@
             .header h1.retro-title {
                 font-size: 1.25rem;
             }
-            .cart-item {
+            .success-item {
                 flex-direction: column;
                 text-align: center;
             }
@@ -220,11 +272,11 @@
                 text-align: center;
                 margin-bottom: 15px;
             }
-            .item-name {
-                font-size: 0.8rem;
+            .item-label {
+                font-size: 0.6rem;
             }
-            .payment-button {
-                font-size: 1rem;
+            .action-button {
+                font-size: 0.8rem;
                 padding: 14px 20px;
             }
         }
@@ -237,100 +289,107 @@
             text-align: center;
         }
     </style>
-
-    <script th:src="@{https://www.paypal.com/sdk/js(client-id=${paypalClientID},components='buttons',currency='USD')}"></script>
-
 </head>
 <body>
     <div class="container py-3">
         <div class="header header-bubble">
-            <h1 class="retro-title">Cart Review</h1>
+            <h1 class="retro-title">PAYMENT SUCCESS!</h1>
             <div class="mt-2" style="font-size: 0.75rem; opacity: 0.9;">
                 <span class="badge bg-dark" style="border:2px solid #000; box-shadow: 0 2px 0 #000;">V1</span>
             </div>
         </div>
 
-        <div class="cart-container">
-            <!-- Check if cart has items -->
-            <div th:if="${cart != null and cart.product_cart_list != null and !#lists.isEmpty(cart.product_cart_list)}">
-                <!-- Display each cart item -->
-                <div th:each="product : ${cart.product_cart_list}" class="cart-item">
-                    <div class="item-details">
-                        <div class="item-name" th:text="${product.name}">Product Name</div>
-                        <div class="item-price" th:text="${'$' + #numbers.formatDecimal(product.displayprice, 1, 2)}">$0.00</div>
-                    </div>
-                    <div class="item-quantity" th:text="${'Qty: ' + product.displayquantity}">Qty: 1</div>
-                </div>
-
-                <!-- Cart Total -->
-                <div class="cart-total">
-                    <div class="total-amount">TOTAL: <span th:text="${'$' + #numbers.formatDecimal(cart.total, 1, 2)}">$0.00</span></div>
-
-                    <div th:if="${IncludePayPalView == 'yes'}" class="mt-3">
-                        <div class="d-flex justify-content-center">
-                            <div id="paypal-button-container"></div>
-                        </div>
-                    </div>
-                </div>
+        <div class="success-container">
+            <!-- Error message if transaction not found -->
+            <div th:if="${errorMessage != null}" class="error-message">
+                <i class="bi bi-exclamation-triangle" style="font-size: 3rem; margin-bottom: 20px;"></i>
+                <h3>Error</h3>
+                <p th:text="${errorMessage}">Error message</p>
             </div>
 
-            <!-- Empty cart message -->
-            <div th:if="${cart == null or cart.product_cart_list == null or #lists.isEmpty(cart.product_cart_list)}" class="empty-cart">
-                <i class="bi bi-cart-x" style="font-size: 3rem; color: #ccc; margin-bottom: 20px;"></i>
-                <h3>Your cart is empty</h3>
-                <p>Add some items to your cart to continue shopping.</p>
-                <a href="javascript:history.back()" class="payment-button" style="margin-top: 20px;">
-                    <i class="bi bi-arrow-left"></i> GO BACK
-                </a>
+            <!-- Transaction confirmation details -->
+            <div th:if="${transaction != null and customer != null}">
+                <!-- PayPal Order ID -->
+                <div class="success-item">
+                    <div class="item-details">
+                        <div class="item-label">PAYPAL ORDER ID</div>
+                        <div class="item-value" th:text="${transaction.paypalOrderId}">Order ID</div>
+                    </div>
+                    <div class="success-badge">PAID</div>
+                </div>
+
+                <!-- Transaction ID -->
+                <div class="success-item">
+                    <div class="item-details">
+                        <div class="item-label">TRANSACTION ID</div>
+                        <div class="item-value" th:text="${transaction.transactionid}">Transaction ID</div>
+                    </div>
+                    <div class="success-badge">CONFIRMED</div>
+                </div>
+
+                <!-- Customer Information -->
+                <div class="success-item">
+                    <div class="item-details">
+                        <div class="item-label">CUSTOMER NAME</div>
+                        <div class="item-value" th:text="${customer.name}">Customer Name</div>
+                    </div>
+                    <div class="success-badge">CUSTOMER</div>
+                </div>
+
+                <div class="success-item">
+                    <div class="item-details">
+                        <div class="item-label">CUSTOMER EMAIL</div>
+                        <div class="item-value" th:text="${customer.email}">Customer Email</div>
+                    </div>
+                    <div class="success-badge">EMAIL</div>
+                </div>
+
+                <!-- Payment Details -->
+                <div class="success-item">
+                    <div class="item-details">
+                        <div class="item-label">TOTAL PAID</div>
+                        <div class="item-value" th:text="${'$' + #numbers.formatDecimal(transaction.paid, 1, 2)}">$0.00</div>
+                    </div>
+                    <div class="success-badge">PAID</div>
+                </div>
+
+                <div class="success-item">
+                    <div class="item-details">
+                        <div class="item-label">TOTAL WITH TAX</div>
+                        <div class="item-value" th:text="${'$' + #numbers.formatDecimal(transaction.totalwithtax, 1, 2)}">$0.00</div>
+                    </div>
+                    <div class="success-badge">TOTAL</div>
+                </div>
+
+                <!-- Products Purchased -->
+                <div th:if="${transaction.product_list != null and !#lists.isEmpty(transaction.product_list)}" class="product-list">
+                    <div class="item-label" style="text-align: center; margin-bottom: 20px;">PRODUCTS PURCHASED</div>
+                    <div th:each="product : ${transaction.product_list}" class="product-item">
+                        <div class="product-name" th:text="${product.name}">Product Name</div>
+                        <div class="product-price" th:text="${'$' + #numbers.formatDecimal(product.price, 1, 2)}">$0.00</div>
+                        <div class="product-quantity" th:text="${'Qty: ' + product.displayquantity}">Qty: 1</div>
+                    </div>
+                </div>
+
+                <!-- Transaction Summary -->
+                <div class="transaction-summary">
+                    <div class="total-amount">PAYMENT CONFIRMED!</div>
+                    <div style="font-size: 1rem; margin-bottom: 20px;">
+                        Your order has been successfully processed
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="mt-3">
+                        <a th:href="@{/menu3/shop(shoppingtoken=${shoppingtoken})}" class="action-button">
+                            <i class="bi bi-house"></i> RETURN TO MENU
+                        </a>
+                        <a href="javascript:window.print()" class="action-button">
+                            <i class="bi bi-printer"></i> PRINT RECEIPT
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
-
-
-
     </div>
-
-    <script>
-        function proceedToPayment() {
-            // Add your payment processing logic here
-            alert('Payment processing would be implemented here');
-            // You can redirect to a payment gateway or process the payment
-        }
-    </script>
-
-
-    <script>
-        // You'll pass the cart/order identifier your server understands
-        const cartId = window.cartId || '[[${cartid}]]';
-        const shoppingtoken = window.shoppingtoken || '[[${shoppingtoken}]]';
-
-           paypal.Buttons({
-             createOrder: () => {
-               // Ask YOUR SERVER to create the PayPal order from the DB amount
-                return fetch(`/api/paypal/orders?cartId=${encodeURIComponent(cartId)}&shoppingtoken=${encodeURIComponent(shoppingtoken)}`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' }
-               })
-               .then(r => r.json())
-               .then(d => d.orderId); // return the PayPal order ID to the JS SDK
-             },
-
-             onApprove: (data) => {
-               // Buyer approved. Tell YOUR SERVER to capture the payment.
-               return fetch(`/api/paypal/orders/${data.orderID}/capture?shoppingtoken=${encodeURIComponent(shoppingtoken)}`, {
-                 method: 'POST'
-               })
-               .then(r => r.json())
-               .then(result => {
-                 // success path
-                 window.location = `/payment/paypal/thank-you?orderId=${encodeURIComponent(data.orderID)}&shoppingtoken=${encodeURIComponent(shoppingtoken)}`;
-               });
-             },
-
-             onError: (err) => {
-               console.error('PayPal error', err);
-               alert('Payment could not be completed. Please try again.');
-             }
-           }).render('#paypal-button-container');
-    </script>
 </body>
 </html>

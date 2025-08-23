@@ -21,6 +21,7 @@ import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.*
 
 import javax.persistence.TransactionRequiredException
+import java.nio.charset.StandardCharsets
 
 
 @RequestMapping("/payment")
@@ -246,13 +247,19 @@ public class PaymentViewController {
             // bind the CartVO to preparer for paypal checkout
             TransactionVO transactionVO
             if (orderId.isPresent()) {
+
                 transactionVO = transactionRepo.findByPaypalOrderId(orderId.get()).get()
+                transactionVO.updateProductDisplayQuantities()
                 model.addAttribute("transaction", transactionVO)
                 model.addAttribute("customer", transactionVO.customervo)
+                String encoded = Base64.getEncoder().encodeToString(shoppingtoken.get().getBytes(StandardCharsets.UTF_8));
+                model.addAttribute("shoppingtoken", encoded)
             } else {
                 model.addAttribute("transaction", null)
                 model.addAttribute("customer", null)
                 model.addAttribute("errorMessage", "Transaction not found.  This is bad and should not happen.  Please contact support.")
+                String encoded = Base64.getEncoder().encodeToString(shoppingtoken.get().getBytes(StandardCharsets.UTF_8));
+                model.addAttribute("shoppingtoken", encoded)
             }
         } else{
             model.addAttribute("errorMessage", "You do not have permission to view this page")

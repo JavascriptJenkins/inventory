@@ -126,4 +126,27 @@ class TransactionVO implements Serializable {
         payment_list.max { it.createTimeStamp }
     }
 
+    void updateProductDisplayQuantities() {
+        if (product_list == null || product_list.isEmpty()) return
+
+        // Create a map to count products by product_id
+        Map<Integer, Integer> countMap = [:]
+
+        product_list.each { product ->
+            Integer productId = product?.product_id
+            if (productId != null) {
+                countMap[productId] = (countMap[productId] ?: 0) + 1
+            }
+        }
+
+        // Set displayquantity for each product in the list
+        product_list.each { product ->
+            Integer productId = product?.product_id
+            if (productId != null) {
+                product.displayquantity = countMap[productId]
+            }
+        }
+    }
+
+
 }
