@@ -158,6 +158,21 @@ pipeline {
             }
         }
 
+        stage('Copy Static Asset Files,Photos') {
+            steps {
+                script {
+                    dir('inventory') {
+                        sshagent(credentials: ['inventory-root-sshkey']) {
+                            sh """
+                                scp -o StrictHostKeyChecking=no -r uploads/photos/ ${params.SSHUSER}@${params.HOSTNAME}:~/deployments/inventory/uploads
+                            """
+                        }
+                    }
+                }
+            }
+        }
+
+
         stage('Copy Global User Files') {
             steps {
                 script {
