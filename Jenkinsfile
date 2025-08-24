@@ -221,6 +221,49 @@ pipeline {
             }
         }
 
+        stage('Validate Directory Structure and make sure all dirs are created') {
+            steps {
+                script {
+                    sshagent(credentials: ['inventory-root-sshkey']) {
+                        sh """
+                            ssh -o StrictHostKeyChecking=no ${params.SSHUSER}@${params.HOSTNAME} << 'EOF'
+
+                            #!/bin/bash
+
+                            # Check and create the 'deployments' directory if it doesn't exist
+                            if [ ! -d ~/deployments ]; then
+                                mkdir ~/deployments
+                            fi
+
+                            # Check and create the 'inventory' directory inside 'deployments' if it doesn't exist
+                            if [ ! -d ~/deployments/inventory ]; then
+                                mkdir ~/deployments/inventory
+                            fi
+
+                            # Check and create the required directories inside 'inventory'
+                            for dir in backup data logs topdir uploads; do
+                                if [ ! -d ~/deployments/inventory/\$dir ]; then
+                                    mkdir ~/deployments/inventory/\$dir
+                                fi
+                            done
+
+                            # Check and create the subdirectories inside 'uploads'
+                            for subdir in coa font xlsx globaluserfiles media; do
+                                if [ ! -d ~/deployments/inventory/uploads/\$subdir ]; then
+                                    mkdir ~/deployments/inventory/uploads/\$subdir
+                                fi
+                            done
+
+                            # Print success message
+                            echo "Directories created successfully if they did not already exist."
+
+EOF
+                        """
+                    }
+                }
+            }
+        }
+
 
        stage('Deploy') {
             when {
