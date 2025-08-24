@@ -63,6 +63,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .antMatchers(LOGIN_SYSTEMUSER).permitAll()
             .antMatchers(VERIFY_PHONE_TOKEN).permitAll()
             .antMatchers(CREATE_ACCOUNT).permitAll()
+            .antMatchers(RESET_PASSWORD).permitAll()
             .antMatchers(CREATE_SYSTEM_USER).permitAll()
             .antMatchers(VERIFY).permitAll()
             .antMatchers(VERIFY_WILDCARD).permitAll()

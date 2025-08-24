@@ -171,6 +171,7 @@ public class AuthViewController {
         menuHelper.findMenus(model, Optional.empty(), Optional.empty());
         // get all the customers
         checkoutHelper.getAllCustomers(model);
+        model.addAttribute("UIMODE", "RETRO");
 
         try {
             return techvvsAuthService.runLoginRoutineFromToken(tokenDAO, model, response);

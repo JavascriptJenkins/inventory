@@ -17,6 +17,7 @@ class WhiteListUriConstants {
     public static final String LOGIN_SYSTEMUSER = "/login/systemuser";
     public static final String VERIFY_PHONE_TOKEN = "/login/verifyphonetoken";
     public static final String CREATE_ACCOUNT = "/login/createaccount";
+    public static final String RESET_PASSWORD = "/login/resetpassword";
     public static final String CREATE_SYSTEM_USER = "/login/createSystemUser";
     public static final String VERIFY = "/login/verify";
     public static final String VERIFY_WILDCARD = "/login/verify/*";

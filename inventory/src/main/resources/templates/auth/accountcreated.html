@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Authorization</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
     <script
             src="https://code.jquery.com/jquery-3.6.0.js"
@@ -13,20 +14,112 @@
     <!-- JavaScript Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-kQtW33rZJAHjgefvhyyzcGF3C5TFyBQBA13V1RKPf4uH+bwyzQxZ6CmMZHmNBEfJ" crossorigin="anonymous"></script>
 
-
     <link rel="stylesheet" type="text/css" media="all" href="/css/table.css" th:href="@{/css/table.css}" />
     <!-- Bootstrap Font Icon CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
+    <style>
+        :root {
+            --brand-color: #f25e5a;
+            --brand-dark: #e24a47;
+            --success-color: #28a745;
+            --success-dark: #1e7e34;
+            --warning-color: #ffc107;
+            --warning-dark: #e0a800;
+            --info-color: #17a2b8;
+            --info-dark: #138496;
+            --danger-color: #dc3545;
+            --danger-dark: #c82333;
+        }
 
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Press Start 2P', cursive;
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0;
+            padding: 10px;
+            min-height: 100vh;
+        }
+
+        .alert {
+            background: rgba(255, 255, 255, 0.95);
+            color: #222;
+            border: 3px solid #000;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 6px 0 #000;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.8rem;
+        }
+
+        .alert-success {
+            background: var(--success-color);
+            color: white;
+            border-color: #000;
+        }
+
+        .alert-danger {
+            background: var(--danger-color);
+            color: white;
+            border-color: #000;
+        }
+
+        .alert-info {
+            background: var(--info-color);
+            color: white;
+            border-color: #000;
+        }
+
+        a {
+            color: var(--info-color);
+            text-decoration: none;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.7rem;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        a:hover {
+            color: var(--info-dark);
+            text-decoration: none;
+        }
+
+        h2 {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1rem;
+            color: #fff;
+            text-shadow: 2px 2px 0 #000;
+            margin: 20px 0;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .alert {
+                font-size: 0.7rem;
+                padding: 15px;
+            }
+            a {
+                font-size: 0.6rem;
+            }
+            h2 {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
 
 </head>
 <body>
-<br>
-<br>
+
     <div class="container">
-        <div class="alert alert-success" role="alert" >Account creation success</div>
-<!--        <h2><a href="http://localhost:8080/login/sendvalidationemail">Request new validation email.</a></h2>-->
+        <div class="alert alert-success" role="alert">Account creation success</div>
         <h2><a href="http://localhost:8080/login">Login</a></h2>
 
         <!--@RequestMapping("/studentView")-->
@@ -35,12 +128,8 @@
             <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
             <div class="alert alert-info" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
 
-
-
-
         </form>
     </div>
-
 
 </body>
 </html>

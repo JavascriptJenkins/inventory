@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Authorization</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
 
     <!-- Bootstrap CSS -->
@@ -13,6 +14,7 @@
 
     <link rel="stylesheet" type="text/css" media="all" href="/css/table.css" th:href="@{/css/table.css}" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
     <script>
         function hideform(){
@@ -23,79 +25,201 @@
     </script>
 
     <style>
+        :root {
+            --brand-color: #f25e5a;
+            --brand-dark: #e24a47;
+            --success-color: #28a745;
+            --success-dark: #1e7e34;
+            --warning-color: #ffc107;
+            --warning-dark: #e0a800;
+            --info-color: #17a2b8;
+            --info-dark: #138496;
+            --danger-color: #dc3545;
+            --danger-dark: #c82333;
+        }
+
         body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Press Start 2P', cursive;
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            min-height: 100vh;
             color: #fff;
-            font-family: 'Roboto', sans-serif;
-            background-color: #343a40; /* Applying dark background to body */
         }
+
+        .container {
+            max-width: 100%;
+            margin: 0;
+            padding: 10px;
+            min-height: 100vh;
+        }
+
         .header-dark {
-            background-color: #343a40;
-            color: #fff;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            font-family: 'Roboto', sans-serif;
-            border: 1px solid transparent;
-            border-image: linear-gradient(to right, #c0c0c0, #ffffff);
-            border-image-slice: 1;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            background: var(--brand-color);
+            color: white;
+            padding: 25px 40px;
+            border-radius: 20px;
             text-align: center;
+            margin: 20px 0;
+            font-weight: bold;
+            font-size: 2rem;
+            box-shadow: 0 0 30px var(--brand-color);
+            animation: headerGlow 2s infinite alternate;
+            border: 3px solid #000;
+            box-shadow: 0 6px 0 #000;
         }
+
+        @keyframes headerGlow {
+            0% { box-shadow: 0 0 10px var(--brand-color), 0 6px 0 #000; }
+            100% { box-shadow: 0 0 30px var(--brand-color), 0 6px 0 #000; }
+        }
+
         .btn-dark-mode {
-            font-size: 1.2rem;
-            background-color: #23272b;
-            color: #fff;
-            padding: 10px 20px;
-            border-radius: 5px;
-            display: inline-block;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.8rem;
+            background: var(--info-color);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            display: block;
             text-align: center;
             text-decoration: none;
-            border: 2px solid #343a40;
-            transition: background-color 0.3s ease;
-            margin: 10px 0; /* Adding margin for spacing */
+            border: 3px solid #000;
+            box-shadow: 0 4px 0 #000;
+            transition: all 0.2s ease;
+            margin: 15px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            min-height: 60px;
+            touch-action: manipulation;
         }
+
         .btn-dark-mode:hover {
-            background-color: #1d2124;
-            color: #fff;
-            text-decoration: none;
+            background: var(--info-dark);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #000;
         }
+
         .btn-submit-dark {
-            font-size: 1.2rem;
-            background-color: #444;
-            color: #fff;
-            padding: 10px 20px;
-            border-radius: 5px;
-            border: 2px solid #343a40;
-            display: inline-block;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.8rem;
+            background: var(--success-color);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            border: 3px solid #000;
+            box-shadow: 0 4px 0 #000;
+            display: block;
             text-align: center;
             text-decoration: none;
-            transition: background-color 0.3s ease;
-            margin-top: 10px;
+            transition: all 0.2s ease;
+            margin-top: 20px;
             width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            min-height: 60px;
+            touch-action: manipulation;
         }
+
         .btn-submit-dark:hover {
-            background-color: #333;
-            border-color: #23272b;
+            background: var(--success-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #000;
         }
-        .required:after {
-            content:" *";
-            color: red;
+
+        .form-control {
+            background: rgba(255, 255, 255, 0.95);
+            color: #222;
+            border: 3px solid #000;
+            border-radius: 8px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.7rem;
+            box-shadow: 0 3px 0 #000;
+            padding: 15px;
+            min-height: 50px;
         }
-        .responsive-image {
-            max-width: 100%;  /* Adjusts within container */
-            height: auto;     /* Keeps aspect ratio */
+
+        .form-control:focus {
+            background: rgba(255, 255, 255, 1);
+            color: #222;
+            border-color: var(--brand-color);
+            box-shadow: 0 3px 0 #000, 0 0 10px var(--brand-color);
         }
+
+        .form-control::placeholder {
+            color: #666;
+        }
+
+        .alert {
+            background: rgba(255, 255, 255, 0.95);
+            color: #222;
+            border: 3px solid #000;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 6px 0 #000;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.8rem;
+        }
+
+        .alert-primary {
+            background: var(--info-color);
+            color: white;
+            border-color: #000;
+        }
+
+        .alert-danger {
+            background: var(--danger-color);
+            color: white;
+            border-color: #000;
+        }
+
+        .alert-info {
+            background: var(--info-color);
+            color: white;
+            border-color: #000;
+        }
+
         .center-image {
             display: block;
-            margin: auto;
-            width: 200px; /* Adjust as needed */
-            height: auto; /* Maintain aspect ratio */
+            margin: 20px auto;
+            width: 200px;
+            height: auto;
+            border: 3px solid #000;
+            border-radius: 12px;
+            box-shadow: 0 6px 0 #000;
         }
 
+        .required:after {
+            content: " *";
+            color: var(--danger-color);
+        }
 
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .header-dark {
+                font-size: 1.5rem;
+                padding: 20px;
+            }
+            .btn-dark-mode, .btn-submit-dark {
+                font-size: 0.7rem;
+                padding: 25px 35px;
+                min-height: 70px;
+            }
+            .form-control {
+                font-size: 0.6rem;
+                padding: 20px;
+                min-height: 60px;
+            }
+            .alert {
+                font-size: 0.7rem;
+                padding: 15px;
+            }
+            .center-image {
+                width: 150px;
+            }
+        }
     </style>
 
 </head>
@@ -107,12 +231,7 @@
 
 <div id="maincontainer" class="container">
 
-<!--    <img src="@{/images/red_tulip_adhoc_1.png}" alt="Logo">-->
-<!--    <p>Resolved path: <span th:text="@{/images/red_tulip_adhoc_1.png}"></span></p>-->
-
-    <img th:src="@{/image/images/photos/red_tulip_adhoc_1.png}" class="card-img-top center-image" alt="Product Image">
-
-
+    <img th:src="@{/image/images/photos/red_tulip_adhoc_1.png}" class="center-image" alt="Product Image">
 
     <div class="header-dark">
         <h1>Login</h1>
@@ -124,7 +243,7 @@
 
         <div class="row">
             <div class="col">
-                <input id="email" style="margin-bottom: 5px;" type="email" th:field="*{email}" class="form-control email" placeholder="Email" aria-label="Email">
+                <input id="email" style="margin-bottom: 15px;" type="email" th:field="*{email}" class="form-control email" placeholder="Email" aria-label="Email">
             </div>
         </div>
 
