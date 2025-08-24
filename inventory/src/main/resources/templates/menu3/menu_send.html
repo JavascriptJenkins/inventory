@@ -525,21 +525,15 @@
 
                 <thead>
                 <tr>
-                    <th scope="col">Menu ID</th>
                     <th scope="col">Menu Name</th>
                     <th scope="col">Actions</th>
                 </tr>
                 </thead>
                 <tbody th:if="${menuPage != null and menuPage.content != null and #lists.size(menuPage.content) > 0}">
                 <tr th:each="menu, iStat : ${menuPage.content}" th:data-menuid="${menu.menuid}" th:data-menu-product-list="${menu.menu_product_list}">
-                    <td>
-                        <a th:href="@{/menu?menuid=__${menu.menuid}__&cartid=0}"
-                           th:text="${menu.menuid}"
-                           class="btn btn-secondary btn-sm">
-                        </a>
-                    </td>
-                    <td th:text="${menu.name}"></td>
-                                     <td>
+
+                    <td th:text="${menu.menuid + ' | '+ menu.name}"></td>
+                        <td>
                          <button type="button" class="btn btn-warning send-menu-btn"
                                  th:data-menuid="${menu.menuid}"
                                  th:data-menuname="${menu.name}">
