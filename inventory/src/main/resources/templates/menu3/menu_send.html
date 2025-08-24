@@ -469,6 +469,35 @@
                 font-size: 18px;
             }
         }
+
+        /* Make tables scroll nicely on iOS */
+        .table-responsive {
+          width: 100%;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+        }
+
+        /* Let cells wrap so long text doesn't push the table wider than the viewport */
+        .table thead th,
+        .table tbody td {
+          white-space: normal;
+          word-break: break-word;
+        }
+
+        /* Actions cell: allow buttons to wrap and breathe */
+        .action-buttons {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+
+        /* Mobile: make buttons stack full width in the Actions column */
+        @media (max-width: 768px) {
+          .action-buttons .btn {
+            flex: 1 1 100%;
+          }
+        }
+
     </style>
 </head>
 <body>
@@ -491,42 +520,45 @@
     <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
 
     <form id="menuSendForm" method="POST" th:action="@{/menu/send}">
-        <table class="table table-hover table-striped table-dark">
-            <thead>
-            <tr>
-                <th scope="col">Menu ID</th>
-                <th scope="col">Menu Name</th>
-                <th scope="col">Actions</th>
-            </tr>
-            </thead>
-            <tbody th:if="${menuPage != null and menuPage.content != null and #lists.size(menuPage.content) > 0}">
-            <tr th:each="menu, iStat : ${menuPage.content}" th:data-menuid="${menu.menuid}" th:data-menu-product-list="${menu.menu_product_list}">
-                <td>
-                    <a th:href="@{/menu?menuid=__${menu.menuid}__&cartid=0}"
-                       th:text="${menu.menuid}"
-                       class="btn btn-secondary btn-sm">
-                    </a>
-                </td>
-                <td th:text="${menu.name}"></td>
-                                 <td>
-                     <button type="button" class="btn btn-warning send-menu-btn" 
-                             th:data-menuid="${menu.menuid}" 
-                             th:data-menuname="${menu.name}">
-                         <i class="bi bi-send"></i> Send Menu
-                     </button>
-                     <button type="button" class="btn btn-primary add-discount-btn" 
-                             th:data-menuid="${menu.menuid}" 
-                             th:data-menuname="${menu.name}">
-                         <i class="bi bi-plus-circle"></i> Add Discount
-                     </button>
-                     <button type="button" class="btn btn-outline-primary expand-btn"
-                             th:data-menuid="${menu.menuid}">
-                         <i class="bi bi-plus-lg"></i> Expand
-                     </button>
-                 </td>
-            </tr>
-            </tbody>
-        </table>
+        <div class="table-responsive">
+                <table class="table table-hover table-striped table-dark w-100">
+
+                <thead>
+                <tr>
+                    <th scope="col">Menu ID</th>
+                    <th scope="col">Menu Name</th>
+                    <th scope="col">Actions</th>
+                </tr>
+                </thead>
+                <tbody th:if="${menuPage != null and menuPage.content != null and #lists.size(menuPage.content) > 0}">
+                <tr th:each="menu, iStat : ${menuPage.content}" th:data-menuid="${menu.menuid}" th:data-menu-product-list="${menu.menu_product_list}">
+                    <td>
+                        <a th:href="@{/menu?menuid=__${menu.menuid}__&cartid=0}"
+                           th:text="${menu.menuid}"
+                           class="btn btn-secondary btn-sm">
+                        </a>
+                    </td>
+                    <td th:text="${menu.name}"></td>
+                                     <td>
+                         <button type="button" class="btn btn-warning send-menu-btn"
+                                 th:data-menuid="${menu.menuid}"
+                                 th:data-menuname="${menu.name}">
+                             <i class="bi bi-send"></i> Send Menu
+                         </button>
+                         <button type="button" class="btn btn-primary add-discount-btn"
+                                 th:data-menuid="${menu.menuid}"
+                                 th:data-menuname="${menu.name}">
+                             <i class="bi bi-plus-circle"></i> Add Discount
+                         </button>
+                         <button type="button" class="btn btn-outline-primary expand-btn"
+                                 th:data-menuid="${menu.menuid}">
+                             <i class="bi bi-plus-lg"></i> Expand
+                         </button>
+                     </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
     </form>
 
     <!-- Hidden Popup Form for Send Menu -->
