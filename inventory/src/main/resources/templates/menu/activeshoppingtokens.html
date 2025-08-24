@@ -381,6 +381,36 @@
                 font-size: 18px;
             }
         }
+
+        /* Make the responsive wrapper behave nicely on iOS */
+        .table-responsive {
+          width: 100%;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+        }
+
+        /* Ensure table fits container width */
+        .table {
+          width: 100%;
+          table-layout: auto;            /* let columns size naturally on small screens */
+        }
+
+        /* Allow cells to wrap instead of forcing the table wider than the viewport */
+        .table-bordered th,
+        .table-bordered td {
+          white-space: normal;
+          word-break: break-word;
+        }
+
+        /* Optional: slightly reduce dense padding on small screens */
+        @media (max-width: 768px) {
+          .table-bordered th,
+          .table-bordered td {
+            padding: 12px;               /* was larger; trims width pressure */
+            font-size: 16px;
+          }
+        }
+
     </style>
 
     <script>
@@ -445,44 +475,47 @@
 
 
         <div class="row mb-3">
-            <table class="table table-striped table-dark table-bordered">
-                <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Actions</th>
-                    <th>Expiration</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="customer : ${customerPage.content}" th:data-shoppingtoken="${customer.shoppingtoken}">
-                    <td>
-                        <strong>Name:</strong> <span th:text="${customer.name}"></span>
-                    </td>
-                    <td>
-                        <button class="btn btn-sm btn-primary"
-                                th:if="${customer.shoppingtoken != null}"
-                                th:data-url="${baseqrdomain + '/menu2/shop?shoppingtoken=' + customer.encodedShoppingtoken}"
-                                onclick="copyToClipboard(this)">
-                            Copy Token
-                        </button>
-                    </td>
-                    <td class="expiration-cell">
-                        <strong>Expires:</strong>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-            <nav th:if="${customerPage.totalPages > 1}">
-                <ul class="pagination flex-wrap justify-content-center">
-                    <li class="page-item" th:each="pageNumber : ${#numbers.sequence(1, customerPage.totalPages)}">
-                        <a class="page-link m-1"
-                           th:href="@{/activeshoppingtokens(size=${size}, page=${pageNumber - 1})}"
-                           th:text="${pageNumber}"
-                           th:classappend="${pageNumber == customerPage.number + 1} ? 'active'">
-                        </a>
-                    </li>
-                </ul>
-            </nav>
+            <div class="col-12">
+                <div class="table-responsive">
+                    <table class="table table-striped table-dark table-bordered w-100">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Actions</th>
+                            <th>Expiration</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="customer : ${customerPage.content}" th:data-shoppingtoken="${customer.shoppingtoken}">
+                            <td>
+                                <strong>Name:</strong> <span th:text="${customer.name}"></span>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-primary"
+                                        th:if="${customer.shoppingtoken != null}"
+                                        th:data-url="${baseqrdomain + '/menu2/shop?shoppingtoken=' + customer.encodedShoppingtoken}"
+                                        onclick="copyToClipboard(this)">
+                                    Copy Token
+                                </button>
+                            </td>
+                            <td class="expiration-cell">
+                                <strong>Expires:</strong>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <nav th:if="${customerPage.totalPages > 1}">
+                        <ul class="pagination flex-wrap justify-content-center">
+                            <li class="page-item" th:each="pageNumber : ${#numbers.sequence(1, customerPage.totalPages)}">
+                                <a class="page-link m-1"
+                                   th:href="@{/activeshoppingtokens(size=${size}, page=${pageNumber - 1})}"
+                                   th:text="${pageNumber}"
+                                   th:classappend="${pageNumber == customerPage.number + 1} ? 'active'">
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
     </div>
 </div>
 
