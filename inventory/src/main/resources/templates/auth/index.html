@@ -63,7 +63,7 @@
             color: #fff;
             padding: 15px;
             border-radius: 5px;
-            margin-bottom: 15px;
+<!--            margin-bottom: 15px;-->
             font-family: 'Roboto', sans-serif;
             border: 1px solid transparent;
             border-image: linear-gradient(to right, #c0c0c0, #ffffff);
@@ -172,17 +172,19 @@
             position: relative;
         }
         .btn-hover {
-            display: inline-block;
-            padding: 10px 20px;
-            font-size: 16px;
+<!--            display: inline-block;-->
+<!--            padding: 20px 30px;-->
+            font-size: 18px;
             font-weight: bold;
             text-align: center;
             text-decoration: none;
             color: #000;
             background-color: #ffc107;
             border: 2px solid #ffc107;
-            border-radius: 5px;
+            border-radius: 10px;
             transition: all 0.3s ease-in-out;
+<!--            min-height: 60px;-->
+            touch-action: manipulation;
         }
         .btn-hover:hover {
             background-color: #ffd700;
@@ -213,7 +215,46 @@
             .table {
                 font-size: 18px;
             }
+            .btn-hover {
+<!--                padding: 25px 35px;-->
+                font-size: 20px;
+<!--                min-height: 70px;-->
+            }
+            /* Ensure buttons stack properly on mobile */
+            .row .col-md-6 {
+                width: 100% !important;
+                margin-top: 15px;
+                margin-bottom: 15px;
+            }
+            .row .col-md-6:last-child {
+                margin-bottom: 15px;
+            }
+            .row {
+                display: flex;
+                flex-wrap: wrap;
+            }
         }
+        /* Make 100% width include padding/border */
+.btn-hover {
+  display: block;           /* not inline-block */
+  width: 100%;
+  box-sizing: border-box;   /* key fix */
+}
+
+/* Optional: tame the padding on small screens */
+@media (max-width: 768px) {
+  .btn-hover {
+    padding: 14px 18px;     /* was 20–30px */
+    min-height: 0;          /* avoid huge fixed height on tiny screens */
+  }
+}
+
+/* If columns still feel tight, remove column side padding on this row only */
+.row.mb-12 > [class*="col-"] {
+  padding-left: 0;
+  padding-right: 0;
+}
+
     </style>
 
     <!-- Retro Gameboy Styling -->
@@ -442,6 +483,9 @@
             font-size: 0.8rem;
             box-shadow: 0 4px 0 #000;
             transition: all 0.2s ease;
+            padding: 20px 30px;
+            min-height: 60px;
+            touch-action: manipulation;
         }
 
         .btn-hover:hover {
@@ -522,6 +566,21 @@
             .table {
                 font-size: 18px;
             }
+            .btn-hover {
+                font-size: 0.7rem;
+                padding: 25px 35px;
+                min-height: 70px;
+                margin-bottom: 5px;
+                margin-top: 5px;
+            }
+            /* Ensure buttons stack properly on mobile */
+            .row .col-md-6 {
+                width: 100% !important;
+                margin-bottom: 15px;
+            }
+            .row .col-md-6:last-child {
+                margin-bottom: 0;
+            }
         }
     </style>
 
@@ -534,232 +593,35 @@
 
     <div class="header-dark">
         <div>
-            <h1>Home</h1>
+            <h1 style="font-family: 'Press Start 2P', cursive;">TULIP POS</h1>
         </div>
     </div>
 
     <br>
 
-    <div class="mb-3">
-        <a href="/menu/shoppingtoken/active" class="btn-hover">
-            View Active Shopping Tokens
-        </a>
+    <!-- Action Buttons Row -->
+    <div class="row mb-12">
+        <div class="col-12 col-md-6 mb-2" style="margin-top: 50px;">
+            <a href="/menu/shoppingtoken/active" class="btn-hover w-100">
+                View Active Shopping Tokens
+            </a>
+        </div>
+
+        <div class="col-12 col-md-6 mb-2" style="margin-top: 50px;">
+            <a href="/menu3/menusend" class="btn-hover w-100">
+                Send Menu
+            </a>
+        </div>
     </div>
 
-    <div class="mb-3">
-        <a href="/menu3/menusend" class="btn-hover">
-            Send Menu
-        </a>
-    </div>
 
-    <div class="alert alert-info" role="alert">Select a Menu option to get started.</div>
+    <div style="margin-top: 40px;" class="alert alert-info" role="alert">Welcome to the TULIP POS Dashboard.  Let's sell some stuff! </div>
     <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
     <div class="alert alert-info" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
 
-    <form id="priceChangeForm" method="POST" th:action="@{/menu/pricechange}">
-        <table class="table table-hover table-striped table-dark">
-            <thead>
-            <tr>
-                <th scope="col">Menu ID</th>
-                <th scope="col">Menu Name</th>
-                <th scope="col">Discount</th>
-                <th scope="col">Product Type</th>
-                <th scope="col">Actions</th>
-                <th scope="col">Expand</th>
-                <th scope="col">Send Menu</th>
-            </tr>
-            </thead>
-            <tbody th:if="${menuPage != null and menuPage.content != null and #lists.size(menuPage.content) > 0}">
-            <tr th:each="menu, iStat : ${menuPage.content}" th:data-menuid="${menu.menuid}">
-                <!-- table columns -->
-
-                <td>
-                    <a th:href="@{/menu?menuid=__${menu.menuid}__&cartid=0}"
-                       th:text="${menu.menuid}"
-                       class="btn btn-secondary btn-sm">
-                    </a>
-                </td>
-                <td th:text="${menu.name}"></td>
-
-                <!-- Amount Dropdown -->
-                <td>
-                    <select class="form-select amount-dropdown">
-                        <option value="0.00" selected>0.00</option>
-                        <option value="50.00">25.00</option>
-                        <option value="50.00">50.00</option>
-                        <option value="100.00">100.00</option>
-                        <option value="150.00">150.00</option>
-                        <option value="200.00">200.00</option>
-                        <option value="250.00">250.00</option>
-                        <option value="300.00">300.00</option>
-                        <option value="350.00">350.00</option>
-                        <option value="400.00">400.00</option>
-                        <option value="450.00">450.00</option>
-                        <option value="500.00">500.00</option>
-                    </select>
-                </td>
-
-                <!-- Product Type Dropdown -->
-                <td>
-                    <select class="form-select product-type-dropdown">
-                        <option value="" disabled selected>Select Product Type</option>
-                        <option th:each="product : ${menu.menu_product_list}"
-                                th:value="${product.producttypeid.producttypeid}"
-                                th:text="${product.producttypeid.name}">
-                        </option>
-                    </select>
-                </td>
-
-                <!-- Actions -->
-                <td>
-                    <button type="button" class="btn btn-primary amt-change-btn">Amt Change</button>
-                    <button type="button" class="btn btn-success submit-btn">Submit</button>
-                    <div class="form-check form-check-inline">
-                        <input type="checkbox" class="form-check-input new-menu-checkbox" id="newMenuCheck">
-                        <label class="form-check-label" for="newMenuCheck">New Menu</label>
-                    </div>
-                </td>
-                <td>
-                    <button type="button" class="btn btn-outline-primary expand-btn"
-                            th:data-menuid="${menu.menuid}">
-                        <i class="bi bi-plus-lg"></i>
-                    </button>
-                </td>
-                <!-- Add the new "Send Menu" button -->
-                <td>
-                    <button type="button" class="btn btn-warning send-menu-btn" th:data-menuid="${menu.menuid}" th:data-menuname="${menu.name}">
-                        Send Menu
-                    </button>
-                </td>
-            </tr>
 
 
 
-            </tbody>
-        </table>
-    </form>
-
-
-<!--    <div th:each="menu, iStat : ${menuPage.content}" th:data-menuid="${menu.menuid}" th:id="menuid-hidden-element-278" style="display: none;">-->
-    <div th:if="${menuPage2 != null and menuPage2.content != null and !menuPage2.content.isEmpty()}">
-        <div th:each="menu, iStat : ${menuPage2.content}"
-             th:data-menuid="${menu.menuid}"
-             th:id="${'menuid-hidden-element-'+menu.menuid}"
-             style="display: none;">
-        <h3>Menu Details</h3>
-        <p>This is the content for Menu ID <span th:text="${menu.menuid}"></span></p>
-        <p th:text="${menu.name}"></p>
-        <!-- Iterate through the nested discount_list -->
-        <div th:if="${menu.discount_list}">
-            <h4 class="header-small">Discounts</h4>
-            <table class="table table-hover table-striped table-dark">
-                <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Amount</th>
-                    <th>Name</th>
-                    <th>Discount Description</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="discount : ${menu.discount_list}">
-                    <td th:text="${discount.discountid}"></td>
-                    <td th:text="${discount.discountamount}"></td>
-                    <td th:text="${discount.name}"></td>
-                    <td th:text="${discount.description}"></td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-
-
-    </div>
-
-    <!-- Hidden Popup Form -->
-    <div id="popupForm" class="custom-popup-overlay" style="display: none;">
-        <div class="popup-box">
-            <h4 id="popupMenuName" class="text-center mb-4">Send Menu</h4>
-            <form id="shoppingTokenForm" action="/menu/shoppingtoken/send" method="POST">
-                <div class="row g-3">
-                    <!-- Customer Dropdown -->
-                    <div class="col-md-12">
-                        <label for="customerSelect" class="form-label required">Customer</label>
-                        <select id="customerSelect" name="customerId" class="form-select">
-                            <option value="" selected>Select Customer</option>
-                            <option th:each="customer : ${customers}" th:value="${customer.customerid}" th:text="${customer.name}"></option>
-                        </select>
-                    </div>
-
-                    <!-- Token Length Dropdown -->
-                    <div class="col-md-12">
-                        <label for="tokenLengthSelect" class="form-label required">Token Length (Hours)</label>
-                        <select id="tokenLengthSelect" name="tokenLength" class="form-select">
-                            <option value="" selected>Select Hour Amt</option>
-                            <option th:each="hour : ${#numbers.sequence(1,1000)}" th:value="${hour}" th:text="${hour}"></option>
-                        </select>
-                    </div>
-
-                    <!-- Phone Number Input -->
-                    <div class="col-md-12">
-                        <label for="phoneNumber" class="form-label required">Phone Number</label>
-                        <input type="text" id="phoneNumber" name="phoneNumber" class="form-control" maxlength="10" placeholder="Enter 10-digit phone number">
-                    </div>
-
-                    <!-- Added Checkbox for Media Only -->
-                    <div class="col-md-12">
-                        <div class="form-check">
-                            <input type="checkbox" id="mediaOnlyCheckbox" class="form-check-input">
-                            <label class="form-check-label" for="mediaOnlyCheckbox">Media Only</label>
-                        </div>
-                    </div>
-
-                    <!-- Added Checkbox for No Prices -->
-                    <div class="col-md-12">
-                        <div class="form-check">
-                            <input type="checkbox" id="noPricesCheckbox" class="form-check-input">
-                            <label class="form-check-label" for="noPricesCheckbox">No Prices</label>
-                        </div>
-                    </div>
-
-                    <!-- Added Checkbox for Include Out Of Stock Items -->
-                    <div class="col-md-12">
-                        <div class="form-check">
-                            <input type="checkbox" id="includeOutOfStockCheckbox" class="form-check-input">
-                            <label class="form-check-label" for="includeOutOfStockCheckbox">Include Out of Stock Items</label>
-                        </div>
-                    </div>
-
-                    <!-- Custom URI Toggle -->
-                    <div class="col-md-12">
-                        <div class="form-check">
-                            <input type="checkbox" id="useCustomUriCheckbox" class="form-check-input">
-                            <label class="form-check-label" for="useCustomUriCheckbox">Custom Uri</label>
-                        </div>
-                    </div>
-
-                    <!-- Custom URI Value (hidden unless checked) -->
-                    <div class="col-md-12" id="customUriValueGroup" style="display: none;">
-                        <label for="customUriValue" class="form-label">URI Value</label>
-                        <input type="text" id="customUriValue" class="form-control" placeholder="https://example.com/path?param=value">
-                    </div>
-
-                    <!-- Custom URI Toggle -->
-                    <div class="col-md-12">
-                        <div class="form-check">
-                            <input type="checkbox" id="enablePaypalCheckbox" class="form-check-input">
-                            <label class="form-check-label" for="enablePaypalCheckbox">Enable Paypal</label>
-                        </div>
-                    </div>
-
-                    <!-- Submit and Close Buttons -->
-                    <div class="col-12 d-flex justify-content-between" style="margin-top: 50px;">
-                        <button type="submit" id="submitBtn" class="btn btn-primary" disabled>Submit</button>
-                        <button type="button" class="btn btn-secondary" id="closePopupBtn">Close</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
 
 
 
@@ -1168,18 +1030,6 @@
 
 
 
-
-    <nav th:if="${menuPage != null && menuPage.totalPages > 0}">
-        <ul class="pagination">
-            <li class="page-item" th:each="pageNumber : ${pageNumbers}">
-                <a class="page-link"
-                   th:href="@{/dashboard/index(size=${menuPage.content != null ? #lists.size(menuPage.content) : 0}, page=${pageNumber})}"
-                   th:text="${pageNumber}"
-                   th:classappend="${pageNumber==menuPage.number + 1} ? 'active'">
-                </a>
-            </li>
-        </ul>
-    </nav>
 
 </div>
 

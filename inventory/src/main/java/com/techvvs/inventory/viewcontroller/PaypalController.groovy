@@ -195,6 +195,7 @@ public class PaypalController {
             def result = paypalCheckoutService.captureOrder(orderId)
             // TODO: check result.status == "COMPLETED", update your DB, etc.
 
+            // TODO: add a record into the payment table for doing this - also put the payment behind a service in paymentmentservice
             if(result.status == "COMPLETED"){
                 System.out.println("order: ${orderId} is COMPLETED, marking it as paid and processed in techvvs system")
                 // todo: go in techvvs system and mark the transaction as completed (set the paid amount and mark isprocessed=1)
