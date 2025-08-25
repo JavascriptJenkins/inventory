@@ -97,7 +97,7 @@ class PhotoController {
         // fetch all customers from database and bind them to model
         //checkoutHelper.getAllCustomers(model)
         //techvvsAuthService.checkuserauth(model)
-        return "menu2/photoplayer.html";
+        return "menu5/photoplayer.html";
     }
 
 

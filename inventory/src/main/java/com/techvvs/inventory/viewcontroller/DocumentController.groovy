@@ -83,7 +83,7 @@ class DocumentController {
         // fetch all customers from database and bind them to model
         //checkoutHelper.getAllCustomers(model)
         //techvvsAuthService.checkuserauth(model)
-        return "menu2/documentplayer.html";
+        return "menu5/documentplayer.html";
     }
 
 

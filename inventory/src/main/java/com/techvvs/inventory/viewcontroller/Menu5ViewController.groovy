@@ -1,0 +1,783 @@
+package com.techvvs.inventory.viewcontroller
+
+import com.techvvs.inventory.model.*
+import com.techvvs.inventory.security.JwtTokenProvider
+import com.techvvs.inventory.security.Role
+import com.techvvs.inventory.service.auth.TechvvsAuthService
+import com.techvvs.inventory.service.transactional.CartDeleteService
+import com.techvvs.inventory.viewcontroller.helper.BatchControllerHelper
+import com.techvvs.inventory.viewcontroller.helper.CheckoutHelper
+import com.techvvs.inventory.viewcontroller.helper.CustomerHelper
+import com.techvvs.inventory.viewcontroller.helper.MenuHelper
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.core.env.Environment
+import org.springframework.stereotype.Controller
+import org.springframework.ui.Model
+import org.springframework.web.bind.annotation.*
+
+/* Here we have the menu5 controller, which is used for serving the mobile friendly menus.
+* We are not using stupid chatgpt for any functionality on the htmls being served here..... .SMFH
+*  */
+
+@RequestMapping("/menu5")
+@Controller
+public class Menu5ViewController {
+    
+
+    @Autowired
+    CheckoutHelper checkoutHelper
+
+    @Autowired
+    CartDeleteService cartDeleteService
+
+    @Autowired
+    MenuHelper menuHelper
+
+    @Autowired
+    BatchControllerHelper batchControllerHelper
+
+    @Autowired
+    TechvvsAuthService techvvsAuthService
+
+    @Autowired
+    JwtTokenProvider jwtTokenProvider
+
+    @Autowired
+    CustomerHelper customerHelper
+
+    @Autowired
+    Environment env
+    
+
+    // todo: modify this to parse user cookie from request and check user permissions
+    // todo: modify this to check for existence of
+    @GetMapping
+    String viewNewForm(
+            @ModelAttribute( "menu" ) MenuVO menuVO,
+            Model model,
+            @RequestParam("menuid") Optional<String> menuid,
+            @RequestParam("cartid") Optional<String> cartid,
+            @RequestParam("page") Optional<String> page,
+            @RequestParam("size") Optional<String> size,
+            @ModelAttribute( "cart" ) CartVO cartVO
+    ){
+
+        techvvsAuthService.checkuserauth(model)
+
+
+        if(menuid.isPresent())  {
+            menuHelper.loadMenu(menuid.get(), model)
+        }
+        if(cartid.isPresent()) {
+            checkoutHelper.loadCart(cartid.get(), model, cartVO, menuid.get())
+        }
+
+
+
+        // todo: add a button on the ui to pull the latest transaction for customer (so if someone clicks off page
+        //  you can come back and finish the transaction)
+
+        
+
+
+
+        // fetch all customers from database and bind them to model
+        checkoutHelper.getAllCustomers(model)
+        //techvvsAuthService.checkuserauth(model)
+        return "menu5/menu.html";
+    }
+
+    // todo: open this up on the firewall
+    // allow user to shop menu with shopping token
+    @GetMapping("/shop")
+    String shopMenu(
+            @ModelAttribute( "menu" ) MenuVO menuVO,
+            Model model,
+            @RequestParam("menuid") Optional<String> menuid,
+            @RequestParam("shoppingtoken") Optional<String> shoppingtoken,
+            @RequestParam("size") Optional<String> size,
+            @ModelAttribute( "cart" ) CartVO cartVO
+    ){
+        boolean tokenused = true;
+        if(shoppingtoken.isPresent()) {
+            shoppingtoken = Optional.of(
+                    techvvsAuthService.checkAndDecodeJwtFromBase64(shoppingtoken.get())
+            )
+            tokenused = techvvsAuthService.isTokenUsed(shoppingtoken.get())
+            model.addAttribute("shoppingtoken", shoppingtoken)
+        }
+
+        // this needs to do a search on the customerid and see if there is cart pending with this exact menu id
+        if(shoppingtoken.isPresent() && !tokenused) {
+            menuHelper.loadCartByCustomerIdAndMenuId(shoppingtoken.get(), model)
+        }
+
+        // overwrite the menuid.... redundant but we have to do it now!
+        menuid = Optional.of(jwtTokenProvider.getMenuIdFromToken(shoppingtoken.get()))
+
+        System.out.println("DEBUGGGGG: shoppingtoken.get(): "+shoppingtoken.get())
+        List<String> authorities = jwtTokenProvider.extractAuthorities(shoppingtoken.get())
+        injectAuthoritiesIntoModel(model, authorities)
+
+
+        System.out.println("DEBUGGGGG222: menuid.isPresent(): "+menuid.isPresent())
+        System.out.println("DEBUGGGGG222: shoppingtoken.isPresent(): "+shoppingtoken.isPresent())
+        System.out.println("DEBUGGGGG222: !tokenused: "+!tokenused)
+
+
+        if(menuid.isPresent() && shoppingtoken.isPresent() && !tokenused) {
+            menuHelper.loadMenuWithToken(menuid.get(), model, shoppingtoken.get())
+            // hydrate hidden values for passing into the post methods like token etc
+            menuHelper.bindHiddenValues(model, shoppingtoken.get(), menuid.get())
+        }
+
+
+
+
+        processRestOfStuff(menuid, shoppingtoken, model, tokenused)
+        //techvvsAuthService.checkuserauth(model)
+        return "menu5/menu.html";
+    }
+
+
+    void injectAuthoritiesIntoModel(Model model, List<String> authorities) {
+        if(jwtTokenProvider.hasRole(authorities, String.valueOf(Role.ROLE_MEDIA_ONLY))){
+            model.addAttribute("MediaOnlyView", "yes") // this will remove the add to cart button and only allow clients to view media on the menu
+        }
+
+        if(jwtTokenProvider.hasRole(authorities, String.valueOf(Role.ROLE_NO_PRICES))){
+            model.addAttribute("NoPricesView", "yes") // remove the price listing
+        }
+        if(jwtTokenProvider.hasRole(authorities, String.valueOf(Role.ROLE_INCLUDE_OUT_OF_STOCK))){
+            model.addAttribute("IncludeOutOfStockView", "yes") // include showing the out of stock items
+        }
+        if(jwtTokenProvider.hasRole(authorities, String.valueOf(Role.ROLE_PAYPAL_ENABLED))){
+            model.addAttribute("IncludePayPalView", "yes") // include showing the out of stock items
+        }
+    }
+    // allow user to shop menu with shopping token
+    @PostMapping("/shop/product/cart/add")
+    String addProductToCart(
+            @ModelAttribute( "menu" ) MenuVO menuVO,
+            Model model,
+            @RequestParam("menuid") Optional<String> menuid,
+            @RequestParam("shoppingtoken") Optional<String> shoppingtoken,
+            @RequestParam("cartid") Optional<String> cartid,
+            @RequestParam("productid") Optional<String> productid,
+            @RequestParam("quantityselected") Optional<String> quantityselected,
+            @RequestParam("size") Optional<String> size,
+            @ModelAttribute( "cart" ) CartVO cartVO
+    ){
+        boolean tokenused = true;
+        if(shoppingtoken.isPresent()) {
+            shoppingtoken = Optional.of(
+                    techvvsAuthService.checkAndDecodeJwtFromBase64(shoppingtoken.get())
+            )
+            tokenused = techvvsAuthService.isTokenUsed(shoppingtoken.get())
+            model.addAttribute("shoppingtoken", shoppingtoken)
+        }
+
+
+        // pass in the cartid and menuid and productid and quantityselected into a method to add to the cart
+        if(cartid.isPresent() && menuid.isPresent() && productid.isPresent() && quantityselected.isPresent()
+        && menuHelper.checkQuantity(Integer.valueOf(productid.get()), Integer.valueOf(quantityselected.get()), model) && !tokenused
+        ) {
+
+            String customerid = jwtTokenProvider.getCustomerIdFromToken(shoppingtoken.get())
+            int savedcartid = menuHelper.addProductToCart(Integer.valueOf(cartid.get()), Integer.valueOf(menuid.get()), Integer.valueOf(productid.get()), Integer.valueOf(quantityselected.get()), Integer.valueOf(customerid), model, shoppingtoken.get())
+            menuHelper.loadCart(savedcartid, model)
+            // hydrate hidden values for passing into the post methods like token etc
+            menuHelper.bindHiddenValues(model, shoppingtoken.get(), menuid.get())
+        } else {
+            loadDataOnError(menuid, shoppingtoken, cartid, model)
+        }
+
+        processRestOfStuff(menuid, shoppingtoken, model, tokenused)
+
+
+        return "menu5/menu.html";
+    }
+
+    @PostMapping("/shop/product/cart/subtract")
+    String subtractProductFromCart(
+            @ModelAttribute( "menu" ) MenuVO menuVO,
+            Model model,
+            @RequestParam("menuid") Optional<String> menuid,
+            @RequestParam("shoppingtoken") Optional<String> shoppingtoken,
+            @RequestParam("cartid") Optional<String> cartid,
+            @RequestParam("productid") Optional<String> productid,
+            @RequestParam("quantityselected") Optional<String> quantityselected,
+            @RequestParam("size") Optional<String> size,
+            @ModelAttribute( "cart" ) CartVO cartVO
+    ){
+
+        boolean tokenused = true;
+        if(shoppingtoken.isPresent()) {
+            shoppingtoken = Optional.of(
+                    techvvsAuthService.checkAndDecodeJwtFromBase64(shoppingtoken.get())
+            )
+            tokenused = techvvsAuthService.isTokenUsed(shoppingtoken.get())
+            model.addAttribute("shoppingtoken", shoppingtoken)
+        }
+
+        // pass in the cartid and menuid and productid and quantityselected into a method to add to the cart
+        if(cartid.isPresent() && menuid.isPresent() && productid.isPresent() && quantityselected.isPresent() && !tokenused) {
+            String customerid = jwtTokenProvider.getCustomerIdFromToken(shoppingtoken.get())
+            int savedcartid = menuHelper.removeProductFromCart(Integer.valueOf(cartid.get()), Integer.valueOf(menuid.get()), Integer.valueOf(productid.get()), Integer.valueOf(quantityselected.get()), Integer.valueOf(customerid), model, shoppingtoken.get())
+            menuHelper.loadCart(savedcartid, model)
+            // hydrate hidden values for passing into the post methods like token etc
+            menuHelper.bindHiddenValues(model, shoppingtoken.get(), menuid.get())
+        } else {
+                loadDataOnError(menuid, shoppingtoken, cartid, model)
+        }
+
+        processRestOfStuff(menuid, shoppingtoken, model, tokenused)
+        return "menu5/menu.html";
+    }
+
+    @PostMapping("/shop/empty/cart")
+    String emptyCart(
+            @ModelAttribute( "menu" ) MenuVO menuVO,
+            Model model,
+            @RequestParam("menuid") Optional<String> menuid,
+            @RequestParam("shoppingtoken") Optional<String> shoppingtoken,
+            @RequestParam("cartid") Optional<String> cartid,
+            @RequestParam("productid") Optional<String> productid,
+            @RequestParam("quantityselected") Optional<String> quantityselected,
+            @RequestParam("size") Optional<String> size,
+            @ModelAttribute( "cart" ) CartVO cartVO
+    ){
+        boolean tokenused = true;
+        if(shoppingtoken.isPresent()) {
+            shoppingtoken = Optional.of(
+                    techvvsAuthService.checkAndDecodeJwtFromBase64(shoppingtoken.get())
+            )
+            tokenused = techvvsAuthService.isTokenUsed(shoppingtoken.get())
+            model.addAttribute("shoppingtoken", shoppingtoken)
+        }
+
+        // first we need to check if we have all required items
+        if(shoppingtoken.present && cartid.present && menuid.present && !tokenused){
+            // empty the cart
+            int emptiedcartid = menuHelper.emptyWholeCart(Integer.valueOf(cartid.get()), Integer.valueOf(menuid.get()), model, shoppingtoken.get())
+            menuHelper.loadCart(emptiedcartid, model)
+            model.addAttribute("successMessage", "Cart emptied")
+            // hydrate hidden values for passing into the post methods like token etc
+            menuHelper.bindHiddenValues(model, shoppingtoken.get(), menuid.get())
+        } else {
+            loadDataOnError(menuid, shoppingtoken, cartid, model)
+        }
+
+        processRestOfStuff(menuid, shoppingtoken, model, tokenused)
+        return "menu5/menu.html";
+    }
+
+
+
+    // After cart is submitted, redirect to cart review
+    @PostMapping("/shop/cartreview")
+    String checkoutCartFromMenuToCartReview(
+            Model model,
+            @RequestParam("menuid") Optional<String> menuid,
+            @RequestParam("shoppingtoken") Optional<String> shoppingtoken, // this contains which payment options to allow
+            @RequestParam("cartid") Optional<String> cartid,
+            @RequestParam("productid") Optional<String> productid,
+            @RequestParam("quantityselected") Optional<String> quantityselected,
+            @RequestParam("deliverynotes") Optional<String> deliverynotes,
+            @RequestParam("locationid") Optional<String> locationid,
+
+            @RequestParam("address1") Optional<String> address1,
+            @RequestParam("address2") Optional<String> address2,
+            @RequestParam("city") Optional<String> city,
+            @RequestParam("state") Optional<String> state,
+            @RequestParam("zipcode") Optional<String> zipcode,
+            @RequestParam("type") Optional<String> type, // "delivery" or "pickup"
+
+            @RequestParam("size") Optional<String> size,
+            @ModelAttribute( "cart" ) CartVO cartVO
+    ){
+
+        System.out.println("DEBUG LOGGING START: ")
+        System.out.println("shoppingtoken: "+shoppingtoken)
+        System.out.println("cartid: "+cartid)
+        System.out.println("deliverynotes: "+deliverynotes)
+        System.out.println("deliverynotes.present: "+deliverynotes.present)
+
+        System.out.println("DEBUG LOGGING END")
+
+        boolean tokenused = true;
+        if(shoppingtoken.isPresent()) {
+            shoppingtoken = Optional.of(
+                    techvvsAuthService.checkAndDecodeJwtFromBase64(shoppingtoken.get())
+            )
+            tokenused = techvvsAuthService.isTokenUsed(shoppingtoken.get())
+            model.addAttribute("shoppingtoken", shoppingtoken)
+        }
+
+        // first we need to check if we have all required items
+        if(shoppingtoken.present && cartid.present && menuid.present && locationid.present && deliverynotes.present
+
+                && type.present // if type is present and is "delivery" and locationid is "0" then we have a new incoming location
+
+                && !tokenused
+        ){
+
+            LocationVO locationVO = prepLocationObject(address1, address2, city, state, zipcode, type, locationid, model)
+
+            System.out.println("BUGFIX DEBUG: 2")
+            // now we will checkout this cart and turn it into a transaction
+            TransactionVO transactionVO = menuHelper.checkoutCart(
+                    Integer.valueOf(cartid.get()),
+                    Integer.valueOf(menuid.get()),
+                    Integer.valueOf(locationid.get()),
+                    deliverynotes.get(),
+                    shoppingtoken.get(),
+                    locationVO,
+                    type.get(),
+                    model
+            )
+
+            model.addAttribute("ordercomplete", "yes")
+            model.addAttribute("successMessage", "Click HERE to monitor your delivery!")
+            List<Role> roles = Arrays.asList(Role.ROLE_CLIENT, Role.ROLE_DELIVERY_VIEW_TOKEN);
+            String token = jwtTokenProvider.createDeliveryViewToken(transactionVO.customervo.email, roles, 96,
+                    menuid.get(), String.valueOf(transactionVO.customervo.customerid), String.valueOf(transactionVO.delivery.deliveryid))
+
+            // send employee view token to the logged in user over sms
+            menuHelper.sendEmployeeDeliveryViewToken(menuid.get(), String.valueOf(transactionVO.customervo.customerid), String.valueOf(96), transactionVO.delivery.deliveryid, model)
+
+            // send client view token to the client using html
+            model.addAttribute("successLink", transactionVO.delivery.deliveryqrlink+"&deliverytoken="+token)
+        }
+
+
+
+
+
+
+        // pass in the cartid and menuid and productid and quantityselected into a method to add to the cart
+        if(cartid.isPresent() && menuid.isPresent() && productid.isPresent() && quantityselected.isPresent() && !tokenused) {
+            String customerid = jwtTokenProvider.getCustomerIdFromToken(shoppingtoken.get())
+            int savedcartid = menuHelper.removeProductFromCart(Integer.valueOf(cartid.get()), Integer.valueOf(menuid.get()), Integer.valueOf(productid.get()), Integer.valueOf(quantityselected.get()), Integer.valueOf(customerid), model, shoppingtoken.get())
+            menuHelper.loadCart(savedcartid, model)
+            // hydrate hidden values for passing into the post methods like token etc
+            menuHelper.bindHiddenValues(model, shoppingtoken.get(), menuid.get())
+        }
+
+        processRestOfStuff(menuid, shoppingtoken, model, tokenused)
+        return "menu5/menu.html";
+    }
+
+
+
+    @PostMapping("/shop/checkout/transaction")
+    String checkoutCartFromMenuCreateTransaction(
+            Model model,
+            @RequestParam("menuid") Optional<String> menuid,
+            @RequestParam("shoppingtoken") Optional<String> shoppingtoken,
+            @RequestParam("cartid") Optional<String> cartid,
+            @RequestParam("productid") Optional<String> productid,
+            @RequestParam("quantityselected") Optional<String> quantityselected,
+            @RequestParam("size") Optional<String> size,
+            @ModelAttribute( "cart" ) CartVO cartVO
+    ){
+
+        System.out.println("DEBUG LOGGING START: ")
+        System.out.println("shoppingtoken: "+shoppingtoken)
+        System.out.println("cartid: "+cartid)
+
+        System.out.println("DEBUG LOGGING END")
+
+        boolean tokenused = true;
+        if(shoppingtoken.isPresent()) {
+            shoppingtoken = Optional.of(
+                    techvvsAuthService.checkAndDecodeJwtFromBase64(shoppingtoken.get())
+            )
+            tokenused = techvvsAuthService.isTokenUsed(shoppingtoken.get())
+            model.addAttribute("shoppingtoken", shoppingtoken)
+        }
+
+        // first we need to check if we have all required items
+        if(shoppingtoken.present && cartid.present && menuid.present
+                && !tokenused
+        ){
+
+            System.out.println("BUGFIX DEBUG: 2")
+            // now we will checkout this cart and turn it into a transaction
+            TransactionVO transactionVO = menuHelper.checkoutCartWithNoLocation(
+                    Integer.valueOf(cartid.get()),
+                    Integer.valueOf(menuid.get()),
+                    shoppingtoken.get(),
+                    model
+            )
+
+            model.addAttribute("ordercomplete", "yes") // NOTE: this is what hides the menu after an order is complete so the delivery link can be exposed
+            model.addAttribute("successMessage", "Click HERE to monitor your delivery!")
+            List<Role> roles = Arrays.asList(Role.ROLE_CLIENT, Role.ROLE_DELIVERY_VIEW_TOKEN);
+            String token = jwtTokenProvider.createDeliveryViewToken(transactionVO.customervo.email, roles, 96,
+                    menuid.get(), String.valueOf(transactionVO.customervo.customerid), String.valueOf(transactionVO.delivery.deliveryid))
+
+            // send employee view token to the logged in user over sms
+            menuHelper.sendEmployeeDeliveryViewToken(menuid.get(), String.valueOf(transactionVO.customervo.customerid), String.valueOf(96), transactionVO.delivery.deliveryid, model)
+
+            // send client view token to the client using html
+            model.addAttribute("successLink", transactionVO.delivery.deliveryqrlink+"&deliverytoken="+token)
+        }
+
+
+
+
+
+
+        // pass in the cartid and menuid and productid and quantityselected into a method to add to the cart
+        if(cartid.isPresent() && menuid.isPresent() && productid.isPresent() && quantityselected.isPresent() && !tokenused) {
+            String customerid = jwtTokenProvider.getCustomerIdFromToken(shoppingtoken.get())
+            int savedcartid = menuHelper.removeProductFromCart(Integer.valueOf(cartid.get()), Integer.valueOf(menuid.get()), Integer.valueOf(productid.get()), Integer.valueOf(quantityselected.get()), Integer.valueOf(customerid), model, shoppingtoken.get())
+            menuHelper.loadCart(savedcartid, model)
+            // hydrate hidden values for passing into the post methods like token etc
+            menuHelper.bindHiddenValues(model, shoppingtoken.get(), menuid.get())
+        }
+
+        processRestOfStuff(menuid, shoppingtoken, model, tokenused)
+        return "payment/payment_landing.html";
+    }
+
+    @PostMapping("/shop/checkout")
+    String checkoutCartFromMenu(
+            Model model,
+            @RequestParam("menuid") Optional<String> menuid,
+            @RequestParam("shoppingtoken") Optional<String> shoppingtoken,
+            @RequestParam("cartid") Optional<String> cartid,
+            @RequestParam("productid") Optional<String> productid,
+            @RequestParam("quantityselected") Optional<String> quantityselected,
+            @RequestParam("size") Optional<String> size,
+            @ModelAttribute( "cart" ) CartVO cartVO
+    ){
+
+        System.out.println("DEBUG LOGGING START: ")
+        System.out.println("shoppingtoken: "+shoppingtoken)
+        System.out.println("cartid: "+cartid)
+
+        System.out.println("DEBUG LOGGING END")
+
+        boolean tokenused = true;
+        if(shoppingtoken.isPresent()) {
+            shoppingtoken = Optional.of(
+                    techvvsAuthService.checkAndDecodeJwtFromBase64(shoppingtoken.get())
+            )
+            tokenused = techvvsAuthService.isTokenUsed(shoppingtoken.get())
+            model.addAttribute("shoppingtoken", shoppingtoken)
+        }
+
+        menuHelper.loadCart(Integer.valueOf(cartid.get()), model)
+        // hydrate hidden values for passing into the post methods like token etc
+        menuHelper.bindHiddenValues(model, shoppingtoken.get(), menuid.get())
+
+        processRestOfStuff(menuid, shoppingtoken, model, tokenused)
+        return "payment/payment_landing.html";
+    }
+
+    LocationVO prepLocationObject(
+            Optional<String> address1,
+            Optional<String> address2,
+            Optional<String> city,
+            Optional<String> state,
+            Optional<String> zipcode,
+            Optional<String> type,
+            Optional<String> locationid,
+            Model model
+    ){
+        System.out.println("BUGFIX DEBUG: 1")
+        LocationVO locationVO
+        if(type.get().equals("delivery") && locationid.get().equals("0")) {
+            // this means it's users first time ordering and we have to create their first location
+             locationVO = new LocationVO(
+                    address1: address1.get(),
+                    address2: address2.present ? address2.get() : "",
+                    city: city.get(),
+                    state: state.get(),
+                    zipcode: zipcode.get(),
+                    locationid: Integer.valueOf(locationid.get())
+            )
+        } else {
+             locationVO = new LocationVO(
+                    locationid: Integer.valueOf(locationid.get())
+            )
+        }
+
+        return locationVO
+
+    }
+
+
+    void loadDataOnError(Optional<String> menuid, Optional<String> shoppingtoken, Optional<String> cartid, Model model) {
+        menuHelper.loadCart(Integer.valueOf(cartid.get()), model)
+        // hydrate hidden values for passing into the post methods like token etc
+        menuHelper.bindHiddenValues(model, shoppingtoken.get(), menuid.get())
+    }
+
+
+    void processRestOfStuff(Optional<String> menuid, Optional<String> shoppingtoken, Model model, boolean istokenused) {
+        if(menuid.isPresent() && shoppingtoken.isPresent() && !istokenused) {
+            // load the product menu to be displayed back to the user
+            menuHelper.loadMenuWithToken(menuid.get(), model, shoppingtoken.get())
+        }
+
+        // make sure we have a cart bound even an empty one
+        if(null == model.getAttribute("cart")){
+            model.addAttribute("cart", new CartVO(cartid:0))
+        }
+
+        // fetch all customers from database and bind them to model
+        checkoutHelper.getAllCustomers(model)
+
+
+        List<String> authorities = jwtTokenProvider.extractAuthorities(shoppingtoken.get())
+        injectAuthoritiesIntoModel(model, authorities)
+
+        model.addAttribute("paypalClientID", env.getProperty("paypal.client-id"))
+    }
+
+    // todo: modify this to parse user cookie from request and check user permissions
+    // this serves the default menu for the batch
+    @GetMapping("/batch")
+    String viewBatchMenu(
+            @ModelAttribute( "menu" ) MenuVO menuVO,
+            Model model,
+            @RequestParam("cartid") Optional<String> cartid,
+            @RequestParam("batchid") Optional<String> batchid,
+            @RequestParam("page") Optional<String> page,
+            @RequestParam("size") Optional<String> size,
+            @ModelAttribute( "cart" ) CartVO cartVO
+    ){
+
+
+        String menuid = "0"
+        if(batchid.isPresent())  {
+            BatchVO batchVO = batchControllerHelper.loadBatch(batchid.get(), model)
+            if(batchVO.menu_set.size() == 1){
+                menuid = String.valueOf(batchVO.menu_set[0].menuid) // grab the default menu id
+            } else {
+                for(MenuVO menu322 : batchVO.menu_set){
+                    if(menu322.isdefault == 1){
+                        menuid = String.valueOf(menu322.menuid) // find the default menu and serve it
+                        break
+                    }
+                }
+            }
+        }
+
+        // todo: modify this to load the cart without a menu id? is that possible or do we require a menuid?
+        if(cartid.isPresent()) {
+            checkoutHelper.loadCart(cartid.get(), model, cartVO, menuid)
+        }
+
+        // load the menu
+        menuHelper.loadMenu(menuid, model)
+
+        // fetch all customers from database and bind them to model
+        //checkoutHelper.getAllCustomers(model)
+        //techvvsAuthService.checkuserauth(model)
+        return "menu5/menu.html";
+    }
+
+    @PostMapping("/pricechange")
+    String pricechange(
+                Model model,
+                @RequestParam("menuid") Optional<String> menuid,
+                @RequestParam("cartid") Optional<String> cartid,
+                @RequestParam("amount") Optional<String> amount,
+                @RequestParam("isnew") Optional<String> isnew,
+                @RequestParam("newname") Optional<String> newname,
+                @RequestParam("producttype") Optional<String> producttypeid,
+                @RequestParam("page") Optional<Integer> page,
+                @RequestParam("size") Optional<Integer> size
+    ){
+
+        techvvsAuthService.checkuserauth(model)
+
+        MenuVO returnVO = new MenuVO()
+
+        if(menuid.isPresent() && amount.isPresent() &&
+                isnew.isPresent() && isnew.get() == "yes" && newname.isPresent()
+                && producttypeid.isPresent()
+        )  {
+
+
+            // make a new menu with the new price
+            returnVO = menuHelper.createNewMenu(
+                    Double.valueOf(amount.get()),
+                    Integer.valueOf(menuid.get()),
+                    newname.get(),
+                    model,
+                    Integer.valueOf(producttypeid.get())
+
+            )
+
+
+        } else if(menuid.isPresent() && amount.isPresent() && producttypeid.isPresent() && isnew.isEmpty()){
+            // add a discount tied to an existing menu
+            returnVO = menuHelper.changePrice(
+                    Double.valueOf(amount.get()),
+                    Integer.valueOf(menuid.get()),
+                    model,
+                    Integer.valueOf(producttypeid.get())
+            )
+
+        } else {
+            model.addAttribute("errorMessage", "menuid and amount are required")
+        }
+
+
+        // bind the menu options here
+        menuHelper.findMenus(model, page, size);
+
+
+        return "auth/index.html";
+    }
+
+    @GetMapping("/menusend")
+    String getMenuSendPage(
+            Model model,
+            @ModelAttribute( "menu" ) MenuVO menuVO,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size
+    ){
+        model.addAttribute("UIMODE", "RETRO");
+
+        techvvsAuthService.checkuserauth(model)
+
+        // bind the menu options here
+        menuHelper.findMenus(model, page, size);
+        checkoutHelper.getAllCustomers(model);
+        model.addAttribute("menu",menuVO);
+
+        model.addAttribute("baseqrdomain", env.getProperty("base.qr.domain"))
+
+        return "menu5/menu_send.html";
+    }
+
+    // This returns a list of active shopping tokens so we can copy the token link, and open in a new browser
+    // so we can simulate shopping as a customer and see their view/have their permissions
+    @GetMapping("/shoppingtoken/active")
+    String getActiveShoppingTokens(
+            Model model,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size
+    ){
+
+        techvvsAuthService.checkuserauth(model)
+        //checkoutHelper.getAllCustomers(model)
+        customerHelper.addPaginatedData(model, page)
+        customerHelper.hydrateDisplayDataForActiveTokenPage(model)
+
+
+        model.addAttribute("baseqrdomain", env.getProperty("base.qr.domain"))
+
+        return "menu5/activeshoppingtokens.html";
+    }
+
+    @PostMapping("/shoppingtoken/send")
+    String sendShoppingToken(
+            Model model,
+            @RequestParam("menuid") Optional<String> menuid,
+            @RequestParam("customerid") Optional<String> customerid,
+            @RequestParam("phonenumber") Optional<String> phonenumber,
+            @RequestParam("tokenlength") Optional<String> tokenlength,
+            @RequestParam("mediaOnly") Optional<String> mediaOnly,
+            @RequestParam("noPrices") Optional<String> noPrices,
+            @RequestParam("includeOutOfStock") Optional<String> includeOutOfStock,
+            @RequestParam("useCustomUri") Optional<String> useCustomUri,
+            @RequestParam("customUriValue") Optional<String> customUriValue,
+            @RequestParam("enablePaypal") Optional<String> enablePaypal,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size
+    ){
+
+        techvvsAuthService.checkuserauth(model)
+
+        // if all values present, send token
+        if(menuid.isPresent() &&
+                customerid.isPresent() &&
+                phonenumber.isPresent() &&
+                tokenlength.isPresent() &&
+                mediaOnly.isPresent() &&
+                noPrices.isPresent() &&
+                includeOutOfStock.isPresent() &&
+                enablePaypal.isPresent() &&
+                customUriValue
+        )  {
+            menuHelper.sendShoppingToken(
+                    menuid.get(),
+                    customerid.get(),
+                    phonenumber.get(),
+                    tokenlength.get(),
+                    mediaOnly.get(),
+                    noPrices.get(),
+                    includeOutOfStock.get(),
+                    useCustomUri.get(),
+                    customUriValue.get(),
+                    enablePaypal.get(),
+                    model
+            )
+        } else {
+            model.addAttribute("errorMessage", "menuid, customerid, phonenumber, and tokenlength are required")
+        }
+
+        // bind the menu options here
+        menuHelper.findMenus(model, page, size)
+
+        checkoutHelper.getAllCustomers(model);
+
+        return "auth/index.html";
+    }
+
+
+    // todo: make this so that the quantity is taking off the display amount instead of relying on the product cart list
+    @PostMapping("/scan")
+    String scan(@ModelAttribute( "cart" ) CartVO cartVO,
+                Model model,
+                
+                @RequestParam("page") Optional<Integer> page,
+                @RequestParam("size") Optional<Integer> size
+    ){
+
+        
+
+        cartVO = menuHelper.validateMenuPageCartVO(cartVO, model)
+
+        String menuid = cartVO.menuid
+
+        // only proceed if there is no error
+        if(model.getAttribute("errorMessage") == null){
+            // save a new transaction object in database if we don't have one
+
+            cartVO = cartDeleteService.saveCartIfNew(cartVO)
+
+            if(cartVO.barcode != null && cartVO.barcode != ""){
+                    // cartVO = cartService.searchForProductByBarcode(cartVO, model, page, size)
+                cartVO = cartDeleteService.searchForProductByBarcode(cartVO, model, page, size)
+            }
+
+
+
+        }
+
+        cartVO = checkoutHelper.hydrateTransientQuantitiesForDisplay(cartVO)
+
+        cartVO.barcode = "" // reset barcode to empty
+        cartVO.menuid = menuid
+
+        techvvsAuthService.checkuserauth(model)
+        model.addAttribute("cart", cartVO);
+        // fetch all customers from database and bind them to model
+        checkoutHelper.getAllCustomers(model)
+
+        return "menu5/menu.html";
+    }
+
+
+    
+
+
+}

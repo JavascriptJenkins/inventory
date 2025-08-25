@@ -1,0 +1,2314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu 4 Mobile</title>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Bootstrap Bundle JS (Includes Popper.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <style>
+        :root {
+            --brand-color: #f25e5a;
+            --brand-dark: #e24a47;
+            --success-color: #28a745;
+            --success-dark: #1e7e34;
+            --warning-color: #ffc107;
+            --warning-dark: #e0a800;
+            --info-color: #17a2b8;
+            --info-dark: #138496;
+            --danger-color: #dc3545;
+            --danger-dark: #c82333;
+            --input-bg: #fff;
+        }
+
+        /* Modernized light background with transparency */
+        body {
+            background: linear-gradient(135deg, #fff0f0, #ffe3e3);
+            color: #222;
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Product cards styled like success-item */
+        .menu-item .card {
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid #000;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 6px 0 #000;
+            transition: transform 0.2s ease;
+        }
+
+        .menu-item .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 0 #000;
+        }
+
+        /* Card title and text */
+        .card-title {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1rem;
+            color: var(--brand-color);
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 0 #000;
+        }
+        
+        .card-text {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.8rem;
+            color: var(--brand-color);
+            margin-bottom: 15px;
+            text-shadow: 1px 1px 0 #000;
+        }
+
+        .btn-outline-light {
+            background: rgba(255, 255, 255, 0.1);
+            color: #000 !important;
+            border: 2px solid var(--brand-color);
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.5rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 0 #000;
+        }
+
+        .btn-outline-light:hover {
+            background: var(--brand-color);
+            color: white !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 0 #000;
+        }
+
+        /* Quick Filter Buttons - White text for visibility */
+        .attribute-filter {
+            color: white !important;
+            text-shadow: 1px 1px 0 #000;
+        }
+
+        .attribute-filter:hover {
+            color: white !important;
+        }
+
+        .attribute-filter.active {
+            color: white !important;
+        }
+
+        /* Image styling */
+        .card-img-top {
+            height: 200px;
+            object-fit: cover;
+            border-bottom: 3px solid #000;
+        }
+
+        /* Placeholder for no photo */
+        .no-photo {
+            height: 200px;
+            background: linear-gradient(145deg, #f8f9fa, #e9ecef);
+            color: #6c757d;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.6rem;
+        }
+
+        /* Proper spacing between items */
+        .row-cols-md-5 > .menu-item {
+            margin: 15px 0;
+        }
+
+        /* Adjust spacing for the search bar */
+        .search-bar input,
+        .search-bar button,
+        .form-control,
+        .form-select {
+            margin: 20px auto;
+            width: 60%;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            border: 2px solid #000;
+            border-radius: 8px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.7rem;
+            box-shadow: 0 2px 0 #000;
+        }
+
+        /* Header style with rounded corners and shadow */
+        .menu-header {
+            background-color: var(--brand-color);
+            color: white;
+            padding: 25px 40px;
+            border-radius: 20px;
+            border: 3px solid #000;
+            font-family: 'Press Start 2P', cursive;
+            width: 100%;
+            max-width: 100%;
+            margin: 0;
+            text-align: center;
+            font-size: 2rem;
+            box-shadow: 0 6px 0 #000;
+        }
+
+        .retro-title {
+            font-family: 'Press Start 2P', cursive;
+            text-shadow: 2px 2px 0 #000;
+            animation: pulseText 2s infinite ease-in-out;
+        }
+
+        .menu-header h1.retro-title {
+            font-size: 2.25rem;
+            letter-spacing: 2px;
+            color: white;
+            margin: 0;
+        }
+
+        @keyframes gradientText {
+            0% { background-position: 0% center; }
+            100% { background-position: 200% center; }
+        }
+
+        @keyframes pulseText {
+            0%   { transform: scale(1); }
+            50%  { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* Responsive tweaks */
+        @media (max-width: 575px) {
+            .menu-header {
+                padding: 16px;
+                font-size: 1.25rem;
+            }
+            .menu-header h1.retro-title {
+                font-size: 1.25rem;
+            }
+            .cart-row {
+                flex-direction: column;
+                text-align: center;
+            }
+            .cart-controls {
+                margin-top: 10px;
+            }
+        }
+
+        /* Product card hover effects */
+        .menu-product .card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .menu-product .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 0 #000;
+        }
+
+        /* Ensure proper spacing and responsive behavior */
+        .col-12 {
+            margin-bottom: 20px;
+        }
+
+        /* Mobile-first responsive grid */
+        @media (max-width: 575px) {
+            .row > div {
+                flex: 0 0 100% !important;
+                max-width: 100% !important;
+                width: 100% !important;
+            }
+            .card {
+                margin: 10px 0;
+            }
+            .card-title {
+                font-size: 0.8rem;
+            }
+            .card-text {
+                font-size: 0.6rem;
+            }
+            .btn-outline-light {
+                font-size: 0.4rem;
+                padding: 4px 8px;
+            }
+        }
+
+        @media (min-width: 576px) and (max-width: 767px) {
+            .row > div {
+                flex: 0 0 50% !important;
+                max-width: 50% !important;
+            }
+        }
+
+        @media (min-width: 768px) and (max-width: 991px) {
+            .row > div {
+                flex: 0 0 33.333333% !important;
+                max-width: 33.333333% !important;
+            }
+        }
+
+        @media (min-width: 992px) and (max-width: 1199px) {
+            .row > div {
+                flex: 0 0 25% !important;
+                max-width: 25% !important;
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .row > div {
+                flex: 0 0 16.666667% !important;
+                max-width: 16.666667% !important;
+            }
+        }
+
+        /* Full width container for maximum UI space */
+        .container {
+            max-width: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0 15px;
+            text-align: center;
+        }
+
+        /* Ensure cards take full width on mobile */
+        @media (max-width: 575px) {
+            .container {
+                padding: 0 10px;
+            }
+            .card {
+                width: 100%;
+                margin: 0 0 20px 0;
+            }
+        }
+    </style>
+
+    <style>
+        body {
+            background-color: rgba(34, 139, 34, 0.1);
+        }
+
+        /* Floating arrow smoothness */
+        .floating-arrow {
+            position: fixed;
+            top: 50%;
+            right: 0;
+            z-index: 1000;
+            font-size: 2rem;
+            background: var(--brand-color);
+            color: white;
+            padding: 15px;
+            cursor: pointer;
+            border-radius: 10px 0 0 10px;
+            border: 3px solid #000;
+            box-shadow: 0 4px 0 #000;
+            transition: all 0.3s ease;
+            font-family: 'Press Start 2P', cursive;
+        }
+
+        .floating-arrow:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #000;
+        }
+
+        .floating-arrow.hidden {
+            opacity: 0;
+            pointer-events: none; /* Disable interaction when hidden */
+        }
+
+        .floating-arrow,
+        .floating-button button,
+        .cart-header,
+        .cart-footer {
+            background-color: #333 !important;
+            color: #fff !important;
+        }
+
+        .cart-section {
+            position: fixed;
+            top: 0;
+            right: -100%; /* Initially hidden */
+            width: 20%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            border-left: 3px solid #000;
+            z-index: 999;
+            box-shadow: -4px 0 10px rgba(0, 0, 0, 0.3);
+            overflow-y: auto;
+            transition: right 0.5s cubic-bezier(0.4, 0.0, 0.2, 1); /* Smooth ease-out */
+        }
+
+        .cart-section.open {
+            right: 0; /* Slide in from the right */
+        }
+
+        .cart-header {
+            background: var(--brand-color);
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            font-size: 1.2rem;
+            position: sticky;
+            top: 0;
+            border-bottom: 3px solid #000;
+            font-family: 'Press Start 2P', cursive;
+            box-shadow: 0 4px 0 #000;
+        }
+
+        .cart-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .cart-controls button {
+            background: var(--brand-color);
+            color: white;
+            border: 2px solid #000;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            box-shadow: 0 2px 0 #000;
+        }
+
+        .cart-footer {
+            position: sticky;
+            bottom: 0;
+            background: var(--brand-color);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-top: 3px solid #000;
+            font-family: 'Press Start 2P', cursive;
+            box-shadow: 0 -4px 0 #000;
+        }
+        #cartReviewModal .modal-dialog {
+            max-width: 500px;
+        }
+        #cartReviewContent {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            background: #f9f9f9;
+        }
+
+        .hovering-timer {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: var(--brand-color);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            z-index: 1000;
+            border: 2px solid #000;
+            box-shadow: 0 4px 0 #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hovering-timer.green {
+            background: var(--success-color);
+        }
+
+        .hovering-timer.yellow {
+            background: var(--warning-color);
+        }
+
+        .hovering-timer.red {
+            background: var(--danger-color);
+        }
+
+        .floating-button {
+            position: fixed;
+            top: 60px; /* Adjust to appear below the timer */
+            left: 10px;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .floating-button button {
+            background: var(--danger-color);
+            color: white;
+            border: 2px solid #000;
+            padding: 10px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 0 #000;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .floating-button button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #000;
+        }
+
+
+        .floating-confirmation {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            padding: 20px;
+            border-radius: 12px;
+            border: 3px solid #000;
+            box-shadow: 0 6px 0 #000;
+            z-index: 1000;
+            text-align: center;
+            width: 300px;
+        }
+
+        .floating-confirmation p {
+            margin-bottom: 15px;
+        }
+
+        .confirmation-buttons {
+            display: flex;
+            justify-content: space-between;
+        }
+        .invisible {
+            opacity: 0; /* Make invisible */
+            pointer-events: none; /* Disable interaction */
+        }
+
+        .alert-danger, .alert-success {
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid #000;
+            color: #333;
+            border-radius: 12px;
+            box-shadow: 0 6px 0 #000;
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            border: 3px solid #000;
+            border-radius: 12px;
+            box-shadow: 0 6px 0 #000;
+        }
+
+        .cart-row  {
+            color: black !important;
+            background-color: white !important;
+            padding: 4px 8px;
+            border-radius: 5px;
+        }
+
+        .btn-close {
+            filter: brightness(0) invert(1);
+        }
+
+
+    </style>
+    <!-- SCROLL TO TOP BUTTON -->
+    <style>
+        #scrollTopBtn {
+          position: fixed;
+          bottom: 30px;
+          right: 30px;
+          z-index: 9999;
+          display: none;
+          font-size: 3.5rem;
+          padding: 24px;
+          background-color: var(--brand-color) !important;
+          color: white;
+          border: 2px solid #000;
+          border-radius: 50%;
+          box-shadow: 0 4px 0 #000;
+          cursor: pointer;
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        #scrollTopBtn:hover {
+          transform: scale(1.15);
+          box-shadow: 0 6px 0 #000;
+        }
+
+        /* Class to trigger faster animation */
+        #scrollTopBtn.fast-pulse {
+          animation: scrollPulseFast 0.8s ease-in-out infinite;
+        }
+
+        @keyframes scrollPulse {
+          0%   { box-shadow: 0 4px 0 #000; }
+          50%  { box-shadow: 0 6px 0 #000; }
+          100% { box-shadow: 0 4px 0 #000; }
+        }
+
+        @keyframes scrollPulseFast {
+          0%   { box-shadow: 0 4px 0 #000; }
+          50%  { box-shadow: 0 8px 0 #000; }
+          100% { box-shadow: 0 4px 0 #000; }
+        }
+
+        .clear-filters-btn {
+            background-color: var(--brand-color);
+            color: white;
+            font-size: 1.2rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            border: 2px solid #000;
+            box-shadow: 0 4px 0 #000;
+            transition: all 0.2s ease;
+        }
+
+        .clear-filters-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #000;
+        }
+
+        .clear-filters-btn i {
+            font-size: 1.3rem;
+            vertical-align: middle;
+        }
+
+        #productTypeFilter {
+            font-size: 1.2rem;
+            padding: 0.6rem 1.2rem;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            border: 2px solid #000;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 0 #000;
+        }
+
+        #productTypeFilter.active {
+            box-shadow: 0 4px 0 #000;
+        }
+
+#productTypeFilter:hover {
+    box-shadow: 0 0 25px rgba(242, 94, 90, 1);
+}
+
+/* Pulsing red animation */
+@keyframes dropdownPulse {
+    0%   { box-shadow: 0 0 12px rgba(242, 94, 90, 0.5); }
+    50%  { box-shadow: 0 0 28px rgba(242, 94, 90, 1); }
+    100% { box-shadow: 0 0 12px rgba(242, 94, 90, 0.5); }
+}
+
+    </style>
+
+    <style>
+        body {
+            background-color: #121212 !important;
+            color: #e0e0e0;
+        }
+
+        .card {
+            background-color: #1e1e1e !important;
+            color: #fff !important;
+            border: 1px solid #333;
+        }
+
+        .card-body {
+            background-color: #1e1e1e !important;
+        }
+
+        .form-control,
+        .form-select {
+            background: rgba(255, 255, 255, 0.95) !important;
+            color: #333 !important;
+            border: 2px solid #000 !important;
+            border-radius: 8px;
+            box-shadow: 0 2px 0 #000;
+        }
+
+        .form-control::placeholder {
+            color: #aaa;
+        }
+
+        .btn {
+            background: var(--brand-color);
+            color: white;
+            border: 2px solid #000;
+            box-shadow: 0 4px 0 #000;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #000;
+        }
+
+        .btn-outline-light {
+            border-color: var(--brand-color);
+            color: var(--brand-color) !important;
+        }
+
+        .btn-outline-light:hover {
+            background-color: var(--brand-color);
+            border-color: var(--brand-color);
+            color: white !important;
+        }
+
+        .carousel-control-prev-icon,
+        .carousel-control-next-icon {
+            background: var(--brand-color) !important;
+            border: 2px solid #000;
+            border-radius: 50%;
+            box-shadow: 0 2px 0 #000;
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            border: 3px solid #000;
+            border-radius: 12px;
+            box-shadow: 0 6px 0 #000;
+        }
+
+        .menu-header,
+        .search-bar input,
+        .search-bar button {
+            background: var(--brand-color) !important;
+            color: white !important;
+            border: 2px solid #000 !important;
+        }
+
+        .alert-danger,
+        .alert-success {
+            background-color: #222;
+            border: 1px solid #555;
+            color: #eee;
+        }
+
+        .hovering-timer,
+        .cart-header,
+        .cart-footer,
+        .floating-arrow {
+            background: var(--brand-color) !important;
+            color: white !important;
+        }
+
+        .carousel .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 0 #000;
+        }
+
+        .text-white {
+            color: #f8f9fa !important;
+        }
+
+        .no-photo {
+            background-color: #2a2a2a;
+            color: #aaa;
+        }
+    </style>
+
+
+    <style>
+        .large-checkbox {
+            width: 3rem;
+            height: 3rem;
+            margin-right: 1rem;
+        }
+
+        @media (max-width: 576px) {
+            .form-check-label {
+                font-size: 1.1rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+          .validation-icon {
+            font-size: 1.5rem;
+          }
+        }
+
+        @media (min-width: 577px) {
+          .validation-icon {
+            font-size: 2rem;
+          }
+        }
+
+    </style>
+
+    <style>
+        .attribute-filter {
+          font-size: 1.1rem;
+          padding: 0.6rem 1.2rem;
+          border-radius: 12px;
+          transition: all 0.3s ease;
+        }
+
+        .attribute-filter.active {
+          background-color: #0d6efd !important;
+          color: #fff !important;
+          box-shadow: 0 0 0.5rem 0.25rem rgba(13, 110, 253, 0.5);
+          animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+          0% {
+            box-shadow: 0 0 0.5rem 0.25rem rgba(13, 110, 253, 0.5);
+          }
+          50% {
+            box-shadow: 0 0 1.25rem 0.5rem rgba(13, 110, 253, 0.3);
+          }
+          100% {
+            box-shadow: 0 0 0.5rem 0.25rem rgba(13, 110, 253, 0.5);
+          }
+        }
+
+
+        .gameboy-font-class {
+          font-family: 'Press Start 2P', cursive;
+          color: #f25e5a;
+          text-align: center;
+          margin: -10px 0 40px 0;
+          font-size: 2rem;
+          text-shadow: 2px 2px 0 #000;
+          animation: pulseText 2s infinite ease-in-out;
+        }
+
+        @keyframes pulseText {
+          0%   { transform: scale(1); }
+          50%  { transform: scale(1.1); }
+          100% { transform: scale(1); }
+        }
+
+        #productTypeFilter {
+            font-size: 1.5rem;   /* Larger text */
+            padding: 1rem 2rem;  /* Taller & wider */
+            min-width: 250px;    /* Wider box */
+        }
+
+        #attributeFilters .attribute-filter,
+        #clearAttributeFilters {
+            font-size: 1.4rem;           /* Bigger text */
+            padding: 0.8rem 1.6rem;      /* Bigger click area */
+            border-radius: 12px;         /* Rounded edges */
+            text-shadow: 0 0 8px #f25e5a; /* Glow effect for text */
+            box-shadow: 0 0 15px rgba(242, 94, 90, 0.7); /* Outer glow */
+            transition: all 0.3s ease;
+        }
+
+        #attributeFilters .attribute-filter:hover,
+        #clearAttributeFilters:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 25px rgba(242, 94, 90, 1); /* Stronger glow on hover */
+        }
+
+
+        :root {
+  --accent: #f25e5a; /* same red as gameboy-font-class */
+}
+
+#scrollTopBtn {
+  font-size: 3.5rem;
+  padding: 24px;
+  background-color: rgba(242, 94, 90, 0.9) !important;
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0 0 18px rgba(242, 94, 90, 0.7);
+  animation: scrollPulse 1.6s ease-in-out infinite;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, font-size 0.2s ease, padding 0.2s ease;
+}
+
+#scrollTopBtn:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 30px rgba(242, 94, 90, 1);
+}
+
+/* Normal slow pulse */
+@keyframes scrollPulse {
+  0%   { box-shadow: 0 0 15px rgba(242, 94, 90, 0.5); }
+  50%  { box-shadow: 0 0 35px rgba(242, 94, 90, 1); }
+  100% { box-shadow: 0 0 15px rgba(242, 94, 90, 0.5); }
+}
+
+/* Faster pulse for urgent state */
+@keyframes scrollPulseFast {
+  0%   { box-shadow: 0 0 15px rgba(242, 94, 90, 0.5); }
+  50%  { box-shadow: 0 0 40px rgba(242, 94, 90, 1); }
+  100% { box-shadow: 0 0 15px rgba(242, 94, 90, 0.5); }
+}
+
+/* Fast mode = bigger and faster */
+#scrollTopBtn.fast-pulse {
+  font-size: 4rem;      /* bigger arrow */
+  padding: 28px;        /* bigger click area */
+  animation: scrollPulseFast 0.8s ease-in-out infinite;
+}
+/* Active filter = reddish glow */
+.attribute-filter.active {
+  background-color: rgba(242, 94, 90, 0.25) !important;
+  color: #fff !important;
+  border-color: #f25e5a !important;
+  box-shadow: 0 0 12px rgba(242, 94, 90, 0.9);
+  text-shadow: none;
+  animation: none; /* stop pulsing when active */
+}
+
+/* Default pulsing glow for non-active filters */
+.attribute-filter {
+  font-size: 1.4rem;
+  padding: 0.85rem 1.75rem;
+  border-radius: 12px;
+  text-shadow: 0 0 8px #f25e5a;
+  box-shadow: 0 0 15px rgba(242, 94, 90, 0.7);
+  animation: filterPulse 1.8s ease-in-out infinite;
+  border: 1px solid rgba(242, 94, 90, 0.6);
+  transition: all 0.3s ease;
+}
+
+@keyframes filterPulse {
+  0%   { box-shadow: 0 0 10px rgba(242, 94, 90, 0.45); }
+  50%  { box-shadow: 0 0 22px rgba(242, 94, 90, 0.9); }
+  100% { box-shadow: 0 0 10px rgba(242, 94, 90, 0.45); }
+}
+/* ---- Click-to-enlarge overlay (gameboy retro style) ---- */
+.menu-photo { 
+    cursor: zoom-in; 
+}
+
+#photoPopupOverlay {
+    position: fixed; 
+    inset: 0; 
+    background: rgba(0, 0, 0, 0.85);
+    display: none; 
+    justify-content: center; 
+    align-items: center; 
+    z-index: 1050;
+}
+
+#photoPopupOverlay .popup-content {
+    position: relative; 
+    background: rgba(255, 255, 255, 0.95); 
+    padding: 20px; 
+    border-radius: 12px;
+    max-width: 92%; 
+    max-height: 92%;
+    border: 3px solid #000;
+    box-shadow: 0 6px 0 #000;
+}
+
+#photoPopupOverlay .popup-img {
+    max-width: 100%; 
+    max-height: 78vh; 
+    border-radius: 8px; 
+    border: 3px solid #000;
+    box-shadow: 0 4px 0 #000;
+}
+
+#photoPopupOverlay .popup-close {
+    position: absolute; 
+    top: 10px; 
+    right: 10px; 
+    width: 60px; 
+    height: 60px;
+    border-radius: 50%; 
+    display: grid; 
+    place-items: center; 
+    cursor: pointer;
+    color: #000; 
+    font-size: 24px; 
+    font-weight: bold;
+    background: var(--brand-color); 
+    border: 2px solid #000;
+    box-shadow: 0 2px 0 #000;
+    font-family: 'Press Start 2P', cursive;
+}
+
+    </style>
+
+    <style>
+        .logo-img {
+          display: block;
+          margin: 40px auto;
+          max-width: 1200px;
+        }
+    </style>
+
+
+
+    <script>
+        $(document).ready(function () {
+            // Fade-in animation for menu items
+            $('.menu-item').each(function (index) {
+                $(this).delay(index * 150).queue(function () {
+                    $(this).addClass('fade-in').dequeue();
+                });
+            });
+
+            // Function to filter menu items
+            function filterMenuItems() {
+                const searchValue = $('#searchInput').val().toLowerCase();
+                let visibleCount = 0;
+
+                $('.menu-item').each(function () {
+                    const productName = $(this).find('.card-title').text().toLowerCase();
+                    const quantity = $(this).find('.card-text:nth-child(2)').text().toLowerCase();
+                    const price = $(this).find('.card-text:nth-child(3)').text().toLowerCase();
+
+                    if (productName.includes(searchValue) || quantity.includes(searchValue) || price.includes(searchValue)) {
+                        $(this).removeClass('d-none'); // Make item visible
+                        visibleCount++;
+                    } else {
+                        $(this).addClass('d-none'); // Hide item completely
+                    }
+                });
+
+                // Show or hide the "No items found" message
+                if (visibleCount === 0) {
+                    $('.no-items').fadeIn();
+                } else {
+                    $('.no-items').fadeOut();
+                }
+            }
+
+            $('#searchInput').on('input', filterMenuItems);
+
+            // Clear button functionality
+            $('#clearSearch').on('click', function () {
+                $('#searchInput').val('');
+                filterMenuItems();
+            });
+        });
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+
+
+
+</head>
+<body>
+
+<!-- Conditional rendering based on 'ordercomplete' attribute -->
+<div th:if="${ordercomplete == null}">
+
+    <div class="container">
+        <div class="menu-header">
+            <h1 class="retro-title">Menu</h1>
+            <div class="mt-2" style="font-size: 0.75rem; opacity: 0.9;">
+                <span class="badge bg-dark" style="border:2px solid #000; box-shadow: 0 2px 0 #000;">V1</span>
+            </div>
+        </div>
+
+
+
+
+        <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
+        <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
+
+        <button onclick="scrollToTop()" id="scrollTopBtn" title="Back to top">
+            <i class="bi bi-arrow-up-circle-fill"></i>
+        </button>
+
+        <!-- Menu grid -->
+        <div id="menuCarousel" class="carousel slide" data-bs-ride="carousel" style="margin-top: 30px;">
+            <div class="carousel-inner">
+                <div class="carousel-item"
+                     th:each="group, iterStat : ${productGroups}"
+                     th:classappend="${iterStat.index == 0} ? ' active'">
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-12 col-md-4 mb-3"
+                                 th:each="product : ${group}">
+                                <div class="card h-100">
+                                    <div th:if="${product.primaryphoto}">
+                                        <img th:src="${product.primaryphoto}"
+                                             class="card-img-top menu-photo"
+                                             th:attr="data-photo-url=${product.primaryphoto}"
+                                             alt="Product Image"
+                                             style="height: 280px; object-fit: cover;">
+                                    </div>
+                                    <div th:if="${product.primaryphoto == null}" class="no-photo">No photo found</div>
+
+                                                                         <div class="card-body text-center">
+                                        <h5 class="card-title" th:text="${product.name}">Product Name</h5>
+                                        <p class="card-text">
+                                            <strong>Qty:</strong>
+                                            <span th:text="${product.quantityremaining}"></span>
+                                        </p>
+                                        <!-- todo: toggle price here -->
+                                        <p th:if="${NoPricesView == null}" class="card-text">
+                                            <strong>Price:</strong>
+                                            $<span th:text="${product.displayprice}"></span>
+                                        </p>
+
+                                        <div class="d-grid gap-2 mt-2">
+                                            <a th:href="@{/video/product(productid=${product.product_id}, menuid=${menu.menuid}, shoppingtoken=${shoppingtoken})}" class="btn btn-outline-light" style="color: #000 !important;">Videos</a>
+                                            <a th:href="@{/photo/product(productid=${product.product_id}, menuid=${menu.menuid}, shoppingtoken=${shoppingtoken})}" class="btn btn-outline-light" style="color: #000 !important;">Photos</a>
+                                            <a th:href="@{/document/product(productid=${product.product_id}, menuid=${menu.menuid}, shoppingtoken=${shoppingtoken})}" class="btn btn-outline-light" style="color: #000 !important;">Documents</a>
+
+                                            <a href="javascript:void(0);" class="btn btn-warning add-to-cart-btn mt-2"
+                                               th:data-product-id="${product.product_id}"
+                                               th:data-cart-id="${cartid}"
+                                               th:data-shopping-token-id="${shoppingtoken}"
+                                               th:data-menu-id="${menuid}"
+                                               th:data-product-name="${product.name}"
+                                               th:data-product-price="${product.displayprice}"
+                                               th:data-product-quantityremaining="${product.quantityremaining}"
+                                               th:disabled="${cart.isprocessed == 1 or (MediaOnlyView != null and MediaOnlyView == 'yes') or (NoPricesView != null and NoPricesView == 'yes')}"
+                                               th:classappend="${(cart.isprocessed == 1 or (MediaOnlyView != null and MediaOnlyView == 'yes') or (NoPricesView != null and NoPricesView == 'yes')) ? 'disabled' : ''}">
+                                                Add to Cart
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div> <!-- end col -->
+                        </div>
+                    </div>
+                </div> <!-- end carousel-item -->
+            </div>
+
+
+            <!-- Carousel Controls -->
+            <button class="carousel-control-prev" type="button" data-bs-target="#menuCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon bg-dark rounded-circle" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#menuCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon bg-dark rounded-circle" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+        </div>
+
+        <!-- MENU GRID ENDS -->
+
+
+        <!-- START THE FILTER BUBBLES -->
+        <!--    <div class="d-flex flex-wrap mb-4" id="attributeFilters">-->
+        <!--        <button class="btn btn-sm btn-outline-light me-2 mb-2"-->
+        <!--                th:each="attr : ${uniqueAttributeList}"-->
+        <!--                th:text="${attr.name + ': ' + attr.value}"-->
+        <!--                th:attr="data-filter=${attr.name + ':' + attr.value}">Filter</button>-->
+
+        <!--        <button class="btn btn-sm btn-secondary mb-2" id="clearFilters">Clear Filters</button>-->
+        <!--    </div>-->
+        <h4 class="gameboy-font-class" style="margin-top: 40px">Quick Filter Buttons</h4>
+        <div style="margin-top: 40px;" class="d-flex flex-wrap justify-content-center mb-4" id="attributeFilters">
+            <button class="btn btn-outline-light me-2 mb-2 attribute-filter"
+                    th:each="attr : ${uniqueAttributeList}"
+                    th:text="${attr.name + ': ' + attr.value}"
+                    th:attr="data-attribute=${attr.name + ':' + attr.value}">
+                Filter
+            </button>
+            <button class="btn btn-secondary mb-2" id="clearAttributeFilters">
+                <i class="bi bi-sliders me-1"></i> Clear Filters
+            </button>
+
+        </div>
+
+
+
+
+        <!-- END THE FILTER BUBBLES -->
+
+        <!-- NEW PRODUCT GRID -->
+        <div class="container mt-5">
+            <div class="text-center mb-4">
+                <h4 class="gameboy-font-class">Product Type Filter</h4>
+                <select id="productTypeFilter" class="form-select form-select-lg w-auto d-inline-block mt-2">
+                    <option value="all">Show All Product Types</option>
+                    <option th:each="type : ${producttypes}"
+                            th:value="${type.producttypeid}"
+                            th:text="${type.name}">
+                    </option>
+                </select>
+            </div>
+
+
+                        <div class="row g-4">
+                 <div class="col"
+                      th:each="product : ${menu.menu_product_list}"
+                      th:attr="data-type=${product.producttypeid?.producttypeid},
+               data-quantity=${product.quantityremaining},
+               data-attributes=${product.attributeDataString}">
+
+
+                    <div class="card h-100" style="background: rgba(255, 255, 255, 0.95); border: 3px solid #000; border-radius: 12px; box-shadow: 0 6px 0 #000;">
+                        <div th:if="${product.primaryphoto}">
+                            <img th:src="${product.primaryphoto}"
+                                 class="card-img-top menu-photo"
+                                 th:attr="data-photo-url=${product.primaryphoto}"
+                                 alt="Product Image"
+                                 style="height: 280px; object-fit: cover;">
+                        </div>
+
+                        <div th:if="${product.primaryphoto == null}" class="no-photo">No photo found</div>
+                        <div class="card-body text-center">
+                            <h5 class="card-title" th:text="${product.name}">Product Name</h5>
+                            <p class="card-text"><strong>Qty:</strong> <span th:text="${product.quantityremaining}"></span></p>
+                            <p class="card-text" th:if="${NoPricesView == null}"><strong>Price:</strong> $<span th:text="${product.displayprice}"></span></p>
+
+                            <div class="d-grid gap-2 mt-2">
+                                <a th:href="@{/video/product(productid=${product.product_id}, menuid=${menu.menuid}, shoppingtoken=${shoppingtoken})}" class="btn btn-outline-light" style="color: #000 !important;">Videos</a>
+                                <a th:href="@{/photo/product(productid=${product.product_id}, menuid=${menu.menuid}, shoppingtoken=${shoppingtoken})}" class="btn btn-outline-light" style="color: #000 !important;">Photos</a>
+                                <a th:href="@{/document/product(productid=${product.product_id}, menuid=${menu.menuid}, shoppingtoken=${shoppingtoken})}" class="btn btn-outline-light" style="color: #000 !important;">Documents</a>
+                                                                 <a href="javascript:void(0);" class="btn btn-warning add-to-cart-btn mt-2 w-100" style="color: #000; font-family: 'Press Start 2P', cursive; font-size: 0.6rem; border: 2px solid #000; box-shadow: 0 2px 0 #000;"
+                                    th:data-attributes="${product.attributeDataString}"
+                                    th:data-product-id="${product.product_id}"
+                                    th:data-cart-id="${cartid}"
+                                    th:data-shopping-token-id="${shoppingtoken}"
+                                    th:data-menu-id="${menuid}"
+                                    th:data-product-name="${product.name}"
+                                    th:data-product-price="${product.displayprice}"
+                                    th:data-product-quantityremaining="${product.quantityremaining}"
+                                    th:disabled="${cart.isprocessed == 1 or (MediaOnlyView != null and MediaOnlyView == 'yes') or (NoPricesView != null and NoPricesView == 'yes')}"
+                                    th:classappend="${(cart.isprocessed == 1 or (MediaOnlyView != null and MediaOnlyView == 'yes') or (NoPricesView != null and NoPricesView == 'yes')) ? 'disabled' : ''}">
+                                     Add to Cart
+                                 </a>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ADD TO CART Popup Modal -->
+        <!-- Popup Modal -->
+        <!-- Popup Modal -->
+        <div id="addToCartModal" class="modal" tabindex="-1" style="display: none;">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 id="modalProductName" class="modal-title">Add to Cart</h5>
+                        <button type="button" class="btn-close close-modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="modalProductPrice" ></p> <!-- Product price will be displayed here -->
+                        <label for="quantitySelect" class="form-label">Select Quantity:</label>
+                        <select id="quantitySelect" class="form-select">
+                            <option value="">Select Amount</option>
+                            <script>
+                                for (let i = 1; i <= 100; i++) {
+                                    document.write(`<option value="${i}">${i}</option>`);
+                                }
+                            </script>
+                        </select>
+                    </div>
+                    <div class="modal-footer">
+                        <button id="submitQuantity" class="btn btn-primary" disabled>Confirm</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <script>
+            $(document).ready(function () {
+                let currentProductId;
+    
+                // Show modal on "Add to Cart" button click
+                $('.add-to-cart-btn').on('click', function () {
+                    currentProductId = $(this).data('product-id');
+    
+                    // Get product name and price from the button's data attributes
+                    const productName = $(this).data('product-name');
+                    const productPrice = $(this).data('product-price');
+                    const productQuantityRemaining = $(this).data('product-quantityremaining');
+    
+                    // Update modal with product details
+                    $('#modalProductName').text(`Add ${productName} to Cart`);
+                    $('#modalProductPrice').text(`Price: $${productPrice}`);
+    
+                    // Reset dropdown and disable Confirm button
+                    $('#quantitySelect').val('');
+                    $('#submitQuantity').prop('disabled', true);
+    
+                    const select = addToCartModal.querySelector('#quantitySelect');
+                    select.innerHTML = '';
+    
+                    // Add placeholder option
+                    const placeholder = document.createElement('option');
+                    placeholder.value = '';
+                    placeholder.textContent = 'Select Amount';
+                    select.appendChild(placeholder);
+    
+                    for (let i = 1; i <= productQuantityRemaining; i++) {
+                        const option = document.createElement('option');
+                        option.value = i;
+                        option.textContent = i;
+                        select.appendChild(option);
+                    }
+    
+                    // Show the modal
+                    $('#addToCartModal').fadeIn();
+                });
+    
+                // Close modal
+                $('.close-modal').on('click', function () {
+                    $('#addToCartModal').fadeOut();
+                });
+    
+                // Enable Confirm button when a valid quantity is selected
+                $('#quantitySelect').on('change', function () {
+                    const selectedValue = $(this).val();
+                    $('#submitQuantity').prop('disabled', !selectedValue);
+                });
+    
+                // Handle Confirm button click
+                $('#submitQuantity').on('click', function () {
+                    const selectedQuantity = $('#quantitySelect').val();
+    
+                    // Ensure quantity is selected
+                    if (!selectedQuantity) {
+                        alert('Please select a quantity!');
+                        return;
+                    }
+    
+                    // Fetch parameters from URL
+                    let urlParams = new URLSearchParams(window.location.search);
+                    let shoppingToken = urlParams.get('shoppingtoken');
+                    let menuId = urlParams.get('menuid');
+                    let cartId = urlParams.get('cartid');
+    
+                    // Check for missing values and fallback to button attributes
+                    if (!shoppingToken || !menuId || !cartId) {
+                        const addToCartButton = $('.add-to-cart-btn').first(); // Example fallback to the first button
+                        shoppingToken = shoppingToken || addToCartButton.data('shopping-token-id');
+                        menuId = menuId || addToCartButton.data('menu-id');
+                        cartId = cartId || addToCartButton.data('cart-id');
+                    }
+    
+                    // Validate necessary parameters
+                    if (!shoppingToken || !menuId || !currentProductId) {
+                        alert('Missing required parameters!');
+                        return;
+                    }
+    
+                    // Default cartId if null, undefined, or '0'
+                    cartId = cartId && cartId !== '0' ? cartId : '0';
+    
+                    // Create a form dynamically for submission
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '/menu3/shop/product/cart/add';
+    
+                    // Append parameters as hidden fields
+                    const fields = [
+                        { name: 'shoppingtoken', value: shoppingToken },
+                        { name: 'menuid', value: menuId },
+                        { name: 'productid', value: currentProductId },
+                        { name: 'quantityselected', value: selectedQuantity },
+                        { name: 'cartid', value: cartId },
+                    ];
+    
+                    fields.forEach(field => {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = field.name;
+                        input.value = field.value;
+                        form.appendChild(input);
+                    });
+    
+                    // Append form to body and submit
+                    document.body.appendChild(form);
+                    form.submit();
+                });
+            });
+
+
+        </script>
+
+
+
+
+        <!-- ADD TO CART Popup Modal ENDS -->
+
+
+        <!-- Floating Arrow -->
+        <div id="cartToggle"
+             class="floating-arrow bi bi-arrow-right"
+             th:classappend="${cart.product_cart_list == null or #lists.isEmpty(cart.product_cart_list)} ? '' : 'invisible'">
+        </div>
+
+        <!-- Cart Section -->
+        <div id="cartSection" class="cart-section"
+             th:classappend="${cart.product_cart_list != null and !#lists.isEmpty(cart.product_cart_list)} ? 'open'">
+            <div class="cart-header">
+                <div id="cartClose" class="floating-arrow bi bi-arrow-left" style="position: relative; display: block; margin: auto;"></div>
+                <span style="display: block; margin-top: 10px;">Shopping Cart</span>
+            </div>
+
+            <div id="cartRows">
+                <div th:each="product : ${cart.product_cart_list}" class="cart-row"
+                     th:data-product-id="${product.product_id}"
+                     th:data-cart-id="${cartid}"
+                     th:data-shopping-token-id="${shoppingtoken}"
+                     th:data-menu-id="${menuid}"
+                     th:data-product-name="${product.name}"
+                     th:data-product-price="${product.displayprice}"
+                >
+                    <span class="fw-bold fs-3" th:text="${product.name}">Product Name</span>
+                    <span>
+                <button class="btn btn-secondary btn-lg cart-controls" onclick="updateQuantity('decrease', this)"                 th:disabled="${cart.isprocessed == 1}"
+                        th:classappend="${cart.isprocessed == 1} ? 'disabled' : ''">-</button>
+                <span class="fs-4" th:text="${product.displayquantity}"></span>
+                <button class="cart-controls btn btn-secondary btn-lg" onclick="updateQuantity('increase', this)"                 th:disabled="${cart.isprocessed == 1}"
+                        th:classappend="${cart.isprocessed == 1} ? 'disabled' : ''">+</button>
+            </span>
+                    <span th:text="${#numbers.formatCurrency(product.displayprice)}" class="fs-4">$0.00</span>
+                </div>
+            </div>
+
+            <div class="cart-footer">
+                <div class="fs-4" id="totalDiv">
+                    <strong>Total:</strong> <span th:data-total="${cart.total}" th:text="${#numbers.formatCurrency(cart.total)}" >$0.00</span>
+                </div>
+                <!-- Replace Submit Cart Button Based on cart.isprocessed -->
+                <div th:if="${cart.isprocessed == 1}">
+                    <p >This cart has already been processed.</p>
+                </div>
+                <div th:if="${cart.isprocessed != 1}">
+                    <button id="submitCartButton" class="btn btn-light mt-2" type="button">Submit Cart</button>
+                </div>
+                <form id="cartForm" th:action="@{/menu3/shop/checkout}" method="post"></form>
+            </div>
+        </div>
+        <!-- CART SECTION ENDS -->
+
+        <!-- Cart Review Modal -->
+        <!-- Update the Cart Review Modal -->
+        <div id="cartReviewModal" class="modal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Review Your Cart</h5>
+                        <button type="button" class="btn-close" id="closeCartReview" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Here are the products in your cart:</p>
+                        <div id="cartReviewContent"></div>
+                        <hr>
+                        <p><strong>Total:</strong> $<span id="cartReviewTotal">0.00</span></p>
+                        <hr>
+
+                        <!-- Delivery or Curbside Pickup Selection -->
+
+
+
+
+
+
+
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" id="cancelOrder">Cancel</button>
+                        <button type="button" id="confirmOrder" class="btn btn-primary">Confirm Order</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- End Cart Review Modal -->
+
+        <div id="shoppingTokenTimer" class="hovering-timer">
+            Shopping Time Left:&nbsp; <span id="timeDisplay"></span>
+        </div>
+        <!-- Conditional Empty Cart Button or Message -->
+        <div id="emptyCartButton" th:if="${cart.isprocessed != 1}" class="floating-button">
+            <button class="btn btn-danger">Empty Cart</button>
+        </div>
+        <div th:if="${cart.isprocessed == 1}" class="floating-button">
+            <p>This cart has already been processed and cannot be emptied.</p>
+        </div>
+
+
+        <div id="emptyCartConfirmation" class="floating-confirmation" style="display: none;">
+            <p>Are you sure you want to empty your cart?</p>
+            <p>Cart will be emptied automatically when the shopping token expires.</p>
+            <div class="confirmation-buttons">
+                <button id="confirmEmptyCart" class="btn btn-danger">Yes, Empty Cart</button>
+                <button id="cancelEmptyCart" class="btn btn-secondary">Cancel</button>
+            </div>
+        </div>
+
+        <!-- START JAVASCRIPT FOR FILTER BUBBLES PRODUCT ATTRIBUTES -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const filterButtons = document.querySelectorAll('#attributeFilters [data-filter]');
+                const clearButton = document.getElementById('clearFilters');
+                const allProducts = document.querySelectorAll('[data-attributes]');
+    
+                filterButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        const filter = button.getAttribute('data-filter');
+                        allProducts.forEach(card => {
+                            const attrs = card.getAttribute('data-attributes') || '';
+                            card.style.display = attrs.includes(filter) ? '' : 'none';
+                        });
+                    });
+                });
+    
+                clearButton.addEventListener('click', () => {
+                    allProducts.forEach(card => card.style.display = '');
+                });
+            });
+        </script>
+
+        <!-- END JAVASCRIPT FOR FILTER BUBBLES PRODUCT ATTRIBUTES -->
+
+        <script>
+            // JavaScript for toggle animations
+            $(document).ready(function () {
+                const cartToggle = $('#cartToggle');
+                const cartClose = $('#cartClose');
+                const cartSection = $('#cartSection');
+    
+                cartToggle.click(function () {
+                    cartSection.addClass('open');
+                    cartToggle.fadeOut(300); // Smooth fade out for the arrow
+                });
+    
+                cartClose.click(function () {
+                    cartSection.removeClass('open');
+                    cartToggle.fadeIn(300); // Smooth fade in for the arrow
+                });
+            });
+    
+            function updateQuantity(action, button) {
+                // Get parent row to retrieve necessary data
+                const cartRow = button.closest('.cart-row');
+                const productId = $(cartRow).attr('data-product-id'); // Assuming each row has data-product-id attribute
+                let cartId = $(cartRow).attr('data-cart-id'); // Get the cartId from the row
+                const shoppingToken = $(cartRow).attr('data-shopping-token-id');
+                const menuId = $(cartRow).attr('data-menu-id');
+    
+                if (!shoppingToken || !menuId || !productId) {
+                    alert('Missing required parameters!');
+                    return;
+                }
+    
+                // Default cartId to 0 if it's null, undefined, or equal to 0
+                cartId = cartId && cartId !== '0' ? cartId : '0';
+    
+                // Determine endpoint based on action
+                const endpoint =
+                    action === 'increase'
+                        ? '/menu3/shop/product/cart/add'
+                        : '/menu3/shop/product/cart/subtract';
+    
+                // Quantity selected is always 1 for both actions
+                const quantitySelected = 1;
+    
+                // Create a form dynamically
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = endpoint;
+    
+                // Append parameters as hidden fields
+                const fields = [
+                    { name: 'shoppingtoken', value: shoppingToken },
+                    { name: 'menuid', value: menuId },
+                    { name: 'productid', value: productId },
+                    { name: 'cartid', value: cartId },
+                    { name: 'quantityselected', value: quantitySelected },
+                ];
+    
+                fields.forEach(field => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = field.name;
+                    input.value = field.value;
+                    form.appendChild(input);
+                });
+    
+                // Append form to body and submit
+                document.body.appendChild(form);
+                form.submit();
+            }
+
+
+        </script>
+
+        <script>
+            $(document).ready(function () {
+                const cartToggle = $('#cartToggle');
+                const cartClose = $('#cartClose');
+                const cartSection = $('#cartSection');
+    
+                // Handle opening the cart
+                cartToggle.click(function () {
+                    cartSection.addClass('open');
+                    cartToggle.addClass('invisible'); // Hide the arrow
+                });
+    
+                // Handle closing the cart
+                cartClose.click(function () {
+                    cartSection.removeClass('open');
+                    cartToggle.removeClass('invisible'); // Show the arrow
+                });
+            });
+    
+    
+            $(document).ready(function () {
+                const cartForm = $('#cartForm');
+    
+                cartForm.submit(function (event) {
+                    event.preventDefault(); // Prevent the default form submission
+    
+                    // Select any one product row to extract the necessary parameters
+                    const firstCartRow = $('#cartRows .cart-row').first();
+    
+                    if (!firstCartRow.length) {
+                        alert('No products found in the cart!');
+                        return;
+                    }
+    
+                    // Fetch parameters from the first product row
+                    const shoppingToken = firstCartRow.data('shopping-token-id');
+                    const menuId = firstCartRow.data('menu-id');
+                    let cartId = firstCartRow.data('cart-id');
+    
+                    // Default cartId to 0 if null or undefined
+                    cartId = cartId && cartId !== '0' ? cartId : '0';
+    
+                    // Validate necessary parameters
+                    if (!shoppingToken || !menuId) {
+                        alert('Missing required parameters!');
+                        return;
+                    }
+    
+                    // Construct a form dynamically (like the other methods)
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '/menu3/shop/checkout'; // Adjust to your backend endpoint
+    
+                    // Add necessary parameters to the form
+                    const fields = [
+                        { name: 'shoppingtoken', value: shoppingToken },
+                        { name: 'menuid', value: menuId },
+                        { name: 'cartid', value: cartId },
+                    ];
+    
+                    fields.forEach(field => {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = field.name;
+                        input.value = field.value;
+                        form.appendChild(input);
+                    });
+    
+                    // Append the form to the document body and submit it
+                    document.body.appendChild(form);
+                    form.submit();
+                });
+            });
+    
+    
+            // Intercept "Submit Cart" button click
+            $('#submitCartButton').on('click', function (event) {
+                event.preventDefault(); // Prevent default form submission
+    
+                // Populate the cart modal with current cart rows
+                const cartContent = $('#cartRows').html(); // Clone cart content
+                if (!cartContent.trim()) {
+                    alert('Your cart is empty! Please add items before submitting.');
+                    return;
+                }
+    
+                // Get the total value using the id of totalDiv
+                const total = $('#totalDiv span').attr('data-total'); // Locate the span inside #totalDiv and fetch data-total
+                const formattedTotal = parseFloat(total) || 0; // Ensure it's a valid number
+    
+                // Update the modal with cart content and total
+                $('#cartReviewContent').html(cartContent);
+                $('#cartReviewTotal').text(formattedTotal.toFixed(2));
+    
+                // Display the cart review modal
+                $('#cartReviewModal').fadeIn();
+    
+                // Disable the confirm order button initially
+<!--                $('#confirmOrder').prop('disabled', true);-->
+    
+
+            });
+    
+            // Close cart review modal
+            $('#closeCartReview, #cancelOrder').on('click', function () {
+                $('#cartReviewModal').fadeOut();
+            });
+    
+    
+    
+            // Handle Confirm Order click
+            $('#confirmOrder').on('click', function () {
+
+
+                // Fetch parameters from the cart
+                const firstCartRow = $('#cartRows .cart-row').first();
+                const shoppingToken = firstCartRow.attr('data-shopping-token-id');
+                const menuId = firstCartRow.attr('data-menu-id');
+                let cartId = firstCartRow.attr('data-cart-id');
+                console.log('cartid: '+cartId);
+    
+                // Default cartId to 0 if null, undefined, or invalid
+                cartId = cartId && cartId !== '0' ? cartId : '0';
+    
+                // Validate necessary parameters
+                if (!shoppingToken || !menuId || !cartId) {
+                    alert('Missing required cart parameters! Please try again.');
+                    return;
+                }
+    
+                // Create a form dynamically for the POST call
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/menu3/shop/checkout'; // Adjust to your backend endpoint
+
+    
+                // Append necessary parameters as hidden input fields
+                const fields = [
+                    { name: 'shoppingtoken', value: shoppingToken },
+                    { name: 'menuid', value: menuId },
+                    { name: 'cartid', value: cartId },
+                ];
+    
+                fields.forEach(field => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = field.name;
+                    input.value = field.value;
+                    form.appendChild(input);
+                });
+    
+                // Append the form to the document body and submit it
+                document.body.appendChild(form);
+                form.submit();
+            });
+    
+    
+    
+    
+    
+    
+            $(document).ready(function () {
+                // Decode the JWT and calculate expiration
+                function parseJwt(token) {
+                    const base64Payload = token.split('.')[1];
+                    const payload = atob(base64Payload);
+                    return JSON.parse(payload);
+                }
+    
+                const cartRow = $('[data-shopping-token-id]').first();
+                const shoppingToken = $(cartRow).attr('data-shopping-token-id');
+    
+                if (!shoppingToken) {
+                    console.error("Shopping token not found.");
+                    return;
+                }
+    
+                const tokenData = parseJwt(shoppingToken);
+                const expirationTime = tokenData.exp * 1000;
+    
+                const timerInterval = setInterval(() => {
+                    const currentTime = Date.now();
+                    const remainingTime = expirationTime - currentTime;
+    
+                    if (remainingTime <= 0) {
+                        clearInterval(timerInterval);
+                        $('#timeDisplay').text('Expired');
+                        $('#shoppingTokenTimer').addClass('red').removeClass('green yellow');
+    
+                        // Automatically empty the cart when token expires
+                        if ($('#cartRows .cart-row').length > 0) {
+                            triggerEmptyCart(); // Call the new function to empty the cart
+                        }
+    
+                        return;
+                    }
+    
+                    // Timer UI logic (update color and remaining time display)
+                    updateTimerUI(remainingTime);
+                }, 1000);
+    
+                function triggerEmptyCart() {
+                    // Automatically submit the empty cart form without popup
+                    const firstCartRow = $('#cartRows .cart-row').first();
+    
+                    if (!firstCartRow.length) {
+                        console.error('No products found in the cart.');
+                        return;
+                    }
+    
+                    const menuId = firstCartRow.attr('data-menu-id');
+                    let cartId = firstCartRow.attr('data-cart-id') || '0';
+    
+                    // Validate required parameters
+                    if (!shoppingToken || !menuId) {
+                        console.error('Missing required parameters to empty cart.');
+                        return;
+                    }
+    
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '/menu3/shop/empty/cart';
+    
+                    const fields = [
+                        { name: 'shoppingtoken', value: shoppingToken },
+                        { name: 'menuid', value: menuId },
+                        { name: 'cartid', value: cartId },
+                    ];
+    
+                    fields.forEach(field => {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = field.name;
+                        input.value = field.value;
+                        form.appendChild(input);
+                    });
+    
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+    
+                function updateTimerUI(remainingTime) {
+                    const hours = Math.floor(remainingTime / (1000 * 60 * 60));
+                    const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
+    
+                    $('#timeDisplay').text(
+                        `${hours.toString().padStart(2, '0')} hours, ${minutes.toString().padStart(2, '0')} minutes, ${seconds.toString().padStart(2, '0')} seconds`
+                    );
+    
+                    const timerElement = $('#shoppingTokenTimer');
+                    if (remainingTime > 60 * 60 * 1000) {
+                        timerElement.addClass('green').removeClass('yellow red');
+                    } else if (remainingTime > 30 * 60 * 1000) {
+                        timerElement.addClass('yellow').removeClass('green red');
+                    } else {
+                        timerElement.addClass('red').removeClass('green yellow');
+                    }
+                }
+            });
+    
+    
+    
+            $(document).ready(function () {
+                // Handle Empty Cart button click
+                $('#emptyCartButton button').on('click', function (event) {
+                    event.preventDefault(); // Prevent default behavior
+                    $('#emptyCartConfirmation').fadeIn(); // Show the confirmation popup
+                });
+    
+                // Handle Cancel button click
+                $('#cancelEmptyCart').on('click', function () {
+                    $('#emptyCartConfirmation').fadeOut(); // Hide the confirmation popup
+                });
+    
+                // Handle Confirm button click
+                $('#confirmEmptyCart').on('click', function () {
+                    $('#emptyCartConfirmation').fadeOut(); // Hide the confirmation popup
+    
+                    // Fetch parameters from the first product row
+                    const firstCartRow = $('#cartRows .cart-row').first();
+    
+                    if (!firstCartRow.length) {
+                        alert('No products found in the cart!');
+                        return;
+                    }
+    
+                    const shoppingToken = firstCartRow.attr('data-shopping-token-id');
+                    const menuId = firstCartRow.attr('data-menu-id');
+                    let cartId = firstCartRow.attr('data-cart-id');
+    
+                    // Default cartId to 0 if null or undefined
+                    cartId = cartId && cartId !== '0' ? cartId : '0';
+    
+                    // Validate necessary parameters
+                    if (!shoppingToken || !menuId) {
+                        alert('Missing required parameters!');
+                        return;
+                    }
+    
+                    // Create a form dynamically for Empty Cart POST
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '/menu3/shop/empty/cart'; // Endpoint for Empty Cart
+    
+                    // Add necessary parameters to the form
+                    const fields = [
+                        { name: 'shoppingtoken', value: shoppingToken },
+                        { name: 'menuid', value: menuId },
+                        { name: 'cartid', value: cartId },
+                    ];
+    
+                    fields.forEach(field => {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = field.name;
+                        input.value = field.value;
+                        form.appendChild(input);
+                    });
+    
+                    // Append the form to the document body and submit it
+                    document.body.appendChild(form);
+                    form.submit();
+                });
+            });
+    
+    
+            $(document).ready(function () {
+                function validateField(selector, condition) {
+                    const field = $(selector);
+                    const icon = field.siblings('.validation-icon');
+    
+                    if (condition) {
+                        field.css('border-color', 'green');
+                        icon.html('<i class="bi bi-check-circle-fill text-success validation-icon"></i>');
+                    } else {
+                        field.css('border-color', 'red');
+    
+                        icon.html('<i class="bi bi-x-circle-fill text-danger validation-icon"></i>');
+                    }
+                }
+    
+
+    
+    
+                // Toggle Delivery Fields
+                $('#deliveryCheckbox').on('change', function () {
+                    const isChecked = $(this).is(':checked');
+                    $('#pickupCheckbox').prop('checked', false);
+                    $('#deliveryFields').toggle(isChecked);
+                    validateForm();
+                });
+    
+                $('#pickupCheckbox').on('change', function () {
+                    const isChecked = $(this).is(':checked');
+                    $('#deliveryCheckbox').prop('checked', false);
+                    $('#deliveryFields').hide();
+                    validateForm();
+                });
+    
+                // Validate Fields
+                // Automatically validate Address 2
+                $('#address2').siblings('.validation-icon').html('✔').css('color', 'green');
+    
+    
+                $('#address1').on('input', function () {
+                    validateField(this, $(this).val().length > 0);
+                    validateForm();
+                });
+    
+                $('#city').on('input', function () {
+                    validateField(this, $(this).val().length >= 3);
+                    validateForm();
+                });
+    
+                $('#state').on('change', function () {
+                    validateField(this, $(this).val() !== '');
+                    validateForm();
+                });
+    
+                $('#zipcode').on('input', function () {
+                    validateField(this, /^\d{5}$/.test($(this).val()));
+                    validateForm();
+                });
+    
+                $('#deliveryNotes').on('input', function () {
+                    validateField(this, $(this).val().length > 5);
+                    validateForm();
+                });
+    
+                // Cancel Order Button
+                $('#cancelOrder').on('click', function () {
+                    $('#cartReviewModal').fadeOut();
+                });
+    
+                // Modal Close Button
+                $('#closeCartReview').on('click', function () {
+                    $('#cartReviewModal').fadeOut();
+                });
+    
+
+    
+
+            });
+
+
+        </script>
+
+        <script>
+            $(document).ready(function () {
+                function validateDeliveryFields() {
+    
+                    const isDelivery = $('#deliveryCheckbox').is(':checked');
+                    const isLocationDropdownVisible = $('#locationDropdown').is(':visible');
+                    const isLocationSelected = $('#locationSelect').val() !== null && $('#locationSelect').val() !== '0';
+    
+    
+                    // Declare variables outside the if block
+                    let address1Valid = true;
+                    let cityValid = true;
+                    let stateValid = true;
+                    let zipcodeValid = true;
+                    let deliveryNotesValid = true;
+    
+                    // Validate fields only if Delivery is checked and the location dropdown is not visible
+                    if (isDelivery && !isLocationSelected) {
+                        address1Valid = $('#address1').val() !== null && $('#address1').val().trim().length > 0;
+                        cityValid = $('#city').val() !== null && $('#city').val().trim().length >= 3;
+                        stateValid = $('#state').val() !== null && $('#state').val() !== '';
+                        zipcodeValid = $('#zipcode').val() !== null && /^\d{5}$/.test($('#zipcode').val());
+                        deliveryNotesValid = $('#deliveryNotes').val() !== null && $('#deliveryNotes').val().trim().length > 5;
+                    }
+                    if(isDelivery && isLocationSelected){
+                       console.log('validating WITH location selected');
+                      deliveryNotesValid = $('#deliveryNotes').val() !== null && $('#deliveryNotes').val().length > 5;
+                      console.log('deliveryNotesValid: '+deliveryNotesValid)
+                    }
+                    // Ensure all fields are valid
+                    return address1Valid && cityValid && stateValid && zipcodeValid && deliveryNotesValid;
+                }
+    
+    
+
+    
+                // Attach the validation logic to the change event of checkboxes
+                $('#deliveryCheckbox, #pickupCheckbox').on('change', function () {
+                    // Ensure only one checkbox is checked at a time
+                    if ($(this).is('#deliveryCheckbox') && $(this).is(':checked')) {
+                        $('#pickupCheckbox').prop('checked', false);
+                        $('#deliveryFields').show(); // Show delivery fields
+                    } else if ($(this).is('#pickupCheckbox') && $(this).is(':checked')) {
+                        $('#deliveryCheckbox').prop('checked', false);
+                        $('#deliveryFields').hide(); // Hide delivery fields
+                    }
+    
+                    // Update button state
+                    updateConfirmOrderButtonState();
+                });
+    
+                // Attach validation logic to input events for delivery fields
+                $('#address1, #city, #state, #zipcode, #deliveryNotes').on('input change', function () {
+                    updateConfirmOrderButtonState();
+                });
+    
+            });
+        </script>
+
+        <script>
+            $(document).ready(function () {
+    
+            });
+
+        </script>
+
+        <script>
+            $(document).ready(function () {
+                // Add a common class to all address fields
+                const addressFieldsClass = '.address-field';
+    
+                // Bind change event to the location dropdown
+                $('#locationSelect').on('change', function () {
+                    const isLocationSelected = $(this).val() !== null && $(this).val() !== '0';
+    
+                    // Declare newLocationButton variable
+                    let newLocationButton = $('#newLocationButton');
+    
+                    // Check if the "New Location" button already exists
+                    if (newLocationButton.length === 0) {
+                        // Add the "New Location" button dynamically
+                        newLocationButton = $('<button>')
+                            .attr('id', 'newLocationButton')
+                            .addClass('btn btn-primary mt-2 ms-auto d-block') // Add Bootstrap styles
+                            .text('New Location')
+                            .hide(); // Initially hidden
+    
+                        // Append the button to the DOM, right after the dropdown
+                        $('#deliveryFields').prepend(newLocationButton);
+    
+                        // Bind click event to the button
+                        newLocationButton.on('click', function () {
+                            $('#locationSelect').val('0'); // Reset dropdown to default value
+                            $(addressFieldsClass).show(); // Show address fields
+    
+                            // Reset validation styles and icons
+                            $(addressFieldsClass).each(function () {
+                                $(this).val(''); // Clear input value
+                                $(this).css('border-color', ''); // Remove border styling
+                                $(this).siblings('.validation-icon').html('').css('color', ''); // Remove validation icons
+                            });
+    
+
+                        });
+                    }
+
+                });
+            });
+        </script>
+
+    </div> <!-- main container ends -->
+</div> <!-- wrapping it here to hide after the order is complete -->
+
+
+<!-- Success message if ordercomplete == 'yes' -->
+<div th:if="${ordercomplete == 'yes'}" class="d-flex justify-content-center align-items-center" style="height: 100vh; background-color: #f8f9fa;">
+    <h1>
+        <a th:href="${successLink}" th:text="${successMessage}" class="text-success" style="text-decoration: none;"></a>
+    </h1>
+</div>
+
+<div id="photoPopupOverlay">
+    <div class="popup-content">
+        <div class="popup-close" id="popupCloseBtn">&times;</div>
+        <img id="popupPhotoDisplay" class="popup-img" src="" alt="Enlarged Photo" />
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const filter = document.getElementById('productTypeFilter');
+      if (!filter) return;
+
+      filter.addEventListener('change', function () {
+        const selected = this.value;
+        const cards = document.querySelectorAll('[data-type]');
+
+        cards.forEach(card => {
+          const type = card.getAttribute('data-type');
+          card.style.display = (selected === 'all' || selected === type) ? '' : 'none';
+        });
+      });
+
+
+
+    });
+
+    const typeFilterSelect = document.getElementById('productTypeFilter');
+
+if (typeFilterSelect) {
+    typeFilterSelect.addEventListener('change', function () {
+        if (this.value !== 'all') {
+            this.classList.add('active'); // Start pulsing glow
+        } else {
+            this.classList.remove('active'); // Stop pulsing glow
+        }
+    });
+}
+
+</script>
+
+
+<script>
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    window.addEventListener("scroll", () => {
+      const scrollBtn = document.getElementById("scrollTopBtn");
+      scrollBtn.style.display = (window.scrollY > 100) ? "block" : "none";
+    });
+</script>
+
+<!--<script>-->
+<!--    const activeFilters = new Set();-->
+
+<!--    function applyFilters() {-->
+<!--      const allProducts = document.querySelectorAll('.menu-product');-->
+
+<!--      allProducts.forEach(product => {-->
+<!--        const productAttributes = product.dataset.attributes?.split(',') || [];-->
+
+<!--        // Show if product includes ALL active filters-->
+<!--        const matches = [...activeFilters].every(filter =>-->
+<!--          productAttributes.includes(filter)-->
+<!--        );-->
+
+<!--        product.style.display = matches || activeFilters.size === 0 ? 'block' : 'none';-->
+<!--      });-->
+<!--    }-->
+
+<!--    // Handle filter button clicks-->
+<!--    document.querySelectorAll('#attributeFilters button[data-filter]').forEach(button => {-->
+<!--      button.addEventListener('click', function () {-->
+<!--        const filter = this.dataset.filter;-->
+
+<!--        if (activeFilters.has(filter)) {-->
+<!--          activeFilters.delete(filter);-->
+<!--          this.classList.remove('btn-light');-->
+<!--          this.classList.add('btn-outline-light');-->
+<!--        } else {-->
+<!--          activeFilters.add(filter);-->
+<!--          this.classList.remove('btn-outline-light');-->
+<!--          this.classList.add('btn-light');-->
+<!--        }-->
+
+<!--        applyFilters();-->
+<!--      });-->
+<!--    });-->
+
+<!--    // Clear filters-->
+<!--    document.getElementById('clearFilters').addEventListener('click', () => {-->
+<!--      activeFilters.clear();-->
+<!--      document.querySelectorAll('#attributeFilters button[data-filter]').forEach(btn => {-->
+<!--        btn.classList.remove('btn-light');-->
+<!--        btn.classList.add('btn-outline-light');-->
+<!--      });-->
+
+<!--      applyFilters();-->
+<!--    });-->
+<!--</script>-->
+<script>
+    const activeAttributeFilters = new Set();
+    let selectedTypeFilter = null;
+
+    function applyFilters() {
+      document.querySelectorAll('[data-type]').forEach(product => {
+        const productType = product.getAttribute('data-type');
+        const attributeString = product.getAttribute('data-attributes') || "";
+        const productAttributes = attributeString.split(',').map(a => a.trim().toLowerCase());
+
+        const matchesType = !selectedTypeFilter || productType === selectedTypeFilter;
+        const matchesAttributes = activeAttributeFilters.size === 0 ||
+          [...activeAttributeFilters].some(filter => productAttributes.includes(filter.toLowerCase()));
+
+        product.classList.toggle('d-none', !(matchesType && matchesAttributes));
+      });
+    }
+
+    // Attribute filters
+    document.querySelectorAll('.attribute-filter').forEach(button => {
+      button.addEventListener('click', function () {
+        const attr = this.getAttribute('data-attribute');
+        if (activeAttributeFilters.has(attr)) {
+          activeAttributeFilters.delete(attr);
+          this.classList.remove('btn-light', 'active');
+
+          this.classList.add('btn-outline-light');
+        } else {
+          activeAttributeFilters.add(attr);
+          this.classList.remove('btn-outline-light');
+          this.classList.add('btn-light', 'active'); // ✅ includes .active for styling
+
+        }
+        applyFilters();
+      });
+    });
+
+    document.getElementById('clearAttributeFilters').addEventListener('click', () => {
+      activeAttributeFilters.clear();
+      document.querySelectorAll('.attribute-filter').forEach(btn => {
+        btn.classList.remove('btn-light', 'active');  // 🧼 removes aura and light styling
+        btn.classList.add('btn-outline-light');
+      });
+      applyFilters();
+    });
+
+    // Product type filters (you already have this part working)
+    document.querySelectorAll('.product-type-filter').forEach(button => {
+      button.addEventListener('click', function () {
+        selectedTypeFilter = this.getAttribute('data-type');
+        document.querySelectorAll('.product-type-filter').forEach(btn => btn.classList.remove('active'));
+        this.classList.add('active');
+        applyFilters();
+      });
+    });
+
+    document.getElementById('clearTypeFilter').addEventListener('click', function () {
+      selectedTypeFilter = null;
+      document.querySelectorAll('.product-type-filter').forEach(btn => btn.classList.remove('active'));
+      applyFilters();
+    });
+</script>
+
+
+
+
+
+<script>
+    window.addEventListener('scroll', () => {
+      const scrollBtn = document.getElementById('scrollTopBtn');
+      if (window.scrollY > 1500) {
+        scrollBtn.classList.add('fast-pulse');
+      } else {
+        scrollBtn.classList.remove('fast-pulse');
+      }
+    });
+
+    document.getElementById('clearAttributeFilters').addEventListener('click', () => {
+  // Clear attribute filters
+  activeAttributeFilters.clear();
+  document.querySelectorAll('.attribute-filter').forEach(btn => {
+    btn.classList.remove('btn-light', 'active');
+    btn.classList.add('btn-outline-light');
+  });
+
+  // ✅ Reset the product type dropdown to "all"
+  const typeFilterSelect = document.getElementById('productTypeFilter');
+  if (typeFilterSelect) {
+    typeFilterSelect.value = 'all';
+typeFilterSelect.dispatchEvent(new Event('change'));
+
+    selectedTypeFilter = null; // reset JS filter state
+  }
+
+  applyFilters(); // re-run filter logic
+});
+
+</script>
+
+
+<script>
+    (function () {
+      const overlay = document.getElementById('photoPopupOverlay');
+      const imgEl   = document.getElementById('popupPhotoDisplay');
+      const closeEl = document.getElementById('popupCloseBtn');
+
+      function openPhoto(url) {
+        if (!url) return;
+        imgEl.src = url;
+        overlay.style.display = 'flex';
+      }
+
+      function closePhoto() {
+        overlay.style.display = 'none';
+        imgEl.src = '';
+      }
+
+      // Click on any .menu-photo (event delegation in case items render later)
+      document.addEventListener('click', function (e) {
+        const target = e.target.closest('.menu-photo');
+        if (target) {
+          const url = target.getAttribute('data-photo-url') || target.getAttribute('src');
+          openPhoto(url);
+        }
+      });
+
+      // Close controls
+      closeEl.addEventListener('click', closePhoto);
+      overlay.addEventListener('click', (e) => {
+        // close when clicking the dark backdrop (not when clicking inner content)
+        if (e.target === overlay) closePhoto();
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closePhoto();
+      });
+         })();
+ </script>
+
+
+</body>
+
+</html>
