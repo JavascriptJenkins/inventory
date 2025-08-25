@@ -107,6 +107,19 @@
             color: white !important;
         }
 
+        /* Ensure white text on all attribute filter buttons */
+        #attributeFilters .btn-outline-light.attribute-filter {
+            color: white !important;
+        }
+
+        #attributeFilters .btn-outline-light.attribute-filter:hover {
+            color: white !important;
+        }
+
+        #attributeFilters .btn-outline-light.attribute-filter.active {
+            color: white !important;
+        }
+
         /* Image styling */
         .card-img-top {
             height: 200px;
@@ -799,6 +812,14 @@
           animation: pulseText 2s infinite ease-in-out;
         }
 
+        /* Mobile sizing for gameboy font class */
+        @media (max-width: 575px) {
+            .gameboy-font-class {
+                font-size: 1.2rem;
+                margin: -5px 0 20px 0;
+            }
+        }
+
         @keyframes pulseText {
           0%   { transform: scale(1); }
           50%  { transform: scale(1.1); }
@@ -811,6 +832,16 @@
             min-width: 250px;    /* Wider box */
         }
 
+        /* Mobile sizing for Product Type Filter */
+        @media (max-width: 575px) {
+            #productTypeFilter {
+                font-size: 1rem;
+                padding: 0.75rem 1.5rem;
+                min-width: 200px;
+                max-width: 90vw;
+            }
+        }
+
         #attributeFilters .attribute-filter,
         #clearAttributeFilters {
             font-size: 1.4rem;           /* Bigger text */
@@ -819,6 +850,16 @@
             text-shadow: 0 0 8px #f25e5a; /* Glow effect for text */
             box-shadow: 0 0 15px rgba(242, 94, 90, 0.7); /* Outer glow */
             transition: all 0.3s ease;
+        }
+
+        /* Mobile sizing for attribute filters */
+        @media (max-width: 575px) {
+            #attributeFilters .attribute-filter,
+            #clearAttributeFilters {
+                font-size: 1rem;
+                padding: 0.6rem 1.2rem;
+                border-radius: 8px;
+            }
         }
 
         #attributeFilters .attribute-filter:hover,
