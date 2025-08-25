@@ -170,6 +170,8 @@ public class JwtTokenFilter extends OncePerRequestFilter implements CsrfTokenRep
               MENU_SHOP_URI_2_33.equals(path) ||
               MENU_URI_3_33.equals(path) ||
               MENU_URI_3.equals(path) ||
+              MENU_URI_5.equals(path) ||
+              MENU_URI_5_33.equals(path) ||
               MENU_SHOP_3_URI.equals(path) ||
               MENU_SHOP_URI_3_33.equals(path) ||
               FILE_SMS_DOWNLOAD_2.equals(path) ||
