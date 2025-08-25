@@ -104,7 +104,10 @@ public class TwilioTextUtil {
     // todo: enforce country code
     public String sendValidationText(SystemUserDAO systemUserDAO, String token, boolean isDev1) {
 
-        String message = "Validate your techvvs account with token: "+token;
+        String domain = env.getProperty("base.qr.domain");
+
+        String message = "Your " + domain + " login code is: " + token + "\n\n@" + domain + " #" + token;
+
 
         if(!isDev1){
             send(systemUserDAO.getPhone(), message);
