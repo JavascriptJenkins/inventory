@@ -335,6 +335,7 @@
             box-shadow: 0 4px 0 #000;
             transition: all 0.3s ease;
             font-family: 'Press Start 2P', cursive;
+            transform: translateY(-50%);
         }
 
         .floating-arrow:hover {
@@ -359,7 +360,7 @@
             position: fixed;
             top: 0;
             right: -100%; /* Initially hidden */
-            width: 20%;
+            width: 350px;
             height: 100%;
             background: rgba(255, 255, 255, 0.95);
             border-left: 3px solid #000;
@@ -367,6 +368,98 @@
             box-shadow: -4px 0 10px rgba(0, 0, 0, 0.3);
             overflow-y: auto;
             transition: right 0.5s cubic-bezier(0.4, 0.0, 0.2, 1); /* Smooth ease-out */
+        }
+
+        /* Mobile responsive cart section */
+        @media (max-width: 768px) {
+            .cart-section {
+                width: 100%;
+                right: -100%;
+            }
+            
+            .cart-section.open {
+                right: 0;
+            }
+            
+            .cart-header {
+                padding: 20px 15px;
+                font-size: 1rem;
+            }
+            
+            .cart-row {
+                padding: 15px 10px;
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+            
+            .cart-row span.fw-bold {
+                font-size: 1.1rem !important;
+                margin-bottom: 5px;
+            }
+            
+            .cart-controls {
+                display: flex;
+                align-items: center;
+                gap: 15px;
+                justify-content: center;
+            }
+            
+            .cart-controls button {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+            }
+            
+            .cart-footer {
+                padding: 25px 15px;
+            }
+            
+            .cart-footer .fs-4 {
+                font-size: 1.1rem !important;
+            }
+            
+            #submitCartButton {
+                width: 100%;
+                padding: 15px;
+                font-size: 1rem;
+                margin-top: 15px;
+            }
+        }
+
+        /* iPhone specific optimizations */
+        @media (max-width: 480px) {
+            .cart-section {
+                width: 100%;
+            }
+            
+            .cart-header {
+                padding: 25px 15px;
+                font-size: 0.9rem;
+            }
+            
+            .cart-row {
+                padding: 20px 15px;
+            }
+            
+            .cart-row span.fw-bold {
+                font-size: 1rem !important;
+            }
+            
+            .cart-controls button {
+                width: 45px;
+                height: 45px;
+                font-size: 1.3rem;
+            }
+            
+            .cart-footer {
+                padding: 30px 15px;
+            }
+            
+            .floating-arrow {
+                padding: 20px 15px;
+                font-size: 1.5rem;
+            }
         }
 
         .cart-section.open {
@@ -383,6 +476,32 @@
             top: 0;
             border-bottom: 3px solid #000;
             font-family: 'Press Start 2P', cursive;
+            box-shadow: 0 4px 0 #000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #cartClose {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        #cartClose:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #000;
+        }
+
+        #cartClose:active {
+            transform: translateY(0);
             box-shadow: 0 4px 0 #000;
         }
 
@@ -402,6 +521,18 @@
             height: 30px;
             border-radius: 50%;
             box-shadow: 0 2px 0 #000;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .cart-controls button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 0 #000;
+        }
+
+        .cart-controls button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 0 #000;
         }
 
         .cart-footer {
@@ -414,6 +545,30 @@
             border-top: 3px solid #000;
             font-family: 'Press Start 2P', cursive;
             box-shadow: 0 -4px 0 #000;
+        }
+
+        #submitCartButton {
+            background: var(--success-color);
+            color: white;
+            border: 2px solid #000;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.8rem;
+            box-shadow: 0 2px 0 #000;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        #submitCartButton:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 0 #000;
+            color: white;
+        }
+
+        #submitCartButton:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 0 #000;
         }
         #cartReviewModal .modal-dialog {
             max-width: 500px;
