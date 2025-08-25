@@ -98,41 +98,42 @@
             color: white !important;
         }
 
-        .table-wrap {
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(242, 94, 90, 0.25);
-            backdrop-filter: blur(10px);
-            padding: 30px;
-            margin: 20px 0;
+        .document-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
             width: 100%;
-            max-width: 980px;
         }
 
-        table.table {
-            margin: 0;
-            color: #333;
-            font-family: 'Press Start 2P', cursive;
-        }
-
-        thead th {
-            background: var(--brand-color);
-            color: white;
-            border-bottom: 3px solid #000;
-            font-weight: 600;
-            font-size: 0.8rem;
-            padding: 20px;
-        }
-
-        tbody tr {
-            transition: all .2s ease;
+        .document-item {
             background: rgba(255, 255, 255, 0.95);
+            border: 3px solid #000;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 6px 0 #000;
+            transition: transform 0.2s ease;
+            width: 100%;
+            text-align: center;
         }
 
-        tbody tr:hover {
-            background: rgba(248, 249, 250, 0.1);
+        .document-item:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 0 #000;
+            box-shadow: 0 8px 0 #000;
+        }
+
+        .document-icon {
+            font-size: 3rem;
+            color: var(--brand-color);
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        .document-filename {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.8rem;
+            color: var(--brand-color);
+            margin-bottom: 15px;
+            text-shadow: 1px 1px 0 #000;
         }
 
         .open-btn {
@@ -140,11 +141,13 @@
             color: white;
             border: 2px solid #000;
             border-radius: 8px;
-            padding: 10px 20px;
+            padding: 15px 30px;
             font-family: 'Press Start 2P', cursive;
             font-size: 0.7rem;
             box-shadow: 0 2px 0 #000;
             transition: all 0.2s ease;
+            width: 100%;
+            max-width: 300px;
         }
 
         .open-btn:hover {
@@ -268,13 +271,22 @@
             .header h1.retro-title {
                 font-size: 1.25rem;
             }
-            thead th {
-                font-size: 0.7rem;
+            .document-container {
+                padding: 20px;
+                margin: 10px;
+            }
+            .document-item {
                 padding: 15px;
+            }
+            .document-filename {
+                font-size: 0.6rem;
             }
             .open-btn {
                 font-size: 0.6rem;
-                padding: 8px 16px;
+                padding: 12px 24px;
+            }
+            .document-icon {
+                font-size: 2.5rem;
             }
         }
 
@@ -302,23 +314,16 @@
                 Back to Menu
             </a>
 
-            <div class="table-wrap">
-                <table class="table table-hover table-striped">
-                    <thead>
-                    <tr>
-                        <th>File Name</th>
-                        <th>Directory</th>
-                        <th>Preview</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr>
-                        <td>example.pdf</td>
-                        <td>/docs</td>
-                        <td><button class="btn open-btn" data-doc-url="/docs/example.pdf"><i class="bi bi-arrows-fullscreen me-1"></i> Open PDF</button></td>
-                    </tr>
-                    </tbody>
-                </table>
+            <div class="document-list">
+                <div class="document-item">
+                    <div class="document-icon">
+                        <i class="bi bi-file-earmark-pdf"></i>
+                    </div>
+                    <div class="document-filename">example.pdf</div>
+                    <button class="btn open-btn" data-doc-url="/docs/example.pdf">
+                        <i class="bi bi-arrows-fullscreen me-1"></i> Open PDF
+                    </button>
+                </div>
             </div>
         </div>
     </div>

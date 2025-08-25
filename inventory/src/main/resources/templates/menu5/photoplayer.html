@@ -98,47 +98,45 @@
             color: white !important;
         }
 
-        .photo-card {
+        .photo-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .photo-item {
             background: rgba(255, 255, 255, 0.95);
             border: 3px solid #000;
             border-radius: 12px;
             padding: 20px;
-            margin: 15px 0;
             box-shadow: 0 6px 0 #000;
             transition: transform 0.2s ease;
+            width: 100%;
         }
 
-        .photo-card:hover {
+        .photo-item:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 0 #000;
         }
 
-        .photo-thumb {
+        .photo-image {
             width: 100%;
-            height: 250px;
-            object-fit: cover;
-            border-bottom: 3px solid #000;
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            border: 4px solid #676767;
             cursor: zoom-in;
-            border-radius: 8px;
+            display: block;
         }
 
-        .photo-card-body {
-            background: transparent;
-            padding: 0;
-            margin-top: 15px;
-        }
-
-        .photo-card-body h6 {
+        .photo-filename {
             font-family: 'Press Start 2P', cursive;
             font-size: 0.8rem;
             color: var(--brand-color);
-            margin-bottom: 8px;
+            margin-top: 15px;
+            text-align: center;
             text-shadow: 1px 1px 0 #000;
-        }
-
-        .photo-card-body small {
-            font-size: 0.9rem;
-            color: #666;
         }
 
         .enlarge-btn {
@@ -151,6 +149,8 @@
             font-size: 0.7rem;
             box-shadow: 0 2px 0 #000;
             transition: all 0.2s ease;
+            margin-top: 10px;
+            width: 100%;
         }
 
         .enlarge-btn:hover {
@@ -273,18 +273,19 @@
             .header h1.retro-title {
                 font-size: 1.25rem;
             }
-            .photo-card {
-                margin: 10px 0;
+            .photo-container {
+                padding: 20px;
+                margin: 10px;
             }
-            .photo-card-body h6 {
-                font-size: 0.7rem;
+            .photo-item {
+                padding: 15px;
+            }
+            .photo-filename {
+                font-size: 0.6rem;
             }
             .enlarge-btn {
                 font-size: 0.6rem;
                 padding: 8px 16px;
-            }
-            .photo-thumb {
-                height: 200px;
             }
         }
 
@@ -313,19 +314,14 @@
             </a>
 
             <div th:if="${filePage != null}">
-                <div th:if="${filePage.totalElements > 0}" class="row g-4">
-                    <div class="col-md-4" th:each="file : ${filePage.content}">
-                        <div class="photo-card">
-                            <img class="photo-thumb" loading="lazy" th:src="@{/photo/photos/{productid}/{filename}(productid=${productid}, filename=${file.filename})}" alt="Photo" onclick="showPhotoPopup(this)"/>
-                            <div class="photo-card-body">
-                                <h6 th:text="${file.filename}" class="text-truncate"></h6>
-                                <small th:text="${file.directory}"></small>
-                                <div class="mt-2">
-                                    <button class="btn enlarge-btn w-100" onclick="showPhotoPopup(this)" th:data-photo-url="@{/photo/photos/{productid}/{filename}(productid=${productid}, filename=${file.filename})}">
-                                        <i class="bi bi-arrows-fullscreen me-1"></i> Enlarge Photo
-                                    </button>
-                                </div>
-                            </div>
+                <div th:if="${filePage.totalElements > 0}">
+                    <div class="photo-list">
+                        <div class="photo-item" th:each="file : ${filePage.content}">
+                            <img class="photo-image" loading="lazy" th:src="@{/photo/photos/{productid}/{filename}(productid=${productid}, filename=${file.filename})}" alt="Photo" onclick="showPhotoPopup(this)"/>
+                            <div class="photo-filename" th:text="${file.filename}"></div>
+                            <button class="btn enlarge-btn" onclick="showPhotoPopup(this)" th:data-photo-url="@{/photo/photos/{productid}/{filename}(productid=${productid}, filename=${file.filename})}">
+                                <i class="bi bi-arrows-fullscreen me-1"></i> Enlarge Photo
+                            </button>
                         </div>
                     </div>
                 </div>
