@@ -1371,7 +1371,7 @@
                     // Create a form dynamically for submission
                     const form = document.createElement('form');
                     form.method = 'POST';
-                    form.action = '/menu3/shop/product/cart/add';
+                    form.action = '/menu5/shop/product/cart/add';
     
                     // Append parameters as hidden fields
                     const fields = [
@@ -1451,7 +1451,7 @@
                 <div th:if="${cart.isprocessed != 1}">
                     <button id="submitCartButton" class="btn btn-light mt-2" type="button">Submit Cart</button>
                 </div>
-                <form id="cartForm" th:action="@{/menu3/shop/checkout}" method="post"></form>
+                <form id="cartForm" th:action="@{/menu5/shop/checkout}" method="post"></form>
             </div>
         </div>
         <!-- CART SECTION ENDS -->
@@ -1576,8 +1576,8 @@
                 // Determine endpoint based on action
                 const endpoint =
                     action === 'increase'
-                        ? '/menu3/shop/product/cart/add'
-                        : '/menu3/shop/product/cart/subtract';
+                        ? '/menu5/shop/product/cart/add'
+                        : '/menu5/shop/product/cart/subtract';
     
                 // Quantity selected is always 1 for both actions
                 const quantitySelected = 1;
@@ -1663,7 +1663,7 @@
                     // Construct a form dynamically (like the other methods)
                     const form = document.createElement('form');
                     form.method = 'POST';
-                    form.action = '/menu3/shop/checkout'; // Adjust to your backend endpoint
+                    form.action = '/menu5/shop/checkout'; // Adjust to your backend endpoint
     
                     // Add necessary parameters to the form
                     const fields = [
@@ -1745,7 +1745,7 @@
                 // Create a form dynamically for the POST call
                 const form = document.createElement('form');
                 form.method = 'POST';
-                form.action = '/menu3/shop/checkout'; // Adjust to your backend endpoint
+                form.action = '/menu5/shop/checkout'; // Adjust to your backend endpoint
 
     
                 // Append necessary parameters as hidden input fields
@@ -1833,7 +1833,7 @@
     
                     const form = document.createElement('form');
                     form.method = 'POST';
-                    form.action = '/menu3/shop/empty/cart';
+                    form.action = '/menu5/shop/empty/cart';
     
                     const fields = [
                         { name: 'shoppingtoken', value: shoppingToken },
@@ -1915,7 +1915,7 @@
                     // Create a form dynamically for Empty Cart POST
                     const form = document.createElement('form');
                     form.method = 'POST';
-                    form.action = '/menu3/shop/empty/cart'; // Endpoint for Empty Cart
+                    form.action = '/menu5/shop/empty/cart'; // Endpoint for Empty Cart
     
                     // Add necessary parameters to the form
                     const fields = [
