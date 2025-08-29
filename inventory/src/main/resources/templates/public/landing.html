@@ -154,6 +154,23 @@
             width: 100%;
             position: relative;
         }
+                /* Alpha Access Button Special Styling */
+        .nav-btn.alpha-btn {
+            background: var(--brand-color);
+            color: white;
+            border-color: var(--brand-dark);
+            box-shadow: 0 6px 0 var(--brand-dark);
+        }
+
+        .nav-btn.alpha-btn:hover {
+            background: var(--brand-dark);
+            box-shadow: 0 8px 0 var(--brand-dark);
+            color: white;
+        }
+
+        .nav-btn.alpha-btn:active {
+            box-shadow: 0 2px 0 var(--brand-dark);
+        }
 
         .content-section::before {
             content: '';
@@ -384,6 +401,19 @@
             <h1>TULIP TECH PLATFORM</h1>
         </div>
 
+        <!-- Navigation Buttons -->
+        <div class="nav-buttons">
+            <!--            <a href="/auth/index" class="nav-btn">-->
+            <!--                <i class="bi bi-box-arrow-in-right"></i> ENTER SYSTEM-->
+            <!--            </a>-->
+            <!--            <a href="/auth/auth" class="nav-btn">-->
+            <!--                <i class="bi bi-person-circle"></i> LOGIN-->
+            <!--            </a>-->
+            <a href="/conference" class="nav-btn alpha-btn">
+                <i class="bi bi-shield-check"></i> ALPHA ACCESS PAGE
+            </a>
+        </div>
+
         <!-- About Us Section -->
         <div class="content-section">
             <div class="pixel-decoration pixel-1"></div>
@@ -410,15 +440,7 @@
             </div>
         </div>
 
-        <!-- Navigation Buttons -->
-<!--        <div class="nav-buttons">-->
-<!--            <a href="/auth/index" class="nav-btn">-->
-<!--                <i class="bi bi-box-arrow-in-right"></i> ENTER SYSTEM-->
-<!--            </a>-->
-<!--            <a href="/auth/auth" class="nav-btn">-->
-<!--                <i class="bi bi-person-circle"></i> LOGIN-->
-<!--            </a>-->
-<!--        </div>-->
+
     </div>
 
     <!-- Bootstrap JS -->
