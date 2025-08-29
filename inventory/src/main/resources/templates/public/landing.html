@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TULIP - Tech Platform</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --brand-color: #f25e5a;
+            --brand-dark: #e24a47;
+            --success-color: #28a745;
+            --success-dark: #1e7e34;
+            --warning-color: #ffc107;
+            --warning-dark: #e0a800;
+            --info-color: #17a2b8;
+            --info-dark: #138496;
+            --danger-color: #dc3545;
+            --danger-dark: #c82333;
+            --gameboy-bg: #0f380f;
+            --gameboy-screen: #9bbc0f;
+            --gameboy-dark: #306230;
+            --gameboy-light: #8bac0f;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Press Start 2P', cursive;
+            background: var(--gameboy-bg);
+            color: var(--gameboy-screen);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Game Boy Frame Effect */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                linear-gradient(90deg, transparent 0%, transparent 2%, rgba(0,0,0,0.1) 2.5%, transparent 3%),
+                linear-gradient(0deg, transparent 0%, transparent 2%, rgba(0,0,0,0.1) 2.5%, transparent 3%);
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        /* Main Container */
+        .gameboy-container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Logo Section */
+        .logo-section {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: logoFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .logo-image {
+            width: 200px;
+            height: auto;
+            border: 4px solid var(--gameboy-dark);
+            border-radius: 15px;
+            box-shadow: 
+                0 8px 0 var(--gameboy-dark),
+                0 0 20px rgba(155, 188, 15, 0.3);
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .logo-image:hover {
+            transform: scale(1.05);
+            box-shadow: 
+                0 8px 0 var(--gameboy-dark),
+                0 0 30px rgba(155, 188, 15, 0.6);
+        }
+
+        /* Header */
+        .header {
+            background: var(--gameboy-dark);
+            color: var(--gameboy-screen);
+            padding: 25px 40px;
+            border-radius: 20px;
+            text-align: center;
+            margin: 20px 0;
+            font-weight: bold;
+            font-size: 2rem;
+            border: 4px solid #000;
+            box-shadow: 0 8px 0 #000;
+            animation: headerGlow 2s infinite alternate;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(155, 188, 15, 0.3), transparent);
+            animation: scanline 3s linear infinite;
+        }
+
+        @keyframes scanline {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        @keyframes headerGlow {
+            0% { 
+                box-shadow: 0 8px 0 #000, 0 0 10px var(--gameboy-screen);
+            }
+            100% { 
+                box-shadow: 0 8px 0 #000, 0 0 30px var(--gameboy-screen);
+            }
+        }
+
+        /* Content Sections */
+        .content-section {
+            background: rgba(155, 188, 15, 0.1);
+            border: 4px solid var(--gameboy-dark);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 8px 0 var(--gameboy-dark);
+            max-width: 800px;
+            width: 100%;
+            position: relative;
+        }
+
+        .content-section::before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            right: 5px;
+            bottom: 5px;
+            border: 2px solid var(--gameboy-light);
+            border-radius: 10px;
+            pointer-events: none;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            color: var(--gameboy-screen);
+            text-shadow: 2px 2px 0 var(--gameboy-dark);
+            margin-bottom: 20px;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+
+        .section-content {
+            font-size: 0.8rem;
+            line-height: 1.6;
+            color: var(--gameboy-light);
+            text-align: center;
+        }
+
+        /* Status Section */
+        .status-section {
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .status-label {
+            font-size: 1rem;
+            color: var(--gameboy-light);
+            margin-bottom: 20px;
+            text-shadow: 1px 1px 0 var(--gameboy-dark);
+        }
+
+        .status-value {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--brand-color);
+            text-shadow: 
+                3px 3px 0 var(--gameboy-dark),
+                0 0 20px var(--brand-color);
+            animation: statusPulse 2s ease-in-out infinite;
+            letter-spacing: 5px;
+        }
+
+        @keyframes statusPulse {
+            0%, 100% { 
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% { 
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
+        }
+
+        /* Navigation Buttons */
+        .nav-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 40px;
+            align-items: center;
+        }
+
+        .nav-btn {
+            background: var(--gameboy-dark);
+            color: var(--gameboy-screen);
+            border: 4px solid #000;
+            border-radius: 12px;
+            padding: 20px 30px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.8rem;
+            text-decoration: none;
+            box-shadow: 0 6px 0 #000;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            min-width: 200px;
+            text-align: center;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 0 #000;
+            color: var(--gameboy-screen);
+            text-decoration: none;
+        }
+
+        .nav-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #000;
+        }
+
+        /* Pixel Art Decorations */
+        .pixel-decoration {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: var(--gameboy-light);
+            border: 1px solid var(--gameboy-dark);
+        }
+
+        .pixel-1 { top: 20px; left: 20px; }
+        .pixel-2 { top: 20px; right: 20px; }
+        .pixel-3 { bottom: 20px; left: 20px; }
+        .pixel-4 { bottom: 20px; right: 20px; }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .gameboy-container {
+                padding: 10px;
+            }
+
+            .header {
+                font-size: 1.5rem;
+                padding: 20px;
+            }
+
+            .logo-image {
+                width: 150px;
+            }
+
+            .content-section {
+                padding: 20px;
+                margin: 15px 0;
+            }
+
+            .section-title {
+                font-size: 1rem;
+            }
+
+            .section-content {
+                font-size: 0.7rem;
+            }
+
+            .status-value {
+                font-size: 2rem;
+            }
+
+            .nav-btn {
+                font-size: 0.7rem;
+                padding: 15px 25px;
+                min-width: 180px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                font-size: 1.2rem;
+                padding: 15px;
+            }
+
+            .logo-image {
+                width: 120px;
+            }
+
+            .status-value {
+                font-size: 1.5rem;
+            }
+
+            .nav-btn {
+                font-size: 0.6rem;
+                padding: 12px 20px;
+                min-width: 160px;
+            }
+        }
+
+        /* Loading Animation */
+        .loading-dots {
+            display: inline-block;
+            animation: loadingDots 1.5s infinite;
+        }
+
+        @keyframes loadingDots {
+            0%, 20% { content: ''; }
+            40% { content: '.'; }
+            60% { content: '..'; }
+            80%, 100% { content: '...'; }
+        }
+
+        /* CRT Effect */
+        .crt-effect {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 999;
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    rgba(0, 0, 0, 0.15),
+                    rgba(0, 0, 0, 0.15) 1px,
+                    transparent 1px,
+                    transparent 2px
+                );
+            animation: crtScan 10s linear infinite;
+        }
+
+        @keyframes crtScan {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+    </style>
+</head>
+<body>
+    <!-- CRT Effect Overlay -->
+    <div class="crt-effect"></div>
+
+    <div class="gameboy-container">
+        <!-- Logo Section -->
+        <div class="logo-section">
+            <img src="/image/images/photos/red_tulip_adhoc_1.png" class="logo-image" alt="TULIP Logo">
+        </div>
+
+        <!-- Header -->
+        <div class="header">
+            <h1>TULIP TECH PLATFORM</h1>
+        </div>
+
+        <!-- About Us Section -->
+        <div class="content-section">
+            <div class="pixel-decoration pixel-1"></div>
+            <div class="pixel-decoration pixel-2"></div>
+            <div class="pixel-decoration pixel-3"></div>
+            <div class="pixel-decoration pixel-4"></div>
+            
+            <h2 class="section-title">ABOUT US</h2>
+            <div class="section-content">
+                Welcome to TULIP, the cutting-edge inventory management platform designed for the modern business world. 
+                Our 8-bit inspired interface combines retro aesthetics with powerful functionality, making inventory 
+                management both efficient and enjoyable. Built with the latest technology and a passion for user experience, 
+                TULIP transforms the way you handle your business operations.
+            </div>
+        </div>
+
+        <!-- Current Status Section -->
+        <div class="content-section status-section">
+            <h2 class="section-title">CURRENT STATUS</h2>
+            <div class="status-label">SYSTEM STATUS</div>
+            <div class="status-value">ALPHA</div>
+            <div class="section-content" style="margin-top: 20px;">
+                Development in progress<span class="loading-dots"></span>
+            </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+<!--        <div class="nav-buttons">-->
+<!--            <a href="/auth/index" class="nav-btn">-->
+<!--                <i class="bi bi-box-arrow-in-right"></i> ENTER SYSTEM-->
+<!--            </a>-->
+<!--            <a href="/auth/auth" class="nav-btn">-->
+<!--                <i class="bi bi-person-circle"></i> LOGIN-->
+<!--            </a>-->
+<!--        </div>-->
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Add some interactive effects
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add click sound effect (optional)
+            const buttons = document.querySelectorAll('.nav-btn');
+            buttons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Add a subtle visual feedback
+                    this.style.transform = 'translateY(2px)';
+                    this.style.boxShadow = '0 2px 0 #000';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                        this.style.boxShadow = '';
+                    }, 150);
+                });
+            });
+
+            // Add parallax effect to logo
+            window.addEventListener('scroll', function() {
+                const logo = document.querySelector('.logo-section');
+                const scrolled = window.pageYOffset;
+                const rate = scrolled * -0.5;
+                logo.style.transform = `translateY(${rate}px)`;
+            });
+
+            // Add typing effect to status
+            const statusText = document.querySelector('.status-value');
+            const originalText = statusText.textContent;
+            statusText.textContent = '';
+            
+            let i = 0;
+            const typeWriter = () => {
+                if (i < originalText.length) {
+                    statusText.textContent += originalText.charAt(i);
+                    i++;
+                    setTimeout(typeWriter, 200);
+                }
+            };
+            
+            // Start typing effect after a delay
+            setTimeout(typeWriter, 1000);
+        });
+    </script>
+</body>
+</html>
