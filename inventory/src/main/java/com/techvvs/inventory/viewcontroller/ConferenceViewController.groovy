@@ -83,7 +83,7 @@ public class ConferenceViewController {
             @RequestParam("page") Optional<Integer> page,
             @RequestParam("size") Optional<Integer> size
     ){
-        techvvsAuthService.checkuserauth(model)
+//        techvvsAuthService.checkuserauth(model) //todo: no auth here cuz its open to the public - do more string sanitization here.... .
 
 // skip validation it is a promo page unlikely to be sql injected here.... also doing frontend validation
 //        customerVO = customerHelper.validateCustomer(customerVO, model)
