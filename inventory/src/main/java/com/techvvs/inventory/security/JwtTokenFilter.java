@@ -141,6 +141,7 @@ public class JwtTokenFilter extends OncePerRequestFilter implements CsrfTokenRep
               QR.equals(path) ||
               PUBLIC_LANDING_PAGE_TULIP.equals(path) ||
               PUBLIC_CONFERENCE_PAGE_TULIP.equals(path) ||
+              PUBLIC_CONFERENCE_PAGE_TULIP_POST.equals(path) ||
               FILE_SMS_DOWNLOAD.equals(path) ||
               FILE_SMS_DOWNLOAD_3.equals(path) ||
               FILE_SMS_DOWNLOAD_33.equals(path) ||

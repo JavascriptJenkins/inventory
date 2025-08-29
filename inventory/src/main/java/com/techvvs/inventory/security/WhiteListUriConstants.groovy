@@ -25,6 +25,7 @@ class WhiteListUriConstants {
     public static final String QR = "/qr";
     public static final String PUBLIC_LANDING_PAGE_TULIP = "/landing";
     public static final String PUBLIC_CONFERENCE_PAGE_TULIP = "/conference";
+    public static final String PUBLIC_CONFERENCE_PAGE_TULIP_POST = "/conference/**";
     public static final String CHECKOUT_VIEW_PDF = "/checkout/viewpdf";
     public static final String QR_PUBLIC_INFO = "/qr/publicinfo";
     public static final String QR_PUBLIC_INFO_WILDCARD = "/qr/publicinfo/*";
