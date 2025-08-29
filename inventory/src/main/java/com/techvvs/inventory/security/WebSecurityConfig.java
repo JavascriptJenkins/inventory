@@ -70,6 +70,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .antMatchers(VERIFY_DOUBLE_WILDCARD).permitAll()
             .antMatchers(QR).permitAll()
             .antMatchers(CHECKOUT_VIEW_PDF).permitAll()
+            .antMatchers(PUBLIC_LANDING_PAGE_TULIP).permitAll()
             .antMatchers(QR_PUBLIC_INFO).permitAll()
             .antMatchers(QR_PUBLIC_INFO_WILDCARD).permitAll()
             .antMatchers(QR_PUBLIC_INFO_DOUBLE_WILDCARD).permitAll()
