@@ -144,8 +144,28 @@ class TransactionHelper {
     void sendTextMessageWithContactInfo(CustomerVO customerVO){
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        SystemUserDAO systemUserDAO = null;
 
-        SystemUserDAO systemUserDAO = systemUserRepo.findByEmail(authentication.getPrincipal().username)
+        // Check if authentication is present and user is authenticated
+        if (authentication != null && authentication.isAuthenticated() && 
+            authentication.getPrincipal() != null && !"anonymousUser".equals(authentication.getPrincipal())) {
+            
+            systemUserDAO = systemUserRepo.findByEmail(authentication.getPrincipal().username)
+        }
+
+        // If no authenticated user found, use default username from properties
+        if (systemUserDAO == null) {
+//            String defaultUsername = env.getProperty("DEFAULT.USERNAME") // todo: implement this actually smfh
+             String defaultUsername = "plongpack@proton.me"
+            if (defaultUsername != null && !defaultUsername.trim().isEmpty()) {
+                systemUserDAO = systemUserRepo.findByEmail(defaultUsername)
+            }
+        }
+
+        // Fallback if still no user found
+        if (systemUserDAO == null) {
+            throw new RuntimeException("No authenticated user found and DEFAULT.USERNAME not configured")
+        }
 
         boolean isDev1 = appConstants.DEV_1.equals(env.getProperty("spring.profiles.active"));
 
