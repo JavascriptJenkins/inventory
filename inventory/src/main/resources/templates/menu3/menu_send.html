@@ -747,7 +747,7 @@
         <ul class="pagination justify-content-center">
             <li class="page-item" th:each="pageNumber : ${pageNumbers}">
                 <a class="page-link"
-                   th:href="@{/menu3/send(size=${menuPage.content != null ? #lists.size(menuPage.content) : 0}, page=${pageNumber})}"
+                   th:href="@{/menu3/menusend(size=${menuPage.content != null ? #lists.size(menuPage.content) : 0}, page=${pageNumber})}"
                    th:text="${pageNumber}"
                    th:classappend="${pageNumber==menuPage.number + 1} ? 'active'">
                 </a>
