@@ -1,5 +1,6 @@
 package com.techvvs.inventory.viewcontroller
 
+import com.techvvs.inventory.jparepo.ProductTypeRepo
 import com.techvvs.inventory.model.*
 import com.techvvs.inventory.security.JwtTokenProvider
 import com.techvvs.inventory.security.Role
@@ -47,6 +48,9 @@ public class Menu3ViewController {
 
     @Autowired
     Environment env
+
+    @Autowired
+    ProductTypeRepo productTypeRepo
     
 
     // todo: modify this to parse user cookie from request and check user permissions
@@ -646,6 +650,10 @@ public class Menu3ViewController {
         model.addAttribute("UIMODE", "RETRO");
 
         techvvsAuthService.checkuserauth(model)
+
+        // todo: add the productTypes here
+        model.addAttribute("productTypes", productTypeRepo.findAll())
+
 
         // bind the menu options here
         menuHelper.findMenus(model, page, size);

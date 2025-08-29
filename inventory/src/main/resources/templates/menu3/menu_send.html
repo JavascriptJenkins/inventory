@@ -559,7 +559,7 @@
     <div id="popupForm" class="custom-popup-overlay" style="display: none;">
         <div class="popup-box">
             <h4 id="popupMenuName" class="text-center mb-4">Send Menu</h4>
-            <form id="shoppingTokenForm" action="/menu/shoppingtoken/send" method="POST">
+            <form id="shoppingTokenForm" action="/menu5/shoppingtoken/send" method="POST">
                 <div class="row g-3">
                     <!-- Customer Dropdown -->
                     <div class="col-md-12">
@@ -683,7 +683,10 @@
                         <label for="productTypeDropdown" class="form-label">Product Type</label>
                         <select id="productTypeDropdown" class="form-select product-type-dropdown">
                             <option value="" disabled selected>Select Product Type</option>
-                            <!-- Will be populated dynamically -->
+                            <option th:each="productType : ${productTypes}" 
+                                    th:value="${productType.producttypeid}" 
+                                    th:text="${productType.name}">
+                            </option>
                         </select>
                     </div>
 
@@ -900,9 +903,6 @@
                 // Populate popup title
                 discountPopupMenuName.textContent = `Add Discount: ${currentDiscountMenuName}`;
                 
-                // Populate product type dropdown for this menu
-                populateProductTypeDropdown(currentDiscountMenuId);
-                
                 // Show popup
                 discountPopupForm.style.display = 'flex';
             });
@@ -942,60 +942,7 @@
             discountSubmitBtn.disabled = !isProductTypeSelected;
         }
 
-        // Populate product type dropdown
-        function populateProductTypeDropdown(menuId) {
-            // Find the corresponding menu row to get product types
-            const menuRow = document.querySelector(`tr[data-menuid="${menuId}"]`);
-            if (menuRow) {
-                // Clear existing options
-                productTypeDropdown.innerHTML = '<option value="" disabled selected>Select Product Type</option>';
-                
-                // Get product types from the menu data
-                const menuProductListData = menuRow.getAttribute('data-menu-product-list');
-                if (menuProductListData && menuProductListData !== 'null' && menuProductListData !== '[]') {
-                    try {
-                        // Parse the product list data (it should be a JSON string)
-                        const productList = JSON.parse(menuProductListData);
-                        if (Array.isArray(productList)) {
-                            const seenValues = new Set();
-                            productList.forEach(product => {
-                                if (product.producttypeid && !seenValues.has(product.producttypeid.producttypeid)) {
-                                    const option = document.createElement('option');
-                                    option.value = product.producttypeid.producttypeid;
-                                    option.textContent = product.producttypeid.name;
-                                    productTypeDropdown.appendChild(option);
-                                    seenValues.add(product.producttypeid.producttypeid);
-                                }
-                            });
-                        }
-                    } catch (e) {
-                        console.error('Error parsing menu product list:', e);
-                        // Fallback to placeholder options
-                        addPlaceholderProductTypes();
-                    }
-                } else {
-                    // Fallback to placeholder options if no data available
-                    addPlaceholderProductTypes();
-                }
-            }
-        }
 
-        // Add placeholder product types as fallback
-        function addPlaceholderProductTypes() {
-            const productTypes = [
-                { id: 1, name: "Flowers" },
-                { id: 2, name: "Edibles" },
-                { id: 3, name: "Concentrates" },
-                { id: 4, name: "Accessories" }
-            ];
-            
-            productTypes.forEach(productType => {
-                const option = document.createElement('option');
-                option.value = productType.id;
-                option.textContent = productType.name;
-                productTypeDropdown.appendChild(option);
-            });
-        }
 
         // Handle discount submit
         discountSubmitBtn.addEventListener('click', function(event) {
@@ -1033,19 +980,7 @@
             form.submit();
         });
 
-        // Remove duplicate product type options (if any)
-        function removeDuplicateProductTypes() {
-            const seenValues = new Set();
-            const options = Array.from(productTypeDropdown.options);
-            
-            options.forEach(option => {
-                if (seenValues.has(option.value) && option.value !== "") {
-                    option.remove();
-                } else {
-                    seenValues.add(option.value);
-                }
-            });
-                 }
+
      });
  </script>
 
