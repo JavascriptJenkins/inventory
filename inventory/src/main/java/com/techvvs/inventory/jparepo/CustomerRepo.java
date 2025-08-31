@@ -15,5 +15,6 @@ public interface CustomerRepo extends JpaRepository<CustomerVO, Integer> {
 
     List<CustomerVO> findAll();
     Optional<CustomerVO> findByCustomerid(Integer customerid);
+    Optional<CustomerVO> findByMembershipnumber(String membershipnumber);
 
 }

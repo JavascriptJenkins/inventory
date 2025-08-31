@@ -47,3 +47,4 @@ public class PagedLocationsDto {
     public int getTotalPages() { return totalPages; }
     public void setTotalPages(int totalPages) { this.totalPages = totalPages; }
 }
+

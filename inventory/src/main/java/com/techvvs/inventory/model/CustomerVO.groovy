@@ -20,6 +20,9 @@ class CustomerVO implements Serializable {
     Integer customerid
 
     @JsonProperty
+    String membershipnumber
+
+    @JsonProperty
     String name
 
     @JsonProperty

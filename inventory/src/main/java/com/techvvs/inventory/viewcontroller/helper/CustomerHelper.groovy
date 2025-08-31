@@ -168,4 +168,30 @@ class CustomerHelper {
         model.addAttribute("customer", customerVO)
     }
 
+    void generateMembershipNumber(Integer customerid, Model model) {
+        CustomerVO customerVO = findCustomerById(customerid)
+        if (customerVO != null) {
+            if (customerVO.membershipnumber == null || customerVO.membershipnumber.trim().isEmpty()) {
+                // Generate a new GUID for membership number
+                String membershipNumber = UUID.randomUUID().toString().replace("-", "").substring(0, 16).toUpperCase()
+                customerVO.membershipnumber = membershipNumber
+                customerVO.updateTimeStamp = LocalDateTime.now()
+                
+                try {
+                    customerRepo.save(customerVO)
+                    model.addAttribute("customer", customerVO)
+                    model.addAttribute(MessageConstants.SUCCESS_MSG, "Membership number generated successfully: ${membershipNumber}")
+                } catch (Exception ex) {
+                    model.addAttribute(MessageConstants.ERROR_MSG, "Failed to generate membership number")
+                }
+            } else {
+                model.addAttribute("customer", customerVO)
+                model.addAttribute(MessageConstants.ERROR_MSG, "Customer already has a membership number")
+            }
+        } else {
+            loadBlankCustomer(model)
+            model.addAttribute(MessageConstants.ERROR_MSG, "Customer not found.")
+        }
+    }
+
 }

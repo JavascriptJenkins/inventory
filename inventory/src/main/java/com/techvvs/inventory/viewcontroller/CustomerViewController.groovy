@@ -100,4 +100,16 @@ public class CustomerViewController {
         techvvsAuthService.checkuserauth(model)
         return "customer/customer.html"
     }
+
+    @PostMapping("/generate-membership")
+    String generateMembershipNumber(
+            @RequestParam("customerid") Integer customerid,
+            Model model,
+            @RequestParam("page") Optional<Integer> page
+    ) {
+        customerHelper.generateMembershipNumber(customerid, model)
+        customerHelper.addPaginatedData(model, page)
+        techvvsAuthService.checkuserauth(model)
+        return "customer/customer.html"
+    }
 }

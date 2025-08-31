@@ -8,10 +8,6 @@ import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
 
 import javax.annotation.PostConstruct
-import com.techvvs.inventory.service.metrc.model.dto.PagedEmployeesDto
-import com.techvvs.inventory.service.metrc.model.dto.LocationDto
-import com.techvvs.inventory.service.metrc.model.dto.PagedLocationsDto
-import com.techvvs.inventory.service.metrc.model.dto.PagedLocationTypesDto
 
 @Component
 class MetrcUriMapping {
@@ -48,79 +44,7 @@ class MetrcUriMapping {
                         baseUri: isDev1
                                 ? "https://sandbox-api-mn.metrc.com"
                                 : "https://api-mn.metrc.com",
-                        responseObjectType: PagedEmployeesDto.class
-                )
-        )
-
-        uriMap.put(
-                MetrcCallEnum.GET_LOCATIONS_ACTIVE,
-                new RequestMetaData(
-                        uri: "/locations/v2/active",
-                        httpMethod: "GET",
-                        baseUri: isDev1
-                                ? "https://sandbox-api-mn.metrc.com"
-                                : "https://api-mn.metrc.com",
-                        responseObjectType: PagedLocationsDto.class
-                )
-        )
-
-        uriMap.put(
-                MetrcCallEnum.GET_LOCATIONS_INACTIVE,
-                new RequestMetaData(
-                        uri: "/locations/v2/inactive",
-                        httpMethod: "GET",
-                        baseUri: isDev1
-                                ? "https://sandbox-api-mn.metrc.com"
-                                : "https://api-mn.metrc.com",
-                        responseObjectType: PagedLocationsDto.class
-                )
-        )
-
-        uriMap.put(
-                MetrcCallEnum.GET_LOCATION_TYPES,
-                new RequestMetaData(
-                        uri: "/locations/v2/types",
-                        httpMethod: "GET",
-                        baseUri: isDev1
-                                ? "https://sandbox-api-mn.metrc.com"
-                                : "https://api-mn.metrc.com",
-                        responseObjectType: PagedLocationTypesDto.class
-                )
-        )
-
-        uriMap.put(
-                MetrcCallEnum.POST_LOCATION_CREATE,
-                new RequestMetaData(
-                        uri: "/locations/v2/",
-                        httpMethod: "POST",
-                        baseUri: isDev1
-                                ? "https://sandbox-api-mn.metrc.com"
-                                : "https://api-mn.metrc.com",
-                        responseObjectType: LocationDto.class
-                )
-        )
-
-        uriMap.put(
-                MetrcCallEnum.PUT_LOCATION_UPDATE,
-                new RequestMetaData(
-                        uri: "/locations/v2/",
-                        httpMethod: "PUT",
-                        baseUri: isDev1
-                                ? "https://sandbox-api-mn.metrc.com"
-                                : "https://api-mn.metrc.com",
-                        responseObjectType: LocationDto.class
-                )
-        )
-
-        uriMap.put(
-                MetrcCallEnum.DELETE_LOCATION_ARCHIVE,
-                new RequestMetaData(
-                        uri: "/locations/v2/",
-                        httpMethod: "DELETE",
-                        baseUri: isDev1
-                                ? "https://sandbox-api-mn.metrc.com"
-                                : "https://api-mn.metrc.com",
-                        responseObjectType: String.class
+                        responseObjectType: MetrcFacilityDto[].class
                 )
         )
 

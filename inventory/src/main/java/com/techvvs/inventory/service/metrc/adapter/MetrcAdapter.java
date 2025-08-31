@@ -132,66 +132,10 @@ public class MetrcAdapter {
         return Arrays.asList(restTemplate.getForObject(fullUrl, MetrcFacilityDto[].class));
     }
 
-    public PagedEmployeesDto getEmployees(String licenseNumber, int pageNumber, int pageSize) {
+    public PagedEmployeesDto getEmployees() {
         RequestMetaData meta = metrcUriMapping.getMetadata(MetrcCallEnum.GET_EMPLOYEES);
-        String fullUrl = meta.getBaseUri() + meta.getUri() +
-                        "?licenseNumber=" + licenseNumber +
-                        "&pageNumber=" + pageNumber +
-                        "&pageSize=" + pageSize;
+        String fullUrl = meta.getBaseUri() + meta.getUri();
         return restTemplate.getForObject(fullUrl, PagedEmployeesDto.class);
-    }
-
-    public PagedLocationsDto getActiveLocations(String licenseNumber) {
-        RequestMetaData meta = metrcUriMapping.getMetadata(MetrcCallEnum.GET_LOCATIONS_ACTIVE);
-        String fullUrl = meta.getBaseUri() + meta.getUri() +
-                        "?licenseNumber=" + licenseNumber;
-        return restTemplate.getForObject(fullUrl, PagedLocationsDto.class);
-    }
-
-    public PagedLocationsDto getInactiveLocations(String licenseNumber) {
-        RequestMetaData meta = metrcUriMapping.getMetadata(MetrcCallEnum.GET_LOCATIONS_INACTIVE);
-        String fullUrl = meta.getBaseUri() + meta.getUri() +
-                        "?licenseNumber=" + licenseNumber;
-        return restTemplate.getForObject(fullUrl, PagedLocationsDto.class);
-    }
-
-    public PagedLocationTypesDto getLocationTypes(String licenseNumber, int pageNumber, int pageSize) {
-        RequestMetaData meta = metrcUriMapping.getMetadata(MetrcCallEnum.GET_LOCATION_TYPES);
-        String fullUrl = meta.getBaseUri() + meta.getUri() +
-                        "?licenseNumber=" + licenseNumber +
-                        "&pageNumber=" + pageNumber +
-                        "&pageSize=" + pageSize;
-        return restTemplate.getForObject(fullUrl, PagedLocationTypesDto.class);
-    }
-
-    public LocationDto createLocation(LocationDto locationDto) {
-        RequestMetaData meta = metrcUriMapping.getMetadata(MetrcCallEnum.POST_LOCATION_CREATE);
-        String fullUrl = meta.getBaseUri() + meta.getUri() + "?licenseNumber=" + locationDto.getLicenseNumber();
-        
-        // Create an array with the single location
-        LocationDto[] locationArray = new LocationDto[]{locationDto};
-        
-        return restTemplate.postForObject(fullUrl, locationArray, LocationDto.class);
-    }
-
-    public LocationDto updateLocation(LocationDto locationDto) {
-        RequestMetaData meta = metrcUriMapping.getMetadata(MetrcCallEnum.PUT_LOCATION_UPDATE);
-        String fullUrl = meta.getBaseUri() + meta.getUri() + "?licenseNumber=" + locationDto.getLicenseNumber();
-        
-        // Create an array with the single location
-        LocationDto[] locationArray = new LocationDto[]{locationDto};
-        
-        return restTemplate.exchange(fullUrl, org.springframework.http.HttpMethod.PUT, 
-                                   new org.springframework.http.HttpEntity<>(locationArray), 
-                                   LocationDto.class).getBody();
-    }
-
-    public void archiveLocation(Long locationId, String licenseNumber) {
-        RequestMetaData meta = metrcUriMapping.getMetadata(MetrcCallEnum.DELETE_LOCATION_ARCHIVE);
-        String fullUrl = meta.getBaseUri() + meta.getUri() + locationId + "?licenseNumber=" + licenseNumber;
-        restTemplate.exchange(fullUrl, org.springframework.http.HttpMethod.DELETE, 
-                            new org.springframework.http.HttpEntity<>(null), 
-                            String.class);
     }
 
 //    public MetrcReceiveTransferDto receiveTransfer(List<MetrcReceiveTransferDto> transferDtos, String licenseNumber) {
