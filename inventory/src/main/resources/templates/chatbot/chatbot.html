@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>METRC Chat Bot</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    
+    <style>
+        :root {
+            --brand-color: #f25e5a;
+            --brand-dark: #e24a47;
+            --success-color: #28a745;
+            --success-dark: #1e7e34;
+            --warning-color: #ffc107;
+            --warning-dark: #e0a800;
+            --info-color: #17a2b8;
+            --info-dark: #138496;
+            --danger-color: #dc3545;
+            --danger-dark: #c82333;
+            --gameboy-bg: #0f380f;
+            --gameboy-screen: #9bbc0f;
+            --gameboy-dark: #306230;
+            --gameboy-light: #8bac0f;
+            --crt-green: #00ff00;
+            --crt-dark-green: #006600;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Press Start 2P', cursive;
+            background: var(--gameboy-bg);
+            color: var(--gameboy-screen);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* CRT TV Effect */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                linear-gradient(90deg, transparent 0%, transparent 2%, rgba(0,0,0,0.1) 2.5%, transparent 3%),
+                linear-gradient(0deg, transparent 0%, transparent 2%, rgba(0,0,0,0.1) 2.5%, transparent 3%);
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        /* CRT Scan Lines */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 255, 0, 0.03) 2px,
+                rgba(0, 255, 0, 0.03) 4px
+            );
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        /* Main Container */
+        .gameboy-container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .chatbot-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--gameboy-dark);
+            border: 4px solid var(--gameboy-light);
+            border-radius: 15px;
+            box-shadow: 
+                0 8px 0 var(--gameboy-dark),
+                0 0 20px rgba(155, 188, 15, 0.3);
+        }
+
+        .chatbot-title {
+            font-size: 2rem;
+            color: var(--crt-green);
+            text-shadow: 
+                0 0 5px var(--crt-green),
+                0 0 10px var(--crt-green),
+                0 0 15px var(--crt-green);
+            margin-bottom: 10px;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 5px var(--crt-green), 0 0 10px var(--crt-green), 0 0 15px var(--crt-green);
+            }
+            to {
+                text-shadow: 0 0 10px var(--crt-green), 0 0 20px var(--crt-green), 0 0 30px var(--crt-green);
+            }
+        }
+
+        .chatbot-subtitle {
+            font-size: 0.8rem;
+            color: var(--gameboy-light);
+            opacity: 0.8;
+        }
+
+        /* Chat Container */
+        .chat-container {
+            flex: 1;
+            background: var(--gameboy-dark);
+            border: 4px solid var(--gameboy-light);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 
+                0 8px 0 var(--gameboy-dark),
+                0 0 20px rgba(155, 188, 15, 0.3);
+            display: flex;
+            flex-direction: column;
+            min-height: 400px;
+        }
+
+        /* Chat Messages Area */
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            background: var(--gameboy-bg);
+            border: 2px solid var(--gameboy-light);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            min-height: 300px;
+            max-height: 500px;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+
+        .message.user {
+            background: var(--gameboy-light);
+            color: var(--gameboy-bg);
+            margin-left: 20px;
+            border: 2px solid var(--gameboy-screen);
+        }
+
+        .message.bot {
+            background: var(--gameboy-screen);
+            color: var(--gameboy-bg);
+            margin-right: 20px;
+            border: 2px solid var(--gameboy-light);
+        }
+
+        .message-time {
+            font-size: 0.5rem;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+
+        /* Response Details Styling */
+        .response-details {
+            margin-top: 10px;
+            padding: 8px;
+            background: var(--gameboy-bg);
+            border: 1px solid var(--gameboy-light);
+            border-radius: 6px;
+            font-size: 0.6rem;
+        }
+
+        .detail-section {
+            margin-bottom: 5px;
+            padding: 3px 0;
+        }
+
+        .detail-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .detail-section strong {
+            color: var(--crt-green);
+            text-shadow: 0 0 3px var(--crt-green);
+        }
+
+        .source-count {
+            color: var(--gameboy-light);
+            font-style: italic;
+        }
+
+        /* Input Area */
+        .chat-input-container {
+            display: flex;
+            gap: 10px;
+            align-items: stretch;
+        }
+
+        .chat-input {
+            flex: 1;
+            background: var(--gameboy-bg);
+            color: var(--gameboy-screen);
+            border: 3px solid var(--gameboy-light);
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.7rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .chat-input:focus {
+            border-color: var(--crt-green);
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+
+        .chat-input::placeholder {
+            color: var(--gameboy-light);
+            opacity: 0.6;
+        }
+
+        .send-button {
+            background: var(--gameboy-light);
+            color: var(--gameboy-bg);
+            border: 3px solid var(--gameboy-dark);
+            border-radius: 8px;
+            padding: 15px 20px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 80px;
+        }
+
+        .send-button:hover {
+            background: var(--gameboy-screen);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .send-button:active {
+            transform: translateY(0);
+        }
+
+        .send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Loading Animation */
+        .loading-container {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading-text {
+            font-size: 0.8rem;
+            color: var(--crt-green);
+            margin-bottom: 15px;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .loading-dots {
+            display: inline-block;
+            font-size: 1.5rem;
+            color: var(--crt-green);
+        }
+
+        .loading-dots::after {
+            content: '';
+            animation: dots 1.5s steps(5, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: ''; }
+            40% { content: '.'; }
+            60% { content: '..'; }
+            80%, 100% { content: '...'; }
+        }
+
+        /* GameBoy Button Effect */
+        .gameboy-button {
+            position: relative;
+            background: var(--gameboy-light);
+            color: var(--gameboy-bg);
+            border: 3px solid var(--gameboy-dark);
+            border-radius: 8px;
+            padding: 15px 20px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            box-shadow: 
+                0 4px 0 var(--gameboy-dark),
+                0 0 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .gameboy-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 6px 0 var(--gameboy-dark),
+                0 0 15px rgba(0, 0, 0, 0.4);
+        }
+
+        .gameboy-button:active {
+            transform: translateY(0);
+            box-shadow: 
+                0 2px 0 var(--gameboy-dark),
+                0 0 5px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .gameboy-container {
+                padding: 10px;
+            }
+            
+            .chatbot-title {
+                font-size: 1.5rem;
+            }
+            
+            .chat-input-container {
+                flex-direction: column;
+            }
+            
+            .send-button {
+                min-width: auto;
+            }
+            
+            .chat-messages {
+                min-height: 250px;
+                max-height: 350px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .chatbot-title {
+                font-size: 1.2rem;
+            }
+            
+            .message {
+                font-size: 0.6rem;
+            }
+            
+            .chat-input {
+                font-size: 0.6rem;
+                padding: 12px;
+            }
+            
+            .send-button {
+                font-size: 0.6rem;
+                padding: 12px 15px;
+            }
+        }
+
+        /* Scrollbar Styling */
+        .chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: var(--gameboy-bg);
+            border-radius: 4px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: var(--gameboy-light);
+            border-radius: 4px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: var(--gameboy-screen);
+        }
+    </style>
+</head>
+<body>
+    <div class="gameboy-container">
+        <!-- Header -->
+        <div class="chatbot-header">
+            <h1 class="chatbot-title">METRC CHAT BOT</h1>
+            <p class="chatbot-subtitle">Ask questions about METRC documentation and get AI-powered answers</p>
+        </div>
+
+        <!-- Chat Container -->
+        <div class="chat-container">
+            <!-- Chat Messages -->
+            <div class="chat-messages" id="chatMessages">
+                <div class="message bot">
+                    <div>Hello! I'm your METRC documentation assistant. Ask me anything about METRC APIs, packages, transfers, or any other METRC-related topics!</div>
+                    <div class="message-time">Bot • Just now</div>
+                </div>
+            </div>
+
+            <!-- Loading Animation -->
+            <div class="loading-container" id="loadingContainer">
+                <div class="loading-text">METRC Bot is thinking</div>
+                <div class="loading-dots"></div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="chat-input-container">
+                <input type="text" 
+                       class="chat-input" 
+                       id="chatInput" 
+                       placeholder="Type your METRC question here..."
+                       maxlength="500">
+                <button class="gameboy-button" id="sendButton">
+                    <i class="bi bi-send"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            const chatMessages = $('#chatMessages');
+            const chatInput = $('#chatInput');
+            const sendButton = $('#sendButton');
+            const loadingContainer = $('#loadingContainer');
+
+            // Function to add a message to the chat
+            function addMessage(content, isUser = false, responseData = null) {
+                const messageDiv = $('<div>').addClass('message').addClass(isUser ? 'user' : 'bot');
+                const timeDiv = $('<div>').addClass('message-time');
+                
+                if (isUser) {
+                    // Simple text for user messages
+                    messageDiv.html(content);
+                } else {
+                    // Rich content for bot messages
+                    let messageContent = content;
+                    
+                    if (responseData && responseData.states && responseData.states.length > 0) {
+                        messageContent += '<div class="response-details">';
+                        
+                        // Add states if available
+                        if (responseData.states.length > 0) {
+                            messageContent += '<div class="detail-section"><strong>States:</strong> ' + responseData.states.join(', ') + '</div>';
+                        }
+                        
+                        // Add endpoints if available
+                        if (responseData.endpoints && responseData.endpoints.length > 0) {
+                            const uniqueEndpoints = [...new Set(responseData.endpoints)];
+                            messageContent += '<div class="detail-section"><strong>Endpoints:</strong> ' + uniqueEndpoints.join(', ') + '</div>';
+                        }
+                        
+                        // Add sources if available
+                        if (responseData.sources && responseData.sources.length > 0) {
+                            messageContent += '<div class="detail-section"><strong>Sources:</strong> <span class="source-count">' + responseData.sources.length + ' sources found</span></div>';
+                        }
+                        
+                        messageContent += '</div>';
+                    }
+                    
+                    messageDiv.html(messageContent);
+                }
+                
+                timeDiv.text((isUser ? 'You' : 'Bot') + ' • ' + new Date().toLocaleTimeString());
+                messageDiv.append(timeDiv);
+                
+                chatMessages.append(messageDiv);
+                chatMessages.scrollTop(chatMessages[0].scrollHeight);
+            }
+
+            // Function to show/hide loading animation
+            function toggleLoading(show) {
+                if (show) {
+                    loadingContainer.show();
+                    sendButton.prop('disabled', true);
+                    chatInput.prop('disabled', true);
+                } else {
+                    loadingContainer.hide();
+                    sendButton.prop('disabled', false);
+                    chatInput.prop('disabled', false);
+                }
+            }
+
+            // Function to send message to API
+            async function sendMessage(question) {
+                try {
+                    const response = await fetch(`/api/docs/metrc/ask?q=${encodeURIComponent(question)}`, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    return data;
+                } catch (error) {
+                    console.error('Error:', error);
+                    return { answer: 'Sorry, there was an error processing your request. Please try again.' };
+                }
+            }
+
+            // Handle send button click
+            sendButton.on('click', async function() {
+                const question = chatInput.val().trim();
+                if (!question) return;
+
+                // Add user message
+                addMessage(question, true);
+                chatInput.val('');
+
+                // Show loading
+                toggleLoading(true);
+
+                try {
+                    // Send to API
+                    const responseData = await sendMessage(question);
+                    
+                    // Add bot response with rich data
+                    const answer = responseData.answer || 'Sorry, I couldn\'t find an answer to that question.';
+                    addMessage(answer, false, responseData);
+                } catch (error) {
+                    addMessage('Sorry, there was an error. Please try again.');
+                } finally {
+                    // Hide loading
+                    toggleLoading(false);
+                    chatInput.focus();
+                }
+            });
+
+            // Handle Enter key press
+            chatInput.on('keypress', function(e) {
+                if (e.which === 13 && !e.shiftKey) {
+                    e.preventDefault();
+                    sendButton.click();
+                }
+            });
+
+            // Focus input on page load
+            chatInput.focus();
+
+            // Add some initial helpful messages
+            setTimeout(() => {
+                addMessage('Try asking questions like:<br>• "How do I create a package?"<br>• "What are the transfer requirements?"<br>• "How do I unfinish a package?"<br>• "What states have similar APIs?"');
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
