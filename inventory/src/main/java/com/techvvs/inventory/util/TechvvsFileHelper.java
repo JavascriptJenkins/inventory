@@ -4,6 +4,7 @@ import com.techvvs.inventory.constants.AppConstants;
 import com.techvvs.inventory.model.PaymentVO;
 import com.techvvs.inventory.model.TransactionVO;
 import com.techvvs.inventory.modelnonpersist.FileVO;
+import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -248,13 +249,12 @@ public class TechvvsFileHelper {
 
 
     public String readPdfAsString(String filePath) {
-        try (PDDocument document = PDDocument.load(new File(filePath))) {
+        try (PDDocument document = Loader.loadPDF(new File(filePath))) {
             CustomPDFTextStripper pdfStripper = new CustomPDFTextStripper();
 
-            // Ensure line by line reading
-            pdfStripper.setSortByPosition(true);  // Preserves the reading order as it appears
-            pdfStripper.setStartPage(0);  // Start from the first page
-            pdfStripper.setEndPage(document.getNumberOfPages());  // Go till the last page
+            pdfStripper.setSortByPosition(true);
+            pdfStripper.setStartPage(1); // PDFBox is 1-based
+            pdfStripper.setEndPage(document.getNumberOfPages());
 
             return pdfStripper.getText(document);
         } catch (IOException e) {

@@ -18,6 +18,7 @@
 		<java.version>17</java.version>
 		<maven.compiler.source>17</maven.compiler.source>
 		<maven.compiler.target>17</maven.compiler.target>
+<!--		<spring-cloud.version>2023.0.3</spring-cloud.version> &lt;!&ndash; or current 2023.0.x &ndash;&gt;-->
 	</properties>
 	<dependencies>
 		<dependency>
@@ -61,13 +62,6 @@
 
 
 
-		<!-- We are using this to connect to a Milvus Database -->
-		<!-- https://mvnrepository.com/artifact/org.springframework.ai/spring-ai-milvus-store-spring-boot-starter -->
-		<dependency>
-			<groupId>org.springframework.ai</groupId>
-			<artifactId>spring-ai-milvus-store-spring-boot-starter</artifactId>
-			<version>0.8.1</version>
-		</dependency>
 
 
 		<!-- https://mvnrepository.com/artifact/net.sf.barcode4j/barcode4j -->
@@ -208,7 +202,7 @@
 			<optional>true</optional>
 			<scope>runtime</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
@@ -273,11 +267,11 @@
 		<!-- end deps for qrcode generation -->
 
 
-		<dependency>
-			<groupId>org.apache.pdfbox</groupId>
-			<artifactId>pdfbox</artifactId>
-			<version>2.0.26</version>
-		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>org.apache.pdfbox</groupId>-->
+<!--			<artifactId>pdfbox</artifactId>-->
+<!--			<version>2.0.26</version>-->
+<!--		</dependency>-->
 
 		<!-- pom.xml -->
 		<dependency>
@@ -329,7 +323,46 @@
 			<artifactId>spring-boot-starter</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>de.brendamour</groupId>
+			<artifactId>jpasskit</artifactId>
+			<version>0.4.2</version>
+		</dependency>
+<!--		jPasskit assembles pass.json, images, manifest.json, signs, and zips to .pkpass. -->
 
+<!--		Google (REST client + Wallet Objects)-->
+		<dependency>
+			<groupId>com.google.apis</groupId>
+			<artifactId>google-api-services-walletobjects</artifactId>
+			<version>v1-rev20250506-2.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.auth</groupId>
+			<artifactId>google-auth-library-oauth2-http</artifactId>
+			<version>1.23.0</version>
+		</dependency>
+<!--		(Use the latest walletobjects artifact available in Central for Java 11+ projects.) -->
+
+		<!-- pom.xml -->
+		<dependency>
+			<groupId>com.auth0</groupId>
+			<artifactId>java-jwt</artifactId>
+			<version>4.4.0</version>
+		</dependency>
+
+
+		<!-- Spring Cloud Config Client -->
+<!--		<dependency>-->
+<!--			<groupId>org.springframework.cloud</groupId>-->
+<!--			<artifactId>spring-cloud-starter-config</artifactId>-->
+<!--			<exclusions>-->
+<!--				<exclusion>-->
+<!--					<groupId>org.apache.logging.log4j</groupId>-->
+<!--					<artifactId>log4j-slf4j-impl</artifactId>-->
+<!--				</exclusion>-->
+<!--			</exclusions>-->
+
+<!--		</dependency>-->
 
 	</dependencies>
 	
@@ -460,6 +493,23 @@
 		</repository>
 
 	</repositories>
+<!--	<dependencyManagement>-->
+<!--		<dependencies>-->
+<!--			<dependency>-->
+<!--				<groupId>org.springframework.cloud</groupId>-->
+<!--				<artifactId>spring-cloud-dependencies</artifactId>-->
+<!--				<version>${spring-cloud.version}</version> &lt;!&ndash; e.g., 2023.0.x &ndash;&gt;-->
+<!--				<type>pom</type>-->
+<!--				<scope>import</scope>-->
+<!--				<exclusions>-->
+<!--					<exclusion>-->
+<!--						<groupId>org.apache.logging.log4j</groupId>-->
+<!--						<artifactId>log4j-slf4j-impl</artifactId>-->
+<!--					</exclusion>-->
+<!--				</exclusions>-->
 
+<!--			</dependency>-->
+<!--		</dependencies>-->
+<!--	</dependencyManagement>-->
 
 </project>

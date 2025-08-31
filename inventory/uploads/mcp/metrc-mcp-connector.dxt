@@ -1,0 +1,19 @@
+{
+  "name": "METRC Cannabis Compliance Documentation",
+  "description": "Search and access METRC cannabis compliance documentation across all states with full-text search capabilities",
+  "version": "1.0.0",
+  "author": "METRC Documentation Team",
+  "homepage": "https://github.com/your-username/metrc-mcp-server",
+  "mcp": {
+    "transport": {
+      "type": "http",
+      "url": "https://www.metrc.ai/mcp"
+    },
+    "capabilities": {
+      "tools": true,
+      "resources": true
+    }
+  },
+  "icon": "🌿",
+  "tags": ["cannabis", "compliance", "documentation", "metrc", "regulatory"]
+}
