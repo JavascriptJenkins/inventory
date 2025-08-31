@@ -27,6 +27,14 @@ pipeline {
         string(name: 'SPRING_DATABASE_ACTION', defaultValue: 'update', description: 'this value will control create-drop, update, etc')
         string(name: 'MAX_FILE_SIZE', defaultValue: '500MB', description: 'key for signing tokens')
         string(name: 'MAX_REQ_SIZE', defaultValue: '500MB', description: 'key for signing tokens')
+        string(name: 'PAYPAL_ENVIRONMENT', defaultValue: 'SANDBOX', description: 'the paypal api environment')
+        string(name: 'PAYPAL_BRAND_NAME', defaultValue: 'techvvs_clothing_app_1', description: 'the paypal api app name that will be used that matches with the app name on paypal api dashboard. ')
+        string(name: 'WALLET_BRAND', defaultValue: 'Tulip', description: 'The wallet brand organization name. ')
+        string(name: 'WALLET_BRAND_PROGRAM', defaultValue: 'Tulip Membership', description: 'The wallet brand program name. Child of Wallet Brand. ')
+        string(name: 'WALLET_GOOGLE_SERVICE_ACC_KEY_PATH', defaultValue: 'classpath:/uploads/applecert/', description: 'The wallet brand program name. Child of Wallet Brand. ')
+        string(name: 'WALLET_GOOGLE_ISSUER_ID', defaultValue: 'a number string thing', description: 'Get this from google cloud dashboard. ')
+        string(name: 'WALLET_GOOGLE_CLASS_ID', defaultValue: 'a number string thing', description: 'Get this from google cloud dashboard. ')
+        string(name: 'METRC_MCP_FILE_PATH', defaultValue: 'classpath:/uploads/mcp/metrc-mcp-connector.dxt', description: 'path to the mcp file. stored in uploads. ')
 
     }
 
@@ -114,6 +122,46 @@ pipeline {
                             // Replace metrc.api-key-password if provided
                             if (params.METRC_API_KEY_PASSWORD) {
                                 sh "sed -i 's/^metrc\\.api-key-password=.*/metrc.api-key-password=${params.METRC_API_KEY_PASSWORD}/' src/main/resources/application.properties"
+                            }
+
+                            // Replace PayPal environment if provided
+                            if (params.PAYPAL_ENVIRONMENT) {
+                                sh "sed -i 's/^paypal\\.environment=.*/paypal.environment=${params.PAYPAL_ENVIRONMENT}/' src/main/resources/application.properties"
+                            }
+
+                            // Replace PayPal brand name if provided
+                            if (params.PAYPAL_BRAND_NAME) {
+                                sh "sed -i 's/^paypal\\.brand\\.name=.*/paypal.brand.name=${params.PAYPAL_BRAND_NAME}/' src/main/resources/application.properties"
+                            }
+
+                            // Replace wallet brand if provided
+                            if (params.WALLET_BRAND) {
+                                sh "sed -i 's/^wallet\\.brand=.*/wallet.brand=${params.WALLET_BRAND}/' src/main/resources/application.properties"
+                            }
+
+                            // Replace wallet brand program if provided
+                            if (params.WALLET_BRAND_PROGRAM) {
+                                sh "sed -i 's/^wallet\\.brand\\.program=.*/wallet.brand.program=${params.WALLET_BRAND_PROGRAM}/' src/main/resources/application.properties"
+                            }
+
+                            // Replace wallet Google service account key path if provided
+                            if (params.WALLET_GOOGLE_SERVICE_ACC_KEY_PATH) {
+                                sh "sed -i 's|^wallet\\.google\\.service\\.acc\\.key\\.path=.*|wallet.google.service.acc.key.path=${params.WALLET_GOOGLE_SERVICE_ACC_KEY_PATH}|' src/main/resources/application.properties"
+                            }
+
+                            // Replace wallet Google issuer ID if provided
+                            if (params.WALLET_GOOGLE_ISSUER_ID) {
+                                sh "sed -i 's/^wallet\\.google\\.issuer\\.id=.*/wallet.google.issuer.id=${params.WALLET_GOOGLE_ISSUER_ID}/' src/main/resources/application.properties"
+                            }
+
+                            // Replace wallet Google class ID if provided
+                            if (params.WALLET_GOOGLE_CLASS_ID) {
+                                sh "sed -i 's/^wallet\\.google\\.class\\.id=.*/wallet.google.class.id=${params.WALLET_GOOGLE_CLASS_ID}/' src/main/resources/application.properties"
+                            }
+
+                            // Replace METRC MCP file path if provided
+                            if (params.METRC_MCP_FILE_PATH) {
+                                sh "sed -i 's|^metrc\\.mcp\\.file\\.path=.*|metrc.mcp.file.path=${params.METRC_MCP_FILE_PATH}|' src/main/resources/application.properties"
                             }
 
                             sh "sed -i 's/^twilio\\.api\\.username=.*/twilio.api.username=${TWILIO_API_USER}/' src/main/resources/application.properties"
