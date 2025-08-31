@@ -221,6 +221,11 @@
             font-style: italic;
         }
 
+        .detail-font {
+            color: var(--gameboy-light);
+            font-style: italic;
+        }
+
         /* Input Area */
         .chat-input-container {
             display: flex;
@@ -477,13 +482,13 @@
                         
                         // Add states if available
                         if (responseData.states.length > 0) {
-                            messageContent += '<div class="detail-section"><strong>States:</strong> ' + responseData.states.join(', ') + '</div>';
+                            messageContent += '<div class="detail-section detail-font"><strong>States:</strong> ' + responseData.states.join(', ') + '</div>';
                         }
                         
                         // Add endpoints if available
                         if (responseData.endpoints && responseData.endpoints.length > 0) {
                             const uniqueEndpoints = [...new Set(responseData.endpoints)];
-                            messageContent += '<div class="detail-section"><strong>Endpoints:</strong> ' + uniqueEndpoints.join(', ') + '</div>';
+                            messageContent += '<div class="detail-section detail-font"><strong>Endpoints:</strong> ' + uniqueEndpoints.join(', ') + '</div>';
                         }
                         
                         // Add sources if available
