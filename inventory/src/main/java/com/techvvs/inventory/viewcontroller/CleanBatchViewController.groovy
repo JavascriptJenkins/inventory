@@ -1,6 +1,5 @@
 package com.techvvs.inventory.viewcontroller
 
-import com.google.api.OAuthRequirementsOrBuilder
 import com.techvvs.inventory.barcode.impl.BarcodeGenerator
 import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.constants.MessageConstants

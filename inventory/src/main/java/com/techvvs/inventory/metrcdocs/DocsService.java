@@ -4,6 +4,7 @@ package com.techvvs.inventory.metrcdocs;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.techvvs.inventory.claude.AnthropicOverloadedException;
 import com.techvvs.inventory.claude.ClaudeClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -24,8 +25,10 @@ public class DocsService {
 
 
     public DocsService(MetrcMcpClient mcp, ClaudeClient claude,
-                       @Value("${metrc.mcp.fallbackQuery:packages}") String fallbackQuery) {
-        this.mcp = mcp; this.claude = claude; this.fallbackQuery = fallbackQuery;
+                       @org.springframework.beans.factory.annotation.Value("${metrc.mcp.fallbackQuery:packages}") String fallbackQuery) {
+        this.mcp = mcp;
+        this.claude = claude;
+        this.fallbackQuery = fallbackQuery;
     }
     // 1) Raw joined markdown
 // DocsService.java
@@ -76,66 +79,82 @@ public class DocsService {
         return md.toString();
     }
 
-    public Map<String, Object> searchPackagesAI(String userQuery) throws Exception {
-        String markdown = getMarkdownFromMcp(userQuery); // we pass the same query through MCP
-        String answer = claude.summarize(userQuery, markdown);
-        return Map.of(
-                "query", userQuery,
-                "answer", answer
-        );
-    }
-
-    public Map<String,Object> askWithConnectorAndClaude(String userQuestion) throws Exception {
-        // 1) Retrieve exclusively via the MCP connector
-        String markdown = mcp.searchDocsMarkdown(userQuestion);
-        if (markdown.isBlank() && fallbackQuery != null && !fallbackQuery.isBlank()) {
-            markdown = mcp.searchDocsMarkdown(fallbackQuery); // still via connector
-        }
+    public Map<String, Object> askWithConnectorAndClaude(String userQuestion) throws Exception {
+        String markdown = retrieveMarkdown(userQuestion);
         if (markdown.isBlank()) {
+            return Map.of("query", userQuestion, "answer", "No snippets found in connector.", "sources", List.of());
+        }
+
+        var urls = new ArrayList<>(MetrcSourceExtractor.extractSourceUrls(markdown));
+        var states = new ArrayList<>(MetrcSourceExtractor.extractStates(markdown));
+        var endpoints = extractEndpoints(markdown);
+
+        String system = "Use ONLY the provided METRC snippets. If insufficient, reply INSUFFICIENT_CONTEXT. Be concise; cite endpoints & sources.";
+        String user    = "Question: " + userQuestion + "\n\nSnippets:\n" + shrink(markdown, 12000) + "\n\nSources:\n" + String.join("\n", urls);
+
+        String answer;
+        try {
+            answer = claude.answer(system, user);
+        } catch (AnthropicOverloadedException ex) {
+            // deterministic fallback: return what we can prove from connector
             return Map.of(
                     "query", userQuestion,
-                    "answer", "I couldn’t retrieve any METRC snippets from the connector for this question.",
-                    "states", List.of(),
-                    "endpoints", List.of(),
-                    "sources", List.of()
+                    "answer", "Service is temporarily overloaded. Returning connector-derived facts.",
+                    "states", states,
+                    "endpoints", endpoints,
+                    "sources", urls
             );
         }
 
-        // 2) Extract sources/states/endpoints for citations & UI
-        Set<String> sources = new LinkedHashSet<>();
-        Matcher ms = SOURCE.matcher(markdown);
-        while (ms.find()) sources.add(ms.group("url"));
+        return Map.of("query", userQuestion, "answer", answer, "states", states, "endpoints", endpoints, "sources", urls);
 
-        Set<String> states = new TreeSet<>();
-        Matcher st = STATE.matcher(markdown);
-        while (st.find()) {
-            String s = st.group("st");
-            if (s == null) s = Optional.ofNullable(st.group("st2")).map(String::toUpperCase).orElse(null);
-            if (s != null) states.add(s);
+    }
+
+    private static List<String> extractEndpoints(String md) {
+        var p = java.util.regex.Pattern.compile("###\\s*(GET|POST|PUT|DELETE)\\s+(\\S+)");
+        var m = p.matcher(md);
+        var out = new java.util.LinkedList<String>();
+        while (m.find()) out.add((m.group(1) + " " + m.group(2)).trim());
+        return out;
+    }
+
+    // keep the prompt under control
+    private static String shrink(String s, int maxChars) {
+        if (s == null || s.length() <= maxChars) return s == null ? "" : s;
+        return s.substring(0, maxChars) + "\n\n[...truncated for brevity...]";
+    }
+
+    // DocsService.java  (inside class)
+    private String retrieveMarkdown(String question) throws Exception {
+        // 1) try the user's question
+        String q1 = sanitizeQuery(question);
+        String md = mcp.searchDocsMarkdown(q1);
+        if (!md.isBlank()) return md;
+
+        // 2) try the configured fallback (property: metrc.mcp.fallbackQuery)
+        String fb = sanitizeQuery(fallbackQuery); // injected in the constructor earlier
+        if (!fb.isBlank() && !fb.equalsIgnoreCase(q1)) {
+            md = mcp.searchDocsMarkdown(fb);
+            if (!md.isBlank()) return md;
         }
 
-        Set<String> endpoints = new LinkedHashSet<>();
-        Matcher me = ENDPT.matcher(markdown);
-        while (me.find()) endpoints.add(me.group(0).replace("###", "").trim()); // e.g., "PUT /packages/v2/unfinish"
+        // 3) last-ditch built-ins (still via the connector)
+        for (String alt : new String[]{"packages", "transfers", "sales"}) {
+            if (!alt.equalsIgnoreCase(q1) && !alt.equalsIgnoreCase(fb)) {
+                md = mcp.searchDocsMarkdown(alt);
+                if (!md.isBlank()) return md;
+            }
+        }
+        return "";
+    }
 
-        // 3) Ask Claude with strict grounding to the connector content
-        String system = "You are a compliance assistant. Use ONLY the provided METRC connector snippets. " +
-                "Do NOT use outside knowledge. If the snippets don't contain the answer, say so. " +
-                "Cite the provided Source URLs (if any). Keep answers concise.";
-
-        String user = "User question:\n" + userQuestion + "\n\n" +
-                "Source (markdown from METRC connector):\n" + markdown + "\n\n" +
-                "If answering, include a short bullet list of relevant endpoints and cite the matching Source URLs.";
-
-        String answer = claude.answer(system, user);
-
-        return Map.of(
-                "query", userQuestion,
-                "answer", answer,
-                "states", new ArrayList<>(states),
-                "endpoints", new ArrayList<>(endpoints),
-                "sources", new ArrayList<>(sources) // citations all come from connector
-        );
+    private static String sanitizeQuery(String q) {
+        if (q == null) return "";
+        // strip inline comments and collapse whitespace (prevents FTS5 errors on '#')
+        String cleaned = q.replace("\r", " ").replace("\n", " ").trim();
+        int hash = cleaned.indexOf('#');
+        if (hash >= 0) cleaned = cleaned.substring(0, hash).trim();
+        return cleaned.replaceAll("\\s{2,}", " ");
     }
 
 }

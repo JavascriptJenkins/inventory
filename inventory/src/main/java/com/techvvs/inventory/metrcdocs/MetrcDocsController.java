@@ -34,12 +34,12 @@ public class MetrcDocsController {
         return Map.of("raw", docsService.searchPackagesRaw(query));
     }
 
-    // New AI-summarized answer
-    // GET /api/docs/metrc/search/ai?q=How do I unfinish a package in CA?
-    @GetMapping("/search/ai")
-    public Map<String, Object> searchAI(@RequestParam("q") String query) throws Exception {
-        return docsService.searchPackagesAI(query);
-    }
+//    // New AI-summarized answer
+//    // GET /api/docs/metrc/search/ai?q=How do I unfinish a package in CA?
+//    @GetMapping("/search/ai")
+//    public Map<String, Object> searchAI(@RequestParam("q") String query) throws Exception {
+//        return docsService.searchPackagesAI(query);
+//    }
 
     // GET /api/docs/metrc/ask?q=...
     @GetMapping("/ask")

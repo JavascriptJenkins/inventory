@@ -5,9 +5,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Component
 public class ClaudeClient {
@@ -20,14 +23,27 @@ public class ClaudeClient {
     private final int maxTokens;
     private final double temperature;
 
+    // Retry config
+    private final int maxAttempts;
+    private final long baseBackoffMs;
+    private final long maxBackoffMs;
+    private final long jitterMs;
+    private final List<Integer> tokenFallbacks;
+
     public ClaudeClient(
-        RestTemplate anthropicRestTemplate,
-        @Value("${anthropic.apiBase}") String apiBase,
-        @Value("${anthropic.apiKey}") String apiKey,
-        @Value("${anthropic.version}") String version,
-        @Value("${anthropic.model}") String model,
-        @Value("${anthropic.maxTokens:800}") int maxTokens,
-        @Value("${anthropic.temperature:0.2}") double temperature
+            RestTemplate anthropicRestTemplate,
+            @Value("${anthropic.apiBase}") String apiBase,
+            @Value("${anthropic.apiKey}") String apiKey,
+            @Value("${anthropic.version}") String version,
+            @Value("${anthropic.model}") String model,
+            @Value("${anthropic.maxTokens:800}") int maxTokens,
+            @Value("${anthropic.temperature:0.2}") double temperature,
+            @Value("${anthropic.retry.maxAttempts:4}") int maxAttempts,
+            @Value("${anthropic.retry.baseBackoffMillis:400}") long baseBackoffMs,
+            @Value("${anthropic.retry.maxBackoffMillis:4000}") long maxBackoffMs,
+            @Value("${anthropic.retry.jitterMillis:250}") long jitterMs,
+            @Value("${anthropic.retry.maxTokensFallbacks:512,256}") String tokenFallbacksCsv, List<Integer> tokenFallbacks
+
     ) {
         this.rt = anthropicRestTemplate;
         this.apiBase = apiBase;
@@ -36,6 +52,12 @@ public class ClaudeClient {
         this.model = model;
         this.maxTokens = maxTokens;
         this.temperature = temperature;
+
+        this.maxAttempts = Math.max(1, maxAttempts);
+        this.baseBackoffMs = baseBackoffMs;
+        this.maxBackoffMs = maxBackoffMs;
+        this.jitterMs = jitterMs;
+        this.tokenFallbacks = tokenFallbacks;
     }
 
     public String summarize(String userQuery, String markdown) {
@@ -88,35 +110,92 @@ public class ClaudeClient {
     }
 
     public String answer(String systemPrompt, String userText) {
-        var req = new ClaudeMessagesRequest();
+        int attempt = 0;
+        List<Integer> tokenPlan = new ArrayList<>();
+        tokenPlan.add(maxTokens);
+        tokenPlan.addAll(tokenFallbacks); // e.g., 800 -> 512 -> 256
+
+        while (true) {
+            attempt++;
+            int tokens = tokenPlan.get(Math.min(attempt - 1, tokenPlan.size() - 1));
+
+            try {
+                String out = callOnce(systemPrompt, userText, tokens);
+                return out;
+            } catch (RestClientResponseException e) {
+                int code = e.getRawStatusCode();
+                if (code == 529 || code == 429 || code == 503) {
+                    if (attempt >= maxAttempts) {
+                        throw new AnthropicOverloadedException(
+                                "Anthropic overloaded (status " + code + ") after " + attempt + " attempt(s).");
+                    }
+                    sleepBackoff(attempt, e.getResponseHeaders());
+                    continue;
+                }
+                throw e; // other errors bubble up
+            } catch (Exception e) {
+                // network hiccup: retry
+                if (attempt >= maxAttempts) throw new AnthropicOverloadedException(
+                        "Anthropic request failed after " + attempt + " attempt(s): " + e.getMessage());
+                sleepBackoff(attempt, null);
+            }
+        }
+    }
+
+
+    private String callOnce(String systemPrompt, String userText, int maxTokensThisAttempt) {
+        ClaudeMessagesRequest req = new ClaudeMessagesRequest();
         req.setModel(model);
-        req.setMax_tokens(maxTokens);
+        req.setMax_tokens(maxTokensThisAttempt);
         req.setTemperature(temperature);
         req.setSystem(systemPrompt);
 
-        var msg = new ClaudeMessagesRequest.Message();
-        msg.setRole("user");
-        msg.setContent(List.of(new ClaudeMessagesRequest.ContentBlock(userText)));
-        req.setMessages(List.of(msg));
+        ClaudeMessagesRequest.Message m = new ClaudeMessagesRequest.Message();
+        m.setRole("user");
+        m.setContent(List.of(new ClaudeMessagesRequest.ContentBlock(userText)));
+        req.setMessages(List.of(m));
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("x-api-key", apiKey);
         headers.set("anthropic-version", version);
 
-        var entity = new HttpEntity<>(req, headers);
-        var typeRef = new ParameterizedTypeReference<ClaudeMessagesResponse>() {};
-        var resp = rt.exchange(apiBase + "/v1/messages", HttpMethod.POST, entity, typeRef);
+        ResponseEntity<ClaudeMessagesResponse> resp = rt.exchange(
+                apiBase + "/v1/messages", HttpMethod.POST, new HttpEntity<>(req, headers),
+                new ParameterizedTypeReference<ClaudeMessagesResponse>() {}
+        );
 
-        var body = resp.getBody();
+        ClaudeMessagesResponse body = resp.getBody();
         if (body == null || body.getContent() == null || body.getContent().isEmpty())
             throw new RuntimeException("Empty Claude response");
 
-        var sb = new StringBuilder();
-        for (var c : body.getContent()) {
-            if ("text".equalsIgnoreCase(c.getType()) && c.getText() != null) sb.append(c.getText());
+        StringBuilder out = new StringBuilder();
+        for (ClaudeMessagesResponse.ContentBlock cb : body.getContent()) {
+            if ("text".equalsIgnoreCase(cb.getType()) && cb.getText() != null) out.append(cb.getText());
         }
-        return sb.toString().trim();
+        return out.toString().trim();
     }
+
+
+    private void sleepBackoff(int attempt, HttpHeaders hdrs) {
+        long retryAfterMs = 0L;
+        if (hdrs != null) {
+            String ra = hdrs.getFirst("retry-after");
+            if (ra != null) {
+                try {
+                    // numeric seconds only; date format omitted for brevity
+                    retryAfterMs = Long.parseLong(ra.trim()) * 1000L;
+                } catch (NumberFormatException ignored) {}
+            }
+        }
+        long exp = Math.min(maxBackoffMs, (long) (baseBackoffMs * Math.pow(2, attempt - 1)));
+        long jitter = ThreadLocalRandom.current().nextLong(0, Math.max(1, jitterMs));
+        long wait = Math.max(retryAfterMs, exp + jitter);
+        try { Thread.sleep(wait); } catch (InterruptedException ignored) { Thread.currentThread().interrupt(); }
+    }
+
+
+
+
 
 }
