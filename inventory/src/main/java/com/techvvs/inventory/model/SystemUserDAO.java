@@ -1,6 +1,7 @@
 package com.techvvs.inventory.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.techvvs.inventory.model.metrc.MetrcLicenseVO;
 import com.techvvs.inventory.security.Role;
@@ -52,6 +53,12 @@ public class SystemUserDAO {
     // each systemuser may administrate multiple metrc license's from a single TULIP account
     @OneToMany(mappedBy = "systemUserDAO", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     List<MetrcLicenseVO> metrcLicenseVOS;
+
+    // each systemuser may have multiple chat sessions
+    @OneToMany(mappedBy = "systemUser", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OrderBy("updatedTimestamp DESC")
+    @JsonIgnore
+    List<Chat> chats;
 
     @JsonProperty
     LocalDateTime updatedtimestamp;
@@ -148,6 +155,14 @@ public class SystemUserDAO {
     }
 
 
+
+    public List<Chat> getChats() {
+        return chats;
+    }
+
+    public void setChats(List<Chat> chats) {
+        this.chats = chats;
+    }
 
     public List<LicenseType> getLicenseTypes() {
         if (metrcLicenseVOS == null) {

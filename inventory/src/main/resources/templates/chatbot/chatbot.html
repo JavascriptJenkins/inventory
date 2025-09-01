@@ -16,6 +16,13 @@
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
     
+    <!-- Thymeleaf variables -->
+    <script th:inline="javascript">
+        var currentChatId = /*[[${currentChat.id}]]*/ null;
+        var currentChatTitle = /*[[${currentChat.title}]]*/ 'New Chat';
+        var userChats = /*[[${userChats}]]*/ [];
+    </script>
+    
     <style>
         :root {
             --brand-color: #f25e5a;
@@ -92,6 +99,138 @@
             padding: 20px;
             min-height: 100vh;
             display: flex;
+            flex-direction: row;
+            gap: 20px;
+        }
+
+        /* Chat Sidebar */
+        .chat-sidebar {
+            width: 300px;
+            background: var(--gameboy-dark);
+            border: 4px solid var(--gameboy-light);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 
+                0 8px 0 var(--gameboy-dark),
+                0 0 20px rgba(155, 188, 15, 0.3);
+            display: flex;
+            flex-direction: column;
+            min-height: 600px;
+        }
+
+        .sidebar-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--gameboy-light);
+        }
+
+        .sidebar-title {
+            font-size: 1rem;
+            color: var(--crt-green);
+            text-shadow: 0 0 5px var(--crt-green);
+            margin-bottom: 10px;
+        }
+
+        .new-chat-button {
+            background: var(--gameboy-light);
+            color: var(--gameboy-bg);
+            border: 3px solid var(--gameboy-dark);
+            border-radius: 8px;
+            padding: 12px 15px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.6rem;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            box-shadow: 
+                0 4px 0 var(--gameboy-dark),
+                0 0 10px rgba(0, 0, 0, 0.3);
+            margin-bottom: 15px;
+        }
+
+        .new-chat-button:hover {
+            background: var(--gameboy-screen);
+            transform: translateY(-2px);
+            box-shadow: 
+                0 6px 0 var(--gameboy-dark),
+                0 0 15px rgba(0, 0, 0, 0.4);
+        }
+
+        .chat-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .chat-item {
+            background: var(--gameboy-bg);
+            border: 2px solid var(--gameboy-light);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .chat-item:hover {
+            border-color: var(--crt-green);
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+
+        .chat-item.active {
+            border-color: var(--crt-green);
+            background: var(--gameboy-screen);
+            color: var(--gameboy-bg);
+        }
+
+        .chat-item-title {
+            font-size: 0.6rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .chat-item-preview {
+            font-size: 0.5rem;
+            opacity: 0.8;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .chat-item-actions {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            display: none;
+        }
+
+        .chat-item:hover .chat-item-actions {
+            display: block;
+        }
+
+        .chat-action-btn {
+            background: var(--gameboy-dark);
+            color: var(--gameboy-light);
+            border: 1px solid var(--gameboy-light);
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: 0.4rem;
+            cursor: pointer;
+            margin-left: 2px;
+        }
+
+        .chat-action-btn:hover {
+            background: var(--gameboy-light);
+            color: var(--gameboy-bg);
+        }
+
+        /* Main Chat Area */
+        .chat-main-area {
+            flex: 1;
+            display: flex;
             flex-direction: column;
         }
 
@@ -132,6 +271,24 @@
             font-size: 0.8rem;
             color: var(--gameboy-light);
             opacity: 0.8;
+        }
+
+        .current-chat-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+            padding: 8px;
+            background: var(--gameboy-bg);
+            border: 2px solid var(--gameboy-light);
+            border-radius: 8px;
+        }
+
+        #currentChatTitle {
+            font-size: 0.7rem;
+            color: var(--crt-green);
+            text-shadow: 0 0 3px var(--crt-green);
         }
 
         /* Chat Container */
@@ -357,6 +514,13 @@
         @media (max-width: 768px) {
             .gameboy-container {
                 padding: 10px;
+                flex-direction: column;
+            }
+            
+            .chat-sidebar {
+                width: 100%;
+                min-height: auto;
+                max-height: 200px;
             }
             
             .chatbot-title {
@@ -419,38 +583,58 @@
 </head>
 <body>
     <div class="gameboy-container">
-        <!-- Header -->
-        <div class="chatbot-header">
-            <h1 class="chatbot-title">METRC CHAT BOT</h1>
-            <p class="chatbot-subtitle">Ask questions about METRC documentation and get AI-powered answers</p>
+        <!-- Chat Sidebar -->
+        <div class="chat-sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title">CHAT SESSIONS</div>
+                <button class="new-chat-button" id="newChatButton">
+                    <i class="bi bi-plus-circle"></i> NEW CHAT
+                </button>
+            </div>
+            
+            <div class="chat-list" id="chatList">
+                <!-- Chat items will be populated here -->
+            </div>
         </div>
 
-        <!-- Chat Container -->
-        <div class="chat-container">
-            <!-- Chat Messages -->
-            <div class="chat-messages" id="chatMessages">
-                <div class="message bot">
-                    <div>Hello! I'm your METRC documentation assistant. Ask me anything about METRC APIs, packages, transfers, or any other METRC-related topics!</div>
-                    <div class="message-time">Bot • Just now</div>
+        <!-- Main Chat Area -->
+        <div class="chat-main-area">
+            <!-- Header -->
+            <div class="chatbot-header">
+                <h1 class="chatbot-title">METRC CHAT BOT</h1>
+                <p class="chatbot-subtitle">Ask questions about METRC documentation and get AI-powered answers</p>
+                <div class="current-chat-info">
+                    <span id="currentChatTitle">New Chat</span>
+                    <button class="chat-action-btn" id="editChatTitleBtn" title="Edit chat title">
+                        <i class="bi bi-pencil"></i>
+                    </button>
                 </div>
             </div>
 
-            <!-- Loading Animation -->
-            <div class="loading-container" id="loadingContainer">
-                <div class="loading-text">METRC Bot is thinking</div>
-                <div class="loading-dots"></div>
-            </div>
+            <!-- Chat Container -->
+            <div class="chat-container">
+                <!-- Chat Messages -->
+                <div class="chat-messages" id="chatMessages">
+                    <!-- Messages will be loaded here -->
+                </div>
 
-            <!-- Input Area -->
-            <div class="chat-input-container">
-                <input type="text" 
-                       class="chat-input" 
-                       id="chatInput" 
-                       placeholder="Type your METRC question here..."
-                       maxlength="500">
-                <button class="gameboy-button" id="sendButton">
-                    <i class="bi bi-send"></i>
-                </button>
+                <!-- Loading Animation -->
+                <div class="loading-container" id="loadingContainer">
+                    <div class="loading-text">METRC Bot is thinking</div>
+                    <div class="loading-dots"></div>
+                </div>
+
+                <!-- Input Area -->
+                <div class="chat-input-container">
+                    <input type="text" 
+                           class="chat-input" 
+                           id="chatInput" 
+                           placeholder="Type your METRC question here..."
+                           maxlength="500">
+                    <button class="gameboy-button" id="sendButton">
+                        <i class="bi bi-send"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -464,34 +648,115 @@
             const chatInput = $('#chatInput');
             const sendButton = $('#sendButton');
             const loadingContainer = $('#loadingContainer');
+            const chatList = $('#chatList');
+            const newChatButton = $('#newChatButton');
+            const currentChatTitle = $('#currentChatTitle');
+            const editChatTitleBtn = $('#editChatTitleBtn');
 
-            // Function to add a message to the chat
-            function addMessage(content, isUser = false, responseData = null) {
+            // Initialize the page
+            initializeChatInterface();
+
+            function initializeChatInterface() {
+                // Load chat list
+                loadChatList();
+                
+                // Load current chat messages
+                if (currentChatId) {
+                    loadChatMessages(currentChatId);
+                }
+                
+                // Set up event listeners
+                setupEventListeners();
+            }
+
+            function setupEventListeners() {
+                // Send message
+                sendButton.on('click', handleSendMessage);
+                chatInput.on('keypress', function(e) {
+                    if (e.which === 13 && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendMessage();
+                    }
+                });
+
+                // New chat
+                newChatButton.on('click', createNewChat);
+
+                // Edit chat title
+                editChatTitleBtn.on('click', editChatTitle);
+
+                // Focus input
+                chatInput.focus();
+            }
+
+            async function handleSendMessage() {
+                const question = chatInput.val().trim();
+                if (!question || !currentChatId) return;
+
+                // Add user message to UI
+                addMessageToUI(question, true);
+                chatInput.val('');
+
+                // Show loading
+                toggleLoading(true);
+
+                try {
+                    // Send message to API
+                    const response = await fetch(`/api/chat/${currentChatId}/send`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `message=${encodeURIComponent(question)}`
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        // Add bot response to UI
+                        const botMessage = data.botMessage;
+                        const responseData = data.responseData;
+                        addMessageToUI(botMessage.content, false, responseData);
+                        
+                        // Update chat list to reflect new message
+                        loadChatList();
+                    } else {
+                        addMessageToUI('Sorry, there was an error. Please try again.', false);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    addMessageToUI('Sorry, there was an error. Please try again.', false);
+                } finally {
+                    toggleLoading(false);
+                    chatInput.focus();
+                }
+            }
+
+            function addMessageToUI(content, isUser = false, responseData = null) {
                 const messageDiv = $('<div>').addClass('message').addClass(isUser ? 'user' : 'bot');
                 const timeDiv = $('<div>').addClass('message-time');
                 
                 if (isUser) {
-                    // Simple text for user messages
                     messageDiv.html(content);
                 } else {
-                    // Rich content for bot messages
                     let messageContent = content;
                     
                     if (responseData && responseData.states && responseData.states.length > 0) {
                         messageContent += '<div class="response-details">';
                         
-                        // Add states if available
                         if (responseData.states.length > 0) {
                             messageContent += '<div class="detail-section detail-font"><strong>States:</strong> ' + responseData.states.join(', ') + '</div>';
                         }
                         
-                        // Add endpoints if available
                         if (responseData.endpoints && responseData.endpoints.length > 0) {
                             const uniqueEndpoints = [...new Set(responseData.endpoints)];
                             messageContent += '<div class="detail-section detail-font"><strong>Endpoints:</strong> ' + uniqueEndpoints.join(', ') + '</div>';
                         }
                         
-                        // Add sources if available
                         if (responseData.sources && responseData.sources.length > 0) {
                             messageContent += '<div class="detail-section"><strong>Sources:</strong> <span class="source-count">' + responseData.sources.length + ' sources found</span></div>';
                         }
@@ -509,7 +774,6 @@
                 chatMessages.scrollTop(chatMessages[0].scrollHeight);
             }
 
-            // Function to show/hide loading animation
             function toggleLoading(show) {
                 if (show) {
                     loadingContainer.show();
@@ -522,71 +786,192 @@
                 }
             }
 
-            // Function to send message to API
-            async function sendMessage(question) {
+            async function loadChatList() {
                 try {
-                    const response = await fetch(`/api/docs/metrc/ask?q=${encodeURIComponent(question)}`, {
-                        method: 'GET',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        }
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-
-                    const data = await response.json();
-                    return data;
+                    // For now, we'll use the userChats from Thymeleaf
+                    // In a real implementation, you'd fetch this from an API
+                    renderChatList(userChats);
                 } catch (error) {
-                    console.error('Error:', error);
-                    return { answer: 'Sorry, there was an error processing your request. Please try again.' };
+                    console.error('Error loading chat list:', error);
                 }
             }
 
-            // Handle send button click
-            sendButton.on('click', async function() {
-                const question = chatInput.val().trim();
-                if (!question) return;
-
-                // Add user message
-                addMessage(question, true);
-                chatInput.val('');
-
-                // Show loading
-                toggleLoading(true);
-
-                try {
-                    // Send to API
-                    const responseData = await sendMessage(question);
+            function renderChatList(chats) {
+                chatList.empty();
+                
+                chats.forEach(chat => {
+                    const chatItem = $('<div>').addClass('chat-item')
+                        .attr('data-chat-id', chat.id)
+                        .click(() => switchToChat(chat.id));
                     
-                    // Add bot response with rich data
-                    const answer = responseData.answer || 'Sorry, I couldn\'t find an answer to that question.';
-                    addMessage(answer, false, responseData);
+                    if (chat.id === currentChatId) {
+                        chatItem.addClass('active');
+                    }
+                    
+                    const title = $('<div>').addClass('chat-item-title').text(chat.title);
+                    const preview = $('<div>').addClass('chat-item-preview').text(chat.lastMessagePreview || 'No messages yet');
+                    
+                    const actions = $('<div>').addClass('chat-item-actions');
+                    const editBtn = $('<button>').addClass('chat-action-btn').html('<i class="bi bi-pencil"></i>')
+                        .click((e) => {
+                            e.stopPropagation();
+                            editChatTitle(chat.id, chat.title);
+                        });
+                    const deleteBtn = $('<button>').addClass('chat-action-btn').html('<i class="bi bi-trash"></i>')
+                        .click((e) => {
+                            e.stopPropagation();
+                            deleteChat(chat.id);
+                        });
+                    
+                    actions.append(editBtn, deleteBtn);
+                    chatItem.append(title, preview, actions);
+                    chatList.append(chatItem);
+                });
+            }
+
+            async function switchToChat(chatId) {
+                if (chatId === currentChatId) return;
+                
+                currentChatId = chatId;
+                
+                // Update URL
+                const url = new URL(window.location);
+                url.searchParams.set('chatId', chatId);
+                window.history.pushState({}, '', url);
+                
+                // Load chat messages
+                await loadChatMessages(chatId);
+                
+                // Update UI
+                $('.chat-item').removeClass('active');
+                $(`.chat-item[data-chat-id="${chatId}"]`).addClass('active');
+                
+                // Update chat title
+                const chat = userChats.find(c => c.id === chatId);
+                if (chat) {
+                    currentChatTitle.text(chat.title);
+                }
+            }
+
+            async function loadChatMessages(chatId) {
+                try {
+                    const response = await fetch(`/api/chat/${chatId}/messages`);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        chatMessages.empty();
+                        
+                        data.messages.forEach(message => {
+                            let responseData = null;
+                            if (message.states || message.endpoints || message.sources) {
+                                responseData = {
+                                    states: message.states ? JSON.parse(message.states) : null,
+                                    endpoints: message.endpoints ? JSON.parse(message.endpoints) : null,
+                                    sources: message.sources ? JSON.parse(message.sources) : null
+                                };
+                            }
+                            
+                            addMessageToUI(message.content, message.isUserMessage, responseData);
+                        });
+                    }
                 } catch (error) {
-                    addMessage('Sorry, there was an error. Please try again.');
-                } finally {
-                    // Hide loading
-                    toggleLoading(false);
-                    chatInput.focus();
+                    console.error('Error loading messages:', error);
+                    chatMessages.html('<div class="message bot">Error loading messages. Please refresh the page.</div>');
                 }
-            });
+            }
 
-            // Handle Enter key press
-            chatInput.on('keypress', function(e) {
-                if (e.which === 13 && !e.shiftKey) {
-                    e.preventDefault();
-                    sendButton.click();
+            async function createNewChat() {
+                const title = prompt('Enter chat title:', 'New METRC Chat');
+                if (!title) return;
+                
+                try {
+                    const response = await fetch('/api/chat/create', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `title=${encodeURIComponent(title)}`
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        // Reload page with new chat
+                        window.location.href = `/chatbot?chatId=${data.chat.id}`;
+                    }
+                } catch (error) {
+                    console.error('Error creating chat:', error);
+                    alert('Error creating new chat. Please try again.');
                 }
-            });
+            }
 
-            // Focus input on page load
-            chatInput.focus();
+            async function editChatTitle(chatId = currentChatId, currentTitle = currentChatTitle.text()) {
+                const newTitle = prompt('Enter new chat title:', currentTitle);
+                if (!newTitle || newTitle === currentTitle) return;
+                
+                try {
+                    const response = await fetch(`/api/chat/${chatId}/title`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `title=${encodeURIComponent(newTitle)}`
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        currentChatTitle.text(newTitle);
+                        loadChatList(); // Refresh chat list
+                    }
+                } catch (error) {
+                    console.error('Error updating chat title:', error);
+                    alert('Error updating chat title. Please try again.');
+                }
+            }
 
-            // Add some initial helpful messages
-            setTimeout(() => {
-                addMessage('Try asking questions like:<br>• "How do I create a package?"<br>• "What are the transfer requirements?"<br>• "How do I unfinish a package?"<br>• "What states have similar APIs?"');
-            }, 2000);
+            async function deleteChat(chatId) {
+                if (!confirm('Are you sure you want to delete this chat? This action cannot be undone.')) {
+                    return;
+                }
+                
+                try {
+                    const response = await fetch(`/api/chat/${chatId}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        if (chatId === currentChatId) {
+                            // If we deleted the current chat, redirect to main page
+                            window.location.href = '/chatbot';
+                        } else {
+                            // Just refresh the chat list
+                            loadChatList();
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error deleting chat:', error);
+                    alert('Error deleting chat. Please try again.');
+                }
+            }
         });
     </script>
 </body>
