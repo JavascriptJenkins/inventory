@@ -1,10 +1,18 @@
 package com.techvvs.inventory.metrcdocs;
 
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
+import org.apache.poi.hwpf.HWPFDocument;
+import org.apache.poi.hwpf.extractor.WordExtractor;
+import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -84,16 +92,43 @@ public class DocumentIndexService {
         if (fileName.endsWith(".txt") || fileName.endsWith(".md")) {
             return new String(Files.readAllBytes(file));
         } else if (fileName.endsWith(".pdf")) {
-            // For PDF files, you might want to use a PDF library like Apache PDFBox
-            // For now, we'll return a placeholder
-            return "PDF content: " + file.getFileName().toString();
-        } else if (fileName.endsWith(".doc") || fileName.endsWith(".docx")) {
-            // For Word documents, you might want to use Apache POI
-            // For now, we'll return a placeholder
-            return "Word document content: " + file.getFileName().toString();
+            return extractPdfText(file);
+        } else if (fileName.endsWith(".doc")) {
+            return extractDocText(file);
+        } else if (fileName.endsWith(".docx")) {
+            return extractDocxText(file);
         }
         
         return "";
+    }
+    
+    private String extractPdfText(Path file) throws IOException {
+        try (PDDocument document = Loader.loadPDF(file.toFile())) {
+            PDFTextStripper stripper = new PDFTextStripper();
+            return stripper.getText(document);
+        } catch (Exception e) {
+            return "Error extracting PDF text from " + file.getFileName() + ": " + e.getMessage();
+        }
+    }
+    
+    private String extractDocText(Path file) throws IOException {
+        try (FileInputStream fis = new FileInputStream(file.toFile());
+             HWPFDocument document = new HWPFDocument(fis)) {
+            WordExtractor extractor = new WordExtractor(document);
+            return extractor.getText();
+        } catch (Exception e) {
+            return "Error extracting DOC text from " + file.getFileName() + ": " + e.getMessage();
+        }
+    }
+    
+    private String extractDocxText(Path file) throws IOException {
+        try (FileInputStream fis = new FileInputStream(file.toFile());
+             XWPFDocument document = new XWPFDocument(fis)) {
+            XWPFWordExtractor extractor = new XWPFWordExtractor(document);
+            return extractor.getText();
+        } catch (Exception e) {
+            return "Error extracting DOCX text from " + file.getFileName() + ": " + e.getMessage();
+        }
     }
 
     private String generateDocumentId(Path file) {
