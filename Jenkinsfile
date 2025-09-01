@@ -277,7 +277,7 @@ pipeline {
                     dir('inventory') {
                         sshagent(credentials: ['inventory-root-sshkey']) {
                             sh """
-                                scp -o StrictHostKeyChecking=no -r uploads/metrcdocs/ ${params.SSHUSER}@${params.HOSTNAME}:~/deployments/inventory/metrcdocs
+                                scp -o StrictHostKeyChecking=no -r uploads/metrcdocs/ ${params.SSHUSER}@${params.HOSTNAME}:~/deployments/inventory/uploads
                             """
                         }
                     }
