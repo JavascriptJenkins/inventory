@@ -5,6 +5,7 @@ import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.printers.invoice.InvoiceGenerator
 import com.techvvs.inventory.util.TechvvsFileHelper
 import com.techvvs.inventory.viewcontroller.helper.TransactionHelper
+import org.apache.pdfbox.Loader
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.PDPage
 import org.apache.pdfbox.pdmodel.PDPageContentStream
@@ -246,9 +247,9 @@ class BrotherHLL2300DSeriesSevice {
         generatePdf(invoiceContent, pdfOutputStream)
 
         byte[] pdfBytes = pdfOutputStream.toByteArray()
-        ByteArrayInputStream pdfInputStream = new ByteArrayInputStream(pdfBytes)
+//        ByteArrayInputStream pdfInputStream = new ByteArrayInputStream(pdfBytes)
 
-        def document = PDDocument.load(pdfInputStream)
+        def document = Loader.loadPDF(pdfBytes)
 
         return document
     }
