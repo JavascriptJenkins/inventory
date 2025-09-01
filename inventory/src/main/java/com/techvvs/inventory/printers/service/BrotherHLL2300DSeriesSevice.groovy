@@ -1,7 +1,6 @@
 package com.techvvs.inventory.printers.service
 
 import com.techvvs.inventory.constants.AppConstants
-import com.techvvs.inventory.model.SystemUserDAO
 import com.techvvs.inventory.model.TransactionVO
 import com.techvvs.inventory.printers.invoice.InvoiceGenerator
 import com.techvvs.inventory.util.TechvvsFileHelper
@@ -11,13 +10,9 @@ import org.apache.pdfbox.pdmodel.PDPage
 import org.apache.pdfbox.pdmodel.PDPageContentStream
 import org.apache.pdfbox.pdmodel.common.PDRectangle
 import org.apache.pdfbox.pdmodel.font.PDType1Font
+import org.apache.pdfbox.pdmodel.font.Standard14Fonts
 import org.apache.pdfbox.printing.PDFPageable
-import org.apache.pdfbox.printing.PDFPrintable
-import org.apache.pdfbox.printing.Scaling
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.security.core.Authentication
-import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 
 import javax.print.Doc
@@ -268,7 +263,7 @@ class BrotherHLL2300DSeriesSevice {
 
         PDPageContentStream contentStream = new PDPageContentStream(document, page)
 
-        contentStream.setFont(PDType1Font.HELVETICA, 12)
+        contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA), 12)
         contentStream.beginText()
         contentStream.setLeading(14.5)
         contentStream.newLineAtOffset(25, 750)
@@ -286,7 +281,7 @@ class BrotherHLL2300DSeriesSevice {
                 page = new PDPage(pageSize)
                 document.addPage(page)
                 contentStream = new PDPageContentStream(document, page)
-                contentStream.setFont(PDType1Font.HELVETICA, 12)
+                contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA), 12)
                 contentStream.beginText()
                 contentStream.setLeading(14.5)
                 contentStream.newLineAtOffset(25, 750)
