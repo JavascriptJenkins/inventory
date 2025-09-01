@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/chat")
@@ -63,11 +64,32 @@ public class ChatApiController {
 
             ChatMessage botMessage = chatService.addBotMessage(chatId, botResponse, currentUser, responseData);
 
-            // Prepare response
+            // Prepare response with serializable message objects
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("userMessage", userMessage);
-            response.put("botMessage", botMessage);
+            
+            // Convert user message to serializable format
+            Map<String, Object> userMsgMap = new HashMap<>();
+            userMsgMap.put("id", userMessage.getId());
+            userMsgMap.put("content", userMessage.getContent());
+            userMsgMap.put("isUserMessage", userMessage.getIsUserMessage());
+            userMsgMap.put("createdTimestamp", userMessage.getCreatedTimestamp() != null ? 
+                userMessage.getCreatedTimestamp().toString() : null);
+            
+            // Convert bot message to serializable format
+            Map<String, Object> botMsgMap = new HashMap<>();
+            botMsgMap.put("id", botMessage.getId());
+            botMsgMap.put("content", botMessage.getContent());
+            botMsgMap.put("isUserMessage", botMessage.getIsUserMessage());
+            botMsgMap.put("createdTimestamp", botMessage.getCreatedTimestamp() != null ? 
+                botMessage.getCreatedTimestamp().toString() : null);
+            botMsgMap.put("states", botMessage.getStates());
+            botMsgMap.put("endpoints", botMessage.getEndpoints());
+            botMsgMap.put("sources", botMessage.getSources());
+            botMsgMap.put("query", botMessage.getQuery());
+            
+            response.put("userMessage", userMsgMap);
+            response.put("botMessage", botMsgMap);
             response.put("responseData", responseData);
 
             return ResponseEntity.ok(response);
@@ -90,9 +112,26 @@ public class ChatApiController {
 
             var messages = chatService.getChatMessages(chatId, currentUser);
             
+            // Convert messages to a format that won't cause serialization issues
+            List<Map<String, Object>> serializableMessages = messages.stream()
+                .map(message -> {
+                    Map<String, Object> msgMap = new HashMap<>();
+                    msgMap.put("id", message.getId());
+                    msgMap.put("content", message.getContent());
+                    msgMap.put("isUserMessage", message.getIsUserMessage());
+                    msgMap.put("createdTimestamp", message.getCreatedTimestamp() != null ? 
+                        message.getCreatedTimestamp().toString() : null);
+                    msgMap.put("states", message.getStates());
+                    msgMap.put("endpoints", message.getEndpoints());
+                    msgMap.put("sources", message.getSources());
+                    msgMap.put("query", message.getQuery());
+                    return msgMap;
+                })
+                .collect(java.util.stream.Collectors.toList());
+            
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("messages", messages);
+            response.put("messages", serializableMessages);
 
             return ResponseEntity.ok(response);
 
@@ -189,10 +228,18 @@ public class ChatApiController {
             testMessage.setIsUserMessage(false);
             testMessage.setCreatedTimestamp(java.time.LocalDateTime.now());
             
+            // Convert to serializable format
+            Map<String, Object> testMsgMap = new HashMap<>();
+            testMsgMap.put("id", testMessage.getId());
+            testMsgMap.put("content", testMessage.getContent());
+            testMsgMap.put("isUserMessage", testMessage.getIsUserMessage());
+            testMsgMap.put("createdTimestamp", testMessage.getCreatedTimestamp() != null ? 
+                testMessage.getCreatedTimestamp().toString() : null);
+            
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("testMessage", testMessage);
-            response.put("timestamp", java.time.LocalDateTime.now());
+            response.put("testMessage", testMsgMap);
+            response.put("timestamp", java.time.LocalDateTime.now().toString());
             response.put("message", "Jackson serialization test successful");
 
             return ResponseEntity.ok(response);
