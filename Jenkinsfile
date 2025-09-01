@@ -35,6 +35,7 @@ pipeline {
         string(name: 'WALLET_GOOGLE_ISSUER_ID', defaultValue: 'a number string thing', description: 'Get this from google cloud dashboard. ')
         string(name: 'WALLET_GOOGLE_CLASS_ID', defaultValue: 'a number string thing', description: 'Get this from google cloud dashboard. ')
         string(name: 'METRC_MCP_FILE_PATH', defaultValue: 'classpath:/uploads/mcp/metrc-mcp-connector.dxt', description: 'path to the mcp file. stored in uploads. ')
+        string(name: 'METRC_MCP_URI', defaultValue: '<BASE_QR_DOMAIN>/api/mcp', description: 'this auto resolves in the build. ')
 
     }
 
@@ -62,10 +63,16 @@ pipeline {
                          string(credentialsId: 'JWT_SECRET_KEY', variable: 'JWT_SECRET_KEY'),
                          string(credentialsId: 'METRC_API_KEY_USERNAME', variable: 'METRC_API_KEY_USERNAME'),
                          string(credentialsId: 'METRC_API_KEY_PASSWORD', variable: 'METRC_API_KEY_PASSWORD')
+                          string(credentialsId: 'PAYPAL_CLIENT_ID', variable: 'METRC_API_KEY_PASSWORD')
+                          string(credentialsId: 'PAYPAL_CLIENT_SECRET', variable: 'METRC_API_KEY_PASSWORD')
+                          string(credentialsId: 'ANTHROPIC_API_KEY', variable: 'METRC_API_KEY_PASSWORD')
                     ])
                     {
                         dir('inventory') {
                             sh "ls -l"
+
+                            env.METRC_MCP_URI = env.BASE_QR_DOMAIN + '/api/mcp' // build the mcp uri based off the base qr domain
+
                             // Replace spring.profiles.active if provided
                             if (params.ENVIRONMENT_NAME) {
                                 sh "sed -i 's/^spring\\.profiles\\.active=.*/spring.profiles.active=${params.ENVIRONMENT_NAME}/' src/main/resources/application.properties"
