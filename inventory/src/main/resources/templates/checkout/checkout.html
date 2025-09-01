@@ -662,28 +662,20 @@
 
     <form id="barcodeForm" th:action="@{/checkout/scan?cartid=__${cart.cartid != null ? cart.cartid : '0'}__}" th:object="${cart}" method="post">
         <div class="row">
-            <div class="col-md-8">
-                <div class="row" style="margin-bottom: 5px;">
-                    <div class="col-md-6" style="margin-bottom: 5px;">
+            <div class="col-md-6">
+                    <div style="margin-bottom: 10px;">
                         <input id="barcodeInput" type="text" th:field="*{barcode}" class="form-control" placeholder="barcode" aria-label="barcode">
                     </div>
-                    <div class="col-md-6">
                         <!-- Quantity Mode Checkbox -->
-                        <div class="form-check">
-                            <input type="checkbox" class="form-check-input" id="quantityModeCheckbox">
-                            <label class="form-check-label" for="quantityModeCheckbox">Quantity Mode</label>
-                        </div>
-                    </div>
-                    <!-- Add this inside the form containing "Quantity Mode" -->
-                    <div class="row" style="margin-bottom: 5px;">
-                        <div class="col-md-6">
-                            <button id="searchProductBtn" class="btn btn-warning">Search For Product</button>
-                        </div>
+                    <div class="form-check float-end mt-2 me-2" style="margin-top: 10px;">
+                        <input type="checkbox" class="form-check-input" style="margin-right: 10px;" id="quantityModeCheckbox">
+                        <label class="form-check-label" for="quantityModeCheckbox">Quantity Mode</label>
                     </div>
 
-                </div>
-                <div class="row" style="margin-bottom: 5px;">
-                    <div class="col-md-6" style="margin-bottom: 5px;">
+                    <!-- Add this inside the form containing "Quantity Mode" -->
+                    <button id="searchProductBtn" class="btn btn-warning" style="margin-top: 30px;">Search For Product</button>
+
+                    <div style="margin-bottom: 5px;margin-top:20px;">
                         <div th:if="${cart.cartid}">
                             <p th:each="customer : ${customers}" th:if="${customer.customerid == cart.customer.customerid}" th:text="${customer.name}" class="customer-name">Customer Name</p>
                             <input type="hidden" th:field="*{customer.customerid}">
@@ -695,9 +687,7 @@
                             </select>
                         </div>
                     </div>
-                </div>
-                <div class="row" style="margin-bottom: 5px;">
-                    <div class="col-md-6" style="margin-bottom: 5px;">
+                    <div style="margin-bottom: 5px;">
                         <label class="form-label"><b>Total Price</b></label>
                         <input type="hidden" th:field="*{total}" class="form-control" placeholder="total" aria-label="total" readonly>
                         <p class="form-control" th:text="${cart.total}"></p>
@@ -705,10 +695,10 @@
                     <input type="hidden" th:field="*{isprocessed}">
                     <input type="hidden" th:field="*{updateTimeStamp}">
                     <input type="hidden" th:field="*{createTimeStamp}">
-                </div>
                 <button style="margin-top: 5px;visibility: hidden;" type="submit" class="btn btn-primary">Submit</button>
             </div>
-            <div class="col-md-4">
+
+            <div class="col-md-6 ms-auto align-self-start ">
                 <div class="cart-table-container">
                     <table class="table table-hover table-striped table-dark cart-table">
                         <thead>
@@ -770,7 +760,7 @@
 
 
     <!-- This table will display with product info based on case insensitive search from popup -->
-    <div class="col-md-8" th:if="${productPage != null && productPage.content.size() > 0}">
+    <div class="col-md-12" th:if="${productPage != null && productPage.content.size() > 0}">
         <div class="table-responsive">
             <table class="table table-hover table-striped table-dark" style="margin-top: 20px">
                 <thead>
