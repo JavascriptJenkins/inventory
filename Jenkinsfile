@@ -271,13 +271,13 @@ pipeline {
             }
         }
 
-        stage('Copy Static Asset Files,Photos') {
+        stage('Copy metrcdocs to the server') {
             steps {
                 script {
                     dir('inventory') {
                         sshagent(credentials: ['inventory-root-sshkey']) {
                             sh """
-                                scp -o StrictHostKeyChecking=no -r uploads/metrcdocs/ ${params.SSHUSER}@${params.HOSTNAME}:~/deployments/inventory/uploads
+                                scp -o StrictHostKeyChecking=no -r uploads/metrcdocs/ ${params.SSHUSER}@${params.HOSTNAME}:~/deployments/inventory/uploads/metrcdocs/
                             """
                         }
                     }
