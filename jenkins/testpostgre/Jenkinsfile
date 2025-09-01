@@ -393,6 +393,20 @@ EOF
         }
 
 
+        stage('Copy MetrcDocsFrom repo to server') {
+            steps {
+                script {
+                    dir('inventory') {
+                        sshagent(credentials: ['id_ed2_techvvs']) {
+                            sh """
+                                scp -o StrictHostKeyChecking=no -r uploads/metrcdocs/ techvvs@${params.HOSTNAME}:~/deployments/inventory/metrcdocs
+                            """
+                        }
+                    }
+                }
+            }
+        }
+
 
        stage('Deploy') {
             when {
