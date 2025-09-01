@@ -349,7 +349,7 @@ pipeline {
                             done
 
                             # Check and create the subdirectories inside 'uploads'
-                            for subdir in coa font xlsx globaluserfiles media; do
+                            for subdir in coa font xlsx globaluserfiles media mcp applecert metrcdocs; do
                                 if [ ! -d ~/deployments/inventory/uploads/\$subdir ]; then
                                     mkdir ~/deployments/inventory/uploads/\$subdir
                                 fi
