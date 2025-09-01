@@ -187,9 +187,9 @@ pipeline {
                             sh "sed -i 's/^paypal\\.client-secret=.*/paypal.client-secret=${PAYPAL_CLIENT_SECRET}/' src/main/resources/application.properties"
 
                             // Replace Anthropic API key
-                            sh "sed -i 's/^anthropic\\.apiKey=.*/anthropic.apiKey=${ANTHROPIC_API_KEY}/' src/main/resources/application.properties"
+                            sh "sed -i 's/^anthropic\\.apiKey=.*|anthropic.apiKey=${ANTHROPIC_API_KEY}/' src/main/resources/application.properties"
 
-                            sh "sed -i 's/^metrc\\.mcp\\.url=.*/metrc.mcp.url=${METRC_MCP_URI}/' src/main/resources/application.properties"
+                            sh "sed -i 's/^metrc\\.mcp\\.url=.*|metrc.mcp.url=${METRC_MCP_URI}/' src/main/resources/application.properties"
 
                         }
                     }
