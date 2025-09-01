@@ -1,0 +1,19 @@
+{
+  "name": "Local METRC Documentation Server",
+  "description": "Local MCP server for searching and accessing METRC documentation from uploaded files in the metrcdocs folder",
+  "version": "1.0.0",
+  "author": "TechVVS Development Team",
+  "homepage": "https://github.com/techvvs/inventory",
+  "mcp": {
+    "transport": {
+      "type": "http",
+      "url": "http://localhost:8080/api/mcp"
+    },
+    "capabilities": {
+      "tools": true,
+      "resources": true
+    }
+  },
+  "icon": "📁",
+  "tags": ["cannabis", "compliance", "documentation", "metrc", "local", "file-based"]
+}
