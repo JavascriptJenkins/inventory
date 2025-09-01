@@ -63,9 +63,9 @@ pipeline {
                          string(credentialsId: 'JWT_SECRET_KEY', variable: 'JWT_SECRET_KEY'),
                          string(credentialsId: 'METRC_API_KEY_USERNAME', variable: 'METRC_API_KEY_USERNAME'),
                          string(credentialsId: 'METRC_API_KEY_PASSWORD', variable: 'METRC_API_KEY_PASSWORD')
-                          string(credentialsId: 'PAYPAL_CLIENT_ID', variable: 'METRC_API_KEY_PASSWORD')
-                          string(credentialsId: 'PAYPAL_CLIENT_SECRET', variable: 'METRC_API_KEY_PASSWORD')
-                          string(credentialsId: 'ANTHROPIC_API_KEY', variable: 'METRC_API_KEY_PASSWORD')
+                          string(credentialsId: 'PAYPAL_CLIENT_ID', variable: 'PAYPAL_CLIENT_ID')
+                          string(credentialsId: 'PAYPAL_CLIENT_SECRET', variable: 'PAYPAL_CLIENT_SECRET')
+                          string(credentialsId: 'ANTHROPIC_API_KEY', variable: 'ANTHROPIC_API_KEY')
                     ])
                     {
                         dir('inventory') {
