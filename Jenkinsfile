@@ -189,7 +189,7 @@ pipeline {
                             // Replace Anthropic API key
                             sh "sed -i 's/^anthropic\\.apiKey=.*/anthropic.apiKey=${ANTHROPIC_API_KEY}/' src/main/resources/application.properties"
 
-                            sh "sed -i 's/^metrc\\.mcp\\.url=.*/anthropic.apiKey=${METRC_MCP_URI}/' src/main/resources/application.properties"
+                            sh "sed -i 's/^metrc\\.mcp\\.url=.*/metrc.mcp.url=${METRC_MCP_URI}/' src/main/resources/application.properties"
 
                         }
                     }
