@@ -84,6 +84,7 @@ class WhiteListUriConstants {
 
     public static final String KALE_MOVIE_33 = "/kalemovie/**";
     public static final String KALE_MOVIE = "/kalemovie"
+    public static final String MCP_API = "/api/mcp/**";
 
 
 

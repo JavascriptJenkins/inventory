@@ -127,6 +127,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .antMatchers(PAYPAL_THANKYOU_API_1).permitAll()
             .antMatchers(PAYPAL_CAPTURE_API_1).permitAll()
             .antMatchers(PAYPAL_CAPTURE_API_1_33).permitAll()
+            .antMatchers(MCP_API).permitAll()
 //            .antMatchers("/login/systemuser").permitAll()//
             // Add other routes that should be publicly accessible
             // Disallow everything else..
