@@ -85,6 +85,7 @@ pipeline {
                     env.DB_URI = postgresql_db_uri
 
                     env.METRC_MCP_URI = env.BASE_QR_DOMAIN + '/api/mcp' // build the mcp uri based off the base qr domain
+                    echo "env.METRC_MCP_URI: env.${params.METRC_MCP_URI}"
                 }
             }
         }
@@ -221,6 +222,19 @@ pipeline {
                             sh "sed -i 's/^twilio\\.api\\.password=.*/twilio.api.password=${TWILIO_API_PASSWORD}/' src/main/resources/application.properties"
                             sh "sed -i 's/^sendgrid\\.api\\.key=.*/sendgrid.api.key=${SENDGRID_API_KEY}/' src/main/resources/application.properties"
                             sh "sed -i 's/^security\\.jwt\\.token\\.secret-key=.*/security.jwt.token.secret-key=${JWT_SECRET_KEY}/' src/main/resources/application.properties"
+                            
+                            // Replace METRC API credentials
+                            sh "sed -i 's/^metrc\\.api-key-username=.*/metrc.api-key-username=${METRC_API_KEY_USERNAME}/' src/main/resources/application.properties"
+                            sh "sed -i 's/^metrc\\.api-key-password=.*/metrc.api-key-password=${METRC_API_KEY_PASSWORD}/' src/main/resources/application.properties"
+                            
+                            // Replace PayPal credentials
+                            sh "sed -i 's/^paypal\\.client-id=.*/paypal.client-id=${PAYPAL_CLIENT_ID}/' src/main/resources/application.properties"
+                            sh "sed -i 's/^paypal\\.client-secret=.*/paypal.client-secret=${PAYPAL_CLIENT_SECRET}/' src/main/resources/application.properties"
+                            
+                            // Replace Anthropic API key
+                            sh "sed -i 's/^anthropic\\.apiKey=.*/anthropic.apiKey=${ANTHROPIC_API_KEY}/' src/main/resources/application.properties"
+
+                            sh "sed -i 's/^metrc\\.mcp\\.url=.*/anthropic.apiKey=${METRC_MCP_URI}/' src/main/resources/application.properties"
 
 
                             if (env.TENANT_ENV.contains('prod') && !env.TENANT_ENV.contains('highland')) {
