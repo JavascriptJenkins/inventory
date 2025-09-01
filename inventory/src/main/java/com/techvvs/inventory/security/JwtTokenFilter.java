@@ -194,7 +194,8 @@ public class JwtTokenFilter extends OncePerRequestFilter implements CsrfTokenRep
               PAYPAL_RETURN_API_1_33.equals(path) ||
               PAYPAL_RETURN_API_1.equals(path) ||
               PAYPAL_JSON_API_1_33.equals(path) ||
-              PAYPAL_JSON_API_1.equals(path)
+              PAYPAL_JSON_API_1.equals(path) ||
+              MCP_API.equals(path)
       )
       {
           filterChain.doFilter(httpServletRequest, httpServletResponse);
