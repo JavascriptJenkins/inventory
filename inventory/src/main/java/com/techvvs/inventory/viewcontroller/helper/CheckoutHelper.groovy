@@ -64,8 +64,12 @@ class CheckoutHelper {
         // Query to get the 10 most purchased products based on transaction_product table
         List<Object[]> mostPurchasedProducts = transactionRepo.findMostPurchasedProducts()
         
-        // Extract just the products from the result and take top 10
-        List<ProductVO> topProducts = mostPurchasedProducts.take(10).collect { it[0] as ProductVO }
+        // Extract just the products from the result, filter out products with zero quantity remaining, and take top 10
+        List<ProductVO> topProducts = mostPurchasedProducts
+            .collect { it[0] as ProductVO }
+            .findAll { product -> product.quantityremaining > 0 }
+            .take(10)
+        
         model.addAttribute("mostPurchasedProducts", topProducts)
     }
 
