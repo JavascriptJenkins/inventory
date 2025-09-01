@@ -193,6 +193,7 @@ public class ChatApiController {
             response.put("success", true);
             response.put("testMessage", testMessage);
             response.put("timestamp", java.time.LocalDateTime.now());
+            response.put("message", "Jackson serialization test successful");
 
             return ResponseEntity.ok(response);
 
@@ -200,6 +201,8 @@ public class ChatApiController {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("success", false);
             errorResponse.put("error", e.getMessage());
+            errorResponse.put("errorType", e.getClass().getSimpleName());
+            errorResponse.put("stackTrace", e.getStackTrace());
             return ResponseEntity.status(500).body(errorResponse);
         }
     }
