@@ -100,6 +100,10 @@ public class CheckoutViewController {
 
         // fetch all customers from database and bind them to model
         checkoutHelper.getAllCustomers(model)
+        
+        // fetch the 10 most purchased products
+        checkoutHelper.getMostPurchasedProducts(model)
+        
         techvvsAuthService.checkuserauth(model)
         return "checkout/checkout.html";
     }
@@ -133,6 +137,10 @@ public class CheckoutViewController {
 
         // fetch all customers from database and bind them to model
         checkoutHelper.getAllCustomers(model)
+        
+        // fetch the 10 most purchased products
+        checkoutHelper.getMostPurchasedProducts(model)
+        
         techvvsAuthService.checkuserauth(model)
         return "checkout/checkout.html";
     }
@@ -166,6 +174,10 @@ public class CheckoutViewController {
 
         // fetch all customers from database and bind them to model
         checkoutHelper.getAllCustomers(model)
+        
+        // fetch the 10 most purchased products
+        checkoutHelper.getMostPurchasedProducts(model)
+        
         techvvsAuthService.checkuserauth(model)
         return "checkout/checkout.html";
     }
@@ -229,6 +241,9 @@ public class CheckoutViewController {
         model.addAttribute("cart", cartVO);
         // fetch all customers from database and bind them to model
         checkoutHelper.getAllCustomers(model)
+        
+        // fetch the 10 most purchased products
+        checkoutHelper.getMostPurchasedProducts(model)
 
         return "checkout/checkout.html";
     }
@@ -273,6 +288,9 @@ public class CheckoutViewController {
         model.addAttribute("cart", cartVO);
         // fetch all customers from database and bind them to model
         checkoutHelper.getAllCustomers(model)
+        
+        // fetch the 10 most purchased products
+        checkoutHelper.getMostPurchasedProducts(model)
 
         return "checkout/checkout.html";
     }

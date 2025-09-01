@@ -133,7 +133,15 @@ public interface TransactionRepo extends JpaRepository<TransactionVO, Integer> {
 
     Optional<TransactionVO> findByPaypalOrderId(String paypalOrderId);
 
-
+    // Query to find the most purchased products based on transaction_product table
+    @Query("""
+        SELECT p, COUNT(t) as purchaseCount
+        FROM ProductVO p
+        JOIN p.transaction_list t
+        GROUP BY p.product_id, p.name, p.barcode, p.price, p.quantity, p.quantityremaining, p.createTimeStamp, p.updateTimeStamp, p.description, p.laborCostPricePerUnit, p.marginPercent, p.notes, p.productnumber, p.salePrice, p.batch.batchid, p.producttypeid.producttypeid
+        ORDER BY purchaseCount DESC
+    """)
+    List<Object[]> findMostPurchasedProducts();
 
 
 }

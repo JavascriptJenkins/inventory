@@ -54,7 +54,19 @@ class CheckoutHelper {
     void getAllCustomers(Model model){
 
         List<CustomerVO> customers = customerRepo.findAll()
+        // Sort customers alphabetically by name (A to Z)
+        customers.sort { a, b -> a.name <=> b.name }
         model.addAttribute("customers", customers)
+    }
+
+    // method to get the 10 most purchased products
+    void getMostPurchasedProducts(Model model){
+        // Query to get the 10 most purchased products based on transaction_product table
+        List<Object[]> mostPurchasedProducts = transactionRepo.findMostPurchasedProducts()
+        
+        // Extract just the products from the result and take top 10
+        List<ProductVO> topProducts = mostPurchasedProducts.take(10).collect { it[0] as ProductVO }
+        model.addAttribute("mostPurchasedProducts", topProducts)
     }
 
     // method to get all customers from db

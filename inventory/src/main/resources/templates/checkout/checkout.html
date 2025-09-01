@@ -19,7 +19,175 @@
         body {
             color: #fff;
             font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            width: 100%;
         }
+        
+        /* Responsive container */
+        .container-fluid {
+            width: 100%;
+            max-width: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .row {
+            margin: 0;
+            width: 100%;
+        }
+        
+        .col-md-8, .col-md-4 {
+            padding: 10px;
+        }
+        
+        /* Responsive tables */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .table {
+            width: 100%;
+            min-width: 600px; /* Ensure table doesn't get too cramped */
+        }
+        
+        /* Responsive buttons */
+        .btn {
+            white-space: nowrap;
+            margin: 2px;
+        }
+        
+        .btn-lg {
+            padding: 12px 24px;
+            font-size: 1.1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .btn-lg {
+                padding: 10px 20px;
+                font-size: 1rem;
+            }
+            
+            .col-md-8, .col-md-4 {
+                padding: 5px;
+            }
+            
+            .header-dark {
+                padding: 10px;
+                margin-bottom: 10px;
+            }
+            
+            .header-small {
+                padding: 8px;
+                margin-bottom: 10px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .btn-lg {
+                padding: 8px 16px;
+                font-size: 0.9rem;
+            }
+            
+            .table {
+                min-width: 400px;
+                font-size: 0.9rem;
+            }
+            
+            .form-control, .form-select {
+                font-size: 16px; /* Prevent zoom on iOS */
+            }
+        }
+        
+        /* Most purchased products section */
+        .most-purchased-section {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #343a40;
+            border-radius: 8px;
+            border: 1px solid #495057;
+        }
+        
+        .most-purchased-title {
+            color: #fff;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .product-scan-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+        
+        .product-scan-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            max-width: 220px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+        
+        .product-scan-btn:hover {
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+        
+        .product-scan-btn:active {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .product-scan-btn .btn-icon {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .product-scan-btn .btn-text {
+            flex: 1;
+            text-align: center;
+        }
+        
+        @media (max-width: 768px) {
+            .product-scan-buttons {
+                gap: 6px;
+            }
+            
+            .product-scan-btn {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+                max-width: 150px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .product-scan-btn {
+                padding: 5px 10px;
+                font-size: 0.75rem;
+                max-width: 120px;
+            }
+        }
+        
         .table-hover tbody tr:hover {
             background-color: #e0f7fa;
         }
@@ -187,6 +355,48 @@
         .btn-dark-custom:hover {
             background-color: #1d2124; /* Darker shade on hover */
             color: #f8f9fa; /* Lighter text on hover */
+        }
+        /* Cart table improvements */
+        .cart-table-container {
+            overflow-x: auto;
+            min-width: 100%;
+        }
+        
+        .cart-table {
+            width: 100%;
+            min-width: 600px; /* Ensure table doesn't get too cramped */
+        }
+        
+        .cart-table th,
+        .cart-table td {
+            padding: 8px 12px;
+            white-space: nowrap;
+        }
+        
+        .cart-table th:first-child,
+        .cart-table td:first-child {
+            min-width: 200px; /* Item name column */
+        }
+        
+        .cart-table th:nth-child(2),
+        .cart-table td:nth-child(2) {
+            min-width: 80px; /* Price column */
+        }
+        
+        .cart-table th:nth-child(3),
+        .cart-table td:nth-child(3) {
+            min-width: 80px; /* Quantity column */
+        }
+        
+        .cart-table th:last-child,
+        .cart-table td:last-child {
+            min-width: 120px; /* Delete button column */
+        }
+        
+        @media (max-width: 768px) {
+            .cart-table {
+                min-width: 500px;
+            }
         }
     </style>
 
@@ -499,8 +709,8 @@
                 <button style="margin-top: 5px;visibility: hidden;" type="submit" class="btn btn-primary">Submit</button>
             </div>
             <div class="col-md-4">
-                <div style="overflow-x: auto;">
-                    <table class="table table-hover table-striped table-dark">
+                <div class="cart-table-container">
+                    <table class="table table-hover table-striped table-dark cart-table">
                         <thead>
                         <tr>
                             <th>Item</th>
@@ -543,57 +753,74 @@
         </button>
     </form>
 
+    <!-- Most Purchased Products Section -->
+    <div class="most-purchased-section" th:if="${mostPurchasedProducts != null && !mostPurchasedProducts.empty}">
+        <h4 class="most-purchased-title">Most Purchased Products</h4>
+        <div class="product-scan-buttons">
+            <button th:each="product : ${mostPurchasedProducts}" 
+                    type="button" 
+                    class="product-scan-btn"
+                    th:data-barcode="${product.barcode}"
+                    th:title="${product.name}">
+                <i class="bi bi-upc-scan btn-icon"></i>
+                <span class="btn-text" th:text="${product.name} + ' - Scan'"></span>
+            </button>
+        </div>
+    </div>
+
 
     <!-- This table will display with product info based on case insensitive search from popup -->
     <div class="col-md-8" th:if="${productPage != null && productPage.content.size() > 0}">
-        <table class="table table-hover table-striped table-dark" style="margin-top: 20px">
-            <thead>
-            <tr>
-                <th scope="col">#</th>
-                <th scope="col">Barcode</th>
-                <th scope="col">Product Name</th>
-                <th scope="col">Quantity</th>
-                <th scope="col">Quantity Remaining</th>
-                <th scope="col">Price</th>
-                <th scope="col">Batch Name</th>
-                <th scope="col">Batch ID</th>
-                <th scope="col">Create Date</th>
-                <th scope="col">Scan</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="product, iStat : ${productPage.content}"
-                th:style="${iStat.odd}? 'font-weight: bold;'"
-                th:alt-title="${iStat.even}? 'even' : 'odd'">
-                <td th:text="${product.product_id}"></td>
-                <td>
-                    <span th:text="${product.barcode}"></span>
-                    <!-- Button to copy barcode -->
-                    <button type="button" class="btn btn-outline-light btn-sm"
-                            onclick="copyToClipboard(this)"
-                            th:data-barcode="${product.barcode}"
-                            th:data-productname="${product.name}"
-                    >
-                        Copy
-                    </button>
-                </td>
-                <td th:text="${product.name}"></td>
-                <td th:text="${product.quantity}"></td>
-                <td th:text="${product.quantityremaining}"></td>
-                <td th:text="${product.price}"></td>
-                <td th:text="${product.batch.name}"></td>
-                <td th:text="${product.batch.batchid}"></td>
-                <td th:text="${product.createTimeStamp}"></td>
-                <td>
-                    <button type="button" class="btn btn-outline-light btn-sm"
-                            onclick="scanToBarcodeInput(this)"
-                            th:data-barcode="${product.barcode}">
-                        Scan
-                    </button>
-                </td>
-            </tr>
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <table class="table table-hover table-striped table-dark" style="margin-top: 20px">
+                <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Barcode</th>
+                    <th scope="col">Product Name</th>
+                    <th scope="col">Quantity</th>
+                    <th scope="col">Quantity Remaining</th>
+                    <th scope="col">Price</th>
+                    <th scope="col">Batch Name</th>
+                    <th scope="col">Batch ID</th>
+                    <th scope="col">Create Date</th>
+                    <th scope="col">Scan</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="product, iStat : ${productPage.content}"
+                    th:style="${iStat.odd}? 'font-weight: bold;'"
+                    th:alt-title="${iStat.even}? 'even' : 'odd'">
+                    <td th:text="${product.product_id}"></td>
+                    <td>
+                        <span th:text="${product.barcode}"></span>
+                        <!-- Button to copy barcode -->
+                        <button type="button" class="btn btn-outline-light btn-sm"
+                                onclick="copyToClipboard(this)"
+                                th:data-barcode="${product.barcode}"
+                                th:data-productname="${product.name}"
+                        >
+                            Copy
+                        </button>
+                    </td>
+                    <td th:text="${product.name}"></td>
+                    <td th:text="${product.quantity}"></td>
+                    <td th:text="${product.quantityremaining}"></td>
+                    <td th:text="${product.price}"></td>
+                    <td th:text="${product.batch.name}"></td>
+                    <td th:text="${product.batch.batchid}"></td>
+                    <td th:text="${product.createTimeStamp}"></td>
+                    <td>
+                        <button type="button" class="btn btn-outline-light btn-sm"
+                                onclick="scanToBarcodeInput(this)"
+                                th:data-barcode="${product.barcode}">
+                            Scan
+                        </button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
         <nav th:if="${productPage.totalPages > 0}">
             <ul class="pagination flex-wrap justify-content-center">
                 <li class="page-item" th:each="pageNumber : ${pageNumbers}">
@@ -670,6 +897,84 @@
             }, delay);
         }
 
+        // Function to scan product barcode from most purchased products
+        window.scanProductBarcode = function(barcode, productName = '') {
+            const isQuantityMode = $('#quantityModeCheckbox').is(':checked');
+            
+            if (isQuantityMode) {
+                // Show quantity selection modal
+                showScanQuantityModal(barcode, productName);
+            } else {
+                // Direct scan - set quantity to 1 and submit
+                document.getElementById('barcodeInput').value = barcode;
+                document.getElementById('quantitySelected').value = 1;
+                document.getElementById('barcodeForm').submit();
+            }
+        };
+
+        // Function to show the scan quantity modal
+        function showScanQuantityModal(barcode, productName) {
+            // Set the product name in the modal
+            document.getElementById('scanProductNameSpan').textContent = productName || 'this product';
+            
+            // Store the barcode for when the modal is confirmed
+            document.getElementById('scanQuantityModal').setAttribute('data-barcode', barcode);
+            
+            // Show the modal
+            const modal = new bootstrap.Modal(document.getElementById('scanQuantityModal'));
+            modal.show();
+        }
+
+        // Handle scan quantity modal confirmation
+        document.getElementById('confirmScanQuantityBtn').addEventListener('click', function() {
+            const modal = document.getElementById('scanQuantityModal');
+            const barcode = modal.getAttribute('data-barcode');
+            const quantity = document.getElementById('quantityToScanSelect').value;
+            
+            if (barcode && quantity) {
+                // Set the barcode and quantity, then submit
+                document.getElementById('barcodeInput').value = barcode;
+                document.getElementById('quantitySelected').value = quantity;
+                document.getElementById('barcodeForm').submit();
+                
+                // Hide the modal
+                const bootstrapModal = bootstrap.Modal.getInstance(modal);
+                bootstrapModal.hide();
+            }
+        });
+
+        // Event delegation for most purchased product buttons
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('product-scan-btn') || e.target.closest('.product-scan-btn')) {
+                const button = e.target.classList.contains('product-scan-btn') ? e.target : e.target.closest('.product-scan-btn');
+                const barcode = button.getAttribute('data-barcode');
+                const productName = button.getAttribute('title');
+                if (barcode) {
+                    scanProductBarcode(barcode, productName);
+                }
+            }
+        });
+
+        // Alternative approach: direct event binding for better reliability
+        function bindMostPurchasedProductEvents() {
+            const buttons = document.querySelectorAll('.product-scan-btn');
+            buttons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const barcode = this.getAttribute('data-barcode');
+                    const productName = this.getAttribute('title');
+                    if (barcode) {
+                        scanProductBarcode(barcode, productName);
+                    }
+                });
+            });
+        }
+
+        // Bind events when DOM is loaded and also after any dynamic content updates
+        bindMostPurchasedProductEvents();
+        
+        // Re-bind events after a short delay to ensure all elements are present
+        setTimeout(bindMostPurchasedProductEvents, 100);
 
     });
 </script>
@@ -695,6 +1000,41 @@
                 <button type="button" class="btn btn-danger" id="confirmDeleteQuantityBtn">
                     <i class="bi bi-trash-fill"></i>
                     Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scan Quantity Modal -->
+<div class="modal fade" id="scanQuantityModal" tabindex="-1" aria-labelledby="scanQuantityModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="scanQuantityModalLabel">Select Quantity to Scan</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p style="color:black;">How many of <strong id="scanProductNameSpan"></strong> would you like to scan?</p>
+                <label for="quantityToScanSelect" class="form-label" style="color:black;">Quantity</label>
+                <select id="quantityToScanSelect" class="form-select">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmScanQuantityBtn">
+                    <i class="bi bi-upc-scan"></i>
+                    Scan
                 </button>
             </div>
         </div>
