@@ -187,6 +187,16 @@ pipeline {
                         sh """
                             find src/main/java src/main/resources -type f -exec sed -i 's|http://localhost:8080|https://inventory.techvvs.io|g' {} +
                         """
+
+                        // Update the local METRC MCP connector file with the actual domain
+                        sh """
+                            if [ -f "uploads/mcp/local-metrcdocs-connector.dxt" ]; then
+                                sed -i 's|"url": "http://localhost:8080/api/mcp"|"url": "${params.BASE_QR_DOMAIN}/api/mcp"|g' uploads/mcp/local-metrcdocs-connector.dxt
+                                echo "Updated local-metrcdocs-connector.dxt with domain: ${params.BASE_QR_DOMAIN}"
+                            else
+                                echo "Warning: local-metrcdocs-connector.dxt not found in uploads/mcp/"
+                            fi
+                        """
                     }
                 }
             }
