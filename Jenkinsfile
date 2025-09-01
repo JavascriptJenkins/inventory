@@ -71,7 +71,8 @@ pipeline {
                         dir('inventory') {
                             sh "ls -l"
 
-                            env.METRC_MCP_URI = env.BASE_QR_DOMAIN + '/api/mcp' // build the mcp uri based off the base qr domain
+                            env.METRC_MCP_URI = params.BASE_QR_DOMAIN + '/api/mcp' // build the mcp uri based off the base qr domain
+                            echo "env.METRC_MCP_URI: env.${params.METRC_MCP_URI}"
 
                             // Replace spring.profiles.active if provided
                             if (params.ENVIRONMENT_NAME) {

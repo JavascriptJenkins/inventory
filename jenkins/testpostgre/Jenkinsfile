@@ -84,7 +84,7 @@ pipeline {
                     //env.BASE_QR_DOMAIN = hostname
                     env.DB_URI = postgresql_db_uri
 
-                    env.METRC_MCP_URI = env.BASE_QR_DOMAIN + '/api/mcp' // build the mcp uri based off the base qr domain
+                    env.METRC_MCP_URI = params.BASE_QR_DOMAIN + '/api/mcp' // build the mcp uri based off the base qr domain
                     echo "env.METRC_MCP_URI: env.${params.METRC_MCP_URI}"
                 }
             }
