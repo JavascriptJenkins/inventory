@@ -172,6 +172,80 @@
         }
     </style>
 
+    <!-- Custom styles for underpaid transactions alert -->
+    <style>
+        .underpaid-alert {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
+        }
+        
+        .underpaid-alert .alert-heading {
+            color: #856404;
+            font-weight: 600;
+        }
+        
+        .underpaid-alert p {
+            color: #856404;
+            font-weight: 500;
+        }
+        
+        .underpaid-alert .btn {
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            border: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .underpaid-alert .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+        }
+        
+        .underpaid-alert .btn-warning {
+            background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%);
+            color: #000;
+        }
+        
+        .underpaid-alert .btn-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: #fff;
+        }
+        
+        .underpaid-alert .btn-lg {
+            padding: 12px 24px;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .underpaid-alert .d-flex {
+                flex-direction: column;
+            }
+            
+            .underpaid-alert .btn {
+                width: 100%;
+                margin-bottom: 8px;
+            }
+        }
+        
+        /* Clear filter button styling */
+        .btn-outline-light {
+            border: 2px solid #6c757d;
+            color: #6c757d;
+            background: transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-outline-light:hover {
+            background: #6c757d;
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(108, 117, 125, 0.4);
+        }
+    </style>
 
 
 </head>
@@ -192,10 +266,60 @@
     </div>
     <br>
 
+    <!-- Underpaid Transactions Alert Buttons -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-warning underpaid-alert" role="alert">
+                <h5 class="alert-heading mb-3">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Underpaid Transactions Alert
+                </h5>
+                <p class="mb-3">Transactions that are underpaid and have no payment records within the past 2 weeks:</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <a th:href="@{/transaction/listall(size=${size}, page=0, filter=underpaid, days=14)}" 
+                       class="btn btn-warning btn-lg">
+                        <i class="bi bi-currency-dollar me-2"></i>
+                        Show Underpaid (2 weeks)
+                    </a>
+                    <a th:href="@{/transaction/listall(size=${size}, page=0, filter=underpaid, days=7)}" 
+                       class="btn btn-danger btn-lg">
+                        <i class="bi bi-exclamation-circle me-2"></i>
+                        Show Underpaid (1 week)
+                    </a>
+                    <a th:href="@{/transaction/listall(size=${size}, page=0, filter=underpaid, days=3)}" 
+                       class="btn btn-danger btn-lg">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Show Underpaid (3 days)
+                    </a>
+                    <a th:href="@{/transaction/listall(size=${size}, page=0, filter=underpaid, days=1)}" 
+                       class="btn btn-danger btn-lg">
+                        <i class="bi bi-exclamation-diamond me-2"></i>
+                        Show Underpaid (1 day)
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Clear Filter Button (only show when filter is active) -->
+    <div class="row mb-3" th:if="${filter != null and filter != ''}">
+        <div class="col-12 text-center">
+            <a th:href="@{/transaction/listall(size=${size}, page=0)}" 
+               class="btn btn-outline-light btn-lg">
+                <i class="bi bi-x-circle me-2"></i>
+                Clear Underpaid Filter - Show All Transactions
+            </a>
+        </div>
+    </div>
+
     <form th:action="@{/transaction/listall}" method="get" id="filterForm">
 
         <!-- Preserve page value on submit -->
         <input type="hidden" name="page" th:value="${page}"/>
+        
+        <!-- Preserve filter and days parameters -->
+        <input type="hidden" name="filter" th:value="${filter}"/>
+        <input type="hidden" name="days" th:value="${days}"/>
 
         <!-- Dropdown for selecting record size -->
         <div class="record-selector">
@@ -256,6 +380,28 @@
 
     <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
     <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
+
+    <!-- Underpaid Transactions Summary (only show when filter is active) -->
+    <div class="row mb-3" th:if="${filter == 'underpaid' and days > 0}">
+        <div class="col-12">
+            <div class="alert alert-info" role="alert">
+                <h6 class="alert-heading mb-2">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Underpaid Transactions Found
+                </h6>
+                <p class="mb-2">
+                    Showing <strong th:text="${transactionPage.totalElements}"></strong> underpaid transactions 
+                    with no payments in the last <strong th:text="${days}"></strong> days.
+                </p>
+                <p class="mb-0 small" th:if="${totalAmountOwed != null}">
+                    Total amount owed: <strong th:text="'$' + ${#numbers.formatDecimal(totalAmountOwed, 1, 2)}"></strong>
+                </p>
+                <p class="mb-0 small" th:if="${totalAmountOwed == null}">
+                    Total amount owed: <strong>Calculating...</strong>
+                </p>
+            </div>
+        </div>
+    </div>
 
     <table class="table table-hover table-striped table-dark">
         <thead>
@@ -339,7 +485,7 @@
         <ul class="pagination flex-wrap justify-content-center">
             <li class="page-item" th:each="pageNumber : ${pageNumbers}">
                 <a class="page-link m-1"
-                   th:href="@{/transaction/listall(size=${size}, page=${pageNumber == 1 ? 0 : pageNumber - 1}, customerid=${customerid == 0 ? 0 : customerid})}"
+                   th:href="@{/transaction/listall(size=${size}, page=${pageNumber == 1 ? 0 : pageNumber - 1}, customerid=${customerid == 0 ? 0 : customerid}, filter=${filter}, days=${days})}"
                    th:text="${pageNumber}"
                    th:classappend="${pageNumber==transactionPage.number + 1} ? ' active'">
                 </a>

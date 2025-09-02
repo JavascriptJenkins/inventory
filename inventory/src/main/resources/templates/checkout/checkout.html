@@ -118,6 +118,37 @@
             text-align: center;
         }
         
+        /* Most recently edited products section */
+        .most-recently-edited-section {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #495057;
+            border-radius: 8px;
+            border: 1px solid #6c757d;
+        }
+        
+        .most-recently-edited-title {
+            color: #fff;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        /* Different styling for recently edited product buttons */
+        .most-recently-edited-section .product-scan-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+        }
+        
+        .most-recently-edited-section .product-scan-btn:hover {
+            background: linear-gradient(135deg, #218838 0%, #1ea085 100%);
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.6);
+        }
+        
+        .most-recently-edited-section .product-scan-btn .btn-icon {
+            color: #fff;
+        }
+        
         .product-scan-buttons {
             display: flex;
             flex-wrap: wrap;
@@ -134,10 +165,11 @@
             font-size: 0.9rem;
             cursor: pointer;
             transition: all 0.3s ease;
-            white-space: nowrap;
+            white-space: normal;
+            word-wrap: break-word;
             max-width: 220px;
+            min-height: 60px;
             overflow: hidden;
-            text-overflow: ellipsis;
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
             position: relative;
             display: flex;
@@ -145,6 +177,8 @@
             justify-content: center;
             gap: 8px;
             font-weight: 500;
+            text-align: center;
+            line-height: 1.2;
         }
         
         .product-scan-btn:hover {
@@ -161,11 +195,14 @@
         .product-scan-btn .btn-icon {
             font-size: 1.1rem;
             opacity: 0.9;
+            flex-shrink: 0;
         }
         
         .product-scan-btn .btn-text {
             flex: 1;
             text-align: center;
+            word-break: break-word;
+            hyphens: auto;
         }
         
         @media (max-width: 768px) {
@@ -177,6 +214,7 @@
                 padding: 6px 12px;
                 font-size: 0.8rem;
                 max-width: 150px;
+                min-height: 50px;
             }
         }
         
@@ -185,7 +223,20 @@
                 padding: 5px 10px;
                 font-size: 0.75rem;
                 max-width: 120px;
+                min-height: 45px;
             }
+            
+            .most-purchased-title,
+            .most-recently-edited-title {
+                font-size: 1rem;
+            }
+        }
+        
+        /* Ensure proper word wrapping for long product names */
+        .product-scan-btn {
+            hyphens: auto;
+            overflow-wrap: break-word;
+            word-break: break-word;
         }
         
         .table-hover tbody tr:hover {
@@ -758,6 +809,21 @@
         </div>
     </div>
 
+    <!-- Most Recently Edited Products Section -->
+    <div class="most-recently-edited-section" th:if="${mostRecentlyEditedProducts != null && !mostRecentlyEditedProducts.empty}">
+        <h4 class="most-recently-edited-title">Most Recently Edited Products</h4>
+        <div class="product-scan-buttons">
+            <button th:each="product : ${mostRecentlyEditedProducts}" 
+                    type="button" 
+                    class="product-scan-btn"
+                    th:data-barcode="${product.barcode}"
+                    th:title="${product.name}">
+                <i class="bi bi-pencil-square btn-icon"></i>
+                <span class="btn-text" th:text="${product.name} + ' - Scan'"></span>
+            </button>
+        </div>
+    </div>
+
 
     <!-- This table will display with product info based on case insensitive search from popup -->
     <div class="col-md-12" th:if="${productPage != null && productPage.content.size() > 0}">
@@ -867,9 +933,9 @@
 
         document.getElementById("searchButton").addEventListener("click", function () {
             let searchQuery = document.getElementById("searchInput").value.trim();
-<!--            if (searchQuery) {-->
-<!--                alert("Searching for: " + searchQuery); // Replace this with actual search logic-->
-<!--            }-->
+            // if (searchQuery) {
+            //     alert("Searching for: " + searchQuery); // Replace this with actual search logic
+            // }
         });
 
         // Close popup when clicking outside the content
@@ -946,7 +1012,7 @@
         });
 
         // Alternative approach: direct event binding for better reliability
-        function bindMostPurchasedProductEvents() {
+        function bindProductScanButtonEvents() {
             const buttons = document.querySelectorAll('.product-scan-btn');
             buttons.forEach(button => {
                 button.addEventListener('click', function(e) {
@@ -961,10 +1027,10 @@
         }
 
         // Bind events when DOM is loaded and also after any dynamic content updates
-        bindMostPurchasedProductEvents();
+        bindProductScanButtonEvents();
         
         // Re-bind events after a short delay to ensure all elements are present
-        setTimeout(bindMostPurchasedProductEvents, 100);
+        setTimeout(bindProductScanButtonEvents, 100);
 
     });
 </script>

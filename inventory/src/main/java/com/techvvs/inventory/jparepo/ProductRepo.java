@@ -121,6 +121,8 @@ public interface ProductRepo extends JpaRepository<ProductVO, Integer> {
     // get the last product that was created
     Optional<ProductVO> findTopByOrderByCreateTimeStampDesc();
 
+    // get the top 10 most recently edited products
+    List<ProductVO> findTop10ByOrderByUpdateTimeStampDesc();
 
     @Query("SELECT p FROM ProductVO p LEFT JOIN FETCH p.attribute_list WHERE p.product_id = :id")
     Optional<ProductVO> findByIdWithAttributes(@Param("id") Integer id);

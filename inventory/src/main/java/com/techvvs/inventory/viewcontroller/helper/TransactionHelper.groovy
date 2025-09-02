@@ -72,7 +72,9 @@ class TransactionHelper {
                              Optional<Integer> size,
                              Optional<Integer> customerid,
                              Optional<Integer> productinscope,
-                             Optional<Integer> batchid
+                             Optional<Integer> batchid,
+                             Optional<String> filter,
+                             Optional<Integer> days
 
                              ) {
 
@@ -96,7 +98,7 @@ class TransactionHelper {
 
         // run first page request
         Pageable pageable = PageRequest.of(currentPage, pageSize, Sort.by(Sort.Direction.DESC, "createTimeStamp"));
-        Page<TransactionVO> pageOfTransaction = runPageRequest(pageable, customerid, productinscope, batchid);
+        Page<TransactionVO> pageOfTransaction = runPageRequest(pageable, customerid, productinscope, batchid, filter, days);
 
 
         int totalPages = pageOfTransaction.getTotalPages();
@@ -106,7 +108,7 @@ class TransactionHelper {
         if(contentsize == 0){
             // we detect contentsize of 0 then we'll just take the first page of data and show it
             pageable = PageRequest.of(0, pageSize, Sort.by(Sort.Direction.DESC, "createTimeStamp"));
-            pageOfTransaction = runPageRequest(pageable, customerid, productinscope, batchid);
+            pageOfTransaction = runPageRequest(pageable, customerid, productinscope, batchid, filter, days);
         }
 
         List<Integer> pageNumbers = new ArrayList<>();
@@ -120,6 +122,17 @@ class TransactionHelper {
         model.addAttribute("size", pageSize);
         model.addAttribute("transactionPage", pageOfTransaction);
         model.addAttribute("customerid", customerid.orElse(0));
+        
+        // Calculate total amount owed for underpaid transactions
+        String filterType = filter.orElse("")
+        Integer daysFilter = days.orElse(0)
+        if (filterType == "underpaid" && daysFilter > 0) {
+            double totalAmountOwed = pageOfTransaction.content.collect { t -> 
+                Math.max(t.totalwithtax - t.paid, 0.0) 
+            }.sum()
+            model.addAttribute("totalAmountOwed", totalAmountOwed)
+        }
+        
         // END PAGINATION
 
 
@@ -131,13 +144,23 @@ class TransactionHelper {
             Pageable pageable,
             Optional<Integer> customerid,
             Optional<Integer> selectedproductid,
-            Optional<Integer> selectedbatchid
+            Optional<Integer> selectedbatchid,
+            Optional<String> filter,
+            Optional<Integer> days
     ) {
         Integer custId = (customerid.present && customerid.get() > 0) ? customerid.get() : null
         Integer prodId = (selectedproductid.present && selectedproductid.get() > 0) ? selectedproductid.get() : null
-        Integer batchId = (selectedbatchid.present && selectedbatchid.get() > 0) ? selectedbatchid.get() : null
+        String filterType = filter.orElse("")
+        Integer daysFilter = days.orElse(0)
 
-        return transactionRepo.findFilteredTransactions(custId, prodId, batchId, pageable)
+        // Check if we need to filter for underpaid transactions
+        if (filterType == "underpaid" && daysFilter > 0) {
+            // Calculate cutoff date (X days ago from now)
+            LocalDateTime cutoffDate = LocalDateTime.now().minusDays(daysFilter)
+            return transactionRepo.findUnderpaidTransactions(custId, prodId, cutoffDate, pageable)
+        }
+
+        return transactionRepo.findFilteredTransactions(custId, prodId, pageable)
     }
 
     @Transactional

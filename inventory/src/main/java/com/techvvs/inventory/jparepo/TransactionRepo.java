@@ -28,12 +28,30 @@ public interface TransactionRepo extends JpaRepository<TransactionVO, Integer> {
     JOIN t.product_list p
     WHERE (:customerid IS NULL OR t.customervo.customerid = :customerid)
       AND (:productid IS NULL OR :productid = 0 OR p.product_id = :productid)
-      AND (:batchid IS NULL OR :batchid = 0 OR p.batch.batchid = :batchid)
     """)
     Page<TransactionVO> findFilteredTransactions(
             @Param("customerid") Integer customerid,
             @Param("productid") Integer productid,
-            @Param("batchid") Integer batchid,
+            Pageable pageable
+    );
+
+    @Query("""
+    SELECT DISTINCT t
+    FROM TransactionVO t
+    JOIN t.product_list p
+    WHERE (:customerid IS NULL OR t.customervo.customerid = :customerid)
+      AND (:productid IS NULL OR :productid = 0 OR p.product_id = :productid)
+      AND t.paid < t.totalwithtax
+      AND NOT EXISTS (
+        SELECT p2 FROM PaymentVO p2 
+        WHERE p2.transaction = t 
+        AND p2.createTimeStamp >= :cutoffDate
+      )
+    """)
+    Page<TransactionVO> findUnderpaidTransactions(
+            @Param("customerid") Integer customerid,
+            @Param("productid") Integer productid,
+            @Param("cutoffDate") LocalDateTime cutoffDate,
             Pageable pageable
     );
 
@@ -46,7 +64,6 @@ public interface TransactionRepo extends JpaRepository<TransactionVO, Integer> {
     WHERE t.createTimeStamp BETWEEN :startDate AND :endDate
       AND (:customerid IS NULL OR t.customervo.customerid = :customerid)
       AND (:productid IS NULL OR :productid = 0 OR p.product_id = :productid)
-      AND (:batchid IS NULL OR :batchid = 0 OR p.batch.batchid = :batchid)
     GROUP BY cast(t.createTimeStamp as date)
     ORDER BY txDate ASC
 """)
@@ -54,8 +71,7 @@ public interface TransactionRepo extends JpaRepository<TransactionVO, Integer> {
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate,
             @Param("customerid") Integer customerid,
-            @Param("productid") Integer productid,
-            @Param("batchid") Integer batchid
+            @Param("productid") Integer productid
     );
 
 
@@ -83,7 +99,6 @@ public interface TransactionRepo extends JpaRepository<TransactionVO, Integer> {
         FROM TransactionVO t2
         JOIN t2.product_list p
         WHERE (:productid IS NULL OR :productid = 0 OR p.product_id = :productid)
-          AND (:batchid IS NULL OR :batchid = 0 OR p.batch.batchid = :batchid)
     )
     AND t.createTimeStamp BETWEEN :startDate AND :endDate
     AND (:customerid IS NULL OR t.customervo.customerid = :customerid)
@@ -94,8 +109,7 @@ public interface TransactionRepo extends JpaRepository<TransactionVO, Integer> {
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate,
             @Param("customerid") Integer customerid,
-            @Param("productid") Integer productid,
-            @Param("batchid") Integer batchid
+            @Param("productid") Integer productid
     );
 
 
@@ -138,7 +152,7 @@ public interface TransactionRepo extends JpaRepository<TransactionVO, Integer> {
         SELECT p, COUNT(t) as purchaseCount
         FROM ProductVO p
         JOIN p.transaction_list t
-        GROUP BY p.product_id, p.name, p.barcode, p.price, p.quantity, p.quantityremaining, p.createTimeStamp, p.updateTimeStamp, p.description, p.laborCostPricePerUnit, p.marginPercent, p.notes, p.productnumber, p.salePrice, p.batch.batchid, p.producttypeid.producttypeid
+        GROUP BY p.product_id, p.name, p.barcode, p.price, p.quantity, p.quantityremaining, p.createTimeStamp, p.updateTimeStamp, p.description, p.laborCostPricePerUnit, p.marginPercent, p.notes, p.productnumber, p.salePrice
         ORDER BY purchaseCount DESC
     """)
     List<Object[]> findMostPurchasedProducts();

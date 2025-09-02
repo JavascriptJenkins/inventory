@@ -312,13 +312,15 @@ public class TransactionViewController {
             @RequestParam("size") Optional<Integer> size,
             @RequestParam("customerid") Optional<Integer> customerid,
             @RequestParam("productinscope") Optional<Integer> productinscope,
-            @RequestParam("batchid") Optional<Integer> batchinscope
+            @RequestParam("batchid") Optional<Integer> batchinscope,
+            @RequestParam("filter") Optional<String> filter,
+            @RequestParam("days") Optional<Integer> days
     ){
 
         
 
         // bind the page of transactions
-        transactionHelper.findAllTransactions(model, page, size, customerid, productinscope, batchinscope)
+        transactionHelper.findAllTransactions(model, page, size, customerid, productinscope, batchinscope, filter, days)
 
         //transactionHelper.applyCustomerFilter(transactionVO, model)
 
@@ -331,6 +333,10 @@ public class TransactionViewController {
 
         model.addAttribute("products", productRepo.findAllByOrderByCreateTimeStampDescNameAsc());
         model.addAttribute("productinscope", productinscope.orElse(0)); // or null/0 if not filtering
+
+        // Add filter parameters to model for pagination
+        model.addAttribute("filter", filter.orElse(""));
+        model.addAttribute("days", days.orElse(0));
 
         model.addAttribute("transaction", transactionVO);
         return "transaction/alltransactions.html";
