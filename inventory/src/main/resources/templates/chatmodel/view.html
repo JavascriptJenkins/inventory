@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>View Chat Model</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    
+    <style>
+        .info-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+        }
+        
+        .stats-card {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            transition: all 0.3s ease;
+        }
+        
+        .stats-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+        }
+        
+        .folder-info {
+            background: #e9ecef;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            padding: 15px;
+        }
+        
+        .folder-path {
+            font-family: monospace;
+            background: #fff;
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid #ced4da;
+            color: #495057;
+        }
+        
+        .document-item {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: white;
+            transition: all 0.3s ease;
+        }
+        
+        .document-item:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-area:hover {
+            border-color: #007bff;
+            background: #e3f2fd;
+        }
+        
+        .upload-area.dragover {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+        
+        .chat-list-item {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: white;
+            transition: all 0.3s ease;
+        }
+        
+        .chat-list-item:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .status-badge {
+            font-size: 0.75rem;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid mt-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h1 class="mb-0">
+                        <i class="bi bi-robot text-primary"></i>
+                        <span th:text="${chatModel.name}">Chat Model Name</span>
+                    </h1>
+                    <div>
+                        <a th:href="@{/chatmodel/chat/{id}(id=${chatModel.id})}" class="btn btn-success btn-lg me-2">
+                            <i class="bi bi-chat-dots me-2"></i>
+                            Start Chat
+                        </a>
+                        <a th:href="@{/chatmodel/edit/{id}(id=${chatModel.id})}" class="btn btn-warning btn-lg me-2">
+                            <i class="bi bi-pencil me-2"></i>
+                            Edit
+                        </a>
+                        <a href="/chatmodel/list" class="btn btn-outline-secondary btn-lg">
+                            <i class="bi bi-arrow-left me-2"></i>
+                            Back to List
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Model Information -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card info-card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h5 class="card-title mb-3">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    Model Description
+                                </h5>
+                                <p class="card-text" th:text="${chatModel.description ?: 'No description provided'}">
+                                    Model description
+                                </p>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <span th:if="${chatModel.isActive}" class="badge bg-success status-badge fs-6">
+                                    <i class="bi bi-check-circle me-1"></i>Active
+                                </span>
+                                <span th:unless="${chatModel.isActive}" class="badge bg-secondary status-badge fs-6">
+                                    <i class="bi bi-pause-circle me-1"></i>Inactive
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card stats-card text-center">
+                    <div class="card-body">
+                        <h3 class="text-primary mb-0" th:text="${chatModel.chatCount}">0</h3>
+                        <p class="text-muted mb-0">Total Chats</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stats-card text-center">
+                    <div class="card-body">
+                        <h3 class="text-success mb-0" th:text="${chatModel.activeChatCount}">0</h3>
+                        <p class="text-muted mb-0">Active Chats</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stats-card text-center">
+                    <div class="card-body">
+                        <h3 class="text-info mb-0" th:text="${documentCount}">0</h3>
+                        <p class="text-muted mb-0">Documents</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stats-card text-center">
+                    <div class="card-body">
+                        <h3 class="text-warning mb-0" th:text="${chatModel.modelType}">Type</h3>
+                        <p class="text-muted mb-0">Model Type</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Folder Information -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-folder me-2"></i>
+                            Folder Information
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label">Folder Path</label>
+                                <div class="folder-path" th:text="${chatModel.folderPath}">folder_path</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Full Path</label>
+                                <div class="folder-path" th:text="${chatModel.fullFolderPath}">full_path</div>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Created Date</label>
+                                <div class="folder-info">
+                                    <i class="bi bi-calendar me-2"></i>
+                                    <span th:text="${#temporals.format(chatModel.createdTimestamp, 'MMM dd, yyyy HH:mm')}">Date</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Last Updated</label>
+                                <div class="folder-info">
+                                    <i class="bi bi-clock me-2"></i>
+                                    <span th:text="${#temporals.format(chatModel.updatedTimestamp, 'MMM dd, yyyy HH:mm')}">Date</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Document Management -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-file-earmark-text me-2"></i>
+                            Document Management
+                        </h5>
+                        <button class="btn btn-outline-primary btn-sm" onclick="toggleUploadArea()">
+                            <i class="bi bi-upload me-2"></i>
+                            Toggle Upload
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <!-- Upload Area -->
+                        <div id="uploadArea" class="upload-area" style="display: none;">
+                            <i class="bi bi-cloud-upload fs-1 text-muted mb-3"></i>
+                            <h5>Drag & Drop files here</h5>
+                            <p class="text-muted">or click to select files</p>
+                                                         <input type="file" id="fileInput" multiple accept=".txt,.md,.pdf,.doc,.docx,.rtf,.odt" style="display: none;">
+                            <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+                                <i class="bi bi-folder2-open me-2"></i>
+                                Select Files
+                            </button>
+                        </div>
+                        
+                                                 <!-- Documents List -->
+                         <div id="documentsList">
+                             <div th:if="${isDirectoryEmpty}" class="empty-state">
+                                 <i class="bi bi-folder2"></i>
+                                 <h5>No Documents Found</h5>
+                                 <p class="lead">Upload some files to provide context for this chat model.</p>
+                                 <button class="btn btn-primary" onclick="toggleUploadArea()">
+                                     <i class="bi bi-upload me-2"></i>
+                                     Upload Documents
+                                 </button>
+                             </div>
+                             
+                             <div th:unless="${isDirectoryEmpty}" class="row">
+                                 <div class="col-12">
+                                     <p class="text-muted mb-3">
+                                         <i class="bi bi-info-circle me-2"></i>
+                                         This chat model has <strong th:text="${documentCount}">0</strong> document(s) available for context.
+                                     </p>
+                                     <div class="table-responsive">
+                                         <table class="table table-sm table-hover">
+                                             <thead class="table-light">
+                                                 <tr>
+                                                     <th>Document Name</th>
+                                                     <th>Type</th>
+                                                     <th>Size</th>
+                                                     <th>Uploaded</th>
+                                                     <th>Actions</th>
+                                                 </tr>
+                                             </thead>
+                                             <tbody id="documentsTableBody">
+                                                 <!-- Documents will be loaded here via JavaScript -->
+                                             </tbody>
+                                         </table>
+                                     </div>
+                                     <button class="btn btn-outline-primary btn-sm mt-2" onclick="loadDocuments()">
+                                         <i class="bi bi-arrow-clockwise me-2"></i>
+                                         Refresh Documents
+                                     </button>
+                                 </div>
+                             </div>
+                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Chats -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-chat-dots me-2"></i>
+                            Recent Chats
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${chatModel.chats.empty}" class="empty-state">
+                            <i class="bi bi-chat"></i>
+                            <h5>No Chats Yet</h5>
+                            <p class="lead">Start a conversation using this chat model.</p>
+                            <a href="/chatbot" class="btn btn-primary">
+                                <i class="bi bi-chat-dots me-2"></i>
+                                Start Chat
+                            </a>
+                        </div>
+                        
+                        <div th:unless="${chatModel.chats.empty}" class="row">
+                            <div class="col-12">
+                                <div th:each="chat : ${chatModel.chats}" class="chat-list-item">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-6">
+                                            <h6 class="mb-1" th:text="${chat.title}">Chat Title</h6>
+                                            <small class="text-muted" th:text="${chat.getLastMessagePreview()}">Last message preview</small>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <small class="text-muted">
+                                                <i class="bi bi-calendar me-1"></i>
+                                                <span th:text="${#temporals.format(chat.updatedTimestamp, 'MMM dd, yyyy')}">Date</span>
+                                            </small>
+                                        </div>
+                                        <div class="col-md-3 text-end">
+                                            <span th:if="${chat.isActive}" class="badge bg-success status-badge">
+                                                Active
+                                            </span>
+                                            <span th:unless="${chat.isActive}" class="badge bg-secondary status-badge">
+                                                Inactive
+                                            </span>
+                                            <a th:href="@{/chatbot(chatId=${chat.id})}" class="btn btn-sm btn-outline-primary ms-2">
+                                                <i class="bi bi-arrow-right"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MCP Connector Information -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-plug me-2"></i>
+                            MCP Connector
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label">Connector File</label>
+                                <div class="folder-path" th:text="${chatModel.mcpConnectorPath}">mcp_connector_path</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">API Endpoint</label>
+                                <div class="folder-path" th:text="'http://localhost:8080/api/mcp/chatmodel/' + ${chatModel.id}">api_endpoint</div>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <a href="#" class="btn btn-outline-info btn-sm me-2">
+                                <i class="bi bi-download me-2"></i>
+                                Download Connector
+                            </a>
+                            <a href="#" class="btn btn-outline-secondary btn-sm">
+                                <i class="bi bi-gear me-2"></i>
+                                Configure MCP
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        function toggleUploadArea() {
+            const uploadArea = document.getElementById('uploadArea');
+            if (uploadArea.style.display === 'none') {
+                uploadArea.style.display = 'block';
+            } else {
+                uploadArea.style.display = 'none';
+            }
+        }
+
+        // File upload handling
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+
+        // Drag and drop functionality
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            uploadFiles(files);
+        });
+
+        uploadArea.addEventListener('click', (e) => {
+            if (e.target === uploadArea || e.target.closest('.upload-area')) {
+                fileInput.click();
+            }
+        });
+
+        document.querySelector('.btn-primary').addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            uploadFiles(e.target.files);
+        });
+
+        function uploadFiles(files) {
+            // Ensure files is an array-like object and convert to array
+            const filesArray = Array.from(files || []);
+            
+            if (filesArray.length === 0) return;
+
+            // Validate files before uploading
+            const validFiles = [];
+            const invalidFiles = [];
+            
+            filesArray.forEach(file => {
+                // Check file size (max 10MB)
+                if (file.size > 10 * 1024 * 1024) {
+                    invalidFiles.push({ file: file.name, reason: 'File size exceeds 10MB limit' });
+                    return;
+                }
+                
+                // Check file type
+                const allowedTypes = ['.txt', '.md', '.pdf', '.doc', '.docx', '.rtf', '.odt'];
+                const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+                if (!allowedTypes.includes(fileExtension)) {
+                    invalidFiles.push({ file: file.name, reason: 'File type not supported' });
+                    return;
+                }
+                
+                validFiles.push(file);
+            });
+
+            if (invalidFiles.length > 0) {
+                showValidationErrors(invalidFiles);
+                return;
+            }
+
+            if (validFiles.length === 0) {
+                alert('No valid files to upload');
+                return;
+            }
+
+            // Show loading state
+            const uploadArea = document.getElementById('uploadArea');
+            uploadArea.innerHTML = `
+                <div class="text-center">
+                    <div class="spinner-border text-primary mb-3" role="status">
+                        <span class="visually-hidden">Uploading...</span>
+                    </div>
+                    <h5>Uploading ${validFiles.length} file(s)...</h5>
+                    <p class="text-muted">Please wait while your files are being processed.</p>
+                    <div class="progress mt-3" style="height: 20px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                             role="progressbar" style="width: 0%" 
+                             id="uploadProgress">0%</div>
+                    </div>
+                </div>
+            `;
+
+            // Upload each file individually
+            let uploadedCount = 0;
+            let failedCount = 0;
+            const results = [];
+
+            validFiles.forEach((file, index) => {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('chatModelId', '[[${chatModel.id}]]');
+
+                fetch('/chatmodel/upload', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        uploadedCount++;
+                        results.push({ file: file.name, success: true, message: data.message });
+                    } else {
+                        failedCount++;
+                        results.push({ file: file.name, success: false, message: data.error || 'Unknown error occurred' });
+                    }
+                })
+                .catch(error => {
+                    failedCount++;
+                    results.push({ file: file.name, success: false, message: 'Network error: ' + error.message });
+                })
+                .finally(() => {
+                    // Update progress bar
+                    const progress = ((uploadedCount + failedCount) / validFiles.length) * 100;
+                    const progressBar = document.getElementById('uploadProgress');
+                    if (progressBar) {
+                        progressBar.style.width = progress + '%';
+                        progressBar.textContent = Math.round(progress) + '%';
+                    }
+                    
+                    // Check if all files have been processed
+                    if (uploadedCount + failedCount === validFiles.length) {
+                        showUploadResults(results, uploadedCount, failedCount);
+                    }
+                });
+            });
+        }
+
+        function showValidationErrors(invalidFiles) {
+            const uploadArea = document.getElementById('uploadArea');
+            
+            let errorHtml = `
+                <div class="text-center">
+                    <i class="bi bi-exclamation-triangle fs-1 text-warning mb-3"></i>
+                    <h5>Validation Errors</h5>
+                    <p class="text-muted">Some files could not be uploaded due to validation issues.</p>
+                </div>
+            `;
+
+            errorHtml += '<div class="mt-3"><h6>Issues Found:</h6><ul class="list-unstyled">';
+            invalidFiles.forEach(item => {
+                errorHtml += `
+                    <li class="mb-2">
+                        <i class="bi bi-x-circle text-danger me-2"></i>
+                        <strong>${item.file}</strong>: ${item.reason}
+                    </li>
+                `;
+            });
+            errorHtml += '</ul></div>';
+
+            errorHtml += `
+                <div class="mt-3">
+                    <button class="btn btn-primary" onclick="toggleUploadArea()">
+                        <i class="bi bi-upload me-2"></i>
+                        Try Again
+                    </button>
+                </div>
+            `;
+
+            uploadArea.innerHTML = errorHtml;
+        }
+
+        function showUploadResults(results, uploadedCount, failedCount) {
+            const uploadArea = document.getElementById('uploadArea');
+            
+            let resultHtml = `
+                <div class="text-center">
+                    <i class="bi bi-${uploadedCount > 0 ? 'check-circle' : 'exclamation-triangle'} fs-1 text-${uploadedCount > 0 ? 'success' : 'warning'} mb-3"></i>
+                    <h5>Upload Complete</h5>
+                    <p class="text-muted">${uploadedCount} file(s) uploaded successfully, ${failedCount} failed</p>
+                </div>
+            `;
+
+            if (results.length > 0) {
+                resultHtml += '<div class="mt-3"><h6>Results:</h6><ul class="list-unstyled">';
+                results.forEach(result => {
+                    const iconClass = result.success ? 'bi-check-circle text-success' : 'bi-x-circle text-danger';
+                    resultHtml += `
+                        <li class="mb-2">
+                            <i class="bi ${iconClass} me-2"></i>
+                            <strong>${result.file}</strong>: ${result.message}
+                        </li>
+                    `;
+                });
+                resultHtml += '</ul></div>';
+            }
+
+            resultHtml += `
+                <div class="mt-3">
+                    <button class="btn btn-primary" onclick="toggleUploadArea()">
+                        <i class="bi bi-upload me-2"></i>
+                        Upload More Files
+                    </button>
+                    <button class="btn btn-outline-secondary ms-2" onclick="refreshDocumentSection()">
+                        <i class="bi bi-arrow-clockwise me-2"></i>
+                        Refresh Documents
+                    </button>
+                </div>
+            `;
+
+            uploadArea.innerHTML = resultHtml;
+            
+            // If files were uploaded successfully, refresh the document section
+            if (uploadedCount > 0) {
+                setTimeout(() => {
+                    refreshDocumentSection();
+                }, 1000);
+            }
+        }
+
+        function refreshDocumentSection() {
+            // Refresh the page to show updated document count and list
+            location.reload();
+        }
+
+        function loadDocuments() {
+            const tableBody = document.getElementById('documentsTableBody');
+            if (!tableBody) return;
+
+            // Show loading state
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center">
+                        <div class="spinner-border spinner-border-sm text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        Loading documents...
+                    </td>
+                </tr>
+            `;
+
+            // Fetch documents from the API
+            fetch('/chatmodel/documents/[[${chatModel.id}]]')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.documents) {
+                        displayDocuments(data.documents);
+                    } else {
+                        tableBody.innerHTML = `
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">
+                                    <i class="bi bi-exclamation-triangle me-2"></i>
+                                    Failed to load documents: ${data.error || 'Unknown error'}
+                                </td>
+                            </tr>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="text-center text-danger">
+                                <i class="bi bi-x-circle me-2"></i>
+                                Error loading documents: ${error.message}
+                            </td>
+                        </tr>
+                    `;
+                });
+        }
+
+        function displayDocuments(documents) {
+            const tableBody = document.getElementById('documentsTableBody');
+            if (!tableBody) return;
+
+            if (documents.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center text-muted">
+                            <i class="bi bi-folder2 me-2"></i>
+                            No documents found
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tableBody.innerHTML = documents.map(doc => `
+                <tr>
+                    <td>
+                        <i class="bi bi-file-earmark-text me-2"></i>
+                        <strong>${doc.name}</strong>
+                    </td>
+                    <td>
+                        <span class="badge bg-secondary">${doc.type || 'Unknown'}</span>
+                    </td>
+                    <td>${formatFileSize(doc.size)}</td>
+                    <td>${formatDate(doc.uploaded)}</td>
+                    <td>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <a href="/chatmodel/document/[[${chatModel.id}]]/${doc.name}" 
+                               class="btn btn-outline-primary btn-sm" target="_blank">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <button class="btn btn-outline-danger btn-sm" 
+                                    onclick="deleteDocument('${doc.name}')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function formatDate(timestamp) {
+            if (!timestamp) return 'Unknown';
+            const date = new Date(timestamp);
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+        }
+
+        function deleteDocument(filename) {
+            if (!confirm(`Are you sure you want to delete "${filename}"? This action cannot be undone.`)) {
+                return;
+            }
+
+            fetch(`/chatmodel/document/[[${chatModel.id}]]/${filename}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Reload documents after successful deletion
+                    loadDocuments();
+                    // Show success message
+                    showAlert('Document deleted successfully', 'success');
+                } else {
+                    showAlert('Failed to delete document: ' + data.error, 'danger');
+                }
+            })
+            .catch(error => {
+                showAlert('Error deleting document: ' + error.message, 'danger');
+            });
+        }
+
+        function showAlert(message, type) {
+            // Create alert element
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            // Insert at the top of the container
+            const container = document.querySelector('.container-fluid');
+            container.insertBefore(alertDiv, container.firstChild);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+
+        // Load documents when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Only load documents if the directory is not empty
+            if (![[${isDirectoryEmpty}]]) {
+                loadDocuments();
+            }
+        });
+    </script>
+</body>
+</html>
+

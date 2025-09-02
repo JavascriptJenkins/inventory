@@ -31,6 +31,10 @@ public class Chat {
     @JoinColumn(name = "system_user_id")
     private SystemUserDAO systemUser;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "chat_model_id")
+    private ChatModel chatModel;
+
     @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @OrderBy("createdTimestamp ASC")
     @JsonIgnore
@@ -90,6 +94,14 @@ public class Chat {
 
     public void setSystemUser(SystemUserDAO systemUser) {
         this.systemUser = systemUser;
+    }
+
+    public ChatModel getChatModel() {
+        return chatModel;
+    }
+
+    public void setChatModel(ChatModel chatModel) {
+        this.chatModel = chatModel;
     }
 
     public List<ChatMessage> getMessages() {

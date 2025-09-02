@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat Model Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    
+    <style>
+        .dashboard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 0;
+            margin-bottom: 30px;
+        }
+        
+        .feature-card {
+            transition: all 0.3s ease;
+            border: 1px solid #dee2e6;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+        
+        .stats-card {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+        }
+        
+        .quick-action-btn {
+            border-radius: 25px;
+            padding: 12px 25px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .quick-action-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .welcome-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .navigation-pills {
+            background: white;
+            border-radius: 25px;
+            padding: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .nav-pills .nav-link {
+            border-radius: 20px;
+            margin: 0 5px;
+            color: #6c757d;
+            font-weight: 500;
+        }
+        
+        .nav-pills .nav-link.active {
+            background: #667eea;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="display-4 mb-3">
+                        <i class="bi bi-robot me-3"></i>
+                        Chat Model Dashboard
+                    </h1>
+                    <p class="lead mb-0">Manage your AI chat models, upload documents, and start conversations</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a href="/chatmodel/create" class="btn btn-light btn-lg">
+                        <i class="bi bi-plus-circle me-2"></i>
+                        Create New Model
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h3>Welcome to Chat Model Management</h3>
+                    <p class="lead mb-0">
+                        This dashboard provides quick access to all chat model features. Create AI models, 
+                        upload documents for context, and start intelligent conversations.
+                    </p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <div class="navigation-pills">
+                        <ul class="nav nav-pills justify-content-end">
+                            <li class="nav-item">
+                                <a class="nav-link active" href="/chatmodel/list">
+                                    <i class="bi bi-list me-1"></i>List
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/chatmodel/create">
+                                    <i class="bi bi-plus me-1"></i>Create
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/chatbot">
+                                    <i class="bi bi-chat me-1"></i>Chat
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Row -->
+        <div class="row mb-4" th:if="${chatModels != null and !chatModels.empty}">
+            <div class="col-md-3">
+                <div class="card stats-card">
+                    <div class="card-body text-center">
+                        <h2 class="mb-0" th:text="${totalModels}">0</h2>
+                        <p class="mb-0">Total Models</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stats-card">
+                    <div class="card-body text-center">
+                        <h2 class="mb-0" th:text="${activeModels}">0</h2>
+                        <p class="mb-0">Active Models</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stats-card">
+                    <div class="card-body text-center">
+                        <h2 class="mb-0" th:text="${totalChats}">0</h2>
+                        <p class="mb-0">Total Chats</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stats-card">
+                    <div class="card-body text-center">
+                        <h2 class="mb-0" th:text="${activeChats}">0</h2>
+                        <p class="mb-0">Active Chats</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feature Cards -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="card feature-card h-100">
+                    <div class="card-body text-center">
+                        <div class="feature-icon">
+                            <i class="bi bi-robot"></i>
+                        </div>
+                        <h4>Create Chat Models</h4>
+                        <p class="text-muted">
+                            Build custom AI chat models with specific knowledge domains and personalities.
+                        </p>
+                        <a href="/chatmodel/create" class="btn btn-primary quick-action-btn">
+                            <i class="bi bi-plus-circle me-2"></i>
+                            Create Model
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card feature-card h-100">
+                    <div class="card-body text-center">
+                        <div class="feature-icon">
+                            <i class="bi bi-file-earmark-text"></i>
+                        </div>
+                        <h4>Upload Documents</h4>
+                        <p class="text-muted">
+                            Provide context by uploading documents that your chat models can reference.
+                        </p>
+                        <a href="/chatmodel/list" class="btn btn-success quick-action-btn">
+                            <i class="bi bi-upload me-2"></i>
+                            Manage Documents
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card feature-card h-100">
+                    <div class="card-body text-center">
+                        <div class="feature-icon">
+                            <i class="bi bi-chat-dots"></i>
+                        </div>
+                        <h4>Start Conversations</h4>
+                        <p class="text-muted">
+                            Begin intelligent conversations with your AI models using the chat interface.
+                        </p>
+                        <a href="/chatmodel/list" class="btn btn-info quick-action-btn">
+                            <i class="bi bi-chat me-2"></i>
+                            Start Chat
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-lightning me-2"></i>
+                            Quick Actions
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <a href="/chatmodel/list" class="btn btn-outline-primary w-100">
+                                    <i class="bi bi-list me-2"></i>
+                                    View All Models
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="/chatmodel/create" class="btn btn-outline-success w-100">
+                                    <i class="bi bi-plus-circle me-2"></i>
+                                    New Model
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="/chatbot" class="btn btn-outline-info w-100">
+                                    <i class="bi bi-chat me-2"></i>
+                                    General Chat
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="/admin" class="btn btn-outline-secondary w-100">
+                                    <i class="bi bi-gear me-2"></i>
+                                    Admin Panel
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Models (if any exist) -->
+        <div class="row" th:if="${chatModels != null and !chatModels.empty}">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-clock-history me-2"></i>
+                            Recent Chat Models
+                        </h5>
+                        <a href="/chatmodel/list" class="btn btn-sm btn-outline-primary">
+                            View All
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6 col-lg-4" th:each="chatModel : ${chatModels.take(3)}">
+                                <div class="card border h-100">
+                                    <div class="card-body">
+                                        <h6 class="card-title" th:text="${chatModel.name}">Model Name</h6>
+                                        <p class="card-text text-muted small" th:text="${chatModel.description}">
+                                            Model description
+                                        </p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span th:if="${chatModel.isActive}" class="badge bg-success">
+                                                <i class="bi bi-check-circle me-1"></i>Active
+                                            </span>
+                                            <span th:unless="${chatModel.isActive}" class="badge bg-secondary">
+                                                <i class="bi bi-pause-circle me-1"></i>Inactive
+                                            </span>
+                                            <a th:href="@{/chatmodel/chat/{id}(id=${chatModel.id})}" 
+                                               class="btn btn-sm btn-primary">
+                                                <i class="bi bi-chat me-1"></i>Chat
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty State (if no models) -->
+        <div class="row" th:if="${chatModels == null or chatModels.empty}">
+            <div class="col-12 text-center">
+                <div class="card border-0">
+                    <div class="card-body py-5">
+                        <i class="bi bi-robot display-1 text-muted mb-4"></i>
+                        <h3>No Chat Models Yet</h3>
+                        <p class="lead text-muted mb-4">
+                            Get started by creating your first AI chat model. You can then upload documents 
+                            and start intelligent conversations.
+                        </p>
+                        <a href="/chatmodel/create" class="btn btn-primary btn-lg">
+                            <i class="bi bi-plus-circle me-2"></i>
+                            Create Your First Model
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Auto-hide alerts after 5 seconds
+        setTimeout(function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 5000);
+    </script>
+</body>
+</html>

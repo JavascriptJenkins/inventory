@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Chat Model</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    
+    <style>
+        .form-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .form-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+        
+        .form-section h5 {
+            color: #495057;
+            border-bottom: 2px solid #dee2e6;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .preview-box {
+            background: #e9ecef;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+        
+        .folder-path-preview {
+            font-family: monospace;
+            background: #fff;
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid #ced4da;
+        }
+        
+        .help-text {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        
+        .example-box {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        
+        .example-box h6 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+        
+        .example-box ul {
+            margin-bottom: 0;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="form-container">
+            <!-- Header -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h1 class="mb-0">
+                            <i class="bi bi-plus-circle text-primary"></i>
+                            Create New Chat Model
+                        </h1>
+                        <a href="/chatmodel/list" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>
+                            Back to List
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Create Form -->
+            <form th:action="@{/chatmodel/create}" method="POST" th:object="${chatModel}">
+                
+                <!-- Basic Information -->
+                <div class="form-section">
+                    <h5>
+                        <i class="bi bi-info-circle me-2"></i>
+                        Basic Information
+                    </h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="name" class="form-label">Chat Model Name *</label>
+                            <input type="text" class="form-control" id="name" name="name" 
+                                   th:field="*{name}" required 
+                                   placeholder="e.g., METRC Compliance Assistant">
+                            <div class="help-text">Choose a descriptive name for your chat model</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="modelType" class="form-label">Model Type</label>
+                            <select class="form-select" id="modelType" name="modelType" th:field="*{modelType}">
+                                <option value="local">Local (File-based)</option>
+                                <option value="external">External API</option>
+                                <option value="hybrid">Hybrid (Local + External)</option>
+                            </select>
+                            <div class="help-text">Determines how the model sources information</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" 
+                                      th:field="*{description}" rows="3" 
+                                      placeholder="Describe the purpose and capabilities of this chat model..."></textarea>
+                            <div class="help-text">Provide a detailed description of what this chat model does</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Folder Configuration -->
+                <div class="form-section">
+                    <h5>
+                        <i class="bi bi-folder me-2"></i>
+                        Folder Configuration
+                    </h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="folderPath" class="form-label">Folder Path *</label>
+                            <input type="text" class="form-control" id="folderPath" name="folderPath" 
+                                   required placeholder="e.g., metrc-compliance">
+                            <div class="help-text">This will create a folder under uploads/chatmodel/</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Full Path Preview</label>
+                            <div class="folder-path-preview" id="fullPathPreview">
+                                ./uploads/chatmodel/
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="example-box">
+                        <h6><i class="bi bi-lightbulb me-2"></i>Folder Path Examples</h6>
+                        <ul>
+                            <li><strong>metrc-compliance</strong> → ./uploads/chatmodel/metrc-compliance/</li>
+                            <li><strong>product-support</strong> → ./uploads/chatmodel/product-support/</li>
+                            <li><strong>hr-policies</strong> → ./uploads/chatmodel/hr-policies/</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Directory Structure Preview -->
+                <div class="form-section">
+                    <h5>
+                        <i class="bi bi-diagram-3 me-2"></i>
+                        Directory Structure
+                    </h5>
+                    
+                    <div class="preview-box">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>What will be created:</h6>
+                                <ul class="mb-0">
+                                    <li><code>./uploads/chatmodel/<span id="structurePreview">[folder]</span>/</code></li>
+                                    <li><code>├── documents/</code> (for file uploads)</li>
+                                    <li><code>├── mcp/</code> (MCP connector)</li>
+                                    <li><code>└── README.md</code> (documentation)</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Features:</h6>
+                                <ul class="mb-0">
+                                    <li>Automatic folder creation</li>
+                                    <li>MCP connector generation</li>
+                                    <li>Document upload support</li>
+                                    <li>Chat isolation per model</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-section">
+                    <div class="d-flex justify-content-between">
+                        <a href="/chatmodel/list" class="btn btn-outline-secondary btn-lg">
+                            <i class="bi bi-x-circle me-2"></i>
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-check-circle me-2"></i>
+                            Create Chat Model
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Update folder path preview in real-time
+        document.getElementById('folderPath').addEventListener('input', function() {
+            const folderPath = this.value.trim();
+            const fullPathPreview = document.getElementById('fullPathPreview');
+            const structurePreview = document.getElementById('structurePreview');
+            
+            if (folderPath) {
+                fullPathPreview.textContent = './uploads/chatmodel/' + folderPath + '/';
+                structurePreview.textContent = folderPath;
+            } else {
+                fullPathPreview.textContent = './uploads/chatmodel/';
+                structurePreview.textContent = '[folder]';
+            }
+        });
+
+        // Form validation
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const name = document.getElementById('name').value.trim();
+            const folderPath = document.getElementById('folderPath').value.trim();
+            
+            if (!name) {
+                e.preventDefault();
+                alert('Please enter a chat model name.');
+                document.getElementById('name').focus();
+                return;
+            }
+            
+            if (!folderPath) {
+                e.preventDefault();
+                alert('Please enter a folder path.');
+                document.getElementById('folderPath').focus();
+                return;
+            }
+            
+            // Validate folder path format
+            if (!/^[a-zA-Z0-9_-]+$/.test(folderPath)) {
+                e.preventDefault();
+                alert('Folder path can only contain letters, numbers, hyphens, and underscores.');
+                document.getElementById('folderPath').focus();
+                return;
+            }
+        });
+    </script>
+</body>
+</html>
+

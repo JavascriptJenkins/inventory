@@ -1,0 +1,19 @@
+{
+  "name": "Packaging Compliance",
+  "description": "to stockpile all relevant packaging compliance data",
+  "version": "1.0.0",
+  "author": "TechVVS Development Team",
+  "homepage": "https://github.com/techvvs/inventory",
+  "mcp": {
+    "transport": {
+      "type": "http",
+      "url": "http://localhost:8080/api/mcp/chatmodel/1779"
+    },
+    "capabilities": {
+      "tools": true,
+      "resources": true
+    }
+  },
+  "icon": "🤖",
+  "tags": ["chat", "ai", "local", "file-based", "local"]
+}

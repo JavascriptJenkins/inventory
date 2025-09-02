@@ -198,7 +198,18 @@
             uploadFiles(files);
         });
 
-        uploadArea.addEventListener('click', () => {
+        // Fix: Ensure click on upload area triggers file input
+        uploadArea.addEventListener('click', (e) => {
+            // Only trigger if clicking on the upload area itself, not on the button
+            if (e.target === uploadArea || e.target.closest('.upload-area')) {
+                fileInput.click();
+            }
+        });
+
+        // Fix: Ensure button click works properly
+        document.querySelector('.btn-primary').addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             fileInput.click();
         });
 

@@ -579,6 +579,60 @@
         .chat-messages::-webkit-scrollbar-thumb:hover {
             background: var(--gameboy-screen);
         }
+
+        /* Chat Model Selector */
+        .chat-model-selector {
+            margin-bottom: 15px;
+        }
+
+        .gameboy-select {
+            background: var(--gameboy-bg);
+            color: var(--gameboy-screen);
+            border: 3px solid var(--gameboy-light);
+            border-radius: 8px;
+            padding: 10px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.7rem;
+            outline: none;
+            transition: all 0.3s ease;
+            width: 100%;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .gameboy-select:focus {
+            border-color: var(--crt-green);
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+
+        .gameboy-select option {
+            background-color: var(--gameboy-dark);
+            color: var(--gameboy-screen);
+        }
+        
+        .alert-sm {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .border-success {
+            border-color: #28a745 !important;
+            box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+        }
+        
+        .detail-section {
+            margin-bottom: 0.5rem;
+            padding: 0.25rem 0;
+        }
+        
+        .detail-section strong {
+            color: #495057;
+        }
+        
+        .source-count {
+            color: #6c757d;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
@@ -613,6 +667,13 @@
 
             <!-- Chat Container -->
             <div class="chat-container">
+                <!-- Current Chat Model Display -->
+                <div id="currentChatModelDisplay" class="alert alert-info mb-3" style="display: none;">
+                    <i class="bi bi-robot me-2"></i>
+                    <strong>Current Chat Model:</strong> <span id="currentChatModelName">None</span>
+                    <br><small class="text-muted">Questions will be answered using this model's uploaded documents</small>
+                </div>
+                
                 <!-- Chat Messages -->
                 <div class="chat-messages" id="chatMessages">
                     <!-- Messages will be loaded here -->
@@ -624,16 +685,33 @@
                     <div class="loading-dots"></div>
                 </div>
 
-                <!-- Input Area -->
+                <!-- Chat Input Area -->
                 <div class="chat-input-container">
-                    <input type="text" 
-                           class="chat-input" 
-                           id="chatInput" 
-                           placeholder="Type your METRC question here..."
-                           maxlength="500">
-                    <button class="gameboy-button" id="sendButton">
-                        <i class="bi bi-send"></i>
-                    </button>
+                    <!-- Chat Model Selection -->
+                    <div class="chat-model-selector mb-3">
+                        <label for="chatModelSelect" class="form-label text-light mb-2">
+                            <i class="bi bi-robot me-2"></i>
+                            Select Chat Model:
+                        </label>
+                        <select id="chatModelSelect" class="form-select gameboy-select">
+                            <option value="">Choose a chat model...</option>
+                            <option value="default" selected>Default (METRC Documentation)</option>
+                            <!-- Chat models will be loaded dynamically -->
+                        </select>
+                        <small class="text-light opacity-75">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Different models provide different knowledge bases and capabilities
+                        </small>
+                    </div>
+                    
+                    <div class="input-group">
+                        <input type="text" id="chatInput" class="chat-input" 
+                               placeholder="Ask me anything about METRC compliance..." 
+                               maxlength="1000">
+                        <button id="sendButton" class="send-button" type="button">
+                            <i class="bi bi-send"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -652,6 +730,7 @@
             const newChatButton = $('#newChatButton');
             const currentChatTitle = $('#currentChatTitle');
             const editChatTitleBtn = $('#editChatTitleBtn');
+            const chatModelSelect = $('#chatModelSelect');
 
             // Initialize the page
             initializeChatInterface();
@@ -659,6 +738,7 @@
             function initializeChatInterface() {
                 // Load chat list
                 loadChatList();
+                loadChatModels(); // Load chat models here
                 
                 // Load current chat messages
                 if (currentChatId) {
@@ -685,9 +765,71 @@
                 // Edit chat title
                 editChatTitleBtn.on('click', editChatTitle);
 
-                // Focus input
-                chatInput.focus();
-            }
+                // Chat model selection change
+                chatModelSelect.on('change', function() {
+                    const selectedModel = $(this).val();
+                    if (selectedModel && selectedModel !== 'default') {
+                        // Show feedback that a specific chat model is selected
+                        const selectedOption = $(this).find('option:selected');
+                        const modelName = selectedOption.text().split(' - ')[0];
+                        
+                        // Add a visual indicator
+                        chatModelSelect.addClass('border-success');
+                        
+                        // Show info message
+                        if ($('#modelSelectionInfo').length === 0) {
+                            const infoDiv = $('<div id="modelSelectionInfo" class="alert alert-info alert-sm mt-2">' +
+                                '<i class="bi bi-info-circle me-2"></i>' +
+                                `Using <strong>${modelName}</strong> chat model with its uploaded documents` +
+                                '<br><small class="text-muted">Your questions will now be answered based on the documents you uploaded to this chat model.</small>' +
+                                '</div>');
+                            chatModelSelect.after(infoDiv);
+                        } else {
+                            $('#modelSelectionInfo').html('<i class="bi bi-info-circle me-2"></i>' +
+                                `Using <strong>${modelName}</strong> chat model with its uploaded documents` +
+                                '<br><small class="text-muted">Your questions will now be answered based on the documents you uploaded to this chat model.</small>');
+                        }
+                        
+                        // Update the chat container display
+                        $('#currentChatModelName').text(modelName);
+                        $('#currentChatModelDisplay').show();
+                        
+                        // Show success message
+                        showMessage(`Switched to <strong>${modelName}</strong> chat model. Your questions will now be answered using the documents uploaded to this model.`, 'success');
+                        
+                        console.log('Selected chat model:', selectedModel, 'Name:', modelName);
+                    } else if (selectedModel === 'default') {
+                        // Remove visual indicators for default model
+                        chatModelSelect.removeClass('border-success');
+                        $('#modelSelectionInfo').remove();
+                        $('#currentChatModelDisplay').hide();
+                        console.log('Using default METRC documentation');
+                    }
+                });
+
+                            // Focus input
+            chatInput.focus();
+        }
+
+        // Utility function to show messages
+        function showMessage(message, type = 'info') {
+            const alertClass = type === 'success' ? 'alert-success' : 
+                              type === 'error' ? 'alert-danger' : 
+                              type === 'warning' ? 'alert-warning' : 'alert-info';
+            
+            const alertDiv = $(`<div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>`);
+            
+            // Insert after the chat model selection
+            chatModelSelect.after(alertDiv);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                alertDiv.fadeOut(() => alertDiv.remove());
+            }, 5000);
+        }
 
             async function handleSendMessage() {
                 const question = chatInput.val().trim();
@@ -701,13 +843,16 @@
                 toggleLoading(true);
 
                 try {
+                    // Get selected chat model ID
+                    const selectedChatModelId = chatModelSelect.val();
+                    
                     // Send message to API
                     const response = await fetch(`/api/chat/${currentChatId}/send`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/x-www-form-urlencoded',
                         },
-                        body: `message=${encodeURIComponent(question)}`
+                        body: `message=${encodeURIComponent(question)}${selectedChatModelId ? `&chatModelId=${selectedChatModelId}` : ''}`
                     });
 
                     if (!response.ok) {
@@ -745,10 +890,27 @@
                 } else {
                     let messageContent = content;
                     
-                    if (responseData && responseData.states && responseData.states.length > 0) {
+                    if (responseData) {
                         messageContent += '<div class="response-details">';
                         
-                        if (responseData.states.length > 0) {
+                        // Show chat model info if available
+                        if (responseData.chatModelId && responseData.chatModelName) {
+                            messageContent += `<div class="detail-section detail-font"><strong>Chat Model:</strong> ${responseData.chatModelName} (ID: ${responseData.chatModelId})</div>`;
+                            
+                                                    // Show extracted metadata if available
+                        if (responseData.keywords && responseData.keywords.length > 0) {
+                            messageContent += `<div class="detail-section detail-font"><strong>Key Topics:</strong> ${responseData.keywords.slice(0, 5).join(', ')}${responseData.keywords.length > 5 ? '...' : ''}</div>`;
+                        }
+                        if (responseData.sections && responseData.sections.length > 0) {
+                            messageContent += `<div class="detail-section detail-font"><strong>Document Sections:</strong> ${responseData.sections.slice(0, 3).join(', ')}${responseData.sections.length > 3 ? '...' : ''}</div>`;
+                        }
+                        if (responseData.urls && responseData.urls.length > 0) {
+                            messageContent += `<div class="detail-section detail-font"><strong>Related URLs:</strong> ${responseData.urls.length} found</div>`;
+                        }
+                        }
+                        
+                        // Show METRC-specific details if available
+                        if (responseData.states && responseData.states.length > 0) {
                             messageContent += '<div class="detail-section detail-font"><strong>States:</strong> ' + responseData.states.join(', ') + '</div>';
                         }
                         
@@ -757,8 +919,10 @@
                             messageContent += '<div class="detail-section detail-font"><strong>Endpoints:</strong> ' + uniqueEndpoints.join(', ') + '</div>';
                         }
                         
+                        // Show sources (either chat model documents or METRC sources)
                         if (responseData.sources && responseData.sources.length > 0) {
-                            messageContent += '<div class="detail-section"><strong>Sources:</strong> <span class="source-count">' + responseData.sources.length + ' sources found</span></div>';
+                            const sourceType = responseData.chatModelId ? 'Documents' : 'Sources';
+                            messageContent += `<div class="detail-section"><strong>${sourceType}:</strong> <span class="source-count">${responseData.sources.length} ${sourceType.toLowerCase()} found</span></div>`;
                         }
                         
                         messageContent += '</div>';
@@ -793,6 +957,37 @@
                     renderChatList(userChats);
                 } catch (error) {
                     console.error('Error loading chat list:', error);
+                }
+            }
+
+            async function loadChatModels() {
+                try {
+                    const response = await fetch('/chatmodel/list');
+                    if (response.ok) {
+                        const html = await response.text();
+                        // Parse the HTML to extract chat models
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+                        const chatModelCards = doc.querySelectorAll('.chat-model-card');
+                        
+                        // Clear existing options except the first two
+                        chatModelSelect.find('option:gt(1)').remove();
+                        
+                        // Add chat models to dropdown
+                        chatModelCards.forEach(card => {
+                            const name = card.querySelector('h5').textContent;
+                            const description = card.querySelector('.card-text').textContent;
+                            const id = card.querySelector('.action-buttons a[href*="/view/"]').href.split('/').pop();
+                            
+                            const option = $('<option>')
+                                .val(id)
+                                .text(name + ' - ' + description.substring(0, 50) + '...');
+                            
+                            chatModelSelect.append(option);
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error loading chat models:', error);
                 }
             }
 

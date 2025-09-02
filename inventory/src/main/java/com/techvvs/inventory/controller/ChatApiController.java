@@ -5,14 +5,18 @@ import com.techvvs.inventory.metrcdocs.DocsService;
 import com.techvvs.inventory.metrcdocs.LocalDocsService;
 import com.techvvs.inventory.model.Chat;
 import com.techvvs.inventory.model.ChatMessage;
+import com.techvvs.inventory.model.ChatModel;
 import com.techvvs.inventory.model.SystemUserDAO;
 import com.techvvs.inventory.service.ChatService;
+import com.techvvs.inventory.service.ChatModelService;
+import com.techvvs.inventory.service.ChatModelDocsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
@@ -31,12 +35,19 @@ public class ChatApiController {
     private LocalDocsService localDocsService;
 
     @Autowired
+    private ChatModelService chatModelService;
+
+    @Autowired
+    private ChatModelDocsService chatModelDocsService;
+
+    @Autowired
     private SystemUserRepo systemUserRepo;
 
     @PostMapping("/{chatId}/send")
     public ResponseEntity<Map<String, Object>> sendMessage(
             @PathVariable Integer chatId,
-            @RequestParam String message
+            @RequestParam String message,
+            @RequestParam(required = false) Integer chatModelId
     ) {
         try {
             SystemUserDAO currentUser = getCurrentUser();
@@ -47,13 +58,21 @@ public class ChatApiController {
             // Add user message to chat
             ChatMessage userMessage = chatService.addUserMessage(chatId, message, currentUser);
 
-            // Get response from local METRC docs service (prioritize local documents)
+            // Get response based on selected chat model or fallback to METRC docs
             Map<String, Object> responseData;
-            try {
-                responseData = localDocsService.askWithLocalConnectorAndClaude(message);
-            } catch (Exception e) {
-                // Fallback to external service if local service fails
-                responseData = docsService.askWithConnectorAndClaude(message);
+            
+            if (chatModelId != null) {
+                try {
+                    // Use the selected chat model's documents via MCP
+                    responseData = getResponseFromChatModel(chatModelId, message);
+                } catch (Exception e) {
+                    System.err.println("Error using chat model " + chatModelId + ": " + e.getMessage());
+                    // Fallback to METRC docs if chat model fails
+                    responseData = getResponseFromMetrcDocs(message);
+                }
+            } else {
+                // No chat model selected, use default METRC docs
+                responseData = getResponseFromMetrcDocs(message);
             }
 
             // Add bot response to chat
@@ -263,5 +282,40 @@ public class ChatApiController {
             return systemUserRepo.findByEmail(email);
         }
         return null;
+    }
+
+    /**
+     * Get response from METRC documentation services
+     */
+    private Map<String, Object> getResponseFromMetrcDocs(String message) {
+        try {
+            return localDocsService.askWithLocalConnectorAndClaude(message);
+        } catch (Exception e) {
+            // Fallback to external service if local service fails
+            try {
+                return docsService.askWithConnectorAndClaude(message);
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+    }
+
+    /**
+     * Get response from a specific chat model's documents
+     */
+    private Map<String, Object> getResponseFromChatModel(Integer chatModelId, String message) {
+        try {
+            // Get the chat model
+            ChatModel chatModel = chatModelService.getChatModelById(chatModelId)
+                .orElseThrow(() -> new IllegalArgumentException("Chat model not found with ID: " + chatModelId));
+            
+            // Use the ChatModelDocsService to process the question with the model's documents
+            return chatModelDocsService.askWithChatModelDocs(chatModel, message);
+            
+        } catch (Exception e) {
+            // If chat model processing fails, fallback to METRC docs
+            System.err.println("Error processing chat model " + chatModelId + ": " + e.getMessage());
+            return getResponseFromMetrcDocs(message);
+        }
     }
 }
