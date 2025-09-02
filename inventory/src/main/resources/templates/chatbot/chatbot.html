@@ -98,12 +98,12 @@
         /* Main Container */
         .gameboy-container {
             max-width: 100%;
-            margin: 0 auto;
-            padding: 20px;
+            margin: 0;
+            padding: 0;
             min-height: 100vh;
             display: flex;
             flex-direction: row;
-            gap: 20px;
+            gap: 0;
         }
 
         /* Chat Sidebar */
@@ -111,14 +111,14 @@
             width: 300px;
             background: var(--gameboy-dark);
             border: 4px solid var(--gameboy-light);
-            border-radius: 15px;
-            padding: 20px;
+            border-radius: 0;
+            padding: 15px;
             box-shadow: 
                 0 8px 0 var(--gameboy-dark),
                 0 0 20px rgba(155, 188, 15, 0.3);
             display: flex;
             flex-direction: column;
-            min-height: 600px;
+            min-height: 100vh;
         }
 
         .sidebar-header {
@@ -142,7 +142,7 @@
             border-radius: 8px;
             padding: 12px 15px;
             font-family: 'Press Start 2P', cursive;
-            font-size: 0.6rem;
+            font-size: 0.7rem;
             cursor: pointer;
             transition: all 0.1s ease;
             box-shadow: 
@@ -187,7 +187,7 @@
         }
 
         .chat-item-title {
-            font-size: 0.6rem;
+            font-size: 0.7rem;
             font-weight: bold;
             margin-bottom: 5px;
             white-space: nowrap;
@@ -196,7 +196,7 @@
         }
 
         .chat-item-preview {
-            font-size: 0.5rem;
+            font-size: 0.6rem;
             opacity: 0.8;
             white-space: nowrap;
             overflow: hidden;
@@ -220,7 +220,7 @@
             border: 1px solid var(--gameboy-light);
             border-radius: 4px;
             padding: 2px 6px;
-            font-size: 0.4rem;
+            font-size: 0.5rem;
             cursor: pointer;
             margin-left: 2px;
         }
@@ -235,16 +235,18 @@
             flex: 1;
             display: flex;
             flex-direction: column;
+            padding: 0;
+            margin: 0;
         }
 
         /* Header */
         .chatbot-header {
             text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
+            margin-bottom: 15px;
+            padding: 15px;
             background: var(--gameboy-dark);
             border: 4px solid var(--gameboy-light);
-            border-radius: 15px;
+            border-radius: 0;
             box-shadow: 
                 0 8px 0 var(--gameboy-dark),
                 0 0 20px rgba(155, 188, 15, 0.3);
@@ -271,7 +273,7 @@
         }
 
         .chatbot-subtitle {
-            font-size: 0.8rem;
+            font-size: 0.9rem;
             color: var(--gameboy-light);
             opacity: 0.8;
         }
@@ -289,7 +291,7 @@
         }
 
         #currentChatTitle {
-            font-size: 0.7rem;
+            font-size: 0.8rem;
             color: var(--crt-green);
             text-shadow: 0 0 3px var(--crt-green);
         }
@@ -298,10 +300,10 @@
         .chat-container {
             flex: 1;
             background: var(--gameboy-dark);
+            padding: 15px;
             border: 4px solid var(--gameboy-light);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
+            border-radius: 0;
+            margin-bottom: 15px;
             box-shadow: 
                 0 8px 0 var(--gameboy-dark),
                 0 0 20px rgba(155, 188, 15, 0.3);
@@ -314,21 +316,21 @@
         .chat-messages {
             flex: 1;
             overflow-y: auto;
-            padding: 15px;
+            padding: 10px;
             background: var(--gameboy-bg);
             border: 2px solid var(--gameboy-light);
-            border-radius: 10px;
-            margin-bottom: 20px;
-            min-height: 300px;
-            max-height: 500px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            min-height: 400px;
+            max-height: none;
         }
 
         .message {
             margin-bottom: 15px;
             padding: 10px 15px;
             border-radius: 8px;
-            font-size: 0.7rem;
-            line-height: 1.4;
+            font-size: 0.9rem;
+            line-height: 1.5;
             word-wrap: break-word;
         }
 
@@ -347,7 +349,7 @@
         }
 
         .message-time {
-            font-size: 0.5rem;
+            font-size: 0.6rem;
             opacity: 0.7;
             margin-top: 5px;
         }
@@ -359,12 +361,13 @@
             background: var(--gameboy-bg);
             border: 1px solid var(--gameboy-light);
             border-radius: 6px;
-            font-size: 0.6rem;
+            font-size: 0.7rem;
         }
 
         .detail-section {
             margin-bottom: 5px;
             padding: 3px 0;
+            font-size: 0.7rem;
         }
 
         .detail-section:last-child {
@@ -399,7 +402,7 @@
             color: var(--gameboy-screen);
             border: 3px solid var(--gameboy-light);
             border-radius: 8px;
-            padding: 15px;
+            padding: 10px;
             font-family: 'Press Start 2P', cursive;
             font-size: 0.7rem;
             outline: none;
@@ -421,7 +424,7 @@
             color: var(--gameboy-bg);
             border: 3px solid var(--gameboy-dark);
             border-radius: 8px;
-            padding: 15px 20px;
+            padding: 10px 15px;
             font-family: 'Press Start 2P', cursive;
             font-size: 0.7rem;
             cursor: pointer;
@@ -449,7 +452,7 @@
         .loading-container {
             display: none;
             text-align: center;
-            padding: 20px;
+            padding: 15px;
         }
 
         .loading-text {
@@ -614,7 +617,7 @@
         
         .alert-sm {
             padding: 0.5rem 0.75rem;
-            font-size: 0.875rem;
+            font-size: 1rem;
             margin-bottom: 0.5rem;
         }
         
@@ -668,7 +671,7 @@
         
         .chat-model-header {
             color: var(--gameboy-light);
-            font-size: 0.8rem;
+            font-size: 0.9rem;
             margin-bottom: 8px;
             display: flex;
             align-items: center;
@@ -690,7 +693,7 @@
         
         .chat-model-description {
             color: var(--gameboy-light);
-            font-size: 0.7rem;
+            font-size: 0.8rem;
             opacity: 0.9;
             display: flex;
             align-items: center;

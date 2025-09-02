@@ -295,7 +295,12 @@ public class ChatApiController {
             try {
                 return docsService.askWithConnectorAndClaude(message);
             } catch (Exception ex) {
-                throw new RuntimeException(ex);
+                // If both services fail, return a simple error response instead of throwing
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("answer", "I'm sorry, but I'm currently unable to access the documentation services. Please try again later or contact support if the issue persists.");
+                errorResponse.put("sources", new ArrayList<>());
+                errorResponse.put("query", message);
+                return errorResponse;
             }
         }
     }
@@ -313,9 +318,14 @@ public class ChatApiController {
             return chatModelDocsService.askWithChatModelDocs(chatModel, message);
             
         } catch (Exception e) {
-            // If chat model processing fails, fallback to METRC docs
+            // If chat model processing fails, return error response instead of falling back to METRC docs
             System.err.println("Error processing chat model " + chatModelId + ": " + e.getMessage());
-            return getResponseFromMetrcDocs(message);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("answer", "I'm sorry, but I'm currently unable to access the selected chat model's documents. Please try again later or contact support if the issue persists.");
+            errorResponse.put("sources", new ArrayList<>());
+            errorResponse.put("query", message);
+            errorResponse.put("chatModelId", chatModelId);
+            return errorResponse;
         }
     }
 }

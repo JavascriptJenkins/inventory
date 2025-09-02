@@ -273,24 +273,24 @@
                             </button>
                         </div>
                         
-                                                 <!-- Documents List -->
-                         <div id="documentsList">
-                             <div th:if="${isDirectoryEmpty}" class="empty-state">
-                                 <i class="bi bi-folder2"></i>
-                                 <h5>No Documents Found</h5>
-                                 <p class="lead">Upload some files to provide context for this chat model.</p>
-                                 <button class="btn btn-primary" onclick="toggleUploadArea()">
-                                     <i class="bi bi-upload me-2"></i>
-                                     Upload Documents
-                                 </button>
-                             </div>
-                             
-                             <div th:unless="${isDirectoryEmpty}" class="row">
-                                 <div class="col-12">
-                                     <p class="text-muted mb-3">
-                                         <i class="bi bi-info-circle me-2"></i>
-                                         This chat model has <strong th:text="${documentCount}">0</strong> document(s) available for context.
-                                     </p>
+                        <!-- Documents List -->
+                        <div id="documentsList">
+                            <div th:if="${isDirectoryEmpty}" class="empty-state">
+                                <i class="bi bi-folder2"></i>
+                                <h5>No Documents Found</h5>
+                                <p class="lead">Upload some files to provide context for this chat model.</p>
+                                <button class="btn btn-primary" onclick="toggleUploadArea()">
+                                    <i class="bi bi-upload me-2"></i>
+                                    Upload Documents
+                                </button>
+                            </div>
+                            
+                            <div th:unless="${isDirectoryEmpty}" class="row">
+                                <div class="col-12">
+                                    <p class="text-muted mb-3">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        This chat model has <strong th:text="${documentCount}">0</strong> document(s) available for context.
+                                    </p>
                                      <div class="table-responsive">
                                          <table class="table table-sm table-hover">
                                              <thead class="table-light">
@@ -311,9 +311,9 @@
                                          <i class="bi bi-arrow-clockwise me-2"></i>
                                          Refresh Documents
                                      </button>
-                                 </div>
-                             </div>
-                         </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -805,4 +805,8 @@
     </script>
 </body>
 </html>
+
+
+
+
 
