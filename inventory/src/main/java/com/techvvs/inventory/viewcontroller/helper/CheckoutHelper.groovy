@@ -50,6 +50,9 @@ class CheckoutHelper {
     @Autowired
     DiscountRepo discountRepo
 
+    @Autowired
+    ProductRepo productRepo
+
     // method to get all customers from db
     void getAllCustomers(Model model){
 
@@ -71,6 +74,13 @@ class CheckoutHelper {
             .take(10)
         
         model.addAttribute("mostPurchasedProducts", topProducts)
+        
+        // Also get the 10 most recently edited products
+        List<ProductVO> recentlyEditedProducts = productRepo.findTop10ByOrderByUpdateTimeStampDesc()
+            .findAll { product -> product.quantityremaining > 0 }
+            .take(10)
+        
+        model.addAttribute("mostRecentlyEditedProducts", recentlyEditedProducts)
     }
 
     // method to get all customers from db
