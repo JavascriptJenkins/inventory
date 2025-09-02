@@ -128,7 +128,9 @@ class TransactionHelper {
         Integer daysFilter = days.orElse(0)
         if (filterType == "underpaid" && daysFilter > 0) {
             double totalAmountOwed = pageOfTransaction.content.collect { t -> 
-                Math.max(t.totalwithtax - t.paid, 0.0) 
+                def total = t.totalwithtax ?: 0.0
+                def paid = t.paid ?: 0.0
+                Math.max(total - paid, 0.0) 
             }.sum()
             model.addAttribute("totalAmountOwed", totalAmountOwed)
         }
@@ -154,10 +156,33 @@ class TransactionHelper {
         Integer daysFilter = days.orElse(0)
 
         // Check if we need to filter for underpaid transactions
-        if (filterType == "underpaid" && daysFilter > 0) {
-            // Calculate cutoff date (X days ago from now)
-            LocalDateTime cutoffDate = LocalDateTime.now().minusDays(daysFilter)
-            return transactionRepo.findUnderpaidTransactions(custId, prodId, cutoffDate, pageable)
+        if (filterType == "underpaid") {
+            if (daysFilter > 0 && daysFilter < 9999) {
+                // Calculate cutoff date (X days ago from now) for specific day ranges
+                LocalDateTime cutoffDate = LocalDateTime.now().minusDays(daysFilter)
+                println "DEBUG: Filter type: ${filterType}, Days: ${daysFilter}, Cutoff date: ${cutoffDate}"
+                
+                // First, let's see what the basic count is without date filtering
+                Long basicCount = transactionRepo.countBasicUnderpaidTransactions(custId, prodId)
+                println "DEBUG: Basic underpaid transactions count (no date filter): ${basicCount}"
+                
+                // Get the results with date filtering
+                Page<TransactionVO> results = transactionRepo.findUnderpaidTransactions(custId, prodId, cutoffDate, pageable)
+                println "DEBUG: Query returned ${results.totalElements} total elements and ${results.content.size()} on current page"
+                
+                // Log some sample transaction IDs to see what we're getting
+                if (results.content.size() > 0) {
+                    println "DEBUG: Sample transaction IDs: ${results.content.take(5).collect { it.transactionid }}"
+                    println "DEBUG: Sample paid amounts: ${results.content.take(5).collect { it.paid }}"
+                    println "DEBUG: Sample total amounts: ${results.content.take(5).collect { it.totalwithtax }}"
+                }
+                
+                return results
+            } else if (daysFilter == 9999) {
+                // "All" button - return all underpaid transactions without date filtering
+                println "DEBUG: Filter type: ${filterType}, Days: ${daysFilter}, Returning ALL underpaid transactions"
+                return transactionRepo.findFilteredTransactions(custId, prodId, pageable)
+            }
         }
 
         return transactionRepo.findFilteredTransactions(custId, prodId, pageable)

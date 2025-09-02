@@ -42,10 +42,17 @@ public interface TransactionRepo extends JpaRepository<TransactionVO, Integer> {
     WHERE (:customerid IS NULL OR t.customervo.customerid = :customerid)
       AND (:productid IS NULL OR :productid = 0 OR p.product_id = :productid)
       AND t.paid < t.totalwithtax
-      AND NOT EXISTS (
-        SELECT p2 FROM PaymentVO p2
-        WHERE p2.transaction = t
-        AND p2.createTimeStamp >= :cutoffDate
+      AND t.createTimeStamp >= :cutoffDate
+      AND (
+        NOT EXISTS (
+          SELECT 1 FROM PaymentVO pay WHERE pay.transaction = t
+        )
+        OR
+        (
+          SELECT MAX(pay.createTimeStamp) 
+          FROM PaymentVO pay 
+          WHERE pay.transaction = t
+        ) < :cutoffDate
       )
     """, countQuery = """
     SELECT COUNT(DISTINCT t)
@@ -54,10 +61,17 @@ public interface TransactionRepo extends JpaRepository<TransactionVO, Integer> {
     WHERE (:customerid IS NULL OR t.customervo.customerid = :customerid)
       AND (:productid IS NULL OR :productid = 0 OR p.product_id = :productid)
       AND t.paid < t.totalwithtax
-      AND NOT EXISTS (
-        SELECT p2 FROM PaymentVO p2 
-        WHERE p2.transaction = t 
-        AND p2.createTimeStamp >= :cutoffDate
+      AND t.createTimeStamp >= :cutoffDate
+      AND (
+        NOT EXISTS (
+          SELECT 1 FROM PaymentVO pay WHERE pay.transaction = t
+        )
+        OR
+        (
+          SELECT MAX(pay.createTimeStamp) 
+          FROM PaymentVO pay 
+          WHERE pay.transaction = t
+        ) < :cutoffDate
       )
     """)
     Page<TransactionVO> findUnderpaidTransactions(
@@ -169,5 +183,18 @@ public interface TransactionRepo extends JpaRepository<TransactionVO, Integer> {
     """)
     List<Object[]> findMostPurchasedProducts();
 
+    // Simple test method to count basic underpaid transactions
+    @Query("""
+    SELECT COUNT(DISTINCT t)
+    FROM TransactionVO t
+    JOIN t.product_list p
+    WHERE (:customerid IS NULL OR t.customervo.customerid = :customerid)
+      AND (:productid IS NULL OR :productid = 0 OR p.product_id = :productid)
+      AND t.paid < t.totalwithtax
+    """)
+    Long countBasicUnderpaidTransactions(
+            @Param("customerid") Integer customerid,
+            @Param("productid") Integer productid
+    );
 
 }
