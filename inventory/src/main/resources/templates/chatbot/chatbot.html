@@ -2,7 +2,7 @@
 <html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
-    <title>METRC Chat Bot</title>
+    <title>TULIP Chat Bot</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
     <!-- Bootstrap CSS -->
@@ -56,7 +56,10 @@
             min-height: 100vh;
             overflow-x: hidden;
             position: relative;
+            /* Navbar padding is now handled globally in adminnavbar fragment */
         }
+        
+        /* Navbar state is now handled globally in adminnavbar fragment */
 
         /* CRT TV Effect */
         body::before {
@@ -633,9 +636,107 @@
             color: #6c757d;
             font-style: italic;
         }
+        
+        /* Enhanced Chat Model Display */
+        .current-chat-model-display {
+            background: linear-gradient(135deg, var(--gameboy-dark), var(--gameboy-bg));
+            border: 3px solid var(--crt-green);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 
+                0 0 20px rgba(0, 255, 0, 0.3),
+                inset 0 0 20px rgba(0, 255, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .current-chat-model-display::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--crt-green), var(--gameboy-light), var(--crt-green));
+            animation: scanline 2s linear infinite;
+        }
+        
+        @keyframes scanline {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .chat-model-header {
+            color: var(--gameboy-light);
+            font-size: 0.8rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .chat-model-name {
+            color: var(--crt-green);
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-shadow: 0 0 8px var(--crt-green);
+            animation: pulse 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes pulse {
+            from { opacity: 0.8; }
+            to { opacity: 1; }
+        }
+        
+        .chat-model-description {
+            color: var(--gameboy-light);
+            font-size: 0.7rem;
+            opacity: 0.9;
+            display: flex;
+            align-items: center;
+        }
+        
+        /* Ensure TULIP logo is visible over dark background */
+        .tulip-logo-container {
+            z-index: 9999 !important;
+        }
+        
+        .tulip-logo {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px);
+        }
+        
+        /* Navbar state indicator */
+        .navbar-state-indicator {
+            position: fixed;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 255, 0, 0.8);
+            color: var(--gameboy-bg);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.6rem;
+            z-index: 9998;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        
+        .navbar-state-indicator.show {
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
+    <!-- Admin Navigation Bar -->
+    <div th:replace="fragments/adminnavbar :: adminnavbarfragment"></div>
+    
+    <!-- Navbar State Indicator -->
+    <div class="navbar-state-indicator" id="navbarStateIndicator">
+        <i class="bi bi-chevron-down me-1"></i>Click TULIP logo to expand navbar
+    </div>
+    
     <div class="gameboy-container">
         <!-- Chat Sidebar -->
         <div class="chat-sidebar">
@@ -655,8 +756,8 @@
         <div class="chat-main-area">
             <!-- Header -->
             <div class="chatbot-header">
-                <h1 class="chatbot-title">METRC CHAT BOT</h1>
-                <p class="chatbot-subtitle">Ask questions about METRC documentation and get AI-powered answers</p>
+                <h1 class="chatbot-title">TULIP CHAT BOT</h1>
+                <p class="chatbot-subtitle">Ask questions about your uploaded documents and get AI-powered answers</p>
                 <div class="current-chat-info">
                     <span id="currentChatTitle">New Chat</span>
                     <button class="chat-action-btn" id="editChatTitleBtn" title="Edit chat title">
@@ -668,10 +769,16 @@
             <!-- Chat Container -->
             <div class="chat-container">
                 <!-- Current Chat Model Display -->
-                <div id="currentChatModelDisplay" class="alert alert-info mb-3" style="display: none;">
-                    <i class="bi bi-robot me-2"></i>
-                    <strong>Current Chat Model:</strong> <span id="currentChatModelName">None</span>
-                    <br><small class="text-muted">Questions will be answered using this model's uploaded documents</small>
+                <div id="currentChatModelDisplay" class="current-chat-model-display mb-3" style="display: none;">
+                    <div class="chat-model-header">
+                        <i class="bi bi-robot me-2"></i>
+                        <strong>Active Chat Model:</strong>
+                    </div>
+                    <div class="chat-model-name" id="currentChatModelName">None</div>
+                    <div class="chat-model-description">
+                        <i class="bi bi-file-text me-1"></i>
+                        Questions will be answered using this model's uploaded documents
+                    </div>
                 </div>
                 
                 <!-- Chat Messages -->
@@ -681,7 +788,7 @@
 
                 <!-- Loading Animation -->
                 <div class="loading-container" id="loadingContainer">
-                    <div class="loading-text">METRC Bot is thinking</div>
+                    <div class="loading-text">TULIP Bot is thinking</div>
                     <div class="loading-dots"></div>
                 </div>
 
@@ -700,13 +807,13 @@
                         </select>
                         <small class="text-light opacity-75">
                             <i class="bi bi-info-circle me-1"></i>
-                            Different models provide different knowledge bases and capabilities
+                            Select a chat model to use its uploaded documents, or use default for METRC docs
                         </small>
                     </div>
                     
                     <div class="input-group">
                         <input type="text" id="chatInput" class="chat-input" 
-                               placeholder="Ask me anything about METRC compliance..." 
+                               placeholder="Ask me anything about your documents..." 
                                maxlength="1000">
                         <button id="sendButton" class="send-button" type="button">
                             <i class="bi bi-send"></i>
@@ -732,13 +839,53 @@
             const editChatTitleBtn = $('#editChatTitleBtn');
             const chatModelSelect = $('#chatModelSelect');
 
-            // Initialize the page
-            initializeChatInterface();
+                    // Initialize the page
+        initializeChatInterface();
+        
+        // Initialize navbar state indicator
+        initializeNavbarIndicator();
 
-            function initializeChatInterface() {
-                // Load chat list
-                loadChatList();
-                loadChatModels(); // Load chat models here
+                    function initializeNavbarIndicator() {
+            // Check navbar state and update indicator
+            const navbar = document.getElementById('adminNavbar');
+            const indicator = document.getElementById('navbarStateIndicator');
+            
+            if (navbar && indicator) {
+                const isCollapsed = navbar.classList.contains('navbar-collapsed');
+                if (isCollapsed) {
+                    indicator.innerHTML = '<i class="bi bi-chevron-down me-1"></i>Click TULIP logo to expand navbar';
+                    indicator.classList.add('show');
+                } else {
+                    indicator.innerHTML = '<i class="bi bi-chevron-up me-1"></i>Click TULIP logo to collapse navbar';
+                    indicator.classList.remove('show');
+                }
+            }
+            
+            // Listen for navbar state changes
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                        const isCollapsed = navbar.classList.contains('navbar-collapsed');
+                        if (isCollapsed) {
+                            indicator.innerHTML = '<i class="bi bi-chevron-down me-1"></i>Click TULIP logo to expand navbar';
+                            indicator.classList.add('show');
+                        } else {
+                            indicator.innerHTML = '<i class="bi bi-chevron-up me-1"></i>Click TULIP logo to collapse navbar';
+                            indicator.classList.remove('show');
+                        }
+                    }
+                });
+            });
+            
+            if (navbar) {
+                observer.observe(navbar, { attributes: true });
+            }
+        }
+        
+        function initializeChatInterface() {
+            // Load chat list
+            loadChatList();
+            loadChatModels(); // Load chat models here
                 
                 // Load current chat messages
                 if (currentChatId) {
