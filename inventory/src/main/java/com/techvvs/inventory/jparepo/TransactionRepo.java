@@ -35,8 +35,20 @@ public interface TransactionRepo extends JpaRepository<TransactionVO, Integer> {
             Pageable pageable
     );
 
-    @Query("""
+    @Query(value = """
     SELECT DISTINCT t
+    FROM TransactionVO t
+    JOIN t.product_list p
+    WHERE (:customerid IS NULL OR t.customervo.customerid = :customerid)
+      AND (:productid IS NULL OR :productid = 0 OR p.product_id = :productid)
+      AND t.paid < t.totalwithtax
+      AND NOT EXISTS (
+        SELECT p2 FROM PaymentVO p2
+        WHERE p2.transaction = t
+        AND p2.createTimeStamp >= :cutoffDate
+      )
+    """, countQuery = """
+    SELECT COUNT(DISTINCT t)
     FROM TransactionVO t
     JOIN t.product_list p
     WHERE (:customerid IS NULL OR t.customervo.customerid = :customerid)
