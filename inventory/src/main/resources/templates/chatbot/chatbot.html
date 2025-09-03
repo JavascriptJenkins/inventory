@@ -60,11 +60,12 @@
             padding-top: 0 !important;
         }
         
-        /* Override navbar spacing for chatbot page to ensure full green background */
-        body.navbar-collapsed,
-        body.navbar-expanded {
+        /* Ensure full green background on chatbot page */
+        body {
             padding-top: 0 !important;
         }
+        
+
         
         /* Ensure admin navbar doesn't interfere with full green background */
         .admin-navbar {
@@ -745,23 +746,6 @@
             backdrop-filter: blur(10px);
         }
         
-        /* Navbar state indicator */
-        .navbar-state-indicator {
-            position: fixed;
-            top: 60px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 255, 0, 0.8);
-            color: var(--gameboy-bg);
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 0.6rem;
-            z-index: 100;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            pointer-events: none;
-        }
-        
         /* Ensure TULIP logo is visible over green background */
         .tulip-logo-container {
             z-index: 9999 !important;
@@ -771,20 +755,13 @@
             background: rgba(255, 255, 255, 0.95) !important;
             backdrop-filter: blur(10px);
         }
-        
-        .navbar-state-indicator.show {
-            opacity: 1;
-        }
     </style>
 </head>
 <body>
     <!-- Admin Navigation Bar -->
     <div th:replace="fragments/adminnavbar :: adminnavbarfragment"></div>
     
-    <!-- Navbar State Indicator -->
-    <div class="navbar-state-indicator" id="navbarStateIndicator">
-        <i class="bi bi-chevron-down me-1"></i>Click TULIP logo to expand navbar
-    </div>
+
     
     <div class="gameboy-container">
         <!-- Chat Sidebar -->
@@ -891,45 +868,7 @@
                     // Initialize the page
         initializeChatInterface();
         
-        // Initialize navbar state indicator
-        initializeNavbarIndicator();
 
-                    function initializeNavbarIndicator() {
-            // Check navbar state and update indicator
-            const navbar = document.getElementById('adminNavbar');
-            const indicator = document.getElementById('navbarStateIndicator');
-            
-            if (navbar && indicator) {
-                const isCollapsed = navbar.classList.contains('navbar-collapsed');
-                if (isCollapsed) {
-                    indicator.innerHTML = '<i class="bi bi-chevron-down me-1"></i>Click TULIP logo to expand navbar';
-                    indicator.classList.add('show');
-                } else {
-                    indicator.innerHTML = '<i class="bi bi-chevron-up me-1"></i>Click TULIP logo to collapse navbar';
-                    indicator.classList.remove('show');
-                }
-            }
-            
-            // Listen for navbar state changes
-            const observer = new MutationObserver(function(mutations) {
-                mutations.forEach(function(mutation) {
-                    if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-                        const isCollapsed = navbar.classList.contains('navbar-collapsed');
-                        if (isCollapsed) {
-                            indicator.innerHTML = '<i class="bi bi-chevron-down me-1"></i>Click TULIP logo to expand navbar';
-                            indicator.classList.add('show');
-                        } else {
-                            indicator.innerHTML = '<i class="bi bi-chevron-up me-1"></i>Click TULIP logo to collapse navbar';
-                            indicator.classList.remove('show');
-                        }
-                    }
-                });
-            });
-            
-            if (navbar) {
-                observer.observe(navbar, { attributes: true });
-            }
-        }
         
         function initializeChatInterface() {
             // Load chat list

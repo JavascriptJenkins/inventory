@@ -5,135 +5,15 @@
             console.log("postLogout");
             document.getElementById("logoutform").submit();
         }
-        
-        function toggleNavbar() {
-            const navbar = document.getElementById('adminNavbar');
-            const logo = document.getElementById('tulipLogo');
-            const body = document.body;
-            const isCollapsed = navbar.classList.contains('navbar-collapsed');
-            
-            if (isCollapsed) {
-                // Expand navbar
-                navbar.classList.remove('navbar-collapsed');
-                logo.classList.remove('logo-expanded');
-                logo.classList.add('logo-collapsed');
-                body.classList.remove('navbar-collapsed');
-                body.classList.add('navbar-expanded');
-                localStorage.setItem('navbarCollapsed', 'false');
-            } else {
-                // Collapse navbar
-                navbar.classList.add('navbar-collapsed');
-                logo.classList.remove('logo-collapsed');
-                logo.classList.add('logo-expanded');
-                body.classList.remove('navbar-expanded');
-                body.classList.add('navbar-collapsed');
-                localStorage.setItem('navbarCollapsed', 'true');
-            }
-        }
-        
-        // Initialize navbar state on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            const navbar = document.getElementById('adminNavbar');
-            const logo = document.getElementById('tulipLogo');
-            const body = document.body;
-            const isCollapsed = localStorage.getItem('navbarCollapsed') === 'true';
-            
-            // Always start with navbar-expanded class
-            body.classList.add('navbar-expanded');
-            
-            if (isCollapsed) {
-                navbar.classList.add('navbar-collapsed');
-                logo.classList.add('logo-expanded');
-                body.classList.remove('navbar-expanded');
-                body.classList.add('navbar-collapsed');
-            } else {
-                logo.classList.add('logo-collapsed');
-                // body already has navbar-expanded class
-            }
-        });
     </script>
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- Bootstrap Bundle JS (Includes Popper.js) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <style>
-        /* Collapsible Navbar Styles - Only affect the specific navbar */
-        .admin-navbar.navbar-collapsed {
-            height: 0 !important;
-            overflow: hidden;
-            transition: height 0.3s ease;
-            padding: 0 !important;
-            margin: 0 !important;
-            border: none !important;
-        }
-        
-        .admin-navbar.navbar-collapsed .navbar-nav,
-        .admin-navbar.navbar-collapsed .navbar-toggler,
-        .admin-navbar.navbar-collapsed .navbar-brand {
-            display: none !important;
-        }
-        
-        .admin-navbar.navbar-collapsed .container {
-            height: 0 !important;
-            overflow: hidden;
-        }
-        
-        /* Ensure page content flows properly when navbar is collapsed */
-        .admin-navbar.navbar-collapsed + * {
-            margin-top: 0 !important;
-        }
-        
-        /* Body padding is now handled below in the navbar styles section */
-        
-        /* Ensure the navbar itself doesn't interfere with page layout */
+        /* Standard Navbar Styles */
         .admin-navbar {
             position: relative;
             z-index: 1000;
-        }
-        
-        /* TULIP Logo Styles */
-        .tulip-logo-container {
-            position: fixed;
-            top: 5px; /* Reduced top spacing */
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1050;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .tulip-logo {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: white;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
-        
-        .tulip-logo:hover {
-            transform: scale(1.1);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        }
-        
-        .tulip-logo img {
-            width: 30px;
-            height: 30px;
-            object-fit: contain;
-        }
-        
-        .logo-expanded {
-            transform: translateX(-50%) scale(1.2);
-        }
-        
-        .logo-collapsed {
-            transform: translateX(-50%) scale(1);
         }
         
         /* Navbar Styles */
@@ -142,31 +22,6 @@
             height: auto;
             min-height: 60px;
             position: relative;
-        }
-        
-        .admin-navbar.navbar-collapsed {
-            height: 0 !important;
-            min-height: 0 !important;
-            overflow: hidden;
-        }
-        
-        /* Ensure the navbar collapse doesn't affect page layout */
-        .admin-navbar.navbar-collapsed {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-        }
-        
-        /* When navbar is collapsed, ensure page content flows naturally */
-        body.navbar-collapsed {
-            padding-top: 50px; /* Reduced space for TULIP logo */
-        }
-        
-        /* When navbar is expanded, no extra padding needed */
-        body.navbar-expanded {
-            padding-top: 0; /* No extra padding when navbar is expanded */
         }
         
         /* Center and Resize Navbar Logo */
@@ -187,69 +42,44 @@
             justify-content: center;
         }
         
-        /* Ensure navbar doesn't overlap with fixed logo */
-        .admin-navbar {
-            padding-top: 0; /* Remove unnecessary top padding */
-        }
+
         
-        /* When navbar is collapsed, allow content to flow naturally */
-        .admin-navbar.navbar-collapsed {
-            position: relative;
-            z-index: 1;
-        }
-        
-        /* Ensure page content is always visible - only when our navbar is collapsed */
-        body.navbar-collapsed .container, 
-        body.navbar-collapsed .container-fluid, 
-        body.navbar-collapsed .row, 
-        body.navbar-collapsed .col, 
-        body.navbar-collapsed .col-12 {
-            min-height: 0;
-            visibility: visible !important;
-            opacity: 1 !important;
-        }
-        
-        /* Prevent content from being hidden by navbar collapse */
-        .admin-navbar.navbar-collapsed ~ * {
-            position: relative;
-            z-index: 2;
-        }
-        
-        /* Ensure smooth transitions for all navbar elements */
-        .navbar * {
-            transition: all 0.3s ease;
-        }
-        
-        /* Ensure main content containers are visible and properly spaced */
-        .admin-navbar + .container, 
-        .admin-navbar + .container-fluid {
-            transition: margin-top 0.3s ease;
-        }
-        
-        /* When navbar is collapsed, ensure content flows naturally */
-        body.navbar-collapsed .admin-navbar + .container,
-        body.navbar-collapsed .admin-navbar + .container-fluid {
+        /* Ensure page loads at normal position */
+        body {
+            padding-top: 0 !important;
             margin-top: 0 !important;
         }
         
-        /* When navbar is expanded, minimal spacing below navbar */
-        body.navbar-expanded .admin-navbar + .container,
-        body.navbar-expanded .admin-navbar + .container-fluid {
-            margin-top: 10px; /* Reduced spacing below expanded navbar */
+        /* Ensure page content starts at the top */
+        html, body {
+            scroll-padding-top: 0;
+            scroll-margin-top: 0;
+        }
+        
+        /* Reset any initial positioning issues */
+        .container, .container-fluid {
+            margin-top: 0;
+            padding-top: 0;
+        }
+        
+        /* Ensure navbar starts at very top */
+        .admin-navbar {
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+        }
+        
+        /* Reset any Bootstrap default margins */
+        .navbar {
+            margin-bottom: 0 !important;
         }
     </style>
     
-    <!-- TULIP Logo (Fixed Position) -->
-    <div class="tulip-logo-container" onclick="toggleNavbar()">
-        <div class="tulip-logo" id="tulipLogo">
-            <img src="/image/images/photos/red_tulip_adhoc_1.png" alt="TULIP Logo">
-        </div>
-    </div>
+
 
     <nav class="navbar navbar-expand-lg navbar-light bg-light admin-navbar" id="adminNavbar">
         <div class="container"> <!-- Changed from container-fluid to container -->
             <!-- Logo & Brand -->
-            <a th:href="${isAuthenticated} ? @{/dashboard/index} : @{/login}" class="navbar-brand d-flex align-items-center">
+            <a class="navbar-brand d-flex align-items-center" href="/dashboard/index">
                 <img src="/image/images/photos/red_tulip_adhoc_1.png" class="logo-img" alt="Logo">
             </a>
 
@@ -281,6 +111,9 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" th:href="@{/menu/admin/manage}">Menus</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/chatmodel}">Chat</a>
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="accountingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
