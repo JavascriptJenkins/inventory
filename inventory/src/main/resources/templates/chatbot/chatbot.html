@@ -56,10 +56,29 @@
             min-height: 100vh;
             overflow-x: hidden;
             position: relative;
-            /* Navbar padding is now handled globally in adminnavbar fragment */
+            /* Override navbar padding for chatbot page to ensure full green background */
+            padding-top: 0 !important;
         }
         
-        /* Navbar state is now handled globally in adminnavbar fragment */
+        /* Override navbar spacing for chatbot page to ensure full green background */
+        body.navbar-collapsed,
+        body.navbar-expanded {
+            padding-top: 0 !important;
+        }
+        
+        /* Ensure admin navbar doesn't interfere with full green background */
+        .admin-navbar {
+            z-index: 1000;
+        }
+        
+        /* Ensure all content elements are visible above background */
+        .chatbot-header,
+        .chat-messages,
+        .chat-input-container,
+        .loading-container {
+            position: relative;
+            z-index: 25;
+        }
 
         /* CRT TV Effect */
         body::before {
@@ -73,9 +92,9 @@
                 linear-gradient(90deg, transparent 0%, transparent 2%, rgba(0,0,0,0.1) 2.5%, transparent 3%),
                 linear-gradient(0deg, transparent 0%, transparent 2%, rgba(0,0,0,0.1) 2.5%, transparent 3%);
             pointer-events: none;
-            z-index: 1000;
+            z-index: 1;
         }
-
+        
         /* CRT Scan Lines */
         body::after {
             content: '';
@@ -84,15 +103,17 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: repeating-linear-gradient(
-                0deg,
-                transparent,
-                transparent 2px,
-                rgba(0, 255, 0, 0.03) 2px,
-                rgba(0, 255, 0, 0.03) 4px
-            );
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(0, 255, 0, 0.03) 2px,
+                    rgba(0, 255, 0, 0.03) 4px
+                ),
+                var(--gameboy-bg);
             pointer-events: none;
-            z-index: 999;
+            z-index: 0;
         }
 
         /* Main Container */
@@ -104,6 +125,12 @@
             display: flex;
             flex-direction: row;
             gap: 0;
+            /* Ensure container starts from top of page */
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+            /* Ensure content is visible above background */
+            position: relative;
+            z-index: 10;
         }
 
         /* Chat Sidebar */
@@ -119,6 +146,9 @@
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            /* Ensure sidebar is visible above background */
+            position: relative;
+            z-index: 15;
         }
 
         .sidebar-header {
@@ -237,6 +267,9 @@
             flex-direction: column;
             padding: 0;
             margin: 0;
+            /* Ensure main chat area is visible above background */
+            position: relative;
+            z-index: 15;
         }
 
         /* Header */
@@ -310,6 +343,9 @@
             display: flex;
             flex-direction: column;
             min-height: 400px;
+            /* Ensure chat container is visible above background */
+            position: relative;
+            z-index: 20;
         }
 
         /* Chat Messages Area */
@@ -720,10 +756,20 @@
             padding: 4px 12px;
             border-radius: 12px;
             font-size: 0.6rem;
-            z-index: 9998;
+            z-index: 100;
             opacity: 0;
             transition: opacity 0.3s ease;
             pointer-events: none;
+        }
+        
+        /* Ensure TULIP logo is visible over green background */
+        .tulip-logo-container {
+            z-index: 9999 !important;
+        }
+        
+        .tulip-logo {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px);
         }
         
         .navbar-state-indicator.show {
