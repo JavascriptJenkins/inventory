@@ -33,6 +33,12 @@ public class SystemUserDAO {
     @Column(name="tenant")
     String tenant;
 
+    // Many-to-one relationship with Tenant entity
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tenant_id", referencedColumnName = "id")
+    @JsonIgnore
+    private Tenant tenantEntity;
+
     @Transient
     String password2;
 
@@ -152,6 +158,14 @@ public class SystemUserDAO {
 
     public void setTenant( String tenant) {
         this.tenant = tenant;
+    }
+
+    public Tenant getTenantEntity() {
+        return tenantEntity;
+    }
+
+    public void setTenantEntity(Tenant tenantEntity) {
+        this.tenantEntity = tenantEntity;
     }
 
 

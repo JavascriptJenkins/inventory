@@ -1,0 +1,105 @@
+// Add to your Jenkinsfile as a separate pipeline
+
+//8. Complete Integration Flow:
+//   Customer signs up → Payment processed via Stripe
+//   Paypal webhook → Triggers tenant provisioning pipeline
+//   Jenkins pipeline → Creates namespace, deploys app, configures domain
+//   DNS propagation → Tenant gets their subdomain
+//   SSL certificate → Automatically provisioned via cert-manager
+//   Welcome email → Sent with login credentials
+//   This approach gives you automated multi-tenant provisioning with proper resource isolation, billing integration, and scalable infrastructure management.
+
+
+pipeline {
+    agent any
+
+    parameters {
+        string(name: 'TENANT_NAME', description: 'New tenant identifier')
+        string(name: 'BILLING_EMAIL', description: 'Tenant billing email')
+        choice(name: 'SUBSCRIPTION_TIER', choices: ['basic', 'pro', 'enterprise'])
+    }
+
+    stages {
+        stage('Validate Tenant') {
+            steps {
+                script {
+                // do the follwing in a java adhoc scheduled job
+                    // Check if tenant name is available
+                    // Validate domain requirements
+                    // Verify payment completion
+                }
+            }
+        }
+
+        stage('Create Tenant Namespace') {
+            steps {
+                script {
+                    sh """
+                        kubectl create namespace tenant-${params.TENANT_NAME}
+                        kubectl label namespace tenant-${params.TENANT_NAME} tenant=${params.TENANT_NAME}
+                        kubectl label namespace tenant-${params.TENANT_NAME} tier=${params.SUBSCRIPTION_TIER}
+                    """
+                }
+            }
+        }
+
+        stage('Create Tenant Database') {
+            steps {
+                script {
+                    sh """
+                        # Create dedicated database for tenant
+                        kubectl run temp-postgres --image=postgres:13 --restart=Never -- \
+                        psql -h postgres-service -U admin -c "CREATE DATABASE tenant_${params.TENANT_NAME};"
+
+                        # Set tenant-specific DB_URI
+                        export TENANT_DB_URI="jdbc:postgresql://postgres-service:5432/tenant_${params.TENANT_NAME}"
+                    """
+                }
+            }
+        }
+
+
+        stage('Configure Domain') {
+            steps {
+                script {
+                    sh """
+                        # Update DNS (using your DNS provider API)
+                        curl -X POST "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records" \
+                        -H "Authorization: Bearer ${CF_API_TOKEN}" \
+                        -d '{"type":"CNAME","name":"${params.TENANT_NAME}","content":"${LOAD_BALANCER_IP}"}'
+
+                        # Cert-manager will automatically provision SSL certificates
+                        kubectl apply -f - <<EOF
+        apiVersion: cert-manager.io/v1
+        kind: Certificate
+        metadata:
+          name: ${params.TENANT_NAME}-tls
+          namespace: tenant-${params.TENANT_NAME}
+        spec:
+          secretName: ${params.TENANT_NAME}-tls
+          dnsNames:
+          - ${params.TENANT_NAME}.yoursaas.com
+          issuerRef:
+            name: letsencrypt-prod
+            kind: ClusterIssuer
+        EOF
+                    """
+                }
+            }
+        }
+
+        stage('Deploy Tenant Application') {
+            steps {
+                script {
+                    // Trigger your main deployment pipeline with tenant-specific params
+                    build job: 'kubernetes-app-deployment', parameters: [
+                        string(name: 'APP_NAME', value: params.APP_NAME),
+                        string(name: 'K8S_NAMESPACE', value: "tenant-${params.TENANT_NAME}"),
+                        string(name: 'TENANT_NAME', value: params.TENANT_NAME),
+                        string(name: 'BASE_DOMAIN', value: '.yoursaas.com')
+                    ]
+                }
+            }
+        }
+    }
+}

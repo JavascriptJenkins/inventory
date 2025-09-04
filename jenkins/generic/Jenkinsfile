@@ -1,0 +1,667 @@
+// Generic Jenkins Pipeline for Kubernetes Deployment with GCP SDK Auth and Docker Plugins
+//
+// Required Jenkins Plugins:
+// - Google Cloud Platform SDK :: Auth (for GCP authentication)
+// - Docker Pipeline Plugin (for Docker operations)
+// - Kubernetes CLI Plugin (for kubectl operations)
+// - Google Kubernetes Engine Plugin (optional, for GKE integration)
+//
+// Prerequisites:
+// - GCP Service Account with appropriate permissions (Container Registry, Kubernetes Engine)
+// - Jenkins credentials configured with GCP service account key
+// - Docker installed on Jenkins agent
+// - kubectl installed on Jenkins agent
+// - Google Cloud SDK installed on Jenkins agent
+//
+// Usage:
+// 1. Configure Jenkins credentials with your GCP service account key
+// 2. Set the GCP_CREDENTIALS_ID parameter to match your credentials ID
+// 3. Update GCP_PROJECT_ID, K8S_CLUSTER_NAME, and DOCKER_REGISTRY parameters
+// 4. Run the pipeline with your Java 17 application
+pipeline {
+    agent any
+
+    tools {
+        maven 'maven3'
+        // Add Google Cloud SDK tool if available in Jenkins
+        // googleCloudSDK 'google-cloud-sdk'
+    }
+
+    // Define parameters for generic Kubernetes application deployment
+    parameters {
+        string(name: 'APP_NAME', defaultValue: 'inventory', description: 'Name of the application to build and deploy')
+        choice(name: 'BRANCH', choices: ['test1', 'prod', 'joebranch', 'peterbranch', 'main', 'develop'], description: 'Branch to build')
+        
+        // Kubernetes Infrastructure Parameters
+        string(name: 'K8S_CLUSTER_NAME', defaultValue: 'my-k8s-cluster', description: 'Kubernetes cluster name')
+        string(name: 'K8S_NAMESPACE', defaultValue: 'default', description: 'Kubernetes namespace to deploy to')
+        string(name: 'DOCKER_REGISTRY', defaultValue: 'gcr.io/my-project', description: 'Docker registry URL (e.g., gcr.io/project-id)')
+        string(name: 'GCP_PROJECT_ID', defaultValue: 'my-gcp-project', description: 'Google Cloud Project ID')
+        string(name: 'GCP_ZONE', defaultValue: 'us-central1-a', description: 'GCP Zone for the cluster')
+        string(name: 'GCP_REGION', defaultValue: 'us-central1', description: 'GCP Region for the cluster')
+        string(name: 'GCP_CREDENTIALS_ID', defaultValue: 'gcp-service-account-key', description: 'Jenkins credentials ID for GCP service account')
+        
+        // Application Configuration
+        string(name: 'GITHUB_REPO_URL', defaultValue: 'https://github.com/javascriptjenkins/inventory.git', description: 'GitHub repository URL for the application')
+        string(name: 'TENANT_NAME', defaultValue: 'test', description: 'Tenant name for URL construction')
+        choice(name: 'BASE_DOMAIN', choices: ['.techvvs.io', '.jenkins.codes'], description: 'Base domain for the application')
+        string(name: 'BASE_QR_DOMAIN', defaultValue: 'https://test.techvvs.io', description: 'Base domain for QR codes and external references')
+        string(name: 'ENVIRONMENT_NAME', defaultValue: 'prod', description: 'Spring profile environment (prod, dev1, test)')
+        
+        // Database Configuration
+        string(name: 'DB_URI', defaultValue: 'jdbc:postgresql://postgres-service:5432', description: 'Database connection URI')
+        string(name: 'DB_USERNAME', defaultValue: 'doadmin', description: 'Database username')
+        choice(name: 'DB_TYPE', choices: ['postgresql', 'h2', 'mysql'], description: 'Database type')
+        string(name: 'DB_DRIVER_CLASS_NAME', defaultValue: 'org.postgresql.Driver', description: 'Database driver class')
+        string(name: 'DB_JPA_DATABASE_PLATFORM', defaultValue: 'org.hibernate.dialect.PostgreSQLDialect', description: 'JPA database platform')
+        string(name: 'DB_JPA_HIBERNATE_DIALECT', defaultValue: 'org.hibernate.dialect.PostgreSQLDialect', description: 'Hibernate dialect')
+        choice(name: 'SPRING_DATABASE_ACTION', choices: ['update', 'create-drop', 'create', 'validate', 'none'], description: 'Hibernate DDL auto mode')
+        
+        // Kubernetes Deployment Configuration
+        string(name: 'REPLICAS', defaultValue: '2', description: 'Number of pod replicas')
+        string(name: 'CPU_REQUEST', defaultValue: '500m', description: 'CPU request (e.g., 500m)')
+        string(name: 'MEMORY_REQUEST', defaultValue: '1Gi', description: 'Memory request (e.g., 1Gi)')
+        string(name: 'CPU_LIMIT', defaultValue: '1000m', description: 'CPU limit (e.g., 1000m)')
+        string(name: 'MEMORY_LIMIT', defaultValue: '2Gi', description: 'Memory limit (e.g., 2Gi)')
+        
+        // Application Features
+        string(name: 'LOAD_REF_DATA', defaultValue: 'no', description: 'Load reference data on startup (yes/no)')
+        string(name: 'MAX_FILE_SIZE', defaultValue: '500MB', description: 'Maximum file upload size')
+        string(name: 'MAX_REQ_SIZE', defaultValue: '500MB', description: 'Maximum request size')
+        
+        // PayPal Configuration
+        choice(name: 'PAYPAL_ENVIRONMENT', choices: ['SANDBOX', 'LIVE'], description: 'PayPal environment')
+        string(name: 'PAYPAL_BRAND_NAME', defaultValue: 'techvvs_clothing_app_1', description: 'PayPal brand name')
+        
+        // Wallet Configuration
+        string(name: 'WALLET_BRAND', defaultValue: 'Tulip', description: 'Wallet brand organization name')
+        string(name: 'WALLET_BRAND_PROGRAM', defaultValue: 'Tulip Membership', description: 'Wallet brand program name')
+        string(name: 'WALLET_GOOGLE_SERVICE_ACC_KEY_PATH', defaultValue: 'classpath:/uploads/applecert/', description: 'Google service account key path')
+        string(name: 'WALLET_GOOGLE_ISSUER_ID', defaultValue: 'google_issuer_id_here', description: 'Google Wallet issuer ID')
+        string(name: 'WALLET_GOOGLE_CLASS_ID', defaultValue: 'google_class_id_here', description: 'Google Wallet class ID')
+        
+        // METRC Configuration
+        string(name: 'METRC_MCP_FILE_PATH', defaultValue: 'classpath:/uploads/mcp/metrc-mcp-connector.dxt', description: 'METRC MCP file path')
+    }
+
+    environment {
+        DOCKER_IMAGE = "${params.DOCKER_REGISTRY}/${params.APP_NAME}"
+        DOCKER_TAG = "${BUILD_NUMBER}-${params.BRANCH}"
+        FULL_IMAGE_NAME = "${DOCKER_IMAGE}:${DOCKER_TAG}"
+        // GCP Environment Variables
+        GOOGLE_APPLICATION_CREDENTIALS = credentials("${params.GCP_CREDENTIALS_ID}")
+        GCP_PROJECT_ID = "${params.GCP_PROJECT_ID}"
+        GCP_ZONE = "${params.GCP_ZONE}"
+        GCP_REGION = "${params.GCP_REGION}"
+        K8S_CLUSTER_NAME = "${params.K8S_CLUSTER_NAME}"
+        K8S_NAMESPACE = "${params.K8S_NAMESPACE}"
+    }
+
+    stages {
+        stage('Configure Environment') {
+            steps {
+                script {
+                    // Set environment variables
+                    env.APP_NAME = params.APP_NAME
+                    env.K8S_NAMESPACE = params.K8S_NAMESPACE
+                    env.TENANT_NAME = params.TENANT_NAME
+                    env.BASE_DOMAIN = params.BASE_DOMAIN
+                    env.BASE_QR_DOMAIN = params.BASE_QR_DOMAIN
+                    env.METRC_MCP_URI = "${params.BASE_QR_DOMAIN}/api/mcp"
+                    
+                    // Validate required parameters
+                    if (!params.GCP_PROJECT_ID || params.GCP_PROJECT_ID == 'my-gcp-project') {
+                        error "GCP_PROJECT_ID must be set to a valid Google Cloud Project ID"
+                    }
+                    if (!params.K8S_CLUSTER_NAME || params.K8S_CLUSTER_NAME == 'my-k8s-cluster') {
+                        error "K8S_CLUSTER_NAME must be set to a valid Kubernetes cluster name"
+                    }
+                    if (!params.DOCKER_REGISTRY || params.DOCKER_REGISTRY == 'gcr.io/my-project') {
+                        error "DOCKER_REGISTRY must be set to a valid GCR registry (e.g., gcr.io/your-project-id)"
+                    }
+                    
+                    // Log configuration for debugging
+                    echo "=== KUBERNETES DEPLOYMENT CONFIGURATION ==="
+                    echo "Application: ${env.APP_NAME}"
+                    echo "GCP Project: ${params.GCP_PROJECT_ID}"
+                    echo "Cluster: ${params.K8S_CLUSTER_NAME}"
+                    echo "Zone: ${params.GCP_ZONE}"
+                    echo "Region: ${params.GCP_REGION}"
+                    echo "Namespace: ${env.K8S_NAMESPACE}"
+                    echo "Docker Image: ${env.FULL_IMAGE_NAME}"
+                    echo "Tenant Name: ${env.TENANT_NAME}"
+                    echo "Base Domain: ${env.BASE_DOMAIN}"
+                    echo "QR Domain: ${env.BASE_QR_DOMAIN}"
+                    echo "================================="
+                }
+            }
+        }
+
+        stage('GCP Authentication') {
+            steps {
+                script {
+                    // Authenticate with Google Cloud using the GCP SDK Auth plugin
+                    withCredentials([file(credentialsId: "${params.GCP_CREDENTIALS_ID}", variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+                        sh '''
+                            # Install Google Cloud SDK if not available
+                            if ! command -v gcloud &> /dev/null; then
+                                echo "Installing Google Cloud SDK..."
+                                curl https://sdk.cloud.google.com | bash
+                                source ~/.bashrc
+                            fi
+                            
+                            # Authenticate with Google Cloud
+                            gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
+                            gcloud config set project ${GCP_PROJECT_ID}
+                            gcloud config set compute/zone ${GCP_ZONE}
+                            gcloud config set compute/region ${GCP_REGION}
+                            
+                            # Verify authentication
+                            gcloud auth list
+                            gcloud config list
+                            
+                            # Configure Docker to use gcloud as credential helper for GCR
+                            gcloud auth configure-docker
+                            
+                            echo "GCP authentication completed successfully"
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Checkout') {
+            steps {
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: "*/${params.BRANCH}"]],
+                    userRemoteConfigs: [[url: params.GITHUB_REPO_URL, credentialsId: 'githubcreds']]
+                ])
+            }
+        }
+
+        stage('Update Properties') {
+            steps {
+                script {
+                    withCredentials([
+                        string(credentialsId: 'TWILIO_API_USER', variable: 'TWILIO_API_USER'),
+                        string(credentialsId: 'TWILIO_API_PASSWORD', variable: 'TWILIO_API_PASSWORD'),
+                        string(credentialsId: 'SENDGRID_API_KEY', variable: 'SENDGRID_API_KEY'),
+                        string(credentialsId: 'POSTGRE_TEST_DB_PASSWORD', variable: 'POSTGRE_TEST_DB_PASSWORD'),
+                        string(credentialsId: 'POSTGRE_PROD_DB_PASSWORD', variable: 'POSTGRE_PROD_DB_PASSWORD'),
+                        string(credentialsId: 'JWT_SECRET_KEY', variable: 'JWT_SECRET_KEY'),
+                        string(credentialsId: 'METRC_API_KEY_USERNAME', variable: 'METRC_API_KEY_USERNAME'),
+                        string(credentialsId: 'METRC_API_KEY_PASSWORD', variable: 'METRC_API_KEY_PASSWORD'),
+                        string(credentialsId: 'PAYPAL_CLIENT_ID', variable: 'PAYPAL_CLIENT_ID'),
+                        string(credentialsId: 'PAYPAL_CLIENT_SECRET', variable: 'PAYPAL_CLIENT_SECRET'),
+                        string(credentialsId: 'ANTHROPIC_API_KEY', variable: 'ANTHROPIC_API_KEY')
+                    ]) {
+                        dir("${env.APP_NAME}") {
+                            sh "ls -l"
+                            
+                            // Update application.properties with all configurations
+                            if (params.ENVIRONMENT_NAME) {
+                                sh "sed -i 's/^spring\\.profiles\\.active=.*/spring.profiles.active=${params.ENVIRONMENT_NAME}/' src/main/resources/application.properties"
+                            }
+                            if (params.LOAD_REF_DATA) {
+                                sh "sed -i 's/^load\\.ref\\.data=.*/load.ref.data=${params.LOAD_REF_DATA}/' src/main/resources/application.properties"
+                            }
+                            if (params.DB_USERNAME) {
+                                sh "sed -i 's/^spring\\.datasource\\.username=.*/spring.datasource.username=${params.DB_USERNAME}/' src/main/resources/application.properties"
+                            }
+                            if (params.SPRING_DATABASE_ACTION) {
+                                sh "sed -i 's/^spring\\.jpa\\.hibernate\\.ddl-auto=.*/spring.jpa.hibernate.ddl-auto=${params.SPRING_DATABASE_ACTION}/' src/main/resources/application.properties"
+                            }
+                            if (params.DB_DRIVER_CLASS_NAME) {
+                                sh "sed -i 's/^spring\\.datasource\\.driver-class-name=.*/spring.datasource.driver-class-name=${params.DB_DRIVER_CLASS_NAME}/' src/main/resources/application.properties"
+                            }
+                            if (params.DB_JPA_DATABASE_PLATFORM) {
+                                sh "sed -i 's/^spring\\.jpa\\.database-platform=.*/spring.jpa.database-platform=${params.DB_JPA_DATABASE_PLATFORM}/' src/main/resources/application.properties"
+                            }
+                            if (params.DB_JPA_HIBERNATE_DIALECT) {
+                                sh "sed -i 's/^spring\\.jpa\\.properties\\.hibernate\\.dialect=.*/spring.jpa.properties.hibernate.dialect=${params.DB_JPA_HIBERNATE_DIALECT}/' src/main/resources/application.properties"
+                            }
+                            if (params.DB_URI) {
+                                env.DB_URI="${params.DB_URI}/${env.TENANT_NAME}?sslmode=require"
+                                echo "Updated DB_URI: ${env.DB_URI}"
+                                sh "sed -i 's|^spring\\.datasource\\.url=.*|spring.datasource.url=${env.DB_URI}|' src/main/resources/application.properties"
+                            }
+
+                            // Replace the QR domain
+                            sh "sed -i 's|^base\\.qr\\.domain=.*|base.qr.domain=${env.BASE_QR_DOMAIN}|' src/main/resources/application.properties"
+
+                            // Replace PayPal configuration
+                            if (params.PAYPAL_ENVIRONMENT) {
+                                sh "sed -i 's/^paypal\\.environment=.*/paypal.environment=${params.PAYPAL_ENVIRONMENT}/' src/main/resources/application.properties"
+                            }
+                            if (params.PAYPAL_BRAND_NAME) {
+                                sh "sed -i 's/^paypal\\.brand\\.name=.*/paypal.brand.name=${params.PAYPAL_BRAND_NAME}/' src/main/resources/application.properties"
+                            }
+
+                            // Replace wallet configuration
+                            if (params.WALLET_BRAND) {
+                                sh "sed -i 's/^wallet\\.brand=.*/wallet.brand=${params.WALLET_BRAND}/' src/main/resources/application.properties"
+                            }
+                            if (params.WALLET_BRAND_PROGRAM) {
+                                sh "sed -i 's/^wallet\\.brand\\.program=.*/wallet.brand.program=${params.WALLET_BRAND_PROGRAM}/' src/main/resources/application.properties"
+                            }
+
+                            // Replace all credential-based properties
+                            sh "sed -i 's|^twilio\\.api\\.username=.*|twilio.api.username=${TWILIO_API_USER}|' src/main/resources/application.properties"
+                            sh "sed -i 's|^twilio\\.api\\.password=.*|twilio.api.password=${TWILIO_API_PASSWORD}|' src/main/resources/application.properties"
+                            sh "sed -i 's|^sendgrid\\.api\\.key=.*|sendgrid.api.key=${SENDGRID_API_KEY}|' src/main/resources/application.properties"
+                            sh "sed -i 's|^security\\.jwt\\.token\\.secret-key=.*|security.jwt.token.secret-key=${JWT_SECRET_KEY}|' src/main/resources/application.properties"
+                            sh "sed -i 's|^metrc\\.api-key-username=.*|metrc.api-key-username=${METRC_API_KEY_USERNAME}|' src/main/resources/application.properties"
+                            sh "sed -i 's|^metrc\\.api-key-password=.*|metrc.api-key-password=${METRC_API_KEY_PASSWORD}|' src/main/resources/application.properties"
+                            sh "sed -i 's|^paypal\\.client-id=.*|paypal.client-id=${PAYPAL_CLIENT_ID}|' src/main/resources/application.properties"
+                            sh "sed -i 's|^paypal\\.client-secret=.*|paypal.client-secret=${PAYPAL_CLIENT_SECRET}|' src/main/resources/application.properties"
+                            sh "sed -i 's|^anthropic\\.apiKey=.*|anthropic.apiKey=${ANTHROPIC_API_KEY}|' src/main/resources/application.properties"
+                            sh "sed -i 's|^metrc\\.mcp\\.url=.*|metrc.mcp.url=${env.METRC_MCP_URI}|' src/main/resources/application.properties"
+
+                            // Environment-specific database password handling
+                            if (params.ENVIRONMENT_NAME.contains('prod')) {
+                                echo "Production environment detected."
+                                sh "sed -i 's/^spring\\.datasource\\.password=.*/spring.datasource.password=${POSTGRE_PROD_DB_PASSWORD}/' src/main/resources/application.properties"
+                            } else {
+                                echo "Non-production environment detected."
+                                sh "sed -i 's/^spring\\.datasource\\.password=.*/spring.datasource.password=${POSTGRE_TEST_DB_PASSWORD}/' src/main/resources/application.properties"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Replace URLs') {
+            steps {
+                script {
+                    dir("${env.APP_NAME}") {
+                        def baseUrl = "https://${env.TENANT_NAME}${env.BASE_DOMAIN}"
+                        
+                        sh """
+                            find src/main/java src/main/resources -type f -exec sed -i 's|http://localhost:8080|${baseUrl}|g' {} +
+                        """
+                        
+                        sh """
+                            if [ -f "uploads/mcp/local-metrcdocs-connector.dxt" ]; then
+                                sed -i 's|"url": "http://localhost:8080/api/mcp"|"url": "${params.BASE_QR_DOMAIN}/api/mcp"|g' uploads/mcp/local-metrcdocs-connector.dxt
+                                echo "Updated local-metrcdocs-connector.dxt with domain: ${params.BASE_QR_DOMAIN}"
+                            else
+                                echo "Warning: local-metrcdocs-connector.dxt not found in uploads/mcp/"
+                            fi
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Build Application') {
+            steps {
+                script {
+                    dir("${env.APP_NAME}") {
+                        if (fileExists('pom.xml')) {
+                            sh 'mvn clean package -DskipTests'
+                        } else {
+                            error "pom.xml not found in the /${env.APP_NAME} directory! Ensure this is a Maven project."
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Create Dockerfile') {
+            steps {
+                script {
+                    dir("${env.APP_NAME}") {
+                        // Find the actual JAR file name dynamically
+                        def jarFile = sh(
+                            script: "find target -name '*.jar' -not -name '*-sources.jar' -not -name '*-javadoc.jar' | head -1",
+                            returnStdout: true
+                        ).trim()
+                        
+                        if (!jarFile) {
+                            error "No JAR file found in target directory. Make sure the Maven build completed successfully."
+                        }
+                        
+                        echo "Found JAR file: ${jarFile}"
+                        env.JAR_FILE_NAME = jarFile
+                        
+                        // Create a generic Dockerfile for Java 17 applications
+                        writeFile file: 'Dockerfile', text: """
+# Use official OpenJDK 17 runtime as base image
+FROM openjdk:17-jre-slim
+
+# Install curl for health checks
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Create non-root user for security
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+# Copy the JAR file
+COPY ${jarFile} app.jar
+
+# Create necessary directories and set permissions
+RUN mkdir -p /app/uploads /app/logs && \\
+    chown -R appuser:appuser /app
+
+# Copy static assets if they exist (optional)
+COPY uploads/ /app/uploads/ 2>/dev/null || true
+
+# Set ownership of copied files
+RUN chown -R appuser:appuser /app
+
+# Switch to non-root user
+USER appuser
+
+# Expose port 8080
+EXPOSE 8080
+
+# Health check with better error handling
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \\
+  CMD curl -f http://localhost:8080/actuator/health || curl -f http://localhost:8080/ || exit 1
+
+# JVM optimization for containers
+ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC"
+
+# Run the application
+ENTRYPOINT ["sh", "-c", "java \\$JAVA_OPTS -jar app.jar"]
+"""
+                        
+                        echo "Created Dockerfile for Java 17 application with JAR: ${jarFile}"
+                    }
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    dir("${env.APP_NAME}") {
+                        // Build Docker image using Jenkins Docker plugin with proper tagging
+                        def dockerImage = docker.build("${env.DOCKER_IMAGE}:${env.DOCKER_TAG}")
+                        
+                        // Tag the image with additional tags for better versioning
+                        dockerImage.tag("${env.DOCKER_IMAGE}:latest")
+                        dockerImage.tag("${env.DOCKER_IMAGE}:${params.BRANCH}")
+                        
+                        env.DOCKER_IMAGE_ID = dockerImage.id
+                        echo "Built Docker image: ${env.FULL_IMAGE_NAME}"
+                        echo "Image ID: ${env.DOCKER_IMAGE_ID}"
+                        
+                        // List all tags for verification
+                        sh "docker images ${env.DOCKER_IMAGE}"
+                    }
+                }
+            }
+        }
+
+        stage('Push to Registry') {
+            steps {
+                script {
+                    dir("${env.APP_NAME}") {
+                        // Use Docker plugin to push images to GCR
+                        def dockerImage = docker.image("${env.FULL_IMAGE_NAME}")
+                        
+                        // Push all tagged versions
+                        dockerImage.push()
+                        dockerImage.push("latest")
+                        dockerImage.push("${params.BRANCH}")
+                        
+                        echo "Successfully pushed Docker images:"
+                        echo "- ${env.FULL_IMAGE_NAME}"
+                        echo "- ${env.DOCKER_IMAGE}:latest"
+                        echo "- ${env.DOCKER_IMAGE}:${params.BRANCH}"
+                        
+                        // Verify the push by listing images in GCR
+                        sh '''
+                            gcloud container images list-tags ${DOCKER_IMAGE} --limit=5
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Create Kubernetes Manifests') {
+            steps {
+                script {
+                    // Create Kubernetes deployment and service manifests
+                    writeFile file: 'k8s-deployment.yaml', text: """
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${env.APP_NAME}
+  namespace: ${env.K8S_NAMESPACE}
+  labels:
+    app: ${env.APP_NAME}
+spec:
+  replicas: ${params.REPLICAS}
+  selector:
+    matchLabels:
+      app: ${env.APP_NAME}
+  template:
+    metadata:
+      labels:
+        app: ${env.APP_NAME}
+    spec:
+      containers:
+      - name: ${env.APP_NAME}
+        image: ${env.FULL_IMAGE_NAME}
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            cpu: ${params.CPU_REQUEST}
+            memory: ${params.MEMORY_REQUEST}
+          limits:
+            cpu: ${params.CPU_LIMIT}
+            memory: ${params.MEMORY_LIMIT}
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: "${params.ENVIRONMENT_NAME}"
+        - name: SPRING_DATASOURCE_URL
+          value: "${env.DB_URI}"
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        volumeMounts:
+        - name: uploads-storage
+          mountPath: /app/uploads
+      volumes:
+      - name: uploads-storage
+        persistentVolumeClaim:
+          claimName: ${env.APP_NAME}-uploads-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ${env.APP_NAME}-service
+  namespace: ${env.K8S_NAMESPACE}
+  labels:
+    app: ${env.APP_NAME}
+spec:
+  selector:
+    app: ${env.APP_NAME}
+  ports:
+  - port: 80
+    targetPort: 8080
+    protocol: TCP
+  type: ClusterIP
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ${env.APP_NAME}-uploads-pvc
+  namespace: ${env.K8S_NAMESPACE}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ${env.APP_NAME}-ingress
+  namespace: ${env.K8S_NAMESPACE}
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  tls:
+  - hosts:
+    - ${env.TENANT_NAME}${env.BASE_DOMAIN}
+    secretName: ${env.APP_NAME}-tls
+  rules:
+  - host: ${env.TENANT_NAME}${env.BASE_DOMAIN}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: ${env.APP_NAME}-service
+            port:
+              number: 80
+"""
+                }
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                script {
+                    withCredentials([file(credentialsId: "${params.GCP_CREDENTIALS_ID}", variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+                        sh '''
+                            # Ensure we're authenticated with GCP
+                            gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
+                            gcloud config set project ${GCP_PROJECT_ID}
+                            
+                            # Get cluster credentials and verify cluster exists
+                            echo "Getting credentials for cluster: ${K8S_CLUSTER_NAME} in zone: ${GCP_ZONE}"
+                            gcloud container clusters get-credentials ${K8S_CLUSTER_NAME} --zone=${GCP_ZONE}
+                            
+                            # Verify kubectl is working
+                            kubectl cluster-info
+                            
+                            # Create namespace if it doesn't exist
+                            kubectl create namespace ${K8S_NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
+                            
+                            # Apply Kubernetes manifests
+                            echo "Applying Kubernetes manifests..."
+                            kubectl apply -f k8s-deployment.yaml
+                            
+                            # Wait for deployment to be ready with better error handling
+                            echo "Waiting for deployment to be ready..."
+                            kubectl rollout status deployment/${APP_NAME} -n ${K8S_NAMESPACE} --timeout=600s
+                            
+                            # Get deployment status
+                            echo "=== Deployment Status ==="
+                            kubectl get pods -n ${K8S_NAMESPACE} -l app=${APP_NAME}
+                            kubectl get services -n ${K8S_NAMESPACE} -l app=${APP_NAME}
+                            kubectl get ingress -n ${K8S_NAMESPACE} -l app=${APP_NAME}
+                            
+                            # Show pod logs for debugging if needed
+                            echo "=== Recent Pod Logs ==="
+                            kubectl logs -n ${K8S_NAMESPACE} -l app=${APP_NAME} --tail=20
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Verify Deployment') {
+            steps {
+                script {
+                    withCredentials([file(credentialsId: "${params.GCP_CREDENTIALS_ID}", variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+                        sh '''
+                            # Ensure we're authenticated with GCP
+                            gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
+                            gcloud config set project ${GCP_PROJECT_ID}
+                            gcloud container clusters get-credentials ${K8S_CLUSTER_NAME} --zone=${GCP_ZONE}
+                            
+                            # Comprehensive deployment verification
+                            echo "=== POD STATUS ==="
+                            kubectl get pods -n ${K8S_NAMESPACE} -l app=${APP_NAME} -o wide
+                            
+                            echo "=== SERVICE STATUS ==="
+                            kubectl get services -n ${K8S_NAMESPACE} -l app=${APP_NAME}
+                            
+                            echo "=== INGRESS STATUS ==="
+                            kubectl get ingress -n ${K8S_NAMESPACE} -l app=${APP_NAME}
+                            
+                            echo "=== ENDPOINTS STATUS ==="
+                            kubectl get endpoints -n ${K8S_NAMESPACE} ${APP_NAME}-service
+                            
+                            echo "=== DEPLOYMENT STATUS ==="
+                            kubectl get deployment -n ${K8S_NAMESPACE} ${APP_NAME}
+                            
+                            # Check if all pods are ready
+                            READY_PODS=$(kubectl get pods -n ${K8S_NAMESPACE} -l app=${APP_NAME} --no-headers | grep -c "Running")
+                            TOTAL_PODS=$(kubectl get pods -n ${K8S_NAMESPACE} -l app=${APP_NAME} --no-headers | wc -l)
+                            
+                            echo "Ready pods: ${READY_PODS}/${TOTAL_PODS}"
+                            
+                            if [ "${READY_PODS}" -eq "${TOTAL_PODS}" ] && [ "${TOTAL_PODS}" -gt 0 ]; then
+                                echo "✅ All pods are running successfully!"
+                            else
+                                echo "❌ Some pods are not ready. Check logs for details."
+                                kubectl describe pods -n ${K8S_NAMESPACE} -l app=${APP_NAME}
+                            fi
+                            
+                            echo "Deployment verification completed for ${APP_NAME}"
+                        '''
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            // Clean up Docker images to save space
+            script {
+                try {
+                    echo "Cleaning up Docker images..."
+                    sh "docker rmi ${env.FULL_IMAGE_NAME} || true"
+                    sh "docker rmi ${env.DOCKER_IMAGE}:latest || true"
+                    sh "docker rmi ${env.DOCKER_IMAGE}:${params.BRANCH} || true"
+                    sh "docker system prune -f || true"
+                    echo "Docker cleanup completed"
+                } catch (Exception e) {
+                    echo "Failed to clean up Docker images: ${e.getMessage()}"
+                }
+            }
+        }
+        success {
+            echo "✅ Successfully deployed ${env.APP_NAME} to Kubernetes cluster ${params.K8S_CLUSTER_NAME}"
+            echo "🌐 Application URL: https://${env.TENANT_NAME}${env.BASE_DOMAIN}"
+            echo "📊 GCP Project: ${params.GCP_PROJECT_ID}"
+            echo "🏷️  Docker Image: ${env.FULL_IMAGE_NAME}"
+        }
+        failure {
+            echo "❌ Deployment failed for ${env.APP_NAME}"
+            echo "🔍 Check the logs above for error details"
+            echo "💡 Common issues:"
+            echo "   - Invalid GCP credentials or project ID"
+            echo "   - Kubernetes cluster not accessible"
+            echo "   - Docker registry authentication issues"
+            echo "   - Application build failures"
+        }
+        unstable {
+            echo "⚠️  Deployment completed with warnings for ${env.APP_NAME}"
+        }
+    }
+}
