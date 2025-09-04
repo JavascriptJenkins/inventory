@@ -11,12 +11,26 @@
 
 
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'postgres:16'   // official postgres image includes psql
+            args '-u root:root'   // run as root to install if needed
+        }
+    }
 
     parameters {
         string(name: 'TENANT_NAME', description: 'New tenant identifier')
         string(name: 'BILLING_EMAIL', description: 'Tenant billing email')
         choice(name: 'SUBSCRIPTION_TIER', choices: ['basic', 'pro', 'enterprise'])
+        string(name: 'SANDBOX_POSTGRESQL_URI', description: 'Sandbox PostgreSQL URI')
+        string(name: 'SANDBOX_POSTGRESQL_USER', description: 'Sandbox PostgreSQL User')
+        string(name: 'SANDBOX_POSTGRESQL_PUBLIC_URI', description: 'Sandbox PostgreSQL Public URI')
+        string(name: 'SANDBOX_POSTGRESQL_PUBLIC_USER', description: 'Sandbox PostgreSQL Public User')
+    }
+
+    environment {
+        // Jenkins secrets for PostgreSQL credentials
+        SANDBOX_POSTGRESQL_PASSWORD = credentials('SANDBOX_POSTGRESQL_PASSWORD')
     }
 
     stages {
@@ -27,6 +41,27 @@ pipeline {
                     // Check if tenant name is available
                     // Validate domain requirements
                     // Verify payment completion
+                }
+            }
+        }
+
+        stage('Test Database Connection') {
+            steps {
+                script {
+                    sh """
+                        echo "Testing connection to sandbox PostgreSQL..."
+                        
+                        # Set PostgreSQL connection parameters
+                        export PGHOST="${params.SANDBOX_POSTGRESQL_PUBLIC_URI}"
+                        export PGUSER="${params.SANDBOX_POSTGRESQL_PUBLIC_USER}"
+                        export PGPASSWORD="${SANDBOX_POSTGRESQL_PASSWORD}"
+                        export PGDATABASE="defaultdb"
+                        
+                        # Test connection with a simple query
+                        psql -c "SELECT NOW() as current_time, current_database() as database_name, current_user as user_name;"
+                        
+                        echo "Database connection test successful"
+                    """
                 }
             }
         }
@@ -43,16 +78,36 @@ pipeline {
             }
         }
 
-        stage('Create Tenant Database') {
+        stage('Create Tenant Schema') {
             steps {
                 script {
                     sh """
-                        # Create dedicated database for tenant
-                        kubectl run temp-postgres --image=postgres:13 --restart=Never -- \
-                        psql -h postgres-service -U admin -c "CREATE DATABASE tenant_${params.TENANT_NAME};"
-
-                        # Set tenant-specific DB_URI
-                        export TENANT_DB_URI="jdbc:postgresql://postgres-service:5432/tenant_${params.TENANT_NAME}"
+                        echo "Creating schema for tenant: ${params.TENANT_NAME}"
+                        
+                        # Set PostgreSQL connection parameters
+                        export PGHOST="${params.SANDBOX_POSTGRESQL_PUBLIC_URI}"
+                        export PGUSER="${params.SANDBOX_POSTGRESQL_PUBLIC_USER}"
+                        export PGPASSWORD="${SANDBOX_POSTGRESQL_PASSWORD}"
+                        export PGDATABASE="defaultdb"
+                        
+                        # Create schema for the new tenant
+                        psql -c "CREATE SCHEMA IF NOT EXISTS tenant_${params.TENANT_NAME};"
+                        
+                        # Grant permissions to the schema
+                        psql -c "GRANT ALL PRIVILEGES ON SCHEMA tenant_${params.TENANT_NAME} TO ${params.SANDBOX_POSTGRESQL_PUBLIC_USER};"
+                        
+                        # Set default privileges for future objects in the schema
+                        psql -c "ALTER DEFAULT PRIVILEGES IN SCHEMA tenant_${params.TENANT_NAME} GRANT ALL ON TABLES TO ${params.SANDBOX_POSTGRESQL_PUBLIC_USER};"
+                        psql -c "ALTER DEFAULT PRIVILEGES IN SCHEMA tenant_${params.TENANT_NAME} GRANT ALL ON SEQUENCES TO ${params.SANDBOX_POSTGRESQL_PUBLIC_USER};"
+                        
+                        # Verify schema creation
+                        psql -c "\\dn tenant_${params.TENANT_NAME}"
+                        
+                        echo "Schema tenant_${params.TENANT_NAME} created successfully"
+                        
+                        # Set tenant-specific DB_URI for application deployment
+                        export TENANT_DB_URI="jdbc:postgresql://${params.SANDBOX_POSTGRESQL_PUBLIC_URI}/defaultdb?currentSchema=tenant_${params.TENANT_NAME}"
+                        export TENANT_DB_SCHEMA="tenant_${params.TENANT_NAME}"
                     """
                 }
             }

@@ -265,6 +265,111 @@
         </div>
     </div>
 
+    <!-- System Users Section -->
+    <div class="system-users-section" th:if="${tenant.id != null && tenant.id != ''}">
+        <h3>System Users</h3>
+        
+        <!-- Add New System User Form -->
+        <div class="row mb-3">
+            <div class="col-md-12">
+                <button type="button" class="btn btn-success" id="addUserBtn">
+                    <i class="fas fa-plus"></i> Add New User
+                </button>
+            </div>
+        </div>
+        
+        <!-- New User Form (initially hidden) -->
+        <div id="newUserForm" style="display: none;" class="mb-3">
+            <form th:action="@{/tenant/admin/systemuser/create}" method="post">
+                <input type="hidden" name="tenantid" th:value="${tenant.id}">
+                <div class="row">
+                    <div class="col-md-4">
+                        <label class="form-label">Email Address *</label>
+                        <input type="email" name="email" class="form-control" placeholder="user@example.com" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Name *</label>
+                        <input type="text" name="name" class="form-control" placeholder="Full Name" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">&nbsp;</label>
+                        <div>
+                            <button type="submit" class="btn btn-primary">Create User</button>
+                            <button type="button" class="btn btn-secondary" id="cancelUserBtn">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Existing System Users Table -->
+        <div th:if="${systemUsers != null && systemUsers.size() > 0}">
+            <h4>Existing Users</h4>
+            <table class="table table-hover table-striped table-dark">
+                <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Roles</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="user : ${systemUsers}">
+                    <td th:text="${user.name}"></td>
+                    <td th:text="${user.email}"></td>
+                    <td>
+                        <span th:each="role, iterStat : ${user.roles}" 
+                              th:text="${role.name()}" 
+                              class="badge badge-info mr-1"
+                              th:classappend="${iterStat.last} ? '' : 'mr-1'"></span>
+                    </td>
+                    <td>
+                        <span th:if="${user.isuseractive == 1}" class="badge badge-success">Active</span>
+                        <span th:if="${user.isuseractive == 0}" class="badge badge-secondary">Inactive</span>
+                    </td>
+                    <td>
+                        <form th:action="@{/tenant/admin/systemuser/invite}" method="post" style="display: inline;">
+                            <input type="hidden" name="tenantid" th:value="${tenant.id}">
+                            <input type="hidden" name="userid" th:value="${user.id}">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <select name="days" class="form-control form-control-sm" required>
+                                        <option value="">Days</option>
+                                        <option th:each="day : ${#numbers.sequence(1, 365)}" 
+                                                th:value="${day}" 
+                                                th:text="${day}"></option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <button type="submit" class="btn btn-info btn-sm">Send Invite</button>
+                                </div>
+                            </div>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div th:if="${systemUsers == null || systemUsers.size() == 0}" class="alert alert-info">
+            No system users found for this tenant.
+        </div>
+    </div>
+
+    <!-- Deployment Status Section -->
+    <div class="col-md-12" th:if="${tenantsNeedingDeployment != null && tenantsNeedingDeployment.size() > 0}">
+        <div class="alert alert-warning">
+            <h4>Deployment Queue</h4>
+            <p><strong th:text="${tenantsNeedingDeploymentCount}"></strong> tenant(s) waiting for deployment:</p>
+            <ul>
+                <li th:each="tenant : ${tenantsNeedingDeployment}" th:text="${tenant.tenantName} + ' (' + ${tenant.id} + ')'"></li>
+            </ul>
+            <p><small>The scheduler will process these deployments within 30 seconds.</small></p>
+        </div>
+    </div>
+
     <!-- Tenant Selection Table -->
     <div class="col-md-12" th:if="${tenantPage != null && tenantPage.content.size() > 0}">
         <div class="tip-box">Select a Tenant by clicking on the Tenant ID</div>
@@ -309,6 +414,11 @@
                 <td th:text="${tenant.lastDeployed}"></td>
                 <td th:text="${tenant.createdAt}"></td>
                 <td>
+                    <form th:action="@{/tenant/admin/deploy}" method="post" style="display: inline;">
+                        <input type="hidden" name="tenantid" th:value="${tenant.id}">
+                        <button type="submit" class="btn btn-info btn-sm" th:if="${tenant.deployflag == 0 || tenant.lastDeployed == null}" 
+                                onclick="return confirm('Are you sure you want to trigger deployment for this tenant?')">Deploy</button>
+                    </form>
                     <form th:action="@{/tenant/admin/delete}" method="post" style="display: inline;">
                         <input type="hidden" name="tenantid" th:value="${tenant.id}">
                         <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this tenant?')">Delete</button>
@@ -344,6 +454,7 @@
     document.addEventListener("DOMContentLoaded", () => {
         initializeValidation(inputFields, optionalFields);
         initializeConfigEditing();
+        initializeSystemUserManagement();
     });
 
     function initializeConfigEditing() {
@@ -461,6 +572,32 @@
         // Submit form
         document.body.appendChild(form);
         form.submit();
+    }
+
+    function initializeSystemUserManagement() {
+        // Handle add user button click
+        const addUserBtn = document.getElementById('addUserBtn');
+        const cancelUserBtn = document.getElementById('cancelUserBtn');
+        const newUserForm = document.getElementById('newUserForm');
+        
+        if (addUserBtn && newUserForm) {
+            addUserBtn.addEventListener('click', function() {
+                newUserForm.style.display = 'block';
+                addUserBtn.style.display = 'none';
+            });
+        }
+        
+        if (cancelUserBtn && newUserForm && addUserBtn) {
+            cancelUserBtn.addEventListener('click', function() {
+                newUserForm.style.display = 'none';
+                addUserBtn.style.display = 'block';
+                // Clear form fields
+                const form = newUserForm.querySelector('form');
+                if (form) {
+                    form.reset();
+                }
+            });
+        }
     }
 </script>
 

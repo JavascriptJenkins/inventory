@@ -30,7 +30,9 @@ public class JenkinsHttpService {
     
     public void triggerTenantProvisioning(String tenantName, String subscriptionTier, String billingEmail) {
         try {
-            String jobUrl = jenkinsUrl + "/job/tenant-provisioning/buildWithParameters";
+
+
+            String jobUrl = jenkinsUrl + "/job/generic_app_build/buildWithParameters";
             
             // Create authentication headers
             HttpHeaders headers = new HttpHeaders();
@@ -58,12 +60,14 @@ public class JenkinsHttpService {
             
             // Create job parameters
             MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+            // todo: change this to a legit secret stored in GCP
+            params.add("token", "new-tenant-secret"); // this is set in the jenkins configuration page manually
             params.add("TENANT_NAME", tenantName);
             params.add("SUBSCRIPTION_TIER", subscriptionTier);
             params.add("BILLING_EMAIL", billingEmail);
-            params.add("APP_NAME", "inventory");
+            params.add("APP_NAME", tenantName+"App");
             params.add("K8S_NAMESPACE", "tenant-" + tenantName);
-            params.add("BRANCH", "main");
+            params.add("BRANCH", "test1"); // todo: change this
             
             HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
             
@@ -80,6 +84,63 @@ public class JenkinsHttpService {
         } catch (Exception e) {
             System.out.println("Error triggering Jenkins job for tenant: {}" + tenantName+ e);
             throw new RuntimeException("Failed to provision tenant infrastructure", e);
+        }
+    }
+    
+    public void triggerGenericTenantBuild(String tenantName, String subscriptionTier, String billingEmail) {
+        try {
+            String jobUrl = jenkinsUrl + "/job/generic_tenant_build/buildWithParameters";
+            
+            // Create authentication headers
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+            
+            String auth = jenkinsUsername + ":" + jenkinsToken;
+            String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
+            headers.set("Authorization", "Basic " + encodedAuth);
+            
+            // Add Jenkins CSRF protection
+            String crumbUrl = jenkinsUrl + "/crumbIssuer/api/xml?xpath=concat(//crumbRequestField,\":\",//crumb)";
+            try {
+                HttpEntity<String> crumbRequest = new HttpEntity<>(headers);
+                ResponseEntity<String> crumbResponse = restTemplate.exchange(crumbUrl, HttpMethod.GET, crumbRequest, String.class);
+                
+                if (crumbResponse.getStatusCode().is2xxSuccessful()) {
+                    String[] crumbData = crumbResponse.getBody().split(":");
+                    if (crumbData.length == 2) {
+                        headers.set(crumbData[0], crumbData[1]);
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println("Could not retrieve Jenkins crumb, proceeding without it"+ e);
+            }
+            
+            // Create job parameters
+            MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+            // todo: change this to a legit secret stored in GCP
+            params.add("token", "new-tenant-secret"); // this is set in the jenkins configuration page manually
+            params.add("TENANT_NAME", tenantName);
+            params.add("SUBSCRIPTION_TIER", subscriptionTier);
+            params.add("BILLING_EMAIL", billingEmail);
+            params.add("APP_NAME", tenantName+"App");
+            params.add("K8S_NAMESPACE", "tenant-" + tenantName);
+            params.add("BRANCH", "test1"); // todo: change this
+            
+            HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
+            
+            ResponseEntity<String> response = restTemplate.postForEntity(jobUrl, request, String.class);
+            
+            if (response.getStatusCode().is2xxSuccessful()) {
+                System.out.println("Successfully triggered generic_tenant_build Jenkins job for tenant: {}"+ tenantName);
+            } else {
+                System.out.println("Failed to trigger generic_tenant_build Jenkins job. Status: {}, Body: {}"+
+                    response.getStatusCode()+ response.getBody());
+                throw new RuntimeException("Jenkins generic_tenant_build job trigger failed");
+            }
+            
+        } catch (Exception e) {
+            System.out.println("Error triggering generic_tenant_build Jenkins job for tenant: {}" + tenantName+ e);
+            throw new RuntimeException("Failed to trigger generic tenant build", e);
         }
     }
     
