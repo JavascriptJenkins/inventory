@@ -2,6 +2,7 @@ package com.techvvs.inventory.service.tenant
 
 import com.techvvs.inventory.jparepo.TenantRepo
 import com.techvvs.inventory.model.Tenant
+import com.techvvs.inventory.service.jenkins.JenkinsHttpService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -20,6 +21,9 @@ class TenantDeploymentScheduler {
 
     @Autowired
     private TenantService tenantService
+
+    @Autowired
+    JenkinsHttpService jenkinsHttpService
 
     /**
      * Scheduled task that runs every 30 seconds to check for tenants that need deployment
@@ -81,6 +85,12 @@ class TenantDeploymentScheduler {
         logger.info("Triggering deployment for tenant: ${tenant.tenantName}")
         
         try {
+
+
+            jenkinsHttpService.triggerGenericTenantBuild(tenant.tenantName, tenant.subscriptionTier, tenant.billingEmail)
+            //jenkinsHttpService.triggerTenantProvisioning(tenant.tenantName, tenant.subscriptionTier, tenant.billingEmail)
+
+
             // TODO: Implement actual deployment logic here
             // This could include:
             // 1. Triggering Jenkins build
