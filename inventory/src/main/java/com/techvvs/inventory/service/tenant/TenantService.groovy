@@ -3,8 +3,11 @@ package com.techvvs.inventory.service.tenant
 import com.techvvs.inventory.constants.MessageConstants
 import com.techvvs.inventory.jparepo.TenantRepo
 import com.techvvs.inventory.jparepo.TenantConfigRepo
+import com.techvvs.inventory.jparepo.SystemUserRepo
 import com.techvvs.inventory.model.Tenant
 import com.techvvs.inventory.model.TenantConfig
+import com.techvvs.inventory.model.SystemUserDAO
+import com.techvvs.inventory.security.Role
 import com.techvvs.inventory.validation.StringSecurityValidator
 import com.techvvs.inventory.validation.generic.ObjectValidator
 import org.springframework.beans.factory.annotation.Autowired
@@ -19,6 +22,7 @@ import java.util.ArrayList
 import java.util.HashMap
 import java.util.Map
 import java.util.Optional
+import java.util.Random
 import java.util.UUID
 
 @Service
@@ -29,6 +33,9 @@ class TenantService {
 
     @Autowired
     TenantConfigRepo tenantConfigRepo
+
+    @Autowired
+    SystemUserRepo systemUserRepo
 
     @Autowired
     StringSecurityValidator stringSecurityValidator
@@ -70,6 +77,9 @@ class TenantService {
             // Also load tenant configurations
             List<TenantConfig> configs = tenantConfigRepo.findByTenant(tenantId)
             model.addAttribute("tenantConfigs", configs)
+            // Also load system users for this tenant
+            List<SystemUserDAO> systemUsers = systemUserRepo.findByTenantEntityId(tenantId)
+            model.addAttribute("systemUsers", systemUsers)
         } else {
             loadBlankTenant(model)
             model.addAttribute(MessageConstants.ERROR_MSG, "Tenant not found.")
@@ -194,6 +204,21 @@ class TenantService {
                 tenant.updateTimeStamp = existingTenant.get().updateTimeStamp
                 tenant.createTimeStamp = existingTenant.get().createTimeStamp
                 tenant.createdAt = existingTenant.get().createdAt
+                
+                // Preserve existing values if form fields are empty or null
+                if (tenant.subscriptionTier == null || tenant.subscriptionTier.trim().isEmpty()) {
+                    tenant.subscriptionTier = existingTenant.get().subscriptionTier
+                }
+                if (tenant.status == null || tenant.status.trim().isEmpty()) {
+                    tenant.status = existingTenant.get().status
+                }
+                if (tenant.domainName == null || tenant.domainName.trim().isEmpty()) {
+                    tenant.domainName = existingTenant.get().domainName
+                }
+                if (tenant.billingEmail == null || tenant.billingEmail.trim().isEmpty()) {
+                    tenant.billingEmail = existingTenant.get().billingEmail
+                }
+                
                 return tenant
             }
         }
@@ -291,5 +316,103 @@ class TenantService {
         } catch (Exception ex) {
             model.addAttribute(MessageConstants.ERROR_MSG, "Delete failed: " + ex.message)
         }
+    }
+
+    /**
+     * Get tenants that need deployment (deployflag = 0 or lastDeployed = null)
+     */
+    List<Tenant> getTenantsNeedingDeployment() {
+        return tenantRepo.findTenantsNeedingDeploymentOrNeverDeployed()
+    }
+
+    /**
+     * Update tenant deployment status
+     */
+    void updateTenantDeploymentStatus(UUID tenantId, Integer deployflag, LocalDateTime lastDeployed = null) {
+        try {
+            Optional<Tenant> tenantOpt = tenantRepo.findById(tenantId)
+            if (tenantOpt.isPresent()) {
+                Tenant tenant = tenantOpt.get()
+                tenant.deployflag = deployflag
+                if (lastDeployed != null) {
+                    tenant.lastDeployed = lastDeployed
+                }
+                tenant.updateTimeStamp = LocalDateTime.now()
+                tenantRepo.save(tenant)
+            }
+        } catch (Exception ex) {
+            throw new RuntimeException("Failed to update tenant deployment status: " + ex.message, ex)
+        }
+    }
+
+    /**
+     * Get system users for a tenant
+     */
+    List<SystemUserDAO> getSystemUsersForTenant(UUID tenantId) {
+        return systemUserRepo.findByTenantEntityId(tenantId)
+    }
+
+    /**
+     * Create a new system user for a tenant
+     */
+    SystemUserDAO createSystemUserForTenant(UUID tenantId, String email, String name) {
+        try {
+            // Check if user already exists
+            SystemUserDAO existingUser = systemUserRepo.findByEmail(email)
+            if (existingUser != null) {
+                throw new RuntimeException("User with email ${email} already exists")
+            }
+
+            // Get the tenant
+            Optional<Tenant> tenantOpt = tenantRepo.findById(tenantId)
+            if (!tenantOpt.isPresent()) {
+                throw new RuntimeException("Tenant not found")
+            }
+            Tenant tenant = tenantOpt.get()
+
+            // Create new system user
+            SystemUserDAO systemUser = new SystemUserDAO()
+            systemUser.setEmail(email)
+            systemUser.setName(name)
+            systemUser.setTenantEntity(tenant)
+            systemUser.setTenant(tenant.tenantName) // Set the string tenant field for backward compatibility
+            
+            // Set default role to EMPLOYEE
+            Role[] roles = new Role[1]
+            roles[0] = Role.EMPLOYEE
+            systemUser.setRoles(roles)
+            
+            // Set default values
+            systemUser.setIsuseractive(1)
+            systemUser.setCreatetimestamp(LocalDateTime.now())
+            systemUser.setUpdatedtimestamp(LocalDateTime.now())
+            
+            // Generate random password
+            String randomPassword = generateRandomPassword()
+            systemUser.setPassword(randomPassword)
+            
+            // Save the user
+            systemUser = systemUserRepo.save(systemUser)
+            
+            return systemUser
+            
+        } catch (Exception ex) {
+            throw new RuntimeException("Failed to create system user: " + ex.message, ex)
+        }
+    }
+
+    /**
+     * Generate a random password
+     */
+    private String generateRandomPassword() {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#\$%^&*"
+        Random random = new Random()
+        StringBuilder password = new StringBuilder()
+        
+        for (int i = 0; i < 12; i++) {
+            password.append(chars.charAt(random.nextInt(chars.length())))
+        }
+        
+        return password.toString()
     }
 }

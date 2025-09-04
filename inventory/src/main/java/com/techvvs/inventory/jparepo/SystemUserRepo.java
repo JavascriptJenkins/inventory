@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public interface SystemUserRepo extends JpaRepository<SystemUserDAO, Integer> {
@@ -13,6 +14,9 @@ public interface SystemUserRepo extends JpaRepository<SystemUserDAO, Integer> {
         List<SystemUserDAO> findAll();
         SystemUserDAO findByEmail(String email);
         Optional<SystemUserDAO> findById(Integer id);
+        
+        // Find system users by tenant
+        List<SystemUserDAO> findByTenantEntityId(UUID tenantId);
 
 
        // List<SystemUserDAO> findByOrderByUpvotesDesc();

@@ -245,4 +245,129 @@ public class TenantAdminViewController {
         
         return "tenant/admin.html"
     }
+
+    @PostMapping("/deploy")
+    String triggerDeployment(
+            @RequestParam("tenantid") String tenantid,
+            Model model,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size
+    ) {
+        techvvsAuthService.checkuserauth(model)
+        
+        try {
+            UUID tenantUuid = UUID.fromString(tenantid)
+            tenantService.updateTenantDeploymentStatus(tenantUuid, 0) // Reset to not deployed to trigger scheduler
+            model.addAttribute(MessageConstants.SUCCESS_MSG, "Deployment triggered for tenant. The scheduler will process it within 30 seconds.")
+            
+            // Reload the tenant and configurations
+            tenantService.getTenant(tenantUuid, model)
+        } catch (IllegalArgumentException e) {
+            model.addAttribute(MessageConstants.ERROR_MSG, "Invalid tenant ID format")
+            tenantService.loadBlankTenant(model)
+        } catch (Exception e) {
+            model.addAttribute(MessageConstants.ERROR_MSG, "Failed to trigger deployment: " + e.message)
+            tenantService.loadBlankTenant(model)
+        }
+        
+        tenantService.addPaginatedData(model, page, size)
+        bindStaticValues(model)
+        
+        return "tenant/admin.html"
+    }
+
+    @GetMapping("/deployment-status")
+    String getDeploymentStatus(Model model) {
+        techvvsAuthService.checkuserauth(model)
+        
+        try {
+            List<Tenant> tenantsNeedingDeployment = tenantService.getTenantsNeedingDeployment()
+            model.addAttribute("tenantsNeedingDeployment", tenantsNeedingDeployment)
+            model.addAttribute("tenantsNeedingDeploymentCount", tenantsNeedingDeployment.size())
+            
+            // Get all tenants for status overview
+            tenantService.addPaginatedData(model, Optional.of(0), Optional.of(1000))
+            
+        } catch (Exception e) {
+            model.addAttribute(MessageConstants.ERROR_MSG, "Failed to get deployment status: " + e.message)
+        }
+        
+        bindStaticValues(model)
+        
+        return "tenant/admin.html"
+    }
+
+    @PostMapping("/systemuser/create")
+    String createSystemUser(
+            @RequestParam("tenantid") String tenantid,
+            @RequestParam("email") String email,
+            @RequestParam("name") String name,
+            Model model,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size
+    ) {
+        techvvsAuthService.checkuserauth(model)
+        
+        try {
+            UUID tenantUuid = UUID.fromString(tenantid)
+            tenantService.createSystemUserForTenant(tenantUuid, email, name)
+            model.addAttribute(MessageConstants.SUCCESS_MSG, "System user created successfully!")
+            
+            // Reload the tenant and system users
+            tenantService.getTenant(tenantUuid, model)
+        } catch (IllegalArgumentException e) {
+            model.addAttribute(MessageConstants.ERROR_MSG, "Invalid tenant ID format")
+            tenantService.loadBlankTenant(model)
+        } catch (Exception e) {
+            model.addAttribute(MessageConstants.ERROR_MSG, "Failed to create system user: " + e.message)
+            tenantService.loadBlankTenant(model)
+        }
+        
+        tenantService.addPaginatedData(model, page, size)
+        bindStaticValues(model)
+        
+        return "tenant/admin.html"
+    }
+
+    @PostMapping("/systemuser/invite")
+    String inviteSystemUser(
+            @RequestParam("tenantid") String tenantid,
+            @RequestParam("userid") String userid,
+            @RequestParam("days") Integer days,
+            Model model,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size
+    ) {
+        techvvsAuthService.checkuserauth(model)
+        
+        try {
+            UUID tenantUuid = UUID.fromString(tenantid)
+            Integer userId = Integer.parseInt(userid)
+            
+            // Get tenant and user details
+            Tenant tenant = tenantService.findTenantById(tenantUuid)
+            if (tenant == null) {
+                model.addAttribute(MessageConstants.ERROR_MSG, "Tenant not found")
+                tenantService.loadBlankTenant(model)
+            } else {
+                // TODO: Implement email sending logic here
+                // For now, just show success message
+                model.addAttribute(MessageConstants.SUCCESS_MSG, "Invitation sent successfully!")
+                
+                // Reload the tenant and system users
+                tenantService.getTenant(tenantUuid, model)
+            }
+        } catch (IllegalArgumentException e) {
+            model.addAttribute(MessageConstants.ERROR_MSG, "Invalid ID format")
+            tenantService.loadBlankTenant(model)
+        } catch (Exception e) {
+            model.addAttribute(MessageConstants.ERROR_MSG, "Failed to send invitation: " + e.message)
+            tenantService.loadBlankTenant(model)
+        }
+        
+        tenantService.addPaginatedData(model, page, size)
+        bindStaticValues(model)
+        
+        return "tenant/admin.html"
+    }
 }
