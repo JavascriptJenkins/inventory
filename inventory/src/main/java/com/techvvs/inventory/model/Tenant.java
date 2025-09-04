@@ -76,8 +76,7 @@ public class Tenant {
         // Don't set ID in constructor - let JPA handle it
         this.createdAt = LocalDateTime.now();
         this.createTimeStamp = LocalDateTime.now();
-        this.updateTimeStamp = LocalDateTime.now();
-        this.deployflag = 0; // Default deploy flag to 0 (not deployed)
+        this.updateTimeStamp = LocalDateTime.now();        this.deployflag = 0; // Default deploy flag to 0 (not deployed)
         // lastDeployed remains null by default
     }
 

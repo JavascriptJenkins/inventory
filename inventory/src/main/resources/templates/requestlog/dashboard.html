@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Request Log Dashboard</title>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" type="text/css" media="all" href="/css/table.css" th:href="@{/css/table.css}" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        /* Full viewport height and width */
+        html, body {
+            height: 100vh;
+            width: 100vw;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        /* Touch-friendly button sizing */
+        .btn, .form-control, .form-select {
+            min-height: 44px;
+            font-size: 16px;
+            touch-action: manipulation;
+        }
+
+        /* Responsive grid system */
+        .dashboard-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+        }
+
+        .header-section {
+            background: linear-gradient(135deg, #343a40, #495057);
+            color: white;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+
+        .filters-section {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-bottom: 2px solid #dee2e6;
+            flex-shrink: 0;
+        }
+
+        .charts-section {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            background-color: #ffffff;
+        }
+
+        /* Filter styling */
+        .filter-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: end;
+        }
+
+        .filter-group {
+            min-width: 150px;
+            flex: 1;
+        }
+
+        .filter-group label {
+            font-weight: 500;
+            margin-bottom: 5px;
+            color: #495057;
+        }
+
+        /* Chart containers */
+        .chart-container {
+            background: #1a1a1a;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .chart-title {
+            color: #00ffff;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            text-align: center;
+            text-shadow: 0 0 10px #00ffff;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+
+        /* Responsive grid for charts */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+        }
+
+        .chart-full-width {
+            grid-column: 1 / -1;
+        }
+
+        /* Touch-friendly interactions */
+        .btn {
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover, .btn:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #00ffff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 255, 255, 0.25);
+        }
+
+        /* Loading animation */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            color: #00ffff;
+            font-size: 18px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #00ffff;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .filter-row {
+                flex-direction: column;
+            }
+            
+            .filter-group {
+                min-width: 100%;
+            }
+            
+            .chart-wrapper {
+                height: 250px;
+            }
+            
+            .header-section h1 {
+                font-size: 24px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .dashboard-container {
+                padding: 0;
+            }
+            
+            .header-section, .filters-section, .charts-section {
+                padding: 10px;
+            }
+            
+            .chart-wrapper {
+                height: 200px;
+            }
+        }
+
+        /* Dark theme for charts */
+        .chart-container canvas {
+            background: transparent;
+        }
+
+        /* Custom scrollbar */
+        .charts-section::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .charts-section::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .charts-section::-webkit-scrollbar-thumb {
+            background: #00ffff;
+            border-radius: 4px;
+        }
+
+        .charts-section::-webkit-scrollbar-thumb:hover {
+            background: #00cccc;
+        }
+    </style>
+</head>
+<body>
+<div th:insert="fragments/adminnavbar.html :: adminnavbarfragment"> </div>
+
+    <div class="dashboard-container">
+        <!-- Header Section -->
+        <div class="header-section">
+            <div class="container-fluid">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h1 class="mb-0">
+                            <i class="bi bi-graph-up"></i> Request Log Dashboard
+                        </h1>
+                        <p class="mb-0 opacity-75">Real-time analytics and monitoring</p>
+                    </div>
+                    <div class="col-auto">
+                        <button class="btn btn-outline-light" onclick="refreshDashboard()">
+                            <i class="bi bi-arrow-clockwise"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters Section -->
+        <div class="filters-section">
+            <div class="container-fluid">
+                <form th:action="@{/requestlog/admin/dashboard}" method="get" id="filterForm">
+                    <div class="filter-row">
+                        <!-- Date Range -->
+                        <div class="filter-group">
+                            <label for="startDate">Start Date</label>
+                            <input type="datetime-local" class="form-control" id="startDate" name="startDate"
+                                   th:value="${startDate != null} ? ${#temporals.format(startDate, 'yyyy-MM-dd''T''HH:mm')}"
+                                   onchange="submitForm()">
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label for="endDate">End Date</label>
+                            <input type="datetime-local" class="form-control" id="endDate" name="endDate"
+                                   th:value="${endDate != null} ? ${#temporals.format(endDate, 'yyyy-MM-dd''T''HH:mm')}"
+                                   onchange="submitForm()">
+                        </div>
+
+                        <!-- Device Type -->
+                        <div class="filter-group">
+                            <label for="deviceType">Device Type</label>
+                            <select class="form-select" id="deviceType" name="deviceType" onchange="submitForm()">
+                                <option value="">All Devices</option>
+                                <option th:each="device : ${deviceTypes}" 
+                                        th:value="${device}" 
+                                        th:text="${device}"
+                                        th:selected="${deviceTypeFilter} == ${device}"></option>
+                            </select>
+                        </div>
+
+                        <!-- Browser -->
+                        <div class="filter-group">
+                            <label for="browser">Browser</label>
+                            <select class="form-select" id="browser" name="browser" onchange="submitForm()">
+                                <option value="">All Browsers</option>
+                                <option th:each="browser : ${browsers}" 
+                                        th:value="${browser}" 
+                                        th:text="${browser}"
+                                        th:selected="${browserFilter} == ${browser}"></option>
+                            </select>
+                        </div>
+
+                        <!-- Operating System -->
+                        <div class="filter-group">
+                            <label for="operatingSystem">OS</label>
+                            <select class="form-select" id="operatingSystem" name="operatingSystem" onchange="submitForm()">
+                                <option value="">All OS</option>
+                                <option th:each="os : ${operatingSystems}" 
+                                        th:value="${os}" 
+                                        th:text="${os}"
+                                        th:selected="${osFilter} == ${os}"></option>
+                            </select>
+                        </div>
+
+                        <!-- Response Status -->
+                        <div class="filter-group">
+                            <label for="responseStatus">Status Code</label>
+                            <select class="form-select" id="responseStatus" name="responseStatus" onchange="submitForm()">
+                                <option value="">All Status</option>
+                                <option th:each="status : ${responseStatuses}" 
+                                        th:value="${status}" 
+                                        th:text="${status}"
+                                        th:selected="${responseStatusFilter} == ${status}"></option>
+                            </select>
+                        </div>
+
+                        <!-- Duration Range -->
+                        <div class="filter-group">
+                            <label for="minDuration">Min Duration (ms)</label>
+                            <input type="number" class="form-control" id="minDuration" name="minDuration"
+                                   th:value="${minDurationFilter}" placeholder="0" onchange="submitForm()">
+                        </div>
+
+                        <div class="filter-group">
+                            <label for="maxDuration">Max Duration (ms)</label>
+                            <input type="number" class="form-control" id="maxDuration" name="maxDuration"
+                                   th:value="${maxDurationFilter}" placeholder="10000" onchange="submitForm()">
+                        </div>
+
+                        <!-- Clear Filters -->
+                        <div class="filter-group">
+                            <label>&nbsp;</label>
+                            <button type="button" class="btn btn-outline-secondary w-100" onclick="clearFilters()">
+                                <i class="bi bi-x-circle"></i> Clear
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="charts-section">
+            <div class="container-fluid">
+                <div class="charts-grid">
+                    <!-- Daily Requests Chart -->
+                    <div class="chart-container chart-full-width">
+                        <div class="chart-title">
+                            <i class="bi bi-calendar-day"></i> Daily Request Volume
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="dailyChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Hourly Requests Chart -->
+                    <div class="chart-container">
+                        <div class="chart-title">
+                            <i class="bi bi-clock"></i> Hourly Distribution
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="hourlyChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Device Type Distribution -->
+                    <div class="chart-container">
+                        <div class="chart-title">
+                            <i class="bi bi-phone"></i> Device Types
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="deviceChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Browser Distribution -->
+                    <div class="chart-container">
+                        <div class="chart-title">
+                            <i class="bi bi-browser-chrome"></i> Browser Usage
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="browserChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Response Status Distribution -->
+                    <div class="chart-container">
+                        <div class="chart-title">
+                            <i class="bi bi-check-circle"></i> Response Status
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="statusChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Endpoint Performance -->
+                    <div class="chart-container chart-full-width">
+                        <div class="chart-title">
+                            <i class="bi bi-speedometer2"></i> Endpoint Performance (Top 20)
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="endpointChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        // Get data from server
+        const dailyData = /*[[${dailyData}]]*/ [];
+        const hourlyData = /*[[${hourlyData}]]*/ [];
+        const deviceData = /*[[${deviceData}]]*/ [];
+        const browserData = /*[[${browserData}]]*/ [];
+        const statusData = /*[[${statusData}]]*/ [];
+        const endpointData = /*[[${endpointData}]]*/ [];
+
+        // Chart.js configuration
+        Chart.defaults.color = '#ffffff';
+        Chart.defaults.borderColor = '#333333';
+
+        // Daily Requests Chart
+        const dailyCtx = document.getElementById('dailyChart').getContext('2d');
+        new Chart(dailyCtx, {
+            type: 'line',
+            data: {
+                labels: dailyData.map(d => d.label),
+                datasets: [{
+                    label: 'Requests',
+                    data: dailyData.map(d => d.count),
+                    borderColor: '#00ffff',
+                    backgroundColor: 'rgba(0, 255, 255, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }, {
+                    label: 'Avg Duration (ms)',
+                    data: dailyData.map(d => d.avgDuration),
+                    borderColor: '#ff6b6b',
+                    backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                    tension: 0.4,
+                    yAxisID: 'y1'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: { display: true, text: 'Request Count' }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        title: { display: true, text: 'Duration (ms)' },
+                        grid: { drawOnChartArea: false }
+                    }
+                },
+                plugins: {
+                    legend: { labels: { color: '#ffffff' } }
+                }
+            }
+        });
+
+        // Hourly Distribution Chart
+        const hourlyCtx = document.getElementById('hourlyChart').getContext('2d');
+        new Chart(hourlyCtx, {
+            type: 'bar',
+            data: {
+                labels: hourlyData.map(d => d.label),
+                datasets: [{
+                    label: 'Requests',
+                    data: hourlyData.map(d => d.count),
+                    backgroundColor: 'rgba(0, 255, 255, 0.8)',
+                    borderColor: '#00ffff',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { title: { display: true, text: 'Request Count' } }
+                },
+                plugins: {
+                    legend: { labels: { color: '#ffffff' } }
+                }
+            }
+        });
+
+        // Device Type Chart
+        const deviceCtx = document.getElementById('deviceChart').getContext('2d');
+        new Chart(deviceCtx, {
+            type: 'doughnut',
+            data: {
+                labels: deviceData.map(d => d.label),
+                datasets: [{
+                    data: deviceData.map(d => d.count),
+                    backgroundColor: [
+                        '#00ffff', '#ff6b6b', '#4ecdc4', '#45b7d1', 
+                        '#96ceb4', '#feca57', '#ff9ff3', '#54a0ff'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { 
+                        position: 'bottom',
+                        labels: { color: '#ffffff', padding: 20 }
+                    }
+                }
+            }
+        });
+
+        // Browser Chart
+        const browserCtx = document.getElementById('browserChart').getContext('2d');
+        new Chart(browserCtx, {
+            type: 'pie',
+            data: {
+                labels: browserData.map(d => d.label),
+                datasets: [{
+                    data: browserData.map(d => d.count),
+                    backgroundColor: [
+                        '#00ffff', '#ff6b6b', '#4ecdc4', '#45b7d1', 
+                        '#96ceb4', '#feca57', '#ff9ff3', '#54a0ff'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { 
+                        position: 'bottom',
+                        labels: { color: '#ffffff', padding: 20 }
+                    }
+                }
+            }
+        });
+
+        // Status Chart
+        const statusCtx = document.getElementById('statusChart').getContext('2d');
+        new Chart(statusCtx, {
+            type: 'bar',
+            data: {
+                labels: statusData.map(d => d.label),
+                datasets: [{
+                    label: 'Count',
+                    data: statusData.map(d => d.count),
+                    backgroundColor: statusData.map(d => {
+                        const status = parseInt(d.label);
+                        if (status >= 200 && status < 300) return 'rgba(0, 255, 0, 0.8)';
+                        if (status >= 300 && status < 400) return 'rgba(255, 255, 0, 0.8)';
+                        if (status >= 400) return 'rgba(255, 0, 0, 0.8)';
+                        return 'rgba(128, 128, 128, 0.8)';
+                    }),
+                    borderColor: '#ffffff',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { title: { display: true, text: 'Count' } }
+                },
+                plugins: {
+                    legend: { labels: { color: '#ffffff' } }
+                }
+            }
+        });
+
+        // Endpoint Performance Chart
+        const endpointCtx = document.getElementById('endpointChart').getContext('2d');
+        new Chart(endpointCtx, {
+            type: 'bar',
+            data: {
+                labels: endpointData.map(d => d.label.length > 30 ? d.label.substring(0, 30) + '...' : d.label),
+                datasets: [{
+                    label: 'Avg Duration (ms)',
+                    data: endpointData.map(d => d.avgDuration),
+                    backgroundColor: 'rgba(0, 255, 255, 0.8)',
+                    borderColor: '#00ffff',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { title: { display: true, text: 'Duration (ms)' } },
+                    x: { 
+                        ticks: { 
+                            maxRotation: 45,
+                            minRotation: 45
+                        }
+                    }
+                },
+                plugins: {
+                    legend: { labels: { color: '#ffffff' } }
+                }
+            }
+        });
+
+        // Form submission functions
+        function submitForm() {
+            document.getElementById('filterForm').submit();
+        }
+
+        function clearFilters() {
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+            document.getElementById('deviceType').value = '';
+            document.getElementById('browser').value = '';
+            document.getElementById('operatingSystem').value = '';
+            document.getElementById('responseStatus').value = '';
+            document.getElementById('minDuration').value = '';
+            document.getElementById('maxDuration').value = '';
+            submitForm();
+        }
+
+        function refreshDashboard() {
+            location.reload();
+        }
+
+        // Auto-refresh every 5 minutes
+        setInterval(refreshDashboard, 300000);
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

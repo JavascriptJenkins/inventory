@@ -1,5 +1,7 @@
 package com.techvvs.inventory.service.jenkins;
 
+import com.techvvs.inventory.service.digitalocean.DigitalOceanService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -23,9 +25,11 @@ public class JenkinsHttpService {
     private String jenkinsToken;
     
     private final RestTemplate restTemplate;
+    private final DigitalOceanService digitalOceanService;
     
-    public JenkinsHttpService(RestTemplate restTemplate) {
+    public JenkinsHttpService(RestTemplate restTemplate, DigitalOceanService digitalOceanService) {
         this.restTemplate = restTemplate;
+        this.digitalOceanService = digitalOceanService;
     }
     
     public void triggerTenantProvisioning(String tenantName, String subscriptionTier, String billingEmail) {
@@ -89,6 +93,17 @@ public class JenkinsHttpService {
     
     public void triggerGenericTenantBuild(String tenantName, String subscriptionTier, String billingEmail) {
         try {
+            // First, create DNS A record for the tenant subdomain
+            System.out.println("Creating DNS A record for tenant: " + tenantName);
+            boolean dnsCreated = digitalOceanService.createOrUpdateDnsRecord(tenantName);
+            
+            if (!dnsCreated) {
+                System.out.println("Warning: Failed to create DNS A record for tenant: " + tenantName + 
+                                 ". Continuing with Jenkins build...");
+            } else {
+                System.out.println("Successfully created DNS A record for tenant: " + tenantName);
+            }
+            
             String jobUrl = jenkinsUrl + "/job/generic_tenant_build/buildWithParameters";
             
             // Create authentication headers

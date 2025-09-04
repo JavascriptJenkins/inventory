@@ -38,6 +38,7 @@ class TenantDeploymentScheduler {
             List<Tenant> tenantsNeedingDeployment = tenantRepo.findTenantsNeedingDeploymentOrNeverDeployed()
             
             if (tenantsNeedingDeployment.isEmpty()) {
+                System.out.println("No tenants found needing deployment")
                 logger.debug("No tenants found needing deployment")
                 return
             }
