@@ -32,8 +32,8 @@ public class DigitalOceanService {
     @Value("${digitalocean.dns.ttl:3600}")
     private int ttl;
 
-    @Value("${digitalocean.target.loadbalancer:}")
-    private int loadbalancerip;
+    @Value("${digitalocean.target.loadbalancer.ip:}")
+    private String loadbalancerip;
 
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -68,7 +68,7 @@ public class DigitalOceanService {
             ObjectNode body = objectMapper.createObjectNode();
             body.put("type", "A");       // record type (A, AAAA, CNAME, etc.)
             body.put("name", subdomain); // the "host" part of the FQDN
-            body.put("data", loadbalancerip);  // the value (must be IPv4 for A)
+            body.put("data", Integer.valueOf(loadbalancerip));  // the value (must be IPv4 for A)
             body.put("ttl", ttl);        // time to live
 
 //            How DigitalOcean builds the hostname
