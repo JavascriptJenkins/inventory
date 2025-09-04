@@ -1,10 +1,12 @@
 package com.techvvs.inventory.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.techvvs.inventory.interceptor.RequestLoggingInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.List;
@@ -14,6 +16,9 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private RequestLoggingInterceptor requestLoggingInterceptor;
 
     @Override
     public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
@@ -26,5 +31,19 @@ public class WebConfig implements WebMvcConfigurer {
         
         // Add it at the beginning to ensure it's used first
         converters.add(0, jacksonConverter);
+    }
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(requestLoggingInterceptor)
+                .addPathPatterns("/**") // Apply to all paths
+                .excludePathPatterns(
+                    "/static/**",      // Exclude static resources
+                    "/css/**",         // Exclude CSS files
+                    "/js/**",          // Exclude JavaScript files
+                    "/images/**",      // Exclude image files
+                    "/favicon.ico",    // Exclude favicon
+                    "/actuator/**"     // Exclude actuator endpoints
+                );
     }
 }
