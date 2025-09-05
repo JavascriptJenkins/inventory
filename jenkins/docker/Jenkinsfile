@@ -110,7 +110,7 @@ pipeline {
             mkdir -p ../kubeconfig
 
             # Write kubeconfig content to file
-            echo '${KUBECONFIG_CONTENT}' > ../kubeconfig/tulip-sandbox-kubeconfig.yaml
+            echo '${KUBECONFIG_FILE}' > ../kubeconfig/tulip-sandbox-kubeconfig.yaml
 
             # Set proper permissions
             chmod 600 ../kubeconfig/tulip-sandbox-kubeconfig.yaml
