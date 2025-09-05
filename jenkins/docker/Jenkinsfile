@@ -12,7 +12,7 @@ pipeline {
         string(name: 'APP_NAME', defaultValue: 'inventory', description: 'Application name')
         string(name: 'SUBSCRIPTION_TIER', defaultValue: 'BASIC', description: 'Subscription tier')
         string(name: 'BILLING_EMAIL', defaultValue: '', description: 'Billing email address')
-//         string(name: 'K8S_NAMESPACE', defaultValue: '', description: 'Kubernetes namespace')
+        string(name: 'K8S_NAMESPACE', defaultValue: '', description: 'Kubernetes namespace (auto-generated if empty)')
         
         // Docker parameters
         string(name: 'DOCKER_USER', defaultValue: 'techvvsadmin', description: 'Docker Hub username')
@@ -133,6 +133,10 @@ EOF
                              // Construct BASE_QR_DOMAIN from tenant name and DO domain
                              def baseQrDomain = "https://${params.TENANT_NAME}.${DO_DOMAIN}"
                              echo "Constructed BASE_QR_DOMAIN: ${baseQrDomain}"
+                             
+                             // Construct Kubernetes namespace from tenant name (same logic as Java code)
+                             def k8sNamespace = params.K8S_NAMESPACE ?: "tenant-${params.TENANT_NAME.toLowerCase().replaceAll('[^a-z0-9-]', '-')}"
+                             echo "Using Kubernetes namespace: ${k8sNamespace}"
                              
                              // Update application.properties with all parameters
                              sh """
@@ -295,17 +299,18 @@ CMD ["java", "-jar", "app.jar"]
 
         stage('Deploy to Kubernetes') {
             when {
-                expression { params.K8S_NAMESPACE != '' }
+                expression { params.TENANT_NAME != '' }
             }
             steps {
                 script {
                     // Create Kubernetes deployment manifest with persistent volume
+                    def k8sNamespace = params.K8S_NAMESPACE ?: "tenant-${params.TENANT_NAME.toLowerCase().replaceAll('[^a-z0-9-]', '-')}"
                     def deploymentYaml = """
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: inventory-${params.TENANT_NAME}-uploads-pvc
-  namespace: ${params.K8S_NAMESPACE}
+  namespace: ${k8sNamespace}
   labels:
     app: inventory
     tenant: ${params.TENANT_NAME}
@@ -321,7 +326,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: inventory-${params.TENANT_NAME}
-  namespace: ${params.K8S_NAMESPACE}
+  namespace: ${k8sNamespace}
   labels:
     app: inventory
     tenant: ${params.TENANT_NAME}
@@ -375,7 +380,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: inventory-${params.TENANT_NAME}-service
-  namespace: ${params.K8S_NAMESPACE}
+  namespace: ${k8sNamespace}
   labels:
     app: inventory
     tenant: ${params.TENANT_NAME}
@@ -403,17 +408,17 @@ spec:
                             kubectl cluster-info
                             
                             # Check if the service account exists in the namespace
-                            echo "Checking for service account ${params.TENANT_NAME}-admin in namespace ${params.K8S_NAMESPACE}"
-                            kubectl get serviceaccount ${params.TENANT_NAME}-admin -n ${params.K8S_NAMESPACE} || {
-                                echo "ERROR: Service account ${params.TENANT_NAME}-admin not found in namespace ${params.K8S_NAMESPACE}"
-                                echo "Available service accounts in namespace ${params.K8S_NAMESPACE}:"
-                                kubectl get serviceaccounts -n ${params.K8S_NAMESPACE}
+                            echo "Checking for service account ${params.TENANT_NAME}-admin in namespace ${k8sNamespace}"
+                            kubectl get serviceaccount ${params.TENANT_NAME}-admin -n ${k8sNamespace} || {
+                                echo "ERROR: Service account ${params.TENANT_NAME}-admin not found in namespace ${k8sNamespace}"
+                                echo "Available service accounts in namespace ${k8sNamespace}:"
+                                kubectl get serviceaccounts -n ${k8sNamespace}
                                 exit 1
                             }
                             
                             # Apply the deployment
                             kubectl apply -f k8s-deployment.yaml
-                            kubectl rollout status deployment/inventory-${params.TENANT_NAME} -n ${params.K8S_NAMESPACE} --timeout=300s
+                            kubectl rollout status deployment/inventory-${params.TENANT_NAME} -n ${k8sNamespace} --timeout=300s
                         """
                     }
                 }
@@ -425,7 +430,8 @@ spec:
         success {
             echo "Deployment completed successfully for tenant: ${params.TENANT_NAME}"
             echo "Docker image: ${env.DOCKER_IMAGE}"
-            echo "Kubernetes namespace: ${params.K8S_NAMESPACE}"
+            def k8sNamespace = params.K8S_NAMESPACE ?: "tenant-${params.TENANT_NAME.toLowerCase().replaceAll('[^a-z0-9-]', '-')}"
+            echo "Kubernetes namespace: ${k8sNamespace}"
         }
         failure {
             echo "Deployment failed for tenant: ${params.TENANT_NAME}"
