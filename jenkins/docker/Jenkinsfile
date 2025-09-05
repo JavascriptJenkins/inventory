@@ -106,7 +106,9 @@ pipeline {
                              // Copy the kubeconfig file to the correct location
                              sh """
                                  mkdir -p src/main/resources/static/kubernetes/
-                                 cp ${KUBECONFIG_FILE} src/main/resources/static/kubernetes/tulip-sandbox-kubeconfig.yaml
+                                 chmod 755 src/main/resources/static/kubernetes/
+                                 cp "${KUBECONFIG_FILE}" src/main/resources/static/kubernetes/tulip-sandbox-kubeconfig.yaml
+                                 chmod 644 src/main/resources/static/kubernetes/tulip-sandbox-kubeconfig.yaml
                              """
                              
                              // Construct BASE_QR_DOMAIN from tenant name and DO domain
