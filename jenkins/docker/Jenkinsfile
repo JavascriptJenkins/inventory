@@ -104,47 +104,27 @@ pipeline {
                     ]) {
                         dir('inventory') {
                             // Copy kubeconfig to a writable location and update the path in application.properties
-                            sh """
-                                # Check if source file exists and is readable
-                                if [ -f "${KUBECONFIG_FILE}" ] && [ -r "${KUBECONFIG_FILE}" ]; then
-                                    echo "Source kubeconfig file exists and is readable"
-                                    
-                                    # Debug: Check current directory and permissions
-                                    echo "Current directory: $(pwd)"
-                                    echo "Workspace root: ${WORKSPACE}"
-                                    echo "Parent directory permissions:"
-                                    ls -la ../
-                                    
-                                    # Try multiple writable locations
-                                    for dir in "../kubeconfig" "${WORKSPACE}/kubeconfig" "/tmp/kubeconfig"; do
-                                        echo "Trying directory: $dir"
-                                        if mkdir -p "$dir" 2>/dev/null; then
-                                            echo "Successfully created directory: $dir"
-                                            if cp "${KUBECONFIG_FILE}" "$dir/tulip-sandbox-kubeconfig.yaml" 2>/dev/null; then
-                                                echo "Successfully copied kubeconfig to: $dir"
-                                                ls -la "$dir/"
-                                                # Set the kubeconfig path for later use
-                                                echo "KUBECONFIG_PATH=$dir/tulip-sandbox-kubeconfig.yaml" > kubeconfig_path.env
-                                                break
-                                            else
-                                                echo "Failed to copy to: $dir"
-                                            fi
-                                        else
-                                            echo "Failed to create directory: $dir"
-                                        fi
-                                    done
-                                    
-                                    # Check if any copy succeeded
-                                    if [ ! -f kubeconfig_path.env ]; then
-                                        echo "ERROR: Failed to copy kubeconfig to any writable location"
-                                        exit 1
-                                    fi
-                                else
-                                    echo "ERROR: Source kubeconfig file not found or not readable: ${KUBECONFIG_FILE}"
-                                    ls -la "${KUBECONFIG_FILE}" || echo "File does not exist"
-                                    exit 1
-                                fi
-                            """
+       // Create kubeconfig from string content
+        sh """
+            # Create kubeconfig directory
+            mkdir -p ../kubeconfig
+
+            # Write kubeconfig content to file
+            echo '${KUBECONFIG_CONTENT}' > ../kubeconfig/tulip-sandbox-kubeconfig.yaml
+
+            # Set proper permissions
+            chmod 600 ../kubeconfig/tulip-sandbox-kubeconfig.yaml
+
+            # Verify file was created successfully
+            if [ -f "../kubeconfig/tulip-sandbox-kubeconfig.yaml" ]; then
+                echo "Kubeconfig file created successfully"
+                ls -la ../kubeconfig/
+                echo "KUBECONFIG_PATH=../kubeconfig/tulip-sandbox-kubeconfig.yaml" > kubeconfig_path.env
+            else
+                echo "ERROR: Failed to create kubeconfig file"
+                exit 1
+            fi
+        """
                              
                              // Construct BASE_QR_DOMAIN from tenant name and DO domain
                              def baseQrDomain = "https://${params.TENANT_NAME}.${DO_DOMAIN}"
@@ -211,9 +191,9 @@ pipeline {
                                 # Update kubeconfig path to point to the copied file
                                 if [ -f kubeconfig_path.env ]; then
                                     source kubeconfig_path.env
-                                    echo "Using kubeconfig path: $KUBECONFIG_PATH"
+                                    echo "Using kubeconfig path: \$KUBECONFIG_PATH"
                                     # For Docker container, use relative path from app directory
-                                    sed -i 's|^kubernetes\\.kubeconfig\\.path=.*|kubernetes.kubeconfig.path=kubeconfig/tulip-sandbox-kubeconfig.yaml|' src/main/resources/application.properties
+                                    sed -i 's|^kubernetes\\\\.kubeconfig\\\\.path=.*|kubernetes.kubeconfig.path=kubeconfig/tulip-sandbox-kubeconfig.yaml|' src/main/resources/application.properties
                                 else
                                     echo "ERROR: kubeconfig_path.env not found"
                                     exit 1
@@ -245,7 +225,7 @@ pipeline {
                         # Read the kubeconfig path from the environment file
                         if [ -f inventory/kubeconfig_path.env ]; then
                             source inventory/kubeconfig_path.env
-                            echo "Kubeconfig source path: $KUBECONFIG_PATH"
+                            echo "Kubeconfig source path: \$KUBECONFIG_PATH"
                         else
                             echo "ERROR: kubeconfig_path.env not found"
                             exit 1
