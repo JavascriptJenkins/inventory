@@ -98,7 +98,7 @@ pipeline {
                         // Jenkins credentials
                         string(credentialsId: 'JENKINS_USERNAME', variable: 'JENKINS_USERNAME'),
                         string(credentialsId: 'JENKINS_API_TOKEN', variable: 'JENKINS_API_TOKEN'),
-                        
+
                         // Kubernetes config file
                         file(credentialsId: 'KUBECONFIG_PATH', variable: 'KUBECONFIG_FILE')
                     ]) {
@@ -279,9 +279,10 @@ CMD ["java", "-jar", "app.jar"]
             steps {
                 script {
                     withCredentials([string(credentialsId: 'DOCKER_TOKEN', variable: 'DOCKER_TOKEN')]) {
-                        docker.withRegistry('https://index.docker.io/v1/', 'DOCKER_TOKEN') {
-                            docker.image(env.DOCKER_IMAGE).push()
-                        }
+                        sh """
+                            echo "$DOCKER_TOKEN" | docker login -u ${params.DOCKER_USER} --password-stdin
+                            docker push ${env.DOCKER_IMAGE}
+                        """
                     }
                 }
             }
