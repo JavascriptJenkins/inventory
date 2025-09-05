@@ -109,18 +109,34 @@ pipeline {
                                 if [ -f "${KUBECONFIG_FILE}" ] && [ -r "${KUBECONFIG_FILE}" ]; then
                                     echo "Source kubeconfig file exists and is readable"
                                     
-                                    # Create a writable directory in the workspace root
-                                    mkdir -p ../kubeconfig
+                                    # Debug: Check current directory and permissions
+                                    echo "Current directory: $(pwd)"
+                                    echo "Workspace root: ${WORKSPACE}"
+                                    echo "Parent directory permissions:"
+                                    ls -la ../
                                     
-                                    # Copy to writable location
-                                    cp "${KUBECONFIG_FILE}" ../kubeconfig/tulip-sandbox-kubeconfig.yaml
+                                    # Try multiple writable locations
+                                    for dir in "../kubeconfig" "${WORKSPACE}/kubeconfig" "/tmp/kubeconfig"; do
+                                        echo "Trying directory: $dir"
+                                        if mkdir -p "$dir" 2>/dev/null; then
+                                            echo "Successfully created directory: $dir"
+                                            if cp "${KUBECONFIG_FILE}" "$dir/tulip-sandbox-kubeconfig.yaml" 2>/dev/null; then
+                                                echo "Successfully copied kubeconfig to: $dir"
+                                                ls -la "$dir/"
+                                                # Set the kubeconfig path for later use
+                                                echo "KUBECONFIG_PATH=$dir/tulip-sandbox-kubeconfig.yaml" > kubeconfig_path.env
+                                                break
+                                            else
+                                                echo "Failed to copy to: $dir"
+                                            fi
+                                        else
+                                            echo "Failed to create directory: $dir"
+                                        fi
+                                    done
                                     
-                                    # Verify the file was created
-                                    if [ -f ../kubeconfig/tulip-sandbox-kubeconfig.yaml ]; then
-                                        echo "Kubeconfig file successfully copied to writable location"
-                                        ls -la ../kubeconfig/
-                                    else
-                                        echo "ERROR: Failed to copy kubeconfig file"
+                                    # Check if any copy succeeded
+                                    if [ ! -f kubeconfig_path.env ]; then
+                                        echo "ERROR: Failed to copy kubeconfig to any writable location"
                                         exit 1
                                     fi
                                 else
@@ -192,8 +208,16 @@ pipeline {
                                 sed -i 's|^jenkins\\.username=.*|jenkins.username=${JENKINS_USERNAME}|' src/main/resources/application.properties
                                 sed -i 's|^jenkins\\.token=.*|jenkins.token=${JENKINS_API_TOKEN}|' src/main/resources/application.properties
                                 
-                                # Update kubeconfig path to point to the copied file (relative to app directory in container)
-                                sed -i 's|^kubernetes\\.kubeconfig\\.path=.*|kubernetes.kubeconfig.path=kubeconfig/tulip-sandbox-kubeconfig.yaml|' src/main/resources/application.properties
+                                # Update kubeconfig path to point to the copied file
+                                if [ -f kubeconfig_path.env ]; then
+                                    source kubeconfig_path.env
+                                    echo "Using kubeconfig path: $KUBECONFIG_PATH"
+                                    # For Docker container, use relative path from app directory
+                                    sed -i 's|^kubernetes\\.kubeconfig\\.path=.*|kubernetes.kubeconfig.path=kubeconfig/tulip-sandbox-kubeconfig.yaml|' src/main/resources/application.properties
+                                else
+                                    echo "ERROR: kubeconfig_path.env not found"
+                                    exit 1
+                                fi
                                 
                             """
                         }
@@ -216,6 +240,18 @@ pipeline {
                     def imageName = "${params.DOCKER_USER}/inventory${params.TENANT_NAME}${params.APP_NAME}:sandbox"
                     def jarFile = "inventory/target/inventory-0.0.1-SNAPSHOT.jar"
                     
+                    // Create Dockerfile with dynamic kubeconfig path
+                    sh """
+                        # Read the kubeconfig path from the environment file
+                        if [ -f inventory/kubeconfig_path.env ]; then
+                            source inventory/kubeconfig_path.env
+                            echo "Kubeconfig source path: $KUBECONFIG_PATH"
+                        else
+                            echo "ERROR: kubeconfig_path.env not found"
+                            exit 1
+                        fi
+                    """
+                    
                     // Create Dockerfile
                     writeFile file: 'Dockerfile', text: """
 FROM openjdk:17-jdk-slim
@@ -226,8 +262,8 @@ WORKDIR /app
 # Copy the JAR file
 COPY ${jarFile} app.jar
 
-# Copy the kubeconfig file
-COPY ../kubeconfig/tulip-sandbox-kubeconfig.yaml /app/kubeconfig/tulip-sandbox-kubeconfig.yaml
+# Copy the kubeconfig file (path will be determined at build time)
+COPY kubeconfig/tulip-sandbox-kubeconfig.yaml /app/kubeconfig/tulip-sandbox-kubeconfig.yaml
 
 # Create necessary directories
 RUN mkdir -p /app/logs /app/data /app/uploads /app/kubeconfig
