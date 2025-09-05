@@ -129,7 +129,7 @@ EOF
                  exit 1
              fi
          """
-                             
+
                              // Construct BASE_QR_DOMAIN from tenant name and DO domain
                              def baseQrDomain = "https://${params.TENANT_NAME}.${DO_DOMAIN}"
                              echo "Constructed BASE_QR_DOMAIN: ${baseQrDomain}"
@@ -393,18 +393,20 @@ spec:
                     // Write deployment manifest to file
                     writeFile file: 'k8s-deployment.yaml', text: deploymentYaml
                     
-                    // Apply the deployment using kubectl
-                    sh """
-                        # Set up kubectl with the kubeconfig file
-                        export KUBECONFIG=inventory/kubeconfig/tulip-sandbox-kubeconfig.yaml
-                        
-                        # Verify kubectl can connect to the cluster
-                        kubectl cluster-info
-                        
-                        # Apply the deployment
-                        kubectl apply -f k8s-deployment.yaml
-                        kubectl rollout status deployment/inventory-${params.TENANT_NAME} -n ${params.K8S_NAMESPACE} --timeout=300s
-                    """
+                    // Apply the deployment using kubectl with file credential
+                    withCredentials([file(credentialsId: 'KUBECONFIG_PATH', variable: 'KCFG')]) {
+                        sh '''
+                            export KUBECONFIG="$KCFG"
+                            
+                            # Verify kubectl can connect to the cluster
+                            kubectl config get-contexts
+                            kubectl cluster-info
+                            
+                            # Apply the deployment
+                            kubectl apply -f k8s-deployment.yaml
+                            kubectl rollout status deployment/inventory-${params.TENANT_NAME} -n ${params.K8S_NAMESPACE} --timeout=300s
+                        '''
+                    }
                 }
             }
         }
