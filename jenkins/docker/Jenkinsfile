@@ -288,104 +288,128 @@ CMD ["java", "-jar", "app.jar"]
             }
         }
 
-//         stage('Deploy to Kubernetes') {
-//             when {
-//                 expression { params.K8S_NAMESPACE != '' }
-//             }
-//             steps {
-//                 script {
-//                     // Create Kubernetes deployment manifest
-//                     def deploymentYaml = """
-// apiVersion: apps/v1
-// kind: Deployment
-// metadata:
-//   name: inventory-${params.TENANT_NAME}
-//   namespace: ${params.K8S_NAMESPACE}
-//   labels:
-//     app: inventory
-//     tenant: ${params.TENANT_NAME}
-// spec:
-//   replicas: 1
-//   selector:
-//     matchLabels:
-//       app: inventory
-//       tenant: ${params.TENANT_NAME}
-//   template:
-//     metadata:
-//       labels:
-//         app: inventory
-//         tenant: ${params.TENANT_NAME}
-//     spec:
-//       serviceAccountName: ${params.TENANT_NAME}-admin
-//       containers:
-//       - name: inventory
-//         image: ${env.DOCKER_IMAGE}
-//         ports:
-//         - containerPort: 8081
-//         env:
-//         - name: SPRING_PROFILES_ACTIVE
-//           value: "${params.ENVIRONMENT_NAME}"
-//         - name: SERVER_PORT
-//           value: "8081"
-//         resources:
-//           requests:
-//             memory: "512Mi"
-//             cpu: "250m"
-//           limits:
-//             memory: "1Gi"
-//             cpu: "500m"
-//         volumeMounts:
-//         - name: logs
-//           mountPath: /app/logs
-//         - name: data
-//           mountPath: /app/data
-//         - name: uploads
-//           mountPath: /app/uploads
-//       volumes:
-//       - name: logs
-//         emptyDir: {}
-//       - name: data
-//         emptyDir: {}
-//       - name: uploads
-//         emptyDir: {}
-// ---
-// apiVersion: v1
-// kind: Service
-// metadata:
-//   name: inventory-${params.TENANT_NAME}-service
-//   namespace: ${params.K8S_NAMESPACE}
-//   labels:
-//     app: inventory
-//     tenant: ${params.TENANT_NAME}
-// spec:
-//   selector:
-//     app: inventory
-//     tenant: ${params.TENANT_NAME}
-//   ports:
-//   - port: 8081
-//     targetPort: 8081
-//     protocol: TCP
-//   type: ClusterIP
-// """
-//
-//                     // Write deployment manifest to file
-//                     writeFile file: 'k8s-deployment.yaml', text: deploymentYaml
-//
-//                     // Apply the deployment (assuming kubectl is available)
-//                     sh """
-//                         kubectl apply -f k8s-deployment.yaml
-//                         kubectl rollout status deployment/inventory-${params.TENANT_NAME} -n ${params.K8S_NAMESPACE} --timeout=300s
-//                     """
-//                 }
-//             }
-//         }
+        stage('Deploy to Kubernetes') {
+            when {
+                expression { params.K8S_NAMESPACE != '' }
+            }
+            steps {
+                script {
+                    // Create Kubernetes deployment manifest with persistent volume
+                    def deploymentYaml = """
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: inventory-${params.TENANT_NAME}-uploads-pvc
+  namespace: ${params.K8S_NAMESPACE}
+  labels:
+    app: inventory
+    tenant: ${params.TENANT_NAME}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: do-block-storage
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-${params.TENANT_NAME}
+  namespace: ${params.K8S_NAMESPACE}
+  labels:
+    app: inventory
+    tenant: ${params.TENANT_NAME}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inventory
+      tenant: ${params.TENANT_NAME}
+  template:
+    metadata:
+      labels:
+        app: inventory
+        tenant: ${params.TENANT_NAME}
+    spec:
+      serviceAccountName: ${params.TENANT_NAME}-admin
+      containers:
+      - name: inventory
+        image: ${env.DOCKER_IMAGE}
+        ports:
+        - containerPort: 8081
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: "${params.ENVIRONMENT_NAME}"
+        - name: SERVER_PORT
+          value: "8081"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        volumeMounts:
+        - name: logs
+          mountPath: /app/logs
+        - name: data
+          mountPath: /app/data
+        - name: uploads
+          mountPath: /app/uploads
+      volumes:
+      - name: logs
+        emptyDir: {}
+      - name: data
+        emptyDir: {}
+      - name: uploads
+        persistentVolumeClaim:
+          claimName: inventory-${params.TENANT_NAME}-uploads-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory-${params.TENANT_NAME}-service
+  namespace: ${params.K8S_NAMESPACE}
+  labels:
+    app: inventory
+    tenant: ${params.TENANT_NAME}
+spec:
+  selector:
+    app: inventory
+    tenant: ${params.TENANT_NAME}
+  ports:
+  - port: 8081
+    targetPort: 8081
+    protocol: TCP
+  type: ClusterIP
+"""
+                    
+                    // Write deployment manifest to file
+                    writeFile file: 'k8s-deployment.yaml', text: deploymentYaml
+                    
+                    // Apply the deployment using kubectl
+                    sh """
+                        # Set up kubectl with the kubeconfig file
+                        export KUBECONFIG=inventory/kubeconfig/tulip-sandbox-kubeconfig.yaml
+                        
+                        # Verify kubectl can connect to the cluster
+                        kubectl cluster-info
+                        
+                        # Apply the deployment
+                        kubectl apply -f k8s-deployment.yaml
+                        kubectl rollout status deployment/inventory-${params.TENANT_NAME} -n ${params.K8S_NAMESPACE} --timeout=300s
+                    """
+                }
+            }
+        }
     }
 
     post {
         success {
             echo "Deployment completed successfully for tenant: ${params.TENANT_NAME}"
             echo "Docker image: ${env.DOCKER_IMAGE}"
-//             echo "Kubernetes namespace: ${params.K8S_NAMESPACE}"
+            echo "Kubernetes namespace: ${params.K8S_NAMESPACE}"
         }
         failure {
             echo "Deployment failed for tenant: ${params.TENANT_NAME}"
