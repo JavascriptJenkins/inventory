@@ -395,8 +395,8 @@ spec:
                     
                     // Apply the deployment using kubectl with file credential
                     withCredentials([file(credentialsId: 'KUBECONFIG_PATH', variable: 'KCFG')]) {
-                        sh '''
-                            export KUBECONFIG="$KCFG"
+                        sh """
+                            export KUBECONFIG="\$KCFG"
                             
                             # Verify kubectl can connect to the cluster
                             kubectl config get-contexts
@@ -405,7 +405,7 @@ spec:
                             # Apply the deployment
                             kubectl apply -f k8s-deployment.yaml
                             kubectl rollout status deployment/inventory-${params.TENANT_NAME} -n ${params.K8S_NAMESPACE} --timeout=300s
-                        '''
+                        """
                     }
                 }
             }
