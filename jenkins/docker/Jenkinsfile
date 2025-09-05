@@ -69,38 +69,39 @@ pipeline {
         stage('Update Application Properties') {
             steps {
                 script {
-                    // Handle kubeconfig file separately using configFileProvider
-                    configFileProvider([configFile(fileId: 'KUBECONFIG_PATH', variable: 'KUBECONFIG_FILE')]) {
-                        withCredentials([
-                            // API Keys and Secrets
-                            string(credentialsId: 'TWILIO_API_USER', variable: 'TWILIO_API_USER'),
-                            string(credentialsId: 'TWILIO_API_PASSWORD', variable: 'TWILIO_API_PASSWORD'),
-                            string(credentialsId: 'SENDGRID_API_KEY', variable: 'SENDGRID_API_KEY'),
-                            string(credentialsId: 'JWT_SECRET_KEY', variable: 'JWT_SECRET_KEY'),
-                            string(credentialsId: 'METRC_API_KEY_USERNAME', variable: 'METRC_API_KEY_USERNAME'),
-                            string(credentialsId: 'METRC_API_KEY_PASSWORD', variable: 'METRC_API_KEY_PASSWORD'),
-                            string(credentialsId: 'PAYPAL_CLIENT_ID', variable: 'PAYPAL_CLIENT_ID'),
-                            string(credentialsId: 'PAYPAL_CLIENT_SECRET', variable: 'PAYPAL_CLIENT_SECRET'),
-                            string(credentialsId: 'ANTHROPIC_API_KEY', variable: 'ANTHROPIC_API_KEY'),
-                            
-                            // Database credentials
-                            string(credentialsId: 'DB_PASSWORD', variable: 'DB_PASSWORD'),
-                            string(credentialsId: 'POSTGRE_TEST_DB_PASSWORD', variable: 'POSTGRE_TEST_DB_PASSWORD'),
-                            string(credentialsId: 'POSTGRE_PROD_DB_PASSWORD', variable: 'POSTGRE_PROD_DB_PASSWORD'),
-                            string(credentialsId: 'POSTGRE_ALPHA_DB_PASSWORD', variable: 'POSTGRE_ALPHA_DB_PASSWORD'),
-                            
-                            // Digital Ocean credentials
-                            string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN'),
-                            string(credentialsId: 'DO_DOMAIN', variable: 'DO_DOMAIN'),
-                            string(credentialsId: 'DO_LB_IP', variable: 'DO_LB_IP'),
-                            string(credentialsId: 'SANDBOX_POSTGRESQL_PUBLIC_USER', variable: 'SANDBOX_POSTGRESQL_PUBLIC_USER'),
-                            string(credentialsId: 'SANDBOX_POSTGRESQL_PUBLIC_URI', variable: 'SANDBOX_POSTGRESQL_PUBLIC_URI'),
-                            string(credentialsId: 'SANDBOX_POSTGRESQL_PASSWORD', variable: 'SANDBOX_POSTGRESQL_PASSWORD'),
-                            
-                            // Jenkins credentials
-                            string(credentialsId: 'JENKINS_USERNAME', variable: 'JENKINS_USERNAME'),
-                            string(credentialsId: 'JENKINS_API_TOKEN', variable: 'JENKINS_API_TOKEN')
-                        ]) {
+                    withCredentials([
+                        // API Keys and Secrets
+                        string(credentialsId: 'TWILIO_API_USER', variable: 'TWILIO_API_USER'),
+                        string(credentialsId: 'TWILIO_API_PASSWORD', variable: 'TWILIO_API_PASSWORD'),
+                        string(credentialsId: 'SENDGRID_API_KEY', variable: 'SENDGRID_API_KEY'),
+                        string(credentialsId: 'JWT_SECRET_KEY', variable: 'JWT_SECRET_KEY'),
+                        string(credentialsId: 'METRC_API_KEY_USERNAME', variable: 'METRC_API_KEY_USERNAME'),
+                        string(credentialsId: 'METRC_API_KEY_PASSWORD', variable: 'METRC_API_KEY_PASSWORD'),
+                        string(credentialsId: 'PAYPAL_CLIENT_ID', variable: 'PAYPAL_CLIENT_ID'),
+                        string(credentialsId: 'PAYPAL_CLIENT_SECRET', variable: 'PAYPAL_CLIENT_SECRET'),
+                        string(credentialsId: 'ANTHROPIC_API_KEY', variable: 'ANTHROPIC_API_KEY'),
+                        
+                        // Database credentials
+                        string(credentialsId: 'DB_PASSWORD', variable: 'DB_PASSWORD'),
+                        string(credentialsId: 'POSTGRE_TEST_DB_PASSWORD', variable: 'POSTGRE_TEST_DB_PASSWORD'),
+                        string(credentialsId: 'POSTGRE_PROD_DB_PASSWORD', variable: 'POSTGRE_PROD_DB_PASSWORD'),
+                        string(credentialsId: 'POSTGRE_ALPHA_DB_PASSWORD', variable: 'POSTGRE_ALPHA_DB_PASSWORD'),
+                        
+                        // Digital Ocean credentials
+                        string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN'),
+                        string(credentialsId: 'DO_DOMAIN', variable: 'DO_DOMAIN'),
+                        string(credentialsId: 'DO_LB_IP', variable: 'DO_LB_IP'),
+                        string(credentialsId: 'SANDBOX_POSTGRESQL_PUBLIC_USER', variable: 'SANDBOX_POSTGRESQL_PUBLIC_USER'),
+                        string(credentialsId: 'SANDBOX_POSTGRESQL_PUBLIC_URI', variable: 'SANDBOX_POSTGRESQL_PUBLIC_URI'),
+                        string(credentialsId: 'SANDBOX_POSTGRESQL_PASSWORD', variable: 'SANDBOX_POSTGRESQL_PASSWORD'),
+                        
+                        // Jenkins credentials
+                        string(credentialsId: 'JENKINS_USERNAME', variable: 'JENKINS_USERNAME'),
+                        string(credentialsId: 'JENKINS_API_TOKEN', variable: 'JENKINS_API_TOKEN'),
+                        
+                        // Kubernetes config file
+                        file(credentialsId: 'KUBECONFIG_PATH', variable: 'KUBECONFIG_FILE')
+                    ]) {
                         dir('inventory') {
                             // Copy the kubeconfig file to the correct location
                             sh """
@@ -173,7 +174,6 @@ pipeline {
                                 sed -i 's|^jenkins\\.token=.*|jenkins.token=${JENKINS_API_TOKEN}|' src/main/resources/application.properties
                                 
                             """
-                        }
                         }
                     }
                 }
