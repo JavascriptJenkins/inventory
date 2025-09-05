@@ -430,8 +430,10 @@ spec:
         success {
             echo "Deployment completed successfully for tenant: ${params.TENANT_NAME}"
             echo "Docker image: ${env.DOCKER_IMAGE}"
-            def k8sNamespace = params.K8S_NAMESPACE ?: "tenant-${params.TENANT_NAME.toLowerCase().replaceAll('[^a-z0-9-]', '-')}"
-            echo "Kubernetes namespace: ${k8sNamespace}"
+            script {
+                def k8sNamespace = params.K8S_NAMESPACE ?: "tenant-${params.TENANT_NAME.toLowerCase().replaceAll('[^a-z0-9-]', '-')}"
+                echo "Kubernetes namespace: ${k8sNamespace}"
+            }
         }
         failure {
             echo "Deployment failed for tenant: ${params.TENANT_NAME}"
