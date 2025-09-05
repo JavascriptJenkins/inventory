@@ -103,31 +103,24 @@ pipeline {
                         file(credentialsId: 'KUBECONFIG_PATH', variable: 'KUBECONFIG_FILE')
                     ]) {
                         dir('inventory') {
-                            // Copy the kubeconfig file to the correct location with better error handling
+                            // Copy kubeconfig to a writable location and update the path in application.properties
                             sh """
-                                # Create directory structure with proper permissions
-                                mkdir -p src/main/resources/static/kubernetes/
-                                
                                 # Check if source file exists and is readable
                                 if [ -f "${KUBECONFIG_FILE}" ] && [ -r "${KUBECONFIG_FILE}" ]; then
                                     echo "Source kubeconfig file exists and is readable"
                                     
-                                    # Try to copy with different approaches
-                                    if cp "${KUBECONFIG_FILE}" src/main/resources/static/kubernetes/tulip-sandbox-kubeconfig.yaml; then
-                                        echo "Successfully copied kubeconfig file"
-                                        chmod 644 src/main/resources/static/kubernetes/tulip-sandbox-kubeconfig.yaml
-                                    else
-                                        echo "Direct copy failed, trying with cat"
-                                        cat "${KUBECONFIG_FILE}" > src/main/resources/static/kubernetes/tulip-sandbox-kubeconfig.yaml
-                                        chmod 644 src/main/resources/static/kubernetes/tulip-sandbox-kubeconfig.yaml
-                                    fi
+                                    # Create a writable directory in the workspace root
+                                    mkdir -p ../kubeconfig
+                                    
+                                    # Copy to writable location
+                                    cp "${KUBECONFIG_FILE}" ../kubeconfig/tulip-sandbox-kubeconfig.yaml
                                     
                                     # Verify the file was created
-                                    if [ -f src/main/resources/static/kubernetes/tulip-sandbox-kubeconfig.yaml ]; then
-                                        echo "Kubeconfig file successfully created"
-                                        ls -la src/main/resources/static/kubernetes/
+                                    if [ -f ../kubeconfig/tulip-sandbox-kubeconfig.yaml ]; then
+                                        echo "Kubeconfig file successfully copied to writable location"
+                                        ls -la ../kubeconfig/
                                     else
-                                        echo "ERROR: Failed to create kubeconfig file"
+                                        echo "ERROR: Failed to copy kubeconfig file"
                                         exit 1
                                     fi
                                 else
@@ -199,6 +192,9 @@ pipeline {
                                 sed -i 's|^jenkins\\.username=.*|jenkins.username=${JENKINS_USERNAME}|' src/main/resources/application.properties
                                 sed -i 's|^jenkins\\.token=.*|jenkins.token=${JENKINS_API_TOKEN}|' src/main/resources/application.properties
                                 
+                                # Update kubeconfig path to point to the copied file (relative to app directory in container)
+                                sed -i 's|^kubernetes\\.kubeconfig\\.path=.*|kubernetes.kubeconfig.path=kubeconfig/tulip-sandbox-kubeconfig.yaml|' src/main/resources/application.properties
+                                
                             """
                         }
                     }
@@ -230,8 +226,11 @@ WORKDIR /app
 # Copy the JAR file
 COPY ${jarFile} app.jar
 
+# Copy the kubeconfig file
+COPY ../kubeconfig/tulip-sandbox-kubeconfig.yaml /app/kubeconfig/tulip-sandbox-kubeconfig.yaml
+
 # Create necessary directories
-RUN mkdir -p /app/logs /app/data /app/uploads
+RUN mkdir -p /app/logs /app/data /app/uploads /app/kubeconfig
 
 # Expose port
 EXPOSE 8081
