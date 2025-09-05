@@ -9,7 +9,7 @@ pipeline {
         // Build parameters
         string(name: 'BRANCH', defaultValue: 'test1', description: 'Branch to build from')
         string(name: 'TENANT_NAME', defaultValue: '', description: 'Tenant name for deployment')
-        string(name: 'APP_NAME', defaultValue: '', description: 'Application name')
+        string(name: 'APP_NAME', defaultValue: 'inventory', description: 'Application name')
         string(name: 'SUBSCRIPTION_TIER', defaultValue: 'BASIC', description: 'Subscription tier')
         string(name: 'BILLING_EMAIL', defaultValue: '', description: 'Billing email address')
 //         string(name: 'K8S_NAMESPACE', defaultValue: '', description: 'Kubernetes namespace')
