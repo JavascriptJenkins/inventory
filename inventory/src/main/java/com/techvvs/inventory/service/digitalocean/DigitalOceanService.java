@@ -21,6 +21,7 @@ import java.sql.SQLException;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import com.techvvs.inventory.service.kubernetes.KubernetesService;
 
 /**
  * Service for managing DigitalOcean DNS records
@@ -62,6 +63,11 @@ public class DigitalOceanService {
     @Value("${digitalocean.loadbalancer.name.pattern:sandbox}")
     private String loadbalancerNamePattern;
 
+    private final KubernetesService kubernetesService;
+
+    public DigitalOceanService(KubernetesService kubernetesService) {
+        this.kubernetesService = kubernetesService;
+    }
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final HttpClient httpClient = HttpClient.newBuilder()
@@ -799,7 +805,7 @@ public class DigitalOceanService {
     }
 
     /**
-     * Comprehensive tenant deployment method that creates DNS record, SSL certificate, and PostgreSQL schema
+     * Comprehensive tenant deployment method that creates DNS record, SSL certificate, PostgreSQL schema, and Kubernetes resources
      * 
      * @param tenantName The tenant name to deploy
      * @return true if all operations successful, false otherwise
@@ -825,13 +831,22 @@ public class DigitalOceanService {
             certAttached = attachCertificateToLoadBalancer(tenantName);
         }
         
-        boolean overallSuccess = dnsSuccess && certSuccess && certActive && certAttached && schemaSuccess;
+        // Set up Kubernetes resources (namespace and RBAC)
+        boolean k8sSuccess = true;
+        if (kubernetesService != null && kubernetesService.isConfigured()) {
+            logger.info("Setting up Kubernetes resources for tenant...");
+            k8sSuccess = kubernetesService.setupTenantKubernetes(tenantName);
+        } else {
+            logger.warn("Kubernetes service not configured, skipping Kubernetes setup");
+        }
+        
+        boolean overallSuccess = dnsSuccess && certSuccess && certActive && certAttached && schemaSuccess && k8sSuccess;
         
         if (overallSuccess) {
             logger.info("Successfully deployed all infrastructure for tenant: {}", tenantName);
         } else {
-            logger.warn("Partial deployment for tenant: {} - DNS: {}, Certificate: {}, Certificate Active: {}, Certificate Attached: {}, Schema: {}", 
-                       tenantName, dnsSuccess, certSuccess, certActive, certAttached, schemaSuccess);
+            logger.warn("Partial deployment for tenant: {} - DNS: {}, Certificate: {}, Certificate Active: {}, Certificate Attached: {}, Schema: {}, Kubernetes: {}", 
+                       tenantName, dnsSuccess, certSuccess, certActive, certAttached, schemaSuccess, k8sSuccess);
         }
         
         return overallSuccess;
