@@ -279,7 +279,7 @@ CMD ["java", "-jar", "app.jar"]
             steps {
                 script {
                     withCredentials([string(credentialsId: 'DOCKER_TOKEN', variable: 'DOCKER_TOKEN')]) {
-                        docker.withRegistry('https://index.docker.io/v1/', 'docker-token') {
+                        docker.withRegistry('https://index.docker.io/v1/', 'DOCKER_TOKEN') {
                             docker.image(env.DOCKER_IMAGE).push()
                         }
                     }
