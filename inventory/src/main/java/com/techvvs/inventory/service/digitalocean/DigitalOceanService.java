@@ -45,13 +45,13 @@ public class DigitalOceanService {
     private String loadbalancerip;
 
     // PostgreSQL configuration properties
-    @Value("${digitalocean.postgresql.username:${SANDBOX_POSTGRESQL_PUBLIC_USER:doadmin}}")
+    @Value("${digitalocean.postgresql.username:}")
     private String postgresqlUsername;
 
-    @Value("${digitalocean.postgresql.password:${SANDBOX_POSTGRESQL_PASSWORD:}}")
+    @Value("${digitalocean.postgresql.password:}")
     private String postgresqlPassword;
 
-    @Value("${digitalocean.postgresql.uri:${SANDBOX_POSTGRESQL_PUBLIC_URI:sandbox-cluster-do-user-1326368-0.e.db.ondigitalocean.com:25060/defaultdb}}")
+    @Value("${digitalocean.postgresql.uri:}")
     private String postgresqlUri;
 
     @Value("${digitalocean.certificate.wait.minutes:10}")
