@@ -109,15 +109,20 @@ pipeline {
              # Create kubeconfig directory in current workspace
              mkdir -p kubeconfig
 
-             # Write kubeconfig content to file
-             echo '${KUBECONFIG_FILE}' > kubeconfig/tulip-sandbox-kubeconfig.yaml
+             # Write kubeconfig content to file using cat to preserve formatting
+             cat > kubeconfig/tulip-sandbox-kubeconfig.yaml << 'EOF'
+${KUBECONFIG_FILE}
+EOF
 
              # Set proper permissions
              chmod 600 kubeconfig/tulip-sandbox-kubeconfig.yaml
 
-             # Verify file was created successfully
+             # Verify file was created successfully and show first few lines
              if [ -f "kubeconfig/tulip-sandbox-kubeconfig.yaml" ]; then
                  echo "Kubeconfig file created successfully"
+                 echo "File size: \$(wc -c < kubeconfig/tulip-sandbox-kubeconfig.yaml) bytes"
+                 echo "First 5 lines of kubeconfig:"
+                 head -5 kubeconfig/tulip-sandbox-kubeconfig.yaml
                  ls -la kubeconfig/
              else
                  echo "ERROR: Failed to create kubeconfig file"
