@@ -222,7 +222,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    def imageName = "${params.DOCKER_USER}/inventory${params.TENANT_NAME}${params.APP_NAME}:sandbox"
+                    def imageName = "${params.DOCKER_USER}/inventory-${params.TENANT_NAME}-${params.APP_NAME}:sandbox".toLowerCase()
                     def jarFile = "inventory/target/inventory-0.0.1-SNAPSHOT.jar"
                     
                     // Create Dockerfile with kubeconfig path
