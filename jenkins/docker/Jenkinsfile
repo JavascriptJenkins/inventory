@@ -119,7 +119,6 @@ pipeline {
              if [ -f "kubeconfig/tulip-sandbox-kubeconfig.yaml" ]; then
                  echo "Kubeconfig file created successfully"
                  ls -la kubeconfig/
-                 echo "KUBECONFIG_PATH=kubeconfig/tulip-sandbox-kubeconfig.yaml" > kubeconfig_path.env
              else
                  echo "ERROR: Failed to create kubeconfig file"
                  exit 1
@@ -189,13 +188,19 @@ pipeline {
                                 sed -i 's|^jenkins\\.token=.*|jenkins.token=${JENKINS_API_TOKEN}|' src/main/resources/application.properties
                                 
                                 # Update kubeconfig path to point to the copied file
-                                if [ -f kubeconfig_path.env ]; then
-                                    source kubeconfig_path.env
-                                    echo "Using kubeconfig path: \$KUBECONFIG_PATH"
-                                    # For Docker container, use relative path from app directory
-                                    sed -i 's|^kubernetes\\\\.kubeconfig\\\\.path=.*|kubernetes.kubeconfig.path=kubeconfig/tulip-sandbox-kubeconfig.yaml|' src/main/resources/application.properties
+                                # Since we know the kubeconfig is in kubeconfig/tulip-sandbox-kubeconfig.yaml, update directly
+                                echo "Updating kubernetes.kubeconfig.path to: kubeconfig/tulip-sandbox-kubeconfig.yaml"
+                                sed -i 's|^kubernetes\\.kubeconfig\\.path=.*|kubernetes.kubeconfig.path=kubeconfig/tulip-sandbox-kubeconfig.yaml|' src/main/resources/application.properties
+                                
+                                # Verify the kubeconfig file exists
+                                if [ -f "kubeconfig/tulip-sandbox-kubeconfig.yaml" ]; then
+                                    echo "Kubeconfig file verified: kubeconfig/tulip-sandbox-kubeconfig.yaml"
                                 else
-                                    echo "ERROR: kubeconfig_path.env not found"
+                                    echo "ERROR: Kubeconfig file not found at expected location"
+                                    echo "Current directory contents:"
+                                    ls -la
+                                    echo "Kubeconfig directory contents:"
+                                    ls -la kubeconfig/ || echo "Kubeconfig directory does not exist"
                                     exit 1
                                 fi
                                 
@@ -223,11 +228,13 @@ pipeline {
                     // Create Dockerfile with kubeconfig path
                     sh """
                         # Check if kubeconfig was created successfully
-                        if [ -f inventory/kubeconfig_path.env ]; then
-                            source inventory/kubeconfig_path.env
-                            echo "Kubeconfig source path: \$KUBECONFIG_PATH"
+                        if [ -f inventory/kubeconfig/tulip-sandbox-kubeconfig.yaml ]; then
+                            echo "Kubeconfig file found at: inventory/kubeconfig/tulip-sandbox-kubeconfig.yaml"
+                            ls -la inventory/kubeconfig/
                         else
-                            echo "ERROR: kubeconfig_path.env not found"
+                            echo "ERROR: Kubeconfig file not found at expected location"
+                            echo "Checking inventory directory:"
+                            ls -la inventory/ || echo "Inventory directory does not exist"
                             exit 1
                         fi
                     """
