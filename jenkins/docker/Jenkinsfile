@@ -328,7 +328,7 @@ CMD ["java", "-jar", "app.jar"]
 //                 }
 //             }
 //         }
-//     }
+    }
 
     post {
         success {
