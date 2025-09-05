@@ -12,7 +12,7 @@ pipeline {
         string(name: 'APP_NAME', defaultValue: '', description: 'Application name')
         string(name: 'SUBSCRIPTION_TIER', defaultValue: 'BASIC', description: 'Subscription tier')
         string(name: 'BILLING_EMAIL', defaultValue: '', description: 'Billing email address')
-        string(name: 'K8S_NAMESPACE', defaultValue: '', description: 'Kubernetes namespace')
+//         string(name: 'K8S_NAMESPACE', defaultValue: '', description: 'Kubernetes namespace')
         
         // Docker parameters
         string(name: 'DOCKER_USER', defaultValue: 'techvvsadmin', description: 'Docker Hub username')
