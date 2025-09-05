@@ -104,27 +104,27 @@ pipeline {
                     ]) {
                         dir('inventory') {
                             // Copy kubeconfig to a writable location and update the path in application.properties
-       // Create kubeconfig from string content
-        sh """
-            # Create kubeconfig directory
-            mkdir -p ../kubeconfig
+               // Create kubeconfig from string content
+         sh """
+             # Create kubeconfig directory in current workspace
+             mkdir -p kubeconfig
 
-            # Write kubeconfig content to file
-            echo '${KUBECONFIG_FILE}' > ../kubeconfig/tulip-sandbox-kubeconfig.yaml
+             # Write kubeconfig content to file
+             echo '${KUBECONFIG_FILE}' > kubeconfig/tulip-sandbox-kubeconfig.yaml
 
-            # Set proper permissions
-            chmod 600 ../kubeconfig/tulip-sandbox-kubeconfig.yaml
+             # Set proper permissions
+             chmod 600 kubeconfig/tulip-sandbox-kubeconfig.yaml
 
-            # Verify file was created successfully
-            if [ -f "../kubeconfig/tulip-sandbox-kubeconfig.yaml" ]; then
-                echo "Kubeconfig file created successfully"
-                ls -la ../kubeconfig/
-                echo "KUBECONFIG_PATH=../kubeconfig/tulip-sandbox-kubeconfig.yaml" > kubeconfig_path.env
-            else
-                echo "ERROR: Failed to create kubeconfig file"
-                exit 1
-            fi
-        """
+             # Verify file was created successfully
+             if [ -f "kubeconfig/tulip-sandbox-kubeconfig.yaml" ]; then
+                 echo "Kubeconfig file created successfully"
+                 ls -la kubeconfig/
+                 echo "KUBECONFIG_PATH=kubeconfig/tulip-sandbox-kubeconfig.yaml" > kubeconfig_path.env
+             else
+                 echo "ERROR: Failed to create kubeconfig file"
+                 exit 1
+             fi
+         """
                              
                              // Construct BASE_QR_DOMAIN from tenant name and DO domain
                              def baseQrDomain = "https://${params.TENANT_NAME}.${DO_DOMAIN}"
@@ -220,9 +220,9 @@ pipeline {
                     def imageName = "${params.DOCKER_USER}/inventory${params.TENANT_NAME}${params.APP_NAME}:sandbox"
                     def jarFile = "inventory/target/inventory-0.0.1-SNAPSHOT.jar"
                     
-                    // Create Dockerfile with dynamic kubeconfig path
+                    // Create Dockerfile with kubeconfig path
                     sh """
-                        # Read the kubeconfig path from the environment file
+                        # Check if kubeconfig was created successfully
                         if [ -f inventory/kubeconfig_path.env ]; then
                             source inventory/kubeconfig_path.env
                             echo "Kubeconfig source path: \$KUBECONFIG_PATH"
@@ -242,8 +242,8 @@ WORKDIR /app
 # Copy the JAR file
 COPY ${jarFile} app.jar
 
-# Copy the kubeconfig file (path will be determined at build time)
-COPY kubeconfig/tulip-sandbox-kubeconfig.yaml /app/kubeconfig/tulip-sandbox-kubeconfig.yaml
+# Copy the kubeconfig file
+COPY inventory/kubeconfig/tulip-sandbox-kubeconfig.yaml /app/kubeconfig/tulip-sandbox-kubeconfig.yaml
 
 # Create necessary directories
 RUN mkdir -p /app/logs /app/data /app/uploads /app/kubeconfig
