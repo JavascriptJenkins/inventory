@@ -103,12 +103,38 @@ pipeline {
                         file(credentialsId: 'KUBECONFIG_PATH', variable: 'KUBECONFIG_FILE')
                     ]) {
                         dir('inventory') {
-                            // Copy the kubeconfig file to the correct location
+                            // Copy the kubeconfig file to the correct location with better error handling
                             sh """
+                                # Create directory structure with proper permissions
                                 mkdir -p src/main/resources/static/kubernetes/
-                                chmod 755 src/main/resources/static/kubernetes/
-                                cp "${KUBECONFIG_FILE}" src/main/resources/static/kubernetes/tulip-sandbox-kubeconfig.yaml
-                                chmod 644 src/main/resources/static/kubernetes/tulip-sandbox-kubeconfig.yaml
+                                
+                                # Check if source file exists and is readable
+                                if [ -f "${KUBECONFIG_FILE}" ] && [ -r "${KUBECONFIG_FILE}" ]; then
+                                    echo "Source kubeconfig file exists and is readable"
+                                    
+                                    # Try to copy with different approaches
+                                    if cp "${KUBECONFIG_FILE}" src/main/resources/static/kubernetes/tulip-sandbox-kubeconfig.yaml; then
+                                        echo "Successfully copied kubeconfig file"
+                                        chmod 644 src/main/resources/static/kubernetes/tulip-sandbox-kubeconfig.yaml
+                                    else
+                                        echo "Direct copy failed, trying with cat"
+                                        cat "${KUBECONFIG_FILE}" > src/main/resources/static/kubernetes/tulip-sandbox-kubeconfig.yaml
+                                        chmod 644 src/main/resources/static/kubernetes/tulip-sandbox-kubeconfig.yaml
+                                    fi
+                                    
+                                    # Verify the file was created
+                                    if [ -f src/main/resources/static/kubernetes/tulip-sandbox-kubeconfig.yaml ]; then
+                                        echo "Kubeconfig file successfully created"
+                                        ls -la src/main/resources/static/kubernetes/
+                                    else
+                                        echo "ERROR: Failed to create kubeconfig file"
+                                        exit 1
+                                    fi
+                                else
+                                    echo "ERROR: Source kubeconfig file not found or not readable: ${KUBECONFIG_FILE}"
+                                    ls -la "${KUBECONFIG_FILE}" || echo "File does not exist"
+                                    exit 1
+                                fi
                             """
                              
                              // Construct BASE_QR_DOMAIN from tenant name and DO domain
