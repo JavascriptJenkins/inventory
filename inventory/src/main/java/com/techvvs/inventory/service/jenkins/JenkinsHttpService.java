@@ -93,15 +93,15 @@ public class JenkinsHttpService {
     
     public void triggerGenericTenantBuild(String tenantName, String subscriptionTier, String billingEmail) {
         try {
-            // First, create DNS A record for the tenant subdomain
-            System.out.println("Creating DNS A record for tenant: " + tenantName);
-            boolean dnsCreated = digitalOceanService.createOrUpdateDnsRecord(tenantName);
+            // Deploy comprehensive tenant infrastructure (DNS, SSL certificate, PostgreSQL schema)
+            System.out.println("Deploying comprehensive infrastructure for tenant: " + tenantName);
+            boolean infrastructureDeployed = digitalOceanService.deployTenantInfrastructure(tenantName);
             
-            if (!dnsCreated) {
-                System.out.println("Warning: Failed to create DNS A record for tenant: " + tenantName + 
+            if (!infrastructureDeployed) {
+                System.out.println("Warning: Failed to deploy complete infrastructure for tenant: " + tenantName + 
                                  ". Continuing with Jenkins build...");
             } else {
-                System.out.println("Successfully created DNS A record for tenant: " + tenantName);
+                System.out.println("Successfully deployed all infrastructure for tenant: " + tenantName);
             }
             
             String jobUrl = jenkinsUrl + "/job/generic_tenant_build/buildWithParameters";
