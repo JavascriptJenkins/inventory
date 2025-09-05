@@ -138,7 +138,7 @@ public class JenkinsHttpService {
             params.add("SUBSCRIPTION_TIER", subscriptionTier);
             params.add("BILLING_EMAIL", billingEmail);
             params.add("APP_NAME", tenantName+"App");
-            params.add("K8S_NAMESPACE", "tenant-" + tenantName);
+            params.add("K8S_NAMESPACE", tenantName);
             params.add("BRANCH", "test1"); // todo: change this
             
             HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
