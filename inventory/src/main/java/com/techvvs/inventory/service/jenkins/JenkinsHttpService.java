@@ -141,6 +141,15 @@ public class JenkinsHttpService {
             params.add("K8S_NAMESPACE", "tenant-" + tenantName);
             params.add("BRANCH", "test1"); // todo: change this
             
+            // Add DigitalOcean load balancer ID for Kubernetes Service annotation
+            String loadbalancerId = digitalOceanService.getLoadbalancerId();
+            if (loadbalancerId != null && !loadbalancerId.trim().isEmpty()) {
+                params.add("DO_LOADBALANCER_ID", loadbalancerId);
+                System.out.println("Adding DigitalOcean load balancer ID to Jenkins parameters: " + loadbalancerId);
+            } else {
+                System.out.println("Warning: DigitalOcean load balancer ID is not configured. Kubernetes Service will create a new load balancer.");
+            }
+            
             HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
             
             ResponseEntity<String> response = restTemplate.postForEntity(jobUrl, request, String.class);
