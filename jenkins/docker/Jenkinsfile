@@ -33,7 +33,7 @@ pipeline {
         string(name: 'DB_JPA_HIBERNATE_DIALECT', defaultValue: 'org.hibernate.dialect.PostgreSQLDialect', description: 'Hibernate dialect')
         string(name: 'DB_USERNAME', defaultValue: 'doadmin', description: 'Database username')
         string(name: 'SANDBOX_POSTGRESQL_URI', defaultValue: 'jdbc:postgresql://sandbox-cluster-do-user-1326368-0.e.db.ondigitalocean.com:25060', description: 'Database uri')
-        string(name: 'DB_URI', defaultValue: 'jdbc:postgresql://sandbox-cluster-do-user-1326368-0.e.db.ondigitalocean.com:25060', description: 'Database uri')
+        string(name: 'DB_URI', defaultValue: 'jdbc:postgresql://private-sandbox-cluster-do-user-1326368-0.e.db.ondigitalocean.com:25060', description: 'Database uri')
         string(name: 'SPRING_DATABASE_ACTION', defaultValue: 'update', description: 'Database action (update, create-drop)')
         string(name: 'DB_H2_CONSOLE_ENABLED', defaultValue: 'false', description: 'Enable H2 console')
         string(name: 'DB_H2_WEB_ALLOWOTHERS', defaultValue: 'false', description: 'Allow others to access H2 console')
