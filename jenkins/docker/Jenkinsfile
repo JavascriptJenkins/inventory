@@ -108,7 +108,7 @@ pipeline {
                     echo "  DB_JPA_DATABASE_PLATFORM: ${params.DB_JPA_DATABASE_PLATFORM}"
                     echo "  DB_JPA_HIBERNATE_DIALECT: ${params.DB_JPA_HIBERNATE_DIALECT}"
                     echo "  DB_USERNAME: ${params.DB_USERNAME}"
-                    echo "  DB_USERNAME: ${params.SANDBOX_POSTGRESQL_URI}"
+                    echo "  SANDBOX_POSTGRESQL_URI: ${params.SANDBOX_POSTGRESQL_URI}"
                     echo "  SPRING_DATABASE_ACTION: ${params.SPRING_DATABASE_ACTION}"
                     echo "  DB_H2_CONSOLE_ENABLED: ${params.DB_H2_CONSOLE_ENABLED}"
                     echo "  DB_H2_WEB_ALLOWOTHERS: ${params.DB_H2_WEB_ALLOWOTHERS}"
