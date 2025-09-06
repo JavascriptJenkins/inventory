@@ -77,8 +77,8 @@ pipeline {
                     // Replace spring.datasource.url if provided
                     if (params.SANDBOX_POSTGRESQL_URI) {
                         env.DB_URI = "${params.SANDBOX_POSTGRESQL_URI}/${params.TENANT_NAME}?sslmode=require"
-                        echo "Updated DB_URI: ${env.DB_URI}"
-                        sh "sed -i 's|^spring\\.datasource\\.url=.*|spring.datasource.url=${env.DB_URI}|' src/main/resources/application.properties"
+                        echo "env DB_URI: ${env.DB_URI}"
+
                     }
                 }
             }
@@ -307,6 +307,7 @@ EOF
                                 sed -i 's/^spring\\.servlet\\.multipart\\.max-request-size=.*/spring.servlet.multipart.max-request-size=${params.MAX_REQ_SIZE}/' src/main/resources/application.properties
                                 
                                 # Database settings
+                                sh "sed -i 's|^spring\\.datasource\\.url=.*|spring.datasource.url=${env.DB_URI}|' src/main/resources/application.properties"
                                 sed -i 's/^spring\\.datasource\\.driver-class-name=.*/spring.datasource.driver-class-name=${params.DB_DRIVER_CLASS_NAME}/' src/main/resources/application.properties
                                 sed -i 's/^spring\\.jpa\\.database-platform=.*/spring.jpa.database-platform=${params.DB_JPA_DATABASE_PLATFORM}/' src/main/resources/application.properties
                                 sed -i 's/^spring\\.jpa\\.properties\\.hibernate\\.dialect=.*/spring.jpa.properties.hibernate.dialect=${params.DB_JPA_HIBERNATE_DIALECT}/' src/main/resources/application.properties
