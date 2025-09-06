@@ -13,7 +13,8 @@ pipeline {
         string(name: 'SUBSCRIPTION_TIER', defaultValue: 'BASIC', description: 'Subscription tier')
         string(name: 'BILLING_EMAIL', defaultValue: '', description: 'Billing email address')
         string(name: 'K8S_NAMESPACE', defaultValue: '', description: 'Kubernetes namespace (auto-generated if empty)')
-        
+        string(name: 'EXTERNAL_LB_IP', defaultValue: '', description: 'the ip of the external loadbalancer that is passed from the java app')
+
         // DigitalOcean parameters
         string(name: 'DO_LOADBALANCER_ID', defaultValue: '', description: 'DigitalOcean Load Balancer ID for Kubernetes Service annotation')
         
@@ -661,9 +662,9 @@ spec:
                             # Update DNS record with LoadBalancer IP
                             echo "Updating DNS record for ${params.TENANT_NAME}.${DO_DOMAIN} to point to \$EXTERNAL_IP"
                             
-                            # Store the external IP for DNS record creation
-                            echo "EXTERNAL_IP=\$EXTERNAL_IP" > external_ip.env
-                            echo "DNS record should point ${params.TENANT_NAME}.${DO_DOMAIN} to \$EXTERNAL_IP"
+                            # Log the external IP for verification
+                            echo "LoadBalancer external IP: \$EXTERNAL_IP"
+                            echo "DNS record will be created using EXTERNAL_LB_IP parameter: ${params.EXTERNAL_LB_IP}"
                             
                             # Debug: Check service configuration and load balancer details
                             echo "=== Service Configuration ==="
@@ -696,19 +697,19 @@ spec:
                         string(credentialsId: 'DO_DOMAIN', variable: 'DO_DOMAIN')
                     ]) {
                         sh """
-                            # Read the external IP from the previous stage
-                            if [ -f external_ip.env ]; then
-                                . external_ip.env
-                                echo "Creating DNS record for ${params.TENANT_NAME}.${DO_DOMAIN} -> \$EXTERNAL_IP"
+                            # Use the LoadBalancer IP passed from Java application
+                            if [ -n "${params.EXTERNAL_LB_IP}" ]; then
+                                echo "Using LoadBalancer external IP from Java application: ${params.EXTERNAL_LB_IP}"
                                 
                                 # Create DNS A record using DigitalOcean API
+                                echo "Creating DNS record for ${params.TENANT_NAME}.${DO_DOMAIN} -> ${params.EXTERNAL_LB_IP}"
                                 curl -X POST "https://api.digitalocean.com/v2/domains/${DO_DOMAIN}/records" \\
                                     -H "Content-Type: application/json" \\
                                     -H "Authorization: Bearer \$DO_API_TOKEN" \\
                                     -d '{
                                         "type": "A",
                                         "name": "${params.TENANT_NAME}",
-                                        "data": "'\$EXTERNAL_IP'",
+                                        "data": "${params.EXTERNAL_LB_IP}",
                                         "ttl": 3600
                                     }'
                                 
@@ -732,7 +733,7 @@ spec:
                                     echo "Warning: Load Balancer ID not found in service annotations"
                                 fi
                             else
-                                echo "ERROR: external_ip.env file not found"
+                                echo "ERROR: EXTERNAL_LB_IP parameter is required but not provided"
                                 exit 1
                             fi
                         """
@@ -756,7 +757,7 @@ spec:
         }
         always {
             // Clean up temporary files
-            sh 'rm -f Dockerfile k8s-deployment.yaml external_ip.env'
+            sh 'rm -f Dockerfile k8s-deployment.yaml'
         }
     }
 }
