@@ -236,28 +236,19 @@ pipeline {
                         dir('inventory') {
                             // Copy kubeconfig to a writable location and update the path in application.properties
                // Create kubeconfig from string content
-         sh """
-# Create kubeconfig directory in current workspace
-mkdir -p kubeconfig
-
-# Copy the actual kubeconfig file content (not the variable which is just a path)
-cp "${KUBECONFIG_FILE}" kubeconfig/tulip-sandbox-kubeconfig.yaml
-
-# Set proper permissions
-chmod 600 kubeconfig/tulip-sandbox-kubeconfig.yaml
-
-# Verify file was created successfully and show first few lines
-if [ -f "kubeconfig/tulip-sandbox-kubeconfig.yaml" ]; then
-    echo "Kubeconfig file created successfully"
-    echo "File size: $(wc -c < kubeconfig/tulip-sandbox-kubeconfig.yaml) bytes"
-    echo "First 5 lines of kubeconfig:"
-    head -5 kubeconfig/tulip-sandbox-kubeconfig.yaml
-    ls -la kubeconfig/
-else
-    echo "ERROR: Failed to create kubeconfig file"
-    exit 1
-fi
-         """
+         sh "mkdir -p kubeconfig"
+         sh "cp "${KUBECONFIG_FILE}" kubeconfig/tulip-sandbox-kubeconfig.yaml"
+         sh "chmod 600 kubeconfig/tulip-sandbox-kubeconfig.yaml"
+         sh """if [ -f "kubeconfig/tulip-sandbox-kubeconfig.yaml" ]; then
+                 echo "Kubeconfig file created successfully"
+                 echo "File size: $(wc -c < kubeconfig/tulip-sandbox-kubeconfig.yaml) bytes"
+                 echo "First 5 lines of kubeconfig:"
+                 head -5 kubeconfig/tulip-sandbox-kubeconfig.yaml
+                 ls -la kubeconfig/
+             else
+                 echo "ERROR: Failed to create kubeconfig file"
+                 exit 1
+             fi"""
 
          sh """
          # Validate kubeconfig is valid YAML
