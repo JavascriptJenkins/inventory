@@ -2,6 +2,7 @@ package com.techvvs.inventory.service.digitalocean;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -191,9 +192,9 @@ public class DigitalOceanService {
      */
     private String findExistingDnsRecord(String subdomain) {
         try {
-            String fqdn = subdomain + "." + domain;
+            // Search by subdomain name only (not FQDN)
             String listUrl = "https://api.digitalocean.com/v2/domains/" + domain + 
-                           "/records?type=A&name=" + fqdn;
+                           "/records?type=A&name=" + subdomain;
             
             HttpRequest listReq = HttpRequest.newBuilder(URI.create(listUrl))
                     .header("Authorization", "Bearer " + doToken)
@@ -211,14 +212,28 @@ public class DigitalOceanService {
             JsonNode list = objectMapper.readTree(response.body());
             JsonNode records = list.path("domain_records");
             
+            logger.info("Searching for existing DNS A record with subdomain: {}", subdomain);
+            logger.info("Found {} DNS records total", records.size());
+            
             if (records.isArray() && records.size() > 0) {
-                JsonNode first = records.get(0);
-                String recordId = first.path("id").asText();
-                logger.info("Found existing DNS record with ID: {}", recordId);
-                return recordId;
+                // Look for exact match on subdomain name
+                for (JsonNode record : records) {
+                    String recordName = record.path("name").asText();
+                    String recordType = record.path("type").asText();
+                    logger.info("Checking record: name='{}', type='{}'", recordName, recordType);
+                    
+                    if ("A".equals(recordType) && subdomain.equals(recordName)) {
+                        String recordId = record.path("id").asText();
+                        logger.info("Found existing DNS A record with ID: {} for subdomain: {}", recordId, subdomain);
+                        return recordId;
+                    }
+                }
+                
+                logger.info("No matching DNS A record found for subdomain: {}", subdomain);
+            } else {
+                logger.info("No DNS records found at all");
             }
-
-            logger.info("No existing DNS record found for subdomain: {}", subdomain);
+            
             return null;
 
         } catch (Exception e) {
@@ -290,6 +305,133 @@ public class DigitalOceanService {
 
         } catch (Exception e) {
             logger.error("Error updating DNS record with ID: {}", recordId, e);
+            return false;
+        }
+    }
+
+    /**
+     * Cleans up duplicate DNS A records for a tenant subdomain
+     * Keeps only the most recent record and deletes duplicates
+     * 
+     * @param tenantName The tenant name whose duplicate DNS records should be cleaned up
+     * @return true if successful, false otherwise
+     */
+    public boolean cleanupDuplicateDnsRecords(String tenantName) {
+        try {
+            if (doToken == null || doToken.trim().isEmpty()) {
+                logger.error("DigitalOcean API token is not configured");
+                return false;
+            }
+
+            String subdomain = tenantName.toLowerCase().replaceAll("[^a-z0-9-]", "-");
+            logger.info("Cleaning up duplicate DNS A records for subdomain: {}", subdomain);
+
+            // Get all DNS records for the subdomain
+            String listUrl = "https://api.digitalocean.com/v2/domains/" + domain + "/records";
+            HttpRequest listReq = HttpRequest.newBuilder(URI.create(listUrl))
+                    .header("Authorization", "Bearer " + doToken)
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(listReq, HttpResponse.BodyHandlers.ofString());
+            
+            if (response.statusCode() != 200) {
+                logger.error("Failed to list DNS records for cleanup. Status: {}, Body: {}", 
+                           response.statusCode(), response.body());
+                return false;
+            }
+
+            JsonNode list = objectMapper.readTree(response.body());
+            JsonNode records = list.path("domain_records");
+            
+            // Find all A records for this subdomain
+            java.util.List<JsonNode> matchingRecords = new java.util.ArrayList<>();
+            for (JsonNode record : records) {
+                String recordName = record.path("name").asText();
+                String recordType = record.path("type").asText();
+                
+                if ("A".equals(recordType) && subdomain.equals(recordName)) {
+                    matchingRecords.add(record);
+                }
+            }
+
+            logger.info("Found {} DNS A records for subdomain: {}", matchingRecords.size(), subdomain);
+
+            if (matchingRecords.size() <= 1) {
+                logger.info("No duplicate DNS records found for subdomain: {}", subdomain);
+                return true;
+            }
+
+            // Keep the most recent record (highest ID) and delete the rest
+            JsonNode keepRecord = null;
+            long highestId = -1;
+            
+            for (JsonNode record : matchingRecords) {
+                long recordId = record.path("id").asLong();
+                if (recordId > highestId) {
+                    highestId = recordId;
+                    keepRecord = record;
+                }
+            }
+
+            logger.info("Keeping DNS record with ID: {} for subdomain: {}", highestId, subdomain);
+
+            // Delete all other records
+            boolean allDeleted = true;
+            for (JsonNode record : matchingRecords) {
+                long recordId = record.path("id").asLong();
+                if (recordId != highestId) {
+                    logger.info("Deleting duplicate DNS record with ID: {}", recordId);
+                    boolean deleted = deleteDnsRecordById(String.valueOf(recordId));
+                    if (!deleted) {
+                        allDeleted = false;
+                        logger.error("Failed to delete DNS record with ID: {}", recordId);
+                    }
+                }
+            }
+
+            if (allDeleted) {
+                logger.info("Successfully cleaned up duplicate DNS records for subdomain: {}", subdomain);
+            } else {
+                logger.warn("Some duplicate DNS records could not be deleted for subdomain: {}", subdomain);
+            }
+
+            return allDeleted;
+
+        } catch (Exception e) {
+            logger.error("Error cleaning up duplicate DNS records for tenant: {}", tenantName, e);
+            return false;
+        }
+    }
+
+    /**
+     * Deletes a DNS record by its ID
+     * 
+     * @param recordId The ID of the record to delete
+     * @return true if successful, false otherwise
+     */
+    private boolean deleteDnsRecordById(String recordId) {
+        try {
+            String deleteUrl = "https://api.digitalocean.com/v2/domains/" + domain + "/records/" + recordId;
+            
+            HttpRequest deleteReq = HttpRequest.newBuilder(URI.create(deleteUrl))
+                    .header("Authorization", "Bearer " + doToken)
+                    .DELETE()
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(deleteReq, HttpResponse.BodyHandlers.ofString());
+            
+            if (response.statusCode() == 204) {
+                logger.info("Successfully deleted DNS record with ID: {}", recordId);
+                return true;
+            } else {
+                logger.error("Failed to delete DNS record. Status: {}, Body: {}", 
+                           response.statusCode(), response.body());
+                return false;
+            }
+
+        } catch (Exception e) {
+            logger.error("Error deleting DNS record with ID: {}", recordId, e);
             return false;
         }
     }
@@ -847,6 +989,213 @@ public class DigitalOceanService {
     }
 
     /**
+     * Adds Kubernetes nodes (droplets) to the existing DigitalOcean Load Balancer
+     * 
+     * @return true if successful, false otherwise
+     */
+    private boolean addKubernetesNodesToLoadBalancer() {
+        try {
+            if (doToken == null || doToken.trim().isEmpty()) {
+                logger.error("DigitalOcean API token is not configured");
+                return false;
+            }
+
+            if (loadbalancerId == null || loadbalancerId.trim().isEmpty()) {
+                logger.error("DigitalOcean load balancer ID is not configured");
+                return false;
+            }
+
+            logger.info("Adding Kubernetes nodes to load balancer: {}", loadbalancerId);
+
+            // Get current load balancer configuration
+            String getUrl = "https://api.digitalocean.com/v2/load_balancers/" + loadbalancerId;
+            HttpRequest getReq = HttpRequest.newBuilder(URI.create(getUrl))
+                    .header("Authorization", "Bearer " + doToken)
+                    .GET()
+                    .build();
+
+            HttpResponse<String> getResponse = httpClient.send(getReq, HttpResponse.BodyHandlers.ofString());
+            
+            if (getResponse.statusCode() != 200) {
+                logger.error("Failed to get load balancer configuration. Status: {}, Body: {}", 
+                           getResponse.statusCode(), getResponse.body());
+                return false;
+            }
+
+            JsonNode lbConfig = objectMapper.readTree(getResponse.body());
+            JsonNode loadBalancer = lbConfig.path("load_balancer");
+            
+            // Get current droplet IDs
+            JsonNode currentDropletIds = loadBalancer.path("droplet_ids");
+            logger.info("Current droplet IDs in load balancer: {}", currentDropletIds);
+
+            // Get Kubernetes node droplet IDs
+            java.util.List<String> k8sNodeIds = getKubernetesNodeDropletIds();
+            if (k8sNodeIds.isEmpty()) {
+                logger.warn("No Kubernetes node droplet IDs found, cannot add to load balancer");
+                return false;
+            }
+
+            logger.info("Kubernetes node droplet IDs: {}", k8sNodeIds);
+
+            // Check which nodes are not already in the load balancer
+            java.util.List<String> nodesToAdd = new java.util.ArrayList<>();
+            for (String nodeId : k8sNodeIds) {
+                boolean alreadyExists = false;
+                for (JsonNode existingId : currentDropletIds) {
+                    if (existingId.asText().equals(nodeId)) {
+                        alreadyExists = true;
+                        break;
+                    }
+                }
+                if (!alreadyExists) {
+                    nodesToAdd.add(nodeId);
+                }
+            }
+
+            if (nodesToAdd.isEmpty()) {
+                logger.info("All Kubernetes nodes are already in the load balancer");
+                return true;
+            }
+
+            logger.info("Adding nodes to load balancer: {}", nodesToAdd);
+
+            // Combine existing and new droplet IDs
+            java.util.List<String> allDropletIds = new java.util.ArrayList<>();
+            for (JsonNode existingId : currentDropletIds) {
+                allDropletIds.add(existingId.asText());
+            }
+            allDropletIds.addAll(nodesToAdd);
+
+            // Update load balancer with new droplet IDs
+            ObjectNode updateBody = objectMapper.createObjectNode();
+            ObjectNode lbUpdate = objectMapper.createObjectNode();
+            
+            // Copy existing configuration
+            lbUpdate.put("name", loadBalancer.path("name").asText());
+            lbUpdate.put("algorithm", loadBalancer.path("algorithm").asText());
+            lbUpdate.put("region", loadBalancer.path("region").asText());
+            
+            // Update droplet IDs
+            ArrayNode dropletIdsArray = objectMapper.createArrayNode();
+            for (String dropletId : allDropletIds) {
+                dropletIdsArray.add(dropletId);
+            }
+            lbUpdate.set("droplet_ids", dropletIdsArray);
+            
+            updateBody.set("load_balancer", lbUpdate);
+
+            String updateUrl = "https://api.digitalocean.com/v2/load_balancers/" + loadbalancerId;
+            HttpRequest updateReq = HttpRequest.newBuilder(URI.create(updateUrl))
+                    .header("Authorization", "Bearer " + doToken)
+                    .header("Content-Type", "application/json")
+                    .PUT(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(updateBody)))
+                    .build();
+
+            HttpResponse<String> updateResponse = httpClient.send(updateReq, HttpResponse.BodyHandlers.ofString());
+            
+            if (updateResponse.statusCode() == 200) {
+                logger.info("Successfully added Kubernetes nodes to load balancer: {}", updateResponse.body());
+                return true;
+            } else {
+                logger.error("Failed to update load balancer. Status: {}, Body: {}", 
+                           updateResponse.statusCode(), updateResponse.body());
+                return false;
+            }
+
+        } catch (Exception e) {
+            logger.error("Error adding Kubernetes nodes to load balancer", e);
+            return false;
+        }
+    }
+
+    /**
+     * Gets the droplet IDs of Kubernetes nodes
+     * 
+     * @return List of droplet IDs
+     */
+    private java.util.List<String> getKubernetesNodeDropletIds() {
+        java.util.List<String> dropletIds = new java.util.ArrayList<>();
+        
+        try {
+            if (kubernetesService != null && kubernetesService.isConfigured()) {
+                // Get Kubernetes node names
+                ProcessBuilder pb = new ProcessBuilder("kubectl", "get", "nodes", 
+                                                     "-o", "jsonpath={.items[*].metadata.name}");
+                Process process = pb.start();
+                
+                java.io.BufferedReader reader = new java.io.BufferedReader(
+                    new java.io.InputStreamReader(process.getInputStream()));
+                String nodeNames = reader.readLine();
+                reader.close();
+                
+                int exitCode = process.waitFor();
+                if (exitCode == 0 && nodeNames != null && !nodeNames.trim().isEmpty()) {
+                    String[] nodes = nodeNames.trim().split("\\s+");
+                    logger.info("Found Kubernetes nodes: {}", java.util.Arrays.toString(nodes));
+                    
+                    // For each node, get its droplet ID from DigitalOcean
+                    for (String nodeName : nodes) {
+                        String dropletId = getDropletIdFromNodeName(nodeName);
+                        if (dropletId != null) {
+                            dropletIds.add(dropletId);
+                        }
+                    }
+                }
+            } else {
+                logger.warn("Kubernetes service not configured, cannot get node droplet IDs");
+            }
+        } catch (Exception e) {
+            logger.error("Error getting Kubernetes node droplet IDs", e);
+        }
+        
+        return dropletIds;
+    }
+
+    /**
+     * Gets the droplet ID for a Kubernetes node by matching node name with droplet name
+     * 
+     * @param nodeName The Kubernetes node name
+     * @return The droplet ID, or null if not found
+     */
+    private String getDropletIdFromNodeName(String nodeName) {
+        try {
+            // Get all droplets from DigitalOcean
+            String dropletsUrl = "https://api.digitalocean.com/v2/droplets";
+            HttpRequest dropletsReq = HttpRequest.newBuilder(URI.create(dropletsUrl))
+                    .header("Authorization", "Bearer " + doToken)
+                    .GET()
+                    .build();
+
+            HttpResponse<String> dropletsResponse = httpClient.send(dropletsReq, HttpResponse.BodyHandlers.ofString());
+            
+            if (dropletsResponse.statusCode() == 200) {
+                JsonNode dropletsData = objectMapper.readTree(dropletsResponse.body());
+                JsonNode droplets = dropletsData.path("droplets");
+                
+                // Look for droplet with name matching the node name
+                for (JsonNode droplet : droplets) {
+                    String dropletName = droplet.path("name").asText();
+                    if (dropletName.equals(nodeName)) {
+                        String dropletId = droplet.path("id").asText();
+                        logger.info("Found droplet ID {} for node {}", dropletId, nodeName);
+                        return dropletId;
+                    }
+                }
+                
+                logger.warn("No droplet found for node name: {}", nodeName);
+            } else {
+                logger.error("Failed to get droplets. Status: {}, Body: {}", 
+                           dropletsResponse.statusCode(), dropletsResponse.body());
+            }
+        } catch (Exception e) {
+            logger.error("Error getting droplet ID for node: {}", nodeName, e);
+        }
+        
+        return null;
+    }
+
+    /**
      * Comprehensive tenant deployment method that creates DNS record, SSL certificate, PostgreSQL schema, and Kubernetes resources
      * 
      * @param tenantName The tenant name to deploy
@@ -855,9 +1204,18 @@ public class DigitalOceanService {
     public boolean deployTenantInfrastructure(String tenantName) {
         logger.info("Starting comprehensive tenant deployment for: {}", tenantName);
         
+        // Clean up any duplicate DNS records first
+        boolean cleanupSuccess = cleanupDuplicateDnsRecords(tenantName);
+        if (!cleanupSuccess) {
+            logger.warn("Failed to cleanup duplicate DNS records for tenant: {}", tenantName);
+        }
+        
         boolean dnsSuccess = createOrUpdateDnsRecord(tenantName);
         boolean certSuccess = createLetsEncryptCertificate(tenantName);
         boolean schemaSuccess = createPostgreSQLSchema(tenantName);
+        
+        // Add Kubernetes nodes to load balancer if this is the first deployment
+        boolean lbUpdated = addKubernetesNodesToLoadBalancer();
         
         // Wait for certificate to become active if it was created
         boolean certActive = true;
