@@ -442,6 +442,9 @@ pipeline {
                     writeFile file: 'Dockerfile', text: """
 FROM openjdk:17-jdk-slim
 
+# Install curl for debugging and health checks
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
 # Set working directory
 WORKDIR /app
 
@@ -595,7 +598,7 @@ metadata:
     service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol: "true"
     service.beta.kubernetes.io/do-loadbalancer-healthcheck-protocol: "http"
     service.beta.kubernetes.io/do-loadbalancer-healthcheck-port: "8080"
-    service.beta.kubernetes.io/do-loadbalancer-healthcheck-path: "/actuator/health"
+    service.beta.kubernetes.io/do-loadbalancer-healthcheck-path: "/login"
     service.beta.kubernetes.io/do-loadbalancer-healthcheck-check-interval-seconds: "10"
     service.beta.kubernetes.io/do-loadbalancer-healthcheck-response-timeout-seconds: "5"
     service.beta.kubernetes.io/do-loadbalancer-healthcheck-healthy-threshold: "3"
@@ -771,8 +774,11 @@ spec:
                                     echo "=== Checking application health ==="
                                     POD_NAME=\$(kubectl get pods -n tenant-${params.TENANT_NAME} -l app=inventory -o jsonpath='{.items[0].metadata.name}')
                                     if [ -n "\$POD_NAME" ]; then
-                                        echo "Testing application health endpoint..."
-                                        kubectl exec -n tenant-${params.TENANT_NAME} \$POD_NAME -- curl -f http://localhost:8080/actuator/health || echo "Health check failed - app may still be starting"
+                                        echo "Testing /login endpoint (LoadBalancer health check path)..."
+                                        kubectl exec -n tenant-${params.TENANT_NAME} \$POD_NAME -- curl -f http://localhost:8080/login || echo "Login endpoint check failed - app may still be starting"
+                                        
+                                        echo "Testing /actuator/health endpoint..."
+                                        kubectl exec -n tenant-${params.TENANT_NAME} \$POD_NAME -- curl -f http://localhost:8080/actuator/health || echo "Actuator health check failed - may require authentication"
                                     fi
                                     
                                     # Check LoadBalancer health status
@@ -780,10 +786,11 @@ spec:
                                     echo "LoadBalancer health check configuration:"
                                     echo "  Protocol: HTTP"
                                     echo "  Port: 8080"
-                                    echo "  Path: /actuator/health"
+                                    echo "  Path: /login (Spring Security bypass)"
                                     echo "  Check interval: 10 seconds"
                                     echo "  Response timeout: 5 seconds"
                                     echo ""
+                                    echo "Note: Using /login endpoint to bypass Spring Security authentication"
                                     echo "Note: It may take 1-2 minutes for the node to show as 'Up' after health checks pass"
                                 else
                                     echo "Warning: Load Balancer ID not found in service annotations"
