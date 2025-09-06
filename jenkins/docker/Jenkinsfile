@@ -577,17 +577,15 @@ metadata:
   labels:
     app: inventory
     tenant: ${params.TENANT_NAME}
-  annotations:
-    kubernetes.digitalocean.com/load-balancer-id: "${DO_LOADBALANCER_ID}"
 spec:
   selector:
     app: inventory
     tenant: ${params.TENANT_NAME}
   ports:
-  - port: 8080
+  - port: 80
     targetPort: 8080
     protocol: TCP
-  type: LoadBalancer
+  type: ClusterIP
 """
                     
                     // Write deployment manifest to file

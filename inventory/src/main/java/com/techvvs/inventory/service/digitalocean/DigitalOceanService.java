@@ -75,6 +75,46 @@ public class DigitalOceanService {
             .build();
 
     /**
+     * Gets the external IP of the existing sandbox-loadbalancer Kubernetes service
+     * 
+     * @return The external IP of the sandbox-loadbalancer, or null if not found
+     */
+    private String getSandboxLoadBalancerIp() {
+        try {
+            if (kubernetesService != null && kubernetesService.isConfigured()) {
+                // Use kubectl to get the external IP of the sandbox-loadbalancer service
+                // This assumes the service is in the default namespace
+                String command = "kubectl get service sandbox-loadbalancer -o jsonpath='{.status.loadBalancer.ingress[0].ip}'";
+                ProcessBuilder pb = new ProcessBuilder("kubectl", "get", "service", "sandbox-loadbalancer", 
+                                                     "-o", "jsonpath={.status.loadBalancer.ingress[0].ip}");
+                Process process = pb.start();
+                
+                // Read the output
+                java.io.BufferedReader reader = new java.io.BufferedReader(
+                    new java.io.InputStreamReader(process.getInputStream()));
+                String ip = reader.readLine();
+                reader.close();
+                
+                int exitCode = process.waitFor();
+                if (exitCode == 0 && ip != null && !ip.trim().isEmpty()) {
+                    logger.info("Found sandbox-loadbalancer IP: {}", ip);
+                    return ip.trim();
+                } else {
+                    logger.warn("Could not get sandbox-loadbalancer IP. Exit code: {}", exitCode);
+                }
+            } else {
+                logger.warn("Kubernetes service not configured, cannot get sandbox-loadbalancer IP");
+            }
+        } catch (Exception e) {
+            logger.error("Error getting sandbox-loadbalancer IP", e);
+        }
+        
+        // Fallback to the configured loadbalancerip
+        logger.info("Using fallback loadbalancerip: {}", loadbalancerip);
+        return loadbalancerip;
+    }
+
+    /**
      * Creates or updates a DNS A record for a tenant subdomain
      * The target URL is constructed as https://{tenantName}.{domain}
      * 
@@ -88,8 +128,10 @@ public class DigitalOceanService {
                 return false;
             }
 
-            if (loadbalancerip == null || loadbalancerip.trim().isEmpty()) {
-                logger.error("DigitalOcean load balancer IP is not configured");
+            // Get the IP of the existing sandbox-loadbalancer
+            String targetIp = getSandboxLoadBalancerIp();
+            if (targetIp == null || targetIp.trim().isEmpty()) {
+                logger.error("Could not determine target IP for DNS A record");
                 return false;
             }
 
@@ -97,7 +139,7 @@ public class DigitalOceanService {
             String fqdn = subdomain + "." + domain;
             String targetUrl = "https://" + fqdn;
 
-            logger.info("Creating/updating DNS A record for subdomain: {} -> {} (IP: {})", fqdn, targetUrl, loadbalancerip);
+            logger.info("Creating/updating DNS A record for subdomain: {} -> {} (IP: {})", fqdn, targetUrl, targetIp);
 
             // 1) Lookup existing A record
             String existingRecordId = findExistingDnsRecord(subdomain);
@@ -106,7 +148,7 @@ public class DigitalOceanService {
             ObjectNode body = objectMapper.createObjectNode();
             body.put("type", "A");       // record type (A, AAAA, CNAME, etc.)
             body.put("name", subdomain); // the "host" part of the FQDN
-            body.put("data", loadbalancerip);  // the value (must be IPv4 for A)
+            body.put("data", targetIp);  // the value (must be IPv4 for A) - now points to sandbox-loadbalancer
             body.put("ttl", ttl);        // time to live
 
 //            How DigitalOcean builds the hostname
