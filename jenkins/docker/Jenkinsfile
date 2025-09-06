@@ -403,9 +403,10 @@ EOF
                                  fi
                              """
 
-                             sh "echo "=== SCHEMA CONFIGURATION VERIFICATION ==="
+                             sh """
+                                    echo "=== SCHEMA CONFIGURATION VERIFICATION ==="
                                  grep "default_schema" src/main/resources/application.properties || echo "ERROR: default_schema not found!"
-"
+"""
                         }
                     }
                 }
