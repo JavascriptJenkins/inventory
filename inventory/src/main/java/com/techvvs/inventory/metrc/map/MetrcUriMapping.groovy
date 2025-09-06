@@ -1,6 +1,7 @@
 package com.techvvs.inventory.metrc.map
 
 import com.techvvs.inventory.service.metrc.constants.MetrcCallEnum
+import com.techvvs.inventory.service.metrc.MetrcConfigurationService
 import com.techvvs.inventory.model.nonpersist.RequestMetaData
 import com.techvvs.inventory.service.metrc.model.dto.MetrcFacilityDto
 import org.springframework.beans.factory.annotation.Autowired
@@ -14,13 +15,16 @@ class MetrcUriMapping {
 
     @Autowired
     Environment env
+    
+    @Autowired
+    MetrcConfigurationService metrcConfigurationService
 
     final Map<MetrcCallEnum, RequestMetaData> uriMap = new EnumMap<>(MetrcCallEnum)
 
     @PostConstruct
     void init() {
-        boolean isDev1 = "dev1".equals(env.getProperty("spring.profiles.active"))
-
+        // Get base URI from database configuration instead of hardcoded values
+        String baseUri = metrcConfigurationService.getMetrcBaseUri()
 
         /* START GET CALLS */
 /* START GET CALLS */
@@ -29,9 +33,7 @@ class MetrcUriMapping {
                 new RequestMetaData(
                         uri: "/facilities/v2/",
                         httpMethod: "GET",
-                        baseUri: isDev1
-                                ? "https://sandbox-api-mn.metrc.com"
-                                : "https://api-mn.metrc.com",
+                        baseUri: baseUri,
                         responseObjectType: MetrcFacilityDto[].class
                 )
         )
@@ -41,9 +43,7 @@ class MetrcUriMapping {
                 new RequestMetaData(
                         uri: "/employees/v2/",
                         httpMethod: "GET",
-                        baseUri: isDev1
-                                ? "https://sandbox-api-mn.metrc.com"
-                                : "https://api-mn.metrc.com",
+                        baseUri: baseUri,
                         responseObjectType: MetrcFacilityDto[].class
                 )
         )

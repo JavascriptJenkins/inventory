@@ -1,6 +1,6 @@
 package com.techvvs.inventory.service.metrc.config;
 
-import org.springframework.beans.factory.annotation.Value;
+import com.techvvs.inventory.service.metrc.MetrcConfigurationService;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,13 +11,12 @@ public class MetrcConfig {
 
     @Bean
     public RestTemplate restTemplate(RestTemplateBuilder builder,
-                                     @Value("${metrc.api-key-username}") String apiKeyUsername,
-             @Value("${metrc.api-key-password}") String apiKeyPassword) {
+                                     MetrcConfigurationService metrcConfigurationService) {
         return builder
-                .basicAuthentication(apiKeyUsername, apiKeyPassword)
+                .basicAuthentication(
+                    metrcConfigurationService.getApiKeyUsername(),
+                    metrcConfigurationService.getApiKeyPassword()
+                )
                 .build();
     }
-
-
-
 }
