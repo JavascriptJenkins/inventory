@@ -42,8 +42,7 @@ public class DigitalOceanService {
     @Value("${digitalocean.dns.ttl:3600}")
     private int ttl;
 
-    @Value("${digitalocean.target.loadbalancer:}")
-    private String loadbalancerip;
+    // Load balancer IP is now determined dynamically via DigitalOcean API
 
     // PostgreSQL configuration properties
     @Value("${digitalocean.postgresql.username:}")
@@ -58,11 +57,7 @@ public class DigitalOceanService {
     @Value("${digitalocean.certificate.wait.minutes:10}")
     private int certificateWaitMinutes;
 
-    @Value("${digitalocean.loadbalancer.id:}")
-    private String loadbalancerId;
-
-    @Value("${digitalocean.loadbalancer.name.pattern:sandbox}")
-    private String loadbalancerNamePattern;
+    // Load balancer configuration is now handled dynamically via DigitalOcean API
 
     private final KubernetesService kubernetesService;
 
@@ -163,28 +158,80 @@ public class DigitalOceanService {
     }
 
     /**
-     * Gets the external IP of the existing sandbox-loadbalancer Kubernetes service
+     * Gets the external IP of the Kubernetes LoadBalancer service for a tenant
+     * Waits up to 5 minutes for the LoadBalancer to be ready
      * 
-     * @return The external IP of the sandbox-loadbalancer, or null if not found
+     * @param tenantName The tenant name to get the load balancer IP for
+     * @return The external IP of the LoadBalancer service, or null if not found
      */
-    private String getSandboxLoadBalancerIp() {
+    private String getSandboxLoadBalancerIp(String tenantName) {
         try {
-            // First, try to get the IP from the managed load balancer
-            String managedLoadBalancerId = getManagedLoadBalancerId();
-            if (managedLoadBalancerId != null) {
-                String lbIp = getLoadBalancerIp(managedLoadBalancerId);
-                if (lbIp != null) {
-                    logger.info("Found managed load balancer IP: {}", lbIp);
-                    return lbIp;
+            // Try to get the IP from the Kubernetes LoadBalancer service
+            String k8sNamespace = "tenant-" + tenantName.toLowerCase().replaceAll("[^a-z0-9-]", "-");
+            String serviceName = "inventory-" + tenantName + "-service";
+            
+            logger.info("Getting LoadBalancer IP for service: {} in namespace: {}", serviceName, k8sNamespace);
+            
+            // Wait for LoadBalancer to get external IP (up to 5 minutes)
+            for (int attempt = 1; attempt <= 30; attempt++) {
+                String externalIp = getLoadBalancerIPFromKubernetes(serviceName, k8sNamespace);
+                
+                if (externalIp != null && !externalIp.equals("null") && !externalIp.trim().isEmpty()) {
+                    logger.info("Found Kubernetes LoadBalancer IP: {} (attempt {}/30)", externalIp, attempt);
+                    return externalIp.trim();
+                }
+                
+                logger.info("Waiting for LoadBalancer external IP... attempt {}/30", attempt);
+                
+                if (attempt < 30) {
+                    Thread.sleep(10000); // Wait 10 seconds between attempts
                 }
             }
+            
+            logger.warn("Kubernetes LoadBalancer service did not get external IP within 5 minutes");
+            return null;
+            
         } catch (Exception e) {
-            logger.debug("Could not get managed load balancer IP: {}", e.getMessage());
+            logger.error("Error getting Kubernetes LoadBalancer IP for tenant: {}", tenantName, e);
+            return null;
         }
-        
-        // Fallback to the configured loadbalancerip
-        logger.info("Using fallback loadbalancerip: {}", loadbalancerip);
-        return loadbalancerip;
+    }
+    
+    /**
+     * Helper method to get LoadBalancer IP from Kubernetes service
+     * 
+     * @param serviceName The Kubernetes service name
+     * @param namespace The Kubernetes namespace
+     * @return The external IP or null if not ready
+     */
+    private String getLoadBalancerIPFromKubernetes(String serviceName, String namespace) {
+        try {
+            // Use kubectl to get the service external IP
+            ProcessBuilder pb = new ProcessBuilder("kubectl", "get", "service", serviceName, 
+                "--kubeconfig=src/main/resources/static/kubernetes/tulip-sandbox-kubeconfig.yaml",
+                "-n", namespace, "-o", "jsonpath={.status.loadBalancer.ingress[0].ip}");
+            
+            Process process = pb.start();
+            java.io.BufferedReader reader = new java.io.BufferedReader(
+                new java.io.InputStreamReader(process.getInputStream()));
+            
+            String externalIp = reader.readLine();
+            reader.close();
+            
+            int exitCode = process.waitFor();
+            logger.debug("kubectl get service exit code: {}", exitCode);
+            logger.debug("kubectl get service output: '{}'", externalIp);
+            
+            if (exitCode == 0 && externalIp != null && !externalIp.trim().isEmpty() && !"null".equals(externalIp)) {
+                return externalIp.trim();
+            }
+            
+            return null;
+            
+        } catch (Exception e) {
+            logger.debug("Error getting LoadBalancer IP from Kubernetes: {}", e.getMessage());
+            return null;
+        }
     }
 
     /**
@@ -193,15 +240,7 @@ public class DigitalOceanService {
      * @return The load balancer ID if found, null otherwise
      */
     private String getManagedLoadBalancerId() {
-        // First, check if we have a configured load balancer ID/name
-        if (loadbalancerId != null && !loadbalancerId.trim().isEmpty()) {
-            String actualId = getActualLoadBalancerId(loadbalancerId);
-            if (actualId != null) {
-                return actualId;
-            }
-        }
-        
-        // If no configured load balancer found, check for existing load balancers
+        // Check for existing load balancers first
         return findExistingLoadBalancer();
     }
 
@@ -255,10 +294,10 @@ public class DigitalOceanService {
                 return false;
             }
 
-            // Get the IP of the existing sandbox-loadbalancer
-            String targetIp = getSandboxLoadBalancerIp();
+            // Get the IP of the Kubernetes LoadBalancer service
+            String targetIp = getSandboxLoadBalancerIp(tenantName);
             if (targetIp == null || targetIp.trim().isEmpty()) {
-                logger.error("Could not determine target IP for DNS A record");
+                logger.error("Could not determine target IP for DNS A record - LoadBalancer may not be ready yet");
                 return false;
             }
 
@@ -856,96 +895,16 @@ public class DigitalOceanService {
         }
     }
 
-    /**
-     * Finds a load balancer by name pattern
-     * 
-     * @return Load balancer ID or null if not found
-     */
-    private String findLoadBalancerByName() {
-        try {
-            if (doToken == null || doToken.trim().isEmpty()) {
-                logger.error("DigitalOcean API token is not configured");
-                return null;
-            }
-
-            logger.info("Searching for load balancer with name pattern: {}", loadbalancerNamePattern);
-
-            String listUrl = "https://api.digitalocean.com/v2/load_balancers?per_page=200";
-            
-            HttpRequest listReq = HttpRequest.newBuilder(URI.create(listUrl))
-                    .header("Authorization", "Bearer " + doToken)
-                    .GET()
-                    .build();
-
-            HttpResponse<String> response = httpClient.send(listReq, HttpResponse.BodyHandlers.ofString());
-            
-            if (response.statusCode() != 200) {
-                logger.error("Failed to list load balancers. Status: {}, Body: {}", 
-                           response.statusCode(), response.body());
-                return null;
-            }
-
-            JsonNode list = objectMapper.readTree(response.body());
-            JsonNode loadBalancers = list.path("load_balancers");
-            
-            if (loadBalancers.isArray()) {
-                logger.info("Found {} load balancers in DigitalOcean account", loadBalancers.size());
-                
-                for (JsonNode lb : loadBalancers) {
-                    String name = lb.path("name").asText();
-                    String id = lb.path("id").asText();
-                    String ip = lb.path("ip").asText();
-                    String status = lb.path("status").asText();
-                    
-                    logger.info("Load balancer: {} (ID: {}, IP: {}, Status: {})", name, id, ip, status);
-                    
-                    if (name != null && name.toLowerCase().contains(loadbalancerNamePattern.toLowerCase())) {
-                        logger.info("Found matching load balancer: {} (ID: {})", name, id);
-                        return id;
-                    }
-                }
-            }
-
-            logger.warn("No load balancer found with name pattern: {}", loadbalancerNamePattern);
-            
-            // Fallback: try to find load balancer by IP address
-            if (loadbalancerip != null && !loadbalancerip.trim().isEmpty()) {
-                logger.info("Trying to find load balancer by IP address: {}", loadbalancerip);
-                for (JsonNode lb : loadBalancers) {
-                    String ip = lb.path("ip").asText();
-                    if (loadbalancerip.equals(ip)) {
-                        String name = lb.path("name").asText();
-                        String id = lb.path("id").asText();
-                        logger.info("Found load balancer by IP: {} (ID: {}, Name: {})", ip, id, name);
-                        return id;
-                    }
-                }
-                logger.warn("No load balancer found with IP address: {}", loadbalancerip);
-            }
-            
-            return null;
-
-        } catch (Exception e) {
-            logger.error("Error finding load balancer by name pattern: {}", loadbalancerNamePattern, e);
-            return null;
-        }
-    }
 
     /**
-     * Gets the load balancer ID, either from configuration or by finding it by name
+     * Gets the load balancer ID by finding existing load balancers
      * 
      * @return Load balancer ID or null if not found
      */
     private String getLoadBalancerId() {
-        // First try configured ID
-        if (loadbalancerId != null && !loadbalancerId.trim().isEmpty()) {
-            logger.info("Using configured load balancer ID: {}", loadbalancerId);
-            return loadbalancerId;
-        }
-        
-        // If no configured ID, find by name pattern
-        logger.info("No load balancer ID configured, searching by name pattern...");
-        return findLoadBalancerByName();
+        // Find existing load balancers
+        logger.info("Searching for existing load balancers...");
+        return findExistingLoadBalancer();
     }
 
     /**
@@ -964,7 +923,7 @@ public class DigitalOceanService {
             // Get load balancer ID (either configured or found by name)
             String lbId = getLoadBalancerId();
             if (lbId == null) {
-                logger.error("Could not find load balancer ID (configured or by name pattern: {})", loadbalancerNamePattern);
+                logger.error("Could not find load balancer ID");
                 return false;
             }
 
@@ -1239,133 +1198,70 @@ public class DigitalOceanService {
         }
     }
 
+
     /**
-     * Creates a new load balancer for tenant deployment
+     * Gets the region from existing droplets
      * 
-     * @return The new load balancer ID if successful, null otherwise
+     * @param dropletIds List of droplet IDs
+     * @return The region if found, null otherwise
      */
-    private String createNewLoadBalancer() {
+    private String getRegionFromDroplets(java.util.List<String> dropletIds) {
         try {
-            logger.info("Creating new load balancer...");
-            
-            // Get Kubernetes node droplet IDs first
-            java.util.List<String> kubernetesNodeIds = getKubernetesNodeDropletIds();
-            if (kubernetesNodeIds.isEmpty()) {
-                logger.warn("No Kubernetes node droplet IDs found, creating load balancer without backend droplets");
-            }
-
-            // Create load balancer configuration
-            ObjectNode createBody = objectMapper.createObjectNode();
-            ObjectNode lbConfig = objectMapper.createObjectNode();
-            
-            lbConfig.put("name", "tenant-loadbalancer-" + System.currentTimeMillis());
-            lbConfig.put("algorithm", "round_robin");
-            lbConfig.put("region", "nyc1"); // Default region, could be made configurable
-            
-            // Add forwarding rules
-            ArrayNode forwardingRules = objectMapper.createArrayNode();
-            ObjectNode httpRule = objectMapper.createObjectNode();
-            httpRule.put("entry_protocol", "http");
-            httpRule.put("entry_port", 80);
-            httpRule.put("target_protocol", "http");
-            httpRule.put("target_port", 80);
-            httpRule.put("tls_passthrough", false);
-            forwardingRules.add(httpRule);
-            
-            ObjectNode httpsRule = objectMapper.createObjectNode();
-            httpsRule.put("entry_protocol", "https");
-            httpsRule.put("entry_port", 443);
-            httpsRule.put("target_protocol", "http");
-            httpsRule.put("target_port", 80);
-            httpsRule.put("tls_passthrough", false);
-            forwardingRules.add(httpsRule);
-            
-            lbConfig.set("forwarding_rules", forwardingRules);
-            
-            // Add droplet IDs if available
-            if (!kubernetesNodeIds.isEmpty()) {
-                ArrayNode dropletIdsArray = objectMapper.createArrayNode();
-                for (String dropletId : kubernetesNodeIds) {
-                    dropletIdsArray.add(dropletId);
-                }
-                lbConfig.set("droplet_ids", dropletIdsArray);
-            }
-            
-            createBody.set("load_balancer", lbConfig);
-
-            String createUrl = "https://api.digitalocean.com/v2/load_balancers";
-            HttpRequest createReq = HttpRequest.newBuilder(URI.create(createUrl))
-                    .header("Authorization", "Bearer " + doToken)
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(createBody)))
-                    .build();
-
-            HttpResponse<String> response = httpClient.send(createReq, HttpResponse.BodyHandlers.ofString());
-            
-            if (response.statusCode() == 201) {
-                JsonNode responseData = objectMapper.readTree(response.body());
-                String newLoadBalancerId = responseData.path("load_balancer").path("id").asText();
-                String newLoadBalancerName = responseData.path("load_balancer").path("name").asText();
-                
-                logger.info("Successfully created load balancer: name='{}', id='{}'", newLoadBalancerName, newLoadBalancerId);
-                return newLoadBalancerId;
-            } else {
-                logger.error("Failed to create load balancer. Status: {}, Body: {}", 
-                           response.statusCode(), response.body());
+            if (dropletIds.isEmpty()) {
                 return null;
             }
+            
+            // Get the first droplet to determine the region
+            String firstDropletId = dropletIds.get(0);
+            String dropletUrl = "https://api.digitalocean.com/v2/droplets/" + firstDropletId;
+            HttpRequest dropletReq = HttpRequest.newBuilder(URI.create(dropletUrl))
+                    .header("Authorization", "Bearer " + doToken)
+                    .GET()
+                    .build();
 
+            HttpResponse<String> response = httpClient.send(dropletReq, HttpResponse.BodyHandlers.ofString());
+            
+            if (response.statusCode() == 200) {
+                JsonNode droplet = objectMapper.readTree(response.body()).path("droplet");
+                String region = droplet.path("region").path("slug").asText();
+                if (!region.isEmpty()) {
+                    logger.info("Found region from droplet {}: {}", firstDropletId, region);
+                    return region;
+                }
+            }
         } catch (Exception e) {
-            logger.error("Error creating new load balancer", e);
-            return null;
+            logger.error("Error getting region from droplets", e);
         }
+        
+        return null;
     }
 
+
     /**
-     * Manages load balancer for tenant deployment - either uses existing or creates new one
+     * Manages load balancer for tenant deployment - finds existing load balancer for Jenkins
+     * Note: Load balancer creation is now handled by Kubernetes Service (type=LoadBalancer)
      * 
+     * @param tenantName The tenant name for certificate configuration
      * @return true if successful, false otherwise
      */
-    private boolean manageLoadBalancerForTenant() {
+    private boolean manageLoadBalancerForTenant(String tenantName) {
         try {
             if (doToken == null || doToken.trim().isEmpty()) {
                 logger.error("DigitalOcean API token is not configured");
                 return false;
             }
 
-            logger.info("Managing load balancer for tenant deployment...");
+            logger.info("Finding existing load balancer for tenant deployment...");
 
-            // First, check if we have a configured load balancer ID/name
-            String actualLoadBalancerId = null;
-            if (loadbalancerId != null && !loadbalancerId.trim().isEmpty()) {
-                // Try to find the configured load balancer
-                actualLoadBalancerId = getActualLoadBalancerId(loadbalancerId);
-                if (actualLoadBalancerId != null) {
-                    logger.info("Found configured load balancer: {} (ID: {})", loadbalancerId, actualLoadBalancerId);
-                }
+            // Check for existing load balancers
+            String actualLoadBalancerId = findExistingLoadBalancer();
+            if (actualLoadBalancerId != null) {
+                logger.info("Found existing load balancer: {} - Kubernetes will manage load balancer creation", actualLoadBalancerId);
+                return true;
+            } else {
+                logger.info("No existing load balancer found - Kubernetes will create new load balancer via Service (type=LoadBalancer)");
+                return true; // This is fine - Kubernetes will create the LB
             }
-
-            // If no configured load balancer found, check for existing load balancers
-            if (actualLoadBalancerId == null) {
-                actualLoadBalancerId = findExistingLoadBalancer();
-                if (actualLoadBalancerId != null) {
-                    logger.info("Found existing load balancer: {}", actualLoadBalancerId);
-                }
-            }
-
-            // If still no load balancer found, create a new one
-            if (actualLoadBalancerId == null) {
-                logger.info("No existing load balancer found, creating new one...");
-                actualLoadBalancerId = createNewLoadBalancer();
-                if (actualLoadBalancerId == null) {
-                    logger.error("Failed to create new load balancer");
-                    return false;
-                }
-                logger.info("Created new load balancer: {}", actualLoadBalancerId);
-            }
-
-            // Now add Kubernetes nodes to the load balancer
-            return addKubernetesNodesToLoadBalancer(actualLoadBalancerId);
 
         } catch (Exception e) {
             logger.error("Error managing load balancer for tenant", e);
@@ -1631,18 +1527,10 @@ public class DigitalOceanService {
             logger.error("Error during DNS cleanup for tenant: {}", tenantName, e);
         }
         
-        // Create or update DNS record
-        boolean dnsSuccess = false;
-        try {
-            dnsSuccess = createOrUpdateDnsRecord(tenantName);
-            if (!dnsSuccess) {
-                logger.error("Failed to create/update DNS record for tenant: {}", tenantName);
-                overallSuccess = false;
-            }
-        } catch (Exception e) {
-            logger.error("Error creating/updating DNS record for tenant: {}", tenantName, e);
-            overallSuccess = false;
-        }
+        // DNS record creation will be handled after Kubernetes deployment
+        // Skip DNS creation here since LoadBalancer service doesn't exist yet
+        boolean dnsSuccess = true; // Will be handled later by Jenkins
+        logger.info("DNS record creation will be handled after Kubernetes LoadBalancer service is deployed");
         
         // Create SSL certificate
         boolean certSuccess = false;
@@ -1673,7 +1561,7 @@ public class DigitalOceanService {
         // Manage load balancer for tenant deployment (use existing or create new)
         boolean lbUpdated = false;
         try {
-            lbUpdated = manageLoadBalancerForTenant();
+            lbUpdated = manageLoadBalancerForTenant(tenantName);
             if (!lbUpdated) {
                 logger.warn("Failed to manage load balancer for tenant: {}", tenantName);
             }
@@ -1795,11 +1683,27 @@ public class DigitalOceanService {
 
     /**
      * Gets the configured load balancer ID
+     * Note: Load balancer creation is now handled by Kubernetes Service (type=LoadBalancer)
      * 
-     * @return the load balancer ID
+     * @return null since load balancer is managed by Kubernetes
      */
     public String getLoadbalancerId() {
-        return loadbalancerId;
+        // Load balancer is now managed by Kubernetes Service (type=LoadBalancer)
+        // Return null to indicate that Jenkins should handle load balancer creation
+        logger.info("Load balancer creation is handled by Kubernetes Service (type=LoadBalancer)");
+        return null;
+    }
+    
+    /**
+     * Creates DNS record after Kubernetes LoadBalancer service is deployed
+     * This method should be called after the Jenkins pipeline has deployed the Kubernetes service
+     * 
+     * @param tenantName The tenant name to create DNS record for
+     * @return true if successful, false otherwise
+     */
+    public boolean createDnsRecordAfterKubernetesDeployment(String tenantName) {
+        logger.info("Creating DNS record after Kubernetes LoadBalancer deployment for tenant: {}", tenantName);
+        return createOrUpdateDnsRecord(tenantName);
     }
     
     /**
