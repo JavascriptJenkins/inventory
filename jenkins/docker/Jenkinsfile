@@ -710,7 +710,7 @@ spec:
                                         "type": "A",
                                         "name": "${params.TENANT_NAME}",
                                         "data": "${params.EXTERNAL_LB_IP}",
-                                        "ttl": 3600
+                                        "ttl": 60
                                     }'
                                 
                                 echo "DNS record creation completed"
