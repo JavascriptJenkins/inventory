@@ -32,6 +32,7 @@ pipeline {
         string(name: 'DB_JPA_DATABASE_PLATFORM', defaultValue: 'org.hibernate.dialect.PostgreSQLDialect', description: 'JPA database platform')
         string(name: 'DB_JPA_HIBERNATE_DIALECT', defaultValue: 'org.hibernate.dialect.PostgreSQLDialect', description: 'Hibernate dialect')
         string(name: 'DB_USERNAME', defaultValue: 'postgres', description: 'Database username')
+        string(name: 'SANDBOX_POSTGRESQL_URI', defaultValue: '', description: 'Database uri')
         string(name: 'SPRING_DATABASE_ACTION', defaultValue: 'update', description: 'Database action (update, create-drop)')
         string(name: 'DB_H2_CONSOLE_ENABLED', defaultValue: 'false', description: 'Enable H2 console')
         string(name: 'DB_H2_WEB_ALLOWOTHERS', defaultValue: 'false', description: 'Allow others to access H2 console')
@@ -66,6 +67,81 @@ pipeline {
                     branches: [[name: "*/${params.BRANCH}"]],
                     userRemoteConfigs: [[url: 'https://github.com/javascriptjenkins/inventory.git', credentialsId: 'githubcreds']]
                 ])
+            }
+        }
+
+        stage('Log Build Parameters') {
+            steps {
+                script {
+                    echo "=========================================="
+                    echo "JENKINS BUILD PARAMETERS LOG"
+                    echo "=========================================="
+                    echo ""
+                    
+                    echo "📋 BUILD PARAMETERS:"
+                    echo "  BRANCH: ${params.BRANCH}"
+                    echo "  TENANT_NAME: ${params.TENANT_NAME}"
+                    echo "  APP_NAME: ${params.APP_NAME}"
+                    echo "  SUBSCRIPTION_TIER: ${params.SUBSCRIPTION_TIER}"
+                    echo "  BILLING_EMAIL: ${params.BILLING_EMAIL}"
+                    echo "  K8S_NAMESPACE: ${params.K8S_NAMESPACE}"
+                    echo ""
+                    
+                    echo "🌐 DIGITALOCEAN PARAMETERS:"
+                    echo "  DO_LOADBALANCER_ID: ${params.DO_LOADBALANCER_ID}"
+                    echo ""
+                    
+                    echo "🐳 DOCKER PARAMETERS:"
+                    echo "  DOCKER_USER: ${params.DOCKER_USER}"
+                    echo ""
+                    
+                    echo "⚙️ APPLICATION CONFIGURATION:"
+                    echo "  ENVIRONMENT_NAME: ${params.ENVIRONMENT_NAME}"
+                    echo "  LOAD_REF_DATA: ${params.LOAD_REF_DATA}"
+                    echo "  TAX_PERCENTAGE: ${params.TAX_PERCENTAGE}"
+                    echo "  MAX_FILE_SIZE: ${params.MAX_FILE_SIZE}"
+                    echo "  MAX_REQ_SIZE: ${params.MAX_REQ_SIZE}"
+                    echo ""
+                    
+                    echo "🗄️ DATABASE CONFIGURATION:"
+                    echo "  DB_DRIVER_CLASS_NAME: ${params.DB_DRIVER_CLASS_NAME}"
+                    echo "  DB_JPA_DATABASE_PLATFORM: ${params.DB_JPA_DATABASE_PLATFORM}"
+                    echo "  DB_JPA_HIBERNATE_DIALECT: ${params.DB_JPA_HIBERNATE_DIALECT}"
+                    echo "  DB_USERNAME: ${params.DB_USERNAME}"
+                    echo "  SPRING_DATABASE_ACTION: ${params.SPRING_DATABASE_ACTION}"
+                    echo "  DB_H2_CONSOLE_ENABLED: ${params.DB_H2_CONSOLE_ENABLED}"
+                    echo "  DB_H2_WEB_ALLOWOTHERS: ${params.DB_H2_WEB_ALLOWOTHERS}"
+                    echo ""
+                    
+                    echo "💳 PAYPAL CONFIGURATION:"
+                    echo "  PAYPAL_ENVIRONMENT: ${params.PAYPAL_ENVIRONMENT}"
+                    echo "  PAYPAL_BRAND_NAME: ${params.PAYPAL_BRAND_NAME}"
+                    echo ""
+                    
+                    echo "👛 WALLET CONFIGURATION:"
+                    echo "  WALLET_BRAND: ${params.WALLET_BRAND}"
+                    echo "  WALLET_BRAND_PROGRAM: ${params.WALLET_BRAND_PROGRAM}"
+                    echo "  WALLET_GOOGLE_SERVICE_ACC_KEY_PATH: ${params.WALLET_GOOGLE_SERVICE_ACC_KEY_PATH}"
+                    echo "  WALLET_GOOGLE_ISSUER_ID: ${params.WALLET_GOOGLE_ISSUER_ID}"
+                    echo "  WALLET_GOOGLE_CLASS_ID: ${params.WALLET_GOOGLE_CLASS_ID}"
+                    echo ""
+                    
+                    echo "🌿 METRC CONFIGURATION:"
+                    echo "  METRC_MCP_FILE_PATH: ${params.METRC_MCP_FILE_PATH}"
+                    echo ""
+                    
+                    echo "📊 REQUEST LOGGING CONFIGURATION:"
+                    echo "  REQUEST_LOGGING_ENABLED: ${params.REQUEST_LOGGING_ENABLED}"
+                    echo "  REQUEST_LOGGING_HEADERS: ${params.REQUEST_LOGGING_HEADERS}"
+                    echo "  REQUEST_LOGGING_DEVICE_INFO: ${params.REQUEST_LOGGING_DEVICE_INFO}"
+                    echo "  REQUEST_LOGGING_SESSION_INFO: ${params.REQUEST_LOGGING_SESSION_INFO}"
+                    echo "  REQUEST_LOGGING_SECURITY_INFO: ${params.REQUEST_LOGGING_SECURITY_INFO}"
+                    echo ""
+                    
+                    echo "=========================================="
+                    echo "END OF BUILD PARAMETERS LOG"
+                    echo "=========================================="
+                }
             }
         }
 
@@ -105,6 +181,53 @@ pipeline {
                         // Kubernetes config file
                         file(credentialsId: 'KUBECONFIG_PATH', variable: 'KUBECONFIG_FILE')
                     ]) {
+                        // Log credentials being used (without exposing actual values)
+                        echo "=========================================="
+                        echo "CREDENTIALS BEING USED (IDs only for security)"
+                        echo "=========================================="
+                        echo ""
+                        
+                        echo "🔐 API KEYS AND SECRETS:"
+                        echo "  TWILIO_API_USER: [CREDENTIAL ID: TWILIO_API_USER]"
+                        echo "  TWILIO_API_PASSWORD: [CREDENTIAL ID: TWILIO_API_PASSWORD]"
+                        echo "  SENDGRID_API_KEY: [CREDENTIAL ID: SENDGRID_API_KEY]"
+                        echo "  JWT_SECRET_KEY: [CREDENTIAL ID: JWT_SECRET_KEY]"
+                        echo "  METRC_API_KEY_USERNAME: [CREDENTIAL ID: METRC_API_KEY_USERNAME]"
+                        echo "  METRC_API_KEY_PASSWORD: [CREDENTIAL ID: METRC_API_KEY_PASSWORD]"
+                        echo "  PAYPAL_CLIENT_ID: [CREDENTIAL ID: PAYPAL_CLIENT_ID]"
+                        echo "  PAYPAL_CLIENT_SECRET: [CREDENTIAL ID: PAYPAL_CLIENT_SECRET]"
+                        echo "  ANTHROPIC_API_KEY: [CREDENTIAL ID: ANTHROPIC_API_KEY]"
+                        echo ""
+                        
+                        echo "🗄️ DATABASE CREDENTIALS:"
+                        echo "  DB_PASSWORD: [CREDENTIAL ID: DB_PASSWORD]"
+                        echo "  POSTGRE_TEST_DB_PASSWORD: [CREDENTIAL ID: POSTGRE_TEST_DB_PASSWORD]"
+                        echo "  POSTGRE_PROD_DB_PASSWORD: [CREDENTIAL ID: POSTGRE_PROD_DB_PASSWORD]"
+                        echo "  POSTGRE_ALPHA_DB_PASSWORD: [CREDENTIAL ID: POSTGRE_ALPHA_DB_PASSWORD]"
+                        echo "  SANDBOX_POSTGRESQL_PUBLIC_USER: [CREDENTIAL ID: SANDBOX_POSTGRESQL_PUBLIC_USER]"
+                        echo "  SANDBOX_POSTGRESQL_PUBLIC_URI: [CREDENTIAL ID: SANDBOX_POSTGRESQL_PUBLIC_URI]"
+                        echo "  SANDBOX_POSTGRESQL_PASSWORD: [CREDENTIAL ID: SANDBOX_POSTGRESQL_PASSWORD]"
+                        echo ""
+                        
+                        echo "🌐 DIGITALOCEAN CREDENTIALS:"
+                        echo "  DO_API_TOKEN: [CREDENTIAL ID: DO_API_TOKEN]"
+                        echo "  DO_DOMAIN: [CREDENTIAL ID: DO_DOMAIN]"
+                        echo "  DO_LB_IP: [CREDENTIAL ID: DO_LB_IP]"
+                        echo ""
+                        
+                        echo "🔧 JENKINS CREDENTIALS:"
+                        echo "  JENKINS_USERNAME: [CREDENTIAL ID: JENKINS_USERNAME]"
+                        echo "  JENKINS_API_TOKEN: [CREDENTIAL ID: JENKINS_API_TOKEN]"
+                        echo ""
+                        
+                        echo "☸️ KUBERNETES CONFIGURATION:"
+                        echo "  KUBECONFIG_PATH: [CREDENTIAL ID: KUBECONFIG_PATH]"
+                        echo ""
+                        
+                        echo "=========================================="
+                        echo "END OF CREDENTIALS LOG"
+                        echo "=========================================="
+                        
                         dir('inventory') {
                             // Copy kubeconfig to a writable location and update the path in application.properties
                // Create kubeconfig from string content
@@ -140,6 +263,22 @@ EOF
                              // Construct Kubernetes namespace from tenant name (same logic as Java code)
                              def k8sNamespace = params.K8S_NAMESPACE ?: "tenant-${params.TENANT_NAME.toLowerCase().replaceAll('[^a-z0-9-]', '-')}"
                              echo "Using Kubernetes namespace: ${k8sNamespace}"
+                             
+                             // Log all dynamic values being used
+                             echo "=========================================="
+                             echo "DYNAMIC VALUES CALCULATED DURING BUILD"
+                             echo "=========================================="
+                             echo ""
+                             echo "🌐 DYNAMIC DOMAIN CONFIGURATION:"
+                             echo "  BASE_QR_DOMAIN: ${baseQrDomain}"
+                             echo "  METRC_MCP_URI: ${baseQrDomain}/api/mcp"
+                             echo ""
+                             echo "☸️ KUBERNETES CONFIGURATION:"
+                             echo "  K8S_NAMESPACE: ${k8sNamespace}"
+                             echo ""
+                             echo "=========================================="
+                             echo "END OF DYNAMIC VALUES LOG"
+                             echo "=========================================="
                              
                              // Update application.properties with all parameters
                              sh """
@@ -237,6 +376,22 @@ EOF
                 script {
                     def imageName = "${params.DOCKER_USER}/inventory-${params.TENANT_NAME}-${params.APP_NAME}:sandbox".toLowerCase()
                     def jarFile = "inventory/target/inventory-0.0.1-SNAPSHOT.jar"
+                    
+                    // Log Docker build information
+                    echo "=========================================="
+                    echo "DOCKER BUILD INFORMATION"
+                    echo "=========================================="
+                    echo ""
+                    echo "🐳 DOCKER CONFIGURATION:"
+                    echo "  DOCKER_USER: ${params.DOCKER_USER}"
+                    echo "  TENANT_NAME: ${params.TENANT_NAME}"
+                    echo "  APP_NAME: ${params.APP_NAME}"
+                    echo "  IMAGE_NAME: ${imageName}"
+                    echo "  JAR_FILE: ${jarFile}"
+                    echo ""
+                    echo "=========================================="
+                    echo "END OF DOCKER BUILD INFORMATION"
+                    echo "=========================================="
                     
                     // Create Dockerfile with kubeconfig path
                     sh """
