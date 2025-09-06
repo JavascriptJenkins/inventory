@@ -8,6 +8,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.Map;
+
 @Controller
 @RequestMapping("/metrc-config")
 public class MetrcApiConfigController {
@@ -16,82 +18,135 @@ public class MetrcApiConfigController {
     private MetrcApiConfigService metrcApiConfigService;
     
     /**
-     * Display the METRC API configuration admin page
+     * Display the METRC API configuration admin page with both SANDBOX and PROD configurations
      */
     @GetMapping("/admin")
     public String adminPage(Model model) {
-        MetrcApiConfigVO config = metrcApiConfigService.getCurrentConfig();
-        model.addAttribute("metrcConfig", config);
-        model.addAttribute("configExists", metrcApiConfigService.configExists());
-        return "metrcconfig/metrc-config-admin";
+        Map<String, MetrcApiConfigVO> configs = metrcApiConfigService.getAllConfigurations();
+        model.addAttribute("sandboxConfig", configs.get("SANDBOX"));
+        model.addAttribute("prodConfig", configs.get("PROD"));
+        model.addAttribute("availableEnvironments", metrcApiConfigService.getAvailableEnvironments());
+        return "metrc-config-admin";
     }
     
     /**
-     * Save or update METRC API configuration
+     * Save or update SANDBOX configuration
      */
-    @PostMapping("/admin/save")
-    public String saveConfig(@ModelAttribute MetrcApiConfigVO metrcConfig,
-                           RedirectAttributes redirectAttributes) {
+    @PostMapping("/admin/save-sandbox")
+    public String saveSandboxConfig(@ModelAttribute MetrcApiConfigVO sandboxConfig,
+                                  RedirectAttributes redirectAttributes) {
         try {
-            metrcApiConfigService.saveConfig(metrcConfig);
+            metrcApiConfigService.saveConfigForEnvironment("SANDBOX", sandboxConfig);
             redirectAttributes.addFlashAttribute("successMessage", 
-                "METRC API configuration saved successfully!");
+                "SANDBOX METRC API configuration saved successfully!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", 
-                "Error saving METRC API configuration: " + e.getMessage());
+                "Error saving SANDBOX METRC API configuration: " + e.getMessage());
         }
         
         return "redirect:/metrc-config/admin";
     }
     
     /**
-     * Update configuration with individual parameters
+     * Save or update PROD configuration
      */
-    @PostMapping("/admin/update")
-    public String updateConfig(@RequestParam("id") Long id,
-                             @RequestParam("apiKeyUsername") String apiKeyUsername,
-                             @RequestParam("apiKeyPassword") String apiKeyPassword,
-                             @RequestParam("testApiKeyBaseUri") String testApiKeyBaseUri,
-                             @RequestParam("prodApiKeyBaseUri") String prodApiKeyBaseUri,
-                             RedirectAttributes redirectAttributes) {
+    @PostMapping("/admin/save-prod")
+    public String saveProdConfig(@ModelAttribute MetrcApiConfigVO prodConfig,
+                               RedirectAttributes redirectAttributes) {
         try {
-            metrcApiConfigService.updateConfig(id, apiKeyUsername, apiKeyPassword, 
-                                             testApiKeyBaseUri, prodApiKeyBaseUri);
+            metrcApiConfigService.saveConfigForEnvironment("PROD", prodConfig);
             redirectAttributes.addFlashAttribute("successMessage", 
-                "METRC API configuration updated successfully!");
+                "PROD METRC API configuration saved successfully!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", 
-                "Error updating METRC API configuration: " + e.getMessage());
+                "Error saving PROD METRC API configuration: " + e.getMessage());
         }
         
         return "redirect:/metrc-config/admin";
     }
     
     /**
-     * Reset configuration to default values
+     * Update configuration with individual parameters for SANDBOX
      */
-    @PostMapping("/admin/reset")
-    public String resetConfig(RedirectAttributes redirectAttributes) {
+    @PostMapping("/admin/update-sandbox")
+    public String updateSandboxConfig(@RequestParam("id") Long id,
+                                    @RequestParam("apiKeyUsername") String apiKeyUsername,
+                                    @RequestParam("apiKeyPassword") String apiKeyPassword,
+                                    @RequestParam("testApiKeyBaseUri") String testApiKeyBaseUri,
+                                    @RequestParam("prodApiKeyBaseUri") String prodApiKeyBaseUri,
+                                    RedirectAttributes redirectAttributes) {
         try {
-            MetrcApiConfigVO defaultConfig = new MetrcApiConfigVO();
-            defaultConfig.setApiKeyUsername("");
-            defaultConfig.setApiKeyPassword("");
-            defaultConfig.setTestApiKeyBaseUri("https://sandbox-api-mn.metrc.com");
-            defaultConfig.setProdApiKeyBaseUri("https://api-mn.metrc.com");
-            
-            metrcApiConfigService.saveConfig(defaultConfig);
+            metrcApiConfigService.updateConfigForEnvironment("SANDBOX", apiKeyUsername, apiKeyPassword, 
+                                                           testApiKeyBaseUri, prodApiKeyBaseUri);
             redirectAttributes.addFlashAttribute("successMessage", 
-                "METRC API configuration reset to default values!");
+                "SANDBOX METRC API configuration updated successfully!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", 
-                "Error resetting METRC API configuration: " + e.getMessage());
+                "Error updating SANDBOX METRC API configuration: " + e.getMessage());
         }
         
         return "redirect:/metrc-config/admin";
     }
     
     /**
-     * Delete configuration
+     * Update configuration with individual parameters for PROD
+     */
+    @PostMapping("/admin/update-prod")
+    public String updateProdConfig(@RequestParam("id") Long id,
+                                 @RequestParam("apiKeyUsername") String apiKeyUsername,
+                                 @RequestParam("apiKeyPassword") String apiKeyPassword,
+                                 @RequestParam("testApiKeyBaseUri") String testApiKeyBaseUri,
+                                 @RequestParam("prodApiKeyBaseUri") String prodApiKeyBaseUri,
+                                 RedirectAttributes redirectAttributes) {
+        try {
+            metrcApiConfigService.updateConfigForEnvironment("PROD", apiKeyUsername, apiKeyPassword, 
+                                                           testApiKeyBaseUri, prodApiKeyBaseUri);
+            redirectAttributes.addFlashAttribute("successMessage", 
+                "PROD METRC API configuration updated successfully!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", 
+                "Error updating PROD METRC API configuration: " + e.getMessage());
+        }
+        
+        return "redirect:/metrc-config/admin";
+    }
+    
+    /**
+     * Reset SANDBOX configuration to default values
+     */
+    @PostMapping("/admin/reset-sandbox")
+    public String resetSandboxConfig(RedirectAttributes redirectAttributes) {
+        try {
+            metrcApiConfigService.resetConfigForEnvironment("SANDBOX");
+            redirectAttributes.addFlashAttribute("successMessage", 
+                "SANDBOX METRC API configuration reset to default values!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", 
+                "Error resetting SANDBOX METRC API configuration: " + e.getMessage());
+        }
+        
+        return "redirect:/metrc-config/admin";
+    }
+    
+    /**
+     * Reset PROD configuration to default values
+     */
+    @PostMapping("/admin/reset-prod")
+    public String resetProdConfig(RedirectAttributes redirectAttributes) {
+        try {
+            metrcApiConfigService.resetConfigForEnvironment("PROD");
+            redirectAttributes.addFlashAttribute("successMessage", 
+                "PROD METRC API configuration reset to default values!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", 
+                "Error resetting PROD METRC API configuration: " + e.getMessage());
+        }
+        
+        return "redirect:/metrc-config/admin";
+    }
+    
+    /**
+     * Delete configuration (only if not SANDBOX or PROD)
      */
     @PostMapping("/admin/delete")
     public String deleteConfig(@RequestParam("id") Long id,

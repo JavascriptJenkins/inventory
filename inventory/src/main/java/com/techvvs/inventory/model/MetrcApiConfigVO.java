@@ -23,6 +23,9 @@ public class MetrcApiConfigVO {
     @Column(name = "prod_api_key_base_uri", length = 500)
     private String prodApiKeyBaseUri;
     
+    @Column(name = "environment", length = 20, nullable = true)
+    private String environment;
+    
     @Column(name = "created_at")
     private LocalDateTime createdAt;
     
@@ -37,12 +40,13 @@ public class MetrcApiConfigVO {
     
     // Constructor with parameters
     public MetrcApiConfigVO(String apiKeyUsername, String apiKeyPassword, 
-                           String testApiKeyBaseUri, String prodApiKeyBaseUri) {
+                           String testApiKeyBaseUri, String prodApiKeyBaseUri, String environment) {
         this();
         this.apiKeyUsername = apiKeyUsername;
         this.apiKeyPassword = apiKeyPassword;
         this.testApiKeyBaseUri = testApiKeyBaseUri;
         this.prodApiKeyBaseUri = prodApiKeyBaseUri;
+        this.environment = environment;
     }
     
     // Getters and Setters
@@ -86,6 +90,14 @@ public class MetrcApiConfigVO {
         this.prodApiKeyBaseUri = prodApiKeyBaseUri;
     }
     
+    public String getEnvironment() {
+        return environment;
+    }
+    
+    public void setEnvironment(String environment) {
+        this.environment = environment;
+    }
+    
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -121,6 +133,7 @@ public class MetrcApiConfigVO {
                 ", apiKeyUsername='" + apiKeyUsername + '\'' +
                 ", testApiKeyBaseUri='" + testApiKeyBaseUri + '\'' +
                 ", prodApiKeyBaseUri='" + prodApiKeyBaseUri + '\'' +
+                ", environment='" + environment + '\'' +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 '}';
