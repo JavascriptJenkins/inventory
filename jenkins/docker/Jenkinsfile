@@ -698,7 +698,7 @@ spec:
                         sh """
                             # Read the external IP from the previous stage
                             if [ -f external_ip.env ]; then
-                                source external_ip.env
+                                . external_ip.env
                                 echo "Creating DNS record for ${params.TENANT_NAME}.${DO_DOMAIN} -> \$EXTERNAL_IP"
                                 
                                 # Create DNS A record using DigitalOcean API
