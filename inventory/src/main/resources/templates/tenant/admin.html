@@ -416,8 +416,12 @@
                 <td>
                     <form th:action="@{/tenant/admin/deploy}" method="post" style="display: inline;">
                         <input type="hidden" name="tenantid" th:value="${tenant.id}">
-                        <button type="submit" class="btn btn-info btn-sm" th:if="${tenant.deployflag == 0 || tenant.lastDeployed == null}" 
-                                onclick="return confirm('Are you sure you want to trigger deployment for this tenant?')">Deploy</button>
+                        <button type="submit" class="btn btn-info btn-sm" 
+                                th:onclick="'return confirm(\'' + (${tenant.deployflag} == 1 ? 'Are you sure you want to refresh deployment for this tenant?' : 'Are you sure you want to trigger deployment for this tenant?') + '\')'">
+                            <i th:if="${tenant.deployflag == 1}" class="fas fa-sync-alt"></i>
+                            <span th:if="${tenant.deployflag == 1}">Refresh</span>
+                            <span th:if="${tenant.deployflag != 1}">Deploy</span>
+                        </button>
                     </form>
                     <form th:action="@{/tenant/admin/delete}" method="post" style="display: inline;">
                         <input type="hidden" name="tenantid" th:value="${tenant.id}">
