@@ -305,8 +305,8 @@ EOF
                              }
                              
                              // Database settings
-                             sh "sed -i 's|^spring\\.datasource\\.url=.*|spring.datasource.url=${params.DB_URI}/${params.TENANT_NAME}?sslmode=require|' src/main/resources/application.properties"
-                             sh "echo 'Updated DB_URI: ${params.DB_URI}/${params.TENANT_NAME}?sslmode=require'"
+                             sh "sed -i 's|^spring\\.datasource\\.url=.*|spring.datasource.url=${params.DB_URI}/defaultdb?currentSchema=tenant_${params.TENANT_NAME}&sslmode=require|' src/main/resources/application.properties"
+                             sh "echo 'Updated DB_URI: ${params.DB_URI}/defaultdb?currentSchema=tenant_${params.TENANT_NAME}&sslmode=require'"
                              if (params.DB_DRIVER_CLASS_NAME) {
                                  sh "sed -i 's/^spring\\.datasource\\.driver-class-name=.*/spring.datasource.driver-class-name=${params.DB_DRIVER_CLASS_NAME}/' src/main/resources/application.properties"
                              }
