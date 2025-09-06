@@ -492,6 +492,14 @@ CMD ["java", "-jar", "app.jar"]
             }
             steps {
                 script {
+
+                    withCredentials(
+                       [string(credentialsId: 'DO_DOMAIN', variable: 'DO_DOMAIN')]
+                       ) {
+
+
+
+
                     // Create Kubernetes deployment manifest with persistent volume
                     def k8sNamespace = (params.K8S_NAMESPACE && params.K8S_NAMESPACE.trim() != '') ? params.K8S_NAMESPACE : "tenant-${params.TENANT_NAME.toLowerCase().replaceAll('[^a-z0-9-]', '-')}"
                     echo "Constructed Kubernetes namespace: ${k8sNamespace}"
@@ -601,7 +609,7 @@ spec:
                     
                     // Write deployment manifest to file
                     writeFile file: 'k8s-deployment.yaml', text: deploymentYaml
-                    
+                    }
                     // Apply the deployment using kubectl with file credential
                     withCredentials(
                     [file(credentialsId: 'KUBECONFIG_PATH', variable: 'KCFG')],
