@@ -650,8 +650,49 @@ spec:
                             
                             # Update DNS record with LoadBalancer IP
                             echo "Updating DNS record for ${params.TENANT_NAME}.${DO_DOMAIN} to point to \$EXTERNAL_IP"
-                            # This will be handled by the Java application's DNS management
                             
+                            # Store the external IP for DNS record creation
+                            echo "EXTERNAL_IP=\$EXTERNAL_IP" > external_ip.env
+                            echo "DNS record should point ${params.TENANT_NAME}.${DO_DOMAIN} to \$EXTERNAL_IP"
+                            
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Create DNS Record') {
+            when {
+                expression { params.TENANT_NAME != '' }
+            }
+            steps {
+                script {
+                    withCredentials([
+                        string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN'),
+                        string(credentialsId: 'DO_DOMAIN', variable: 'DO_DOMAIN')
+                    ]) {
+                        sh """
+                            # Read the external IP from the previous stage
+                            if [ -f external_ip.env ]; then
+                                source external_ip.env
+                                echo "Creating DNS record for ${params.TENANT_NAME}.${DO_DOMAIN} -> \$EXTERNAL_IP"
+                                
+                                # Create DNS A record using DigitalOcean API
+                                curl -X POST "https://api.digitalocean.com/v2/domains/${DO_DOMAIN}/records" \\
+                                    -H "Content-Type: application/json" \\
+                                    -H "Authorization: Bearer \$DO_API_TOKEN" \\
+                                    -d '{
+                                        "type": "A",
+                                        "name": "${params.TENANT_NAME}",
+                                        "data": "'\$EXTERNAL_IP'",
+                                        "ttl": 3600
+                                    }'
+                                
+                                echo "DNS record creation completed"
+                            else
+                                echo "ERROR: external_ip.env file not found"
+                                exit 1
+                            fi
                         """
                     }
                 }
@@ -673,7 +714,7 @@ spec:
         }
         always {
             // Clean up temporary files
-            sh 'rm -f Dockerfile k8s-deployment.yaml'
+            sh 'rm -f Dockerfile k8s-deployment.yaml external_ip.env'
         }
     }
 }
