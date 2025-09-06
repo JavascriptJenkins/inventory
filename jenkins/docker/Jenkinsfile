@@ -416,7 +416,7 @@ EOF
         stage('Build Docker Image') {
             steps {
                 script {
-                    def imageName = "${params.DOCKER_USER}/inventory-${params.TENANT_NAME}-${params.APP_NAME}:sandbox".toLowerCase()
+                    def imageName = "${params.DOCKER_USER}/inventory-${params.TENANT_NAME}-${params.APP_NAME}:${UUID.randomUUID().toString()}".toLowerCase()
                     def jarFile = "inventory/target/inventory-0.0.1-SNAPSHOT.jar"
                     
                     // Log Docker build information
@@ -628,8 +628,6 @@ spec:
                             kubectl apply -f k8s-deployment.yaml
                             kubectl rollout status deployment/inventory-${params.TENANT_NAME} -n ${k8sNamespace} --timeout=300s
                             
-                            # Force deployment restart to ensure pods restart with new image
-                            kubectl patch deployment inventory-\${params.TENANT_NAME} -n \${k8sNamespace} -p '{"spec":{"template":{"metadata":{"annotations":{"kubectl.kubernetes.io/restartedAt":"'\$(date +%Y-%m-%dT%H:%M:%S%z)'"}}}}}'
                         """
                     }
                 }
