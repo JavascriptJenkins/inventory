@@ -694,9 +694,12 @@ spec:
                 script {
                     withCredentials([
                         string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN'),
-                        string(credentialsId: 'DO_DOMAIN', variable: 'DO_DOMAIN')
+                        string(credentialsId: 'DO_DOMAIN', variable: 'DO_DOMAIN'),
+                        file(credentialsId: 'KUBECONFIG_PATH', variable: 'KCFG')
                     ]) {
                         sh """
+                            export KUBECONFIG="\$KCFG"
+                            
                             # Use the LoadBalancer IP passed from Java application
                             if [ -n "${params.EXTERNAL_LB_IP}" ]; then
                                 echo "Using LoadBalancer external IP from Java application: ${params.EXTERNAL_LB_IP}"
