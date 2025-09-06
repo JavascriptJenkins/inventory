@@ -604,7 +604,7 @@ spec:
                     
                     // Apply the deployment using kubectl with file credential
                     withCredentials(
-                    [file(credentialsId: 'KUBECONFIG_PATH', variable: 'KCFG']),
+                    [file(credentialsId: 'KUBECONFIG_PATH', variable: 'KCFG')],
                     [string(credentialsId: 'DO_DOMAIN', variable: 'DO_DOMAIN')]
                     ) {
                         sh """
