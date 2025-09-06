@@ -318,17 +318,8 @@ EOF
                              }
                             sh "sed -i 's/^spring\\.datasource\\.username=.*/spring.datasource.username=${SANDBOX_POSTGRESQL_PUBLIC_USER}/' src/main/resources/application.properties"
                             sh "sed -i 's/^spring\\.datasource\\.password=.*/spring.datasource.password=${SANDBOX_POSTGRESQL_PASSWORD}/' src/main/resources/application.properties"
-                            
-                            // Set Hibernate default schema for tenant
-                            sh """
-                                # If the property doesn't exist, add it
-                                if ! grep -q "^spring.jpa.properties.hibernate.default_schema=" src/main/resources/application.properties; then
-                                    echo "spring.jpa.properties.hibernate.default_schema=tenant_${params.TENANT_NAME}" >> src/main/resources/application.properties
-                                else
-                                    # If it exists, update it
-                                    sed -i 's|^spring\\.jpa\\.properties\\.hibernate\\.default_schema=.*|spring.jpa.properties.hibernate.default_schema=tenant_${params.TENANT_NAME}|' src/main/resources/application.properties
-                                fi
-                            """
+                            sh "sed -i 's/^spring\\.jpa\\.properties\\.hibernate\\.default_schema=${params.TENANT_NAME}/' src/main/resources/application.properties"
+
                              if (params.SPRING_DATABASE_ACTION) {
                                  sh "sed -i 's/^spring\\.jpa\\.hibernate\\.ddl-auto=.*/spring.jpa.hibernate.ddl-auto=${params.SPRING_DATABASE_ACTION}/' src/main/resources/application.properties"
                              }
