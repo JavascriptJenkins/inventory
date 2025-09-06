@@ -603,7 +603,11 @@ spec:
                     writeFile file: 'k8s-deployment.yaml', text: deploymentYaml
                     
                     // Apply the deployment using kubectl with file credential
-                    withCredentials([file(credentialsId: 'KUBECONFIG_PATH', variable: 'KCFG')]) {
+                    withCredentials([file(
+                    credentialsId: 'KUBECONFIG_PATH', variable: 'KCFG',
+                    credentialsId: 'DO_DOMAIN', variable: 'DO_DOMAIN'
+
+                    )]) {
                         sh """
                             export KUBECONFIG="\$KCFG"
                             
