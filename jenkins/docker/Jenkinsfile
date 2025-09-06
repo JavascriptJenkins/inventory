@@ -307,7 +307,7 @@ EOF
                                 sed -i 's/^spring\\.servlet\\.multipart\\.max-request-size=.*/spring.servlet.multipart.max-request-size=${params.MAX_REQ_SIZE}/' src/main/resources/application.properties
                                 
                                 # Database settings
-                                sh "sed -i 's|^spring\\.datasource\\.url=.*|spring.datasource.url=${env.DB_URI}|' src/main/resources/application.properties"
+                                sed -i 's|^spring\\.datasource\\.url=.*|spring.datasource.url=${env.DB_URI}|' src/main/resources/application.properties
                                 sed -i 's/^spring\\.datasource\\.driver-class-name=.*/spring.datasource.driver-class-name=${params.DB_DRIVER_CLASS_NAME}/' src/main/resources/application.properties
                                 sed -i 's/^spring\\.jpa\\.database-platform=.*/spring.jpa.database-platform=${params.DB_JPA_DATABASE_PLATFORM}/' src/main/resources/application.properties
                                 sed -i 's/^spring\\.jpa\\.properties\\.hibernate\\.dialect=.*/spring.jpa.properties.hibernate.dialect=${params.DB_JPA_HIBERNATE_DIALECT}/' src/main/resources/application.properties
