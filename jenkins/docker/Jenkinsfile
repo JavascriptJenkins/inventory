@@ -629,6 +629,10 @@ spec:
                             kubectl rollout status deployment/inventory-${params.TENANT_NAME} -n ${k8sNamespace} --timeout=300s
                             
                         """
+                        sh """
+                        kubectl rollout restart deployment/inventory-${params.TENANT_NAME} -n ${k8sNamespace}
+                        kubectl rollout status  deployment/inventory-${params.TENANT_NAME} -n ${k8sNamespace} --timeout=10m
+                        """
                     }
                 }
             }
