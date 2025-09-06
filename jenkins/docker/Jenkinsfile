@@ -629,7 +629,7 @@ spec:
                             kubectl rollout status deployment/inventory-${params.TENANT_NAME} -n ${k8sNamespace} --timeout=300s
                             
                             # Force deployment restart to ensure pods restart with new image
-                            kubectl patch deployment inventory-${params.TENANT_NAME} -n ${k8sNamespace} -p '{"spec":{"template":{"metadata":{"annotations":{"kubectl.kubernetes.io/restartedAt":"'$(date +%Y-%m-%dT%H:%M:%S%z)'"}}}}}'
+                            kubectl patch deployment inventory-\${params.TENANT_NAME} -n \${k8sNamespace} -p '{"spec":{"template":{"metadata":{"annotations":{"kubectl.kubernetes.io/restartedAt":"'\$(date +%Y-%m-%dT%H:%M:%S%z)'"}}}}}'
                         """
                     }
                 }
