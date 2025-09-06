@@ -89,7 +89,7 @@ pipeline {
                     echo "  SUBSCRIPTION_TIER: ${params.SUBSCRIPTION_TIER}"
                     echo "  BILLING_EMAIL: ${params.BILLING_EMAIL}"
                     echo "  K8S_NAMESPACE: ${params.K8S_NAMESPACE}"
-                    echo ""
+                    echo "EXTERNAL_LB_IP ${params.EXTERNAL_LB_IP}""
                     
                     echo "🌐 DIGITALOCEAN PARAMETERS:"
                     echo "  DO_LOADBALANCER_ID: ${params.DO_LOADBALANCER_ID}"
