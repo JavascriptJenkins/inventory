@@ -305,6 +305,9 @@ CMD ["java", "-jar", "app.jar"]
                 script {
                     // Create Kubernetes deployment manifest with persistent volume
                     def k8sNamespace = params.K8S_NAMESPACE ?: "tenant-${params.TENANT_NAME.toLowerCase().replaceAll('[^a-z0-9-]', '-')}"
+                    echo "Constructed Kubernetes namespace: ${k8sNamespace}"
+                    echo "TENANT_NAME parameter: ${params.TENANT_NAME}"
+                    echo "K8S_NAMESPACE parameter: ${params.K8S_NAMESPACE}"
                     def deploymentYaml = """
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -408,6 +411,7 @@ spec:
                             kubectl cluster-info
                             
                             # Check if the service account exists in the namespace
+                            echo "DEBUG: k8sNamespace variable = ${k8sNamespace}"
                             echo "Checking for service account ${params.TENANT_NAME}-admin in namespace ${k8sNamespace}"
                             kubectl get serviceaccount ${params.TENANT_NAME}-admin -n ${k8sNamespace} || {
                                 echo "ERROR: Service account ${params.TENANT_NAME}-admin not found in namespace ${k8sNamespace}"
