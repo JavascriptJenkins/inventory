@@ -1370,12 +1370,7 @@ public class DigitalOceanService {
             try {
                 logger.info("Certificate creation successful, waiting for it to become active...");
                 certActive = waitForCertificateActive(tenantName, certificateWaitMinutes);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                logger.error("Certificate activation wait interrupted for tenant: {}", tenantName, e);
-                certActive = false;
-                overallSuccess = false;
-            } catch (Exception e) {
+            }  catch (Exception e) {
                 logger.error("Error waiting for certificate activation for tenant: {}", tenantName, e);
                 certActive = false;
                 overallSuccess = false;
