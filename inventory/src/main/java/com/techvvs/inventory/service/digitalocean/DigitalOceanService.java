@@ -72,8 +72,95 @@ public class DigitalOceanService {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final HttpClient httpClient = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(10))
+            .connectTimeout(Duration.ofSeconds(30))
             .build();
+
+    /**
+     * Validates the DigitalOcean API token by making a simple API call
+     * 
+     * @return true if token is valid, false otherwise
+     */
+    private boolean validateApiToken() {
+        try {
+            String validateUrl = "https://api.digitalocean.com/v2/account";
+            HttpRequest validateReq = HttpRequest.newBuilder(URI.create(validateUrl))
+                    .header("Authorization", "Bearer " + doToken)
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = executeWithRetry(validateReq, 2);
+            
+            if (response == null) {
+                logger.error("Failed to validate API token - no response received");
+                return false;
+            }
+            
+            if (response.statusCode() == 200) {
+                logger.debug("DigitalOcean API token is valid");
+                return true;
+            } else if (response.statusCode() == 401) {
+                logger.error("DigitalOcean API token is invalid or expired");
+                return false;
+            } else {
+                logger.warn("Unexpected response when validating API token. Status: {}, Body: {}", 
+                           response.statusCode(), response.body());
+                return false;
+            }
+            
+        } catch (Exception e) {
+            logger.error("Error validating DigitalOcean API token", e);
+            return false;
+        }
+    }
+
+    /**
+     * Executes an HTTP request with retry logic for network failures
+     * 
+     * @param request The HTTP request to execute
+     * @param maxRetries Maximum number of retry attempts
+     * @return The HTTP response, or null if all retries failed
+     */
+    private HttpResponse<String> executeWithRetry(HttpRequest request, int maxRetries) {
+        Exception lastException = null;
+        
+        for (int attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                logger.debug("Executing HTTP request (attempt {}/{}): {}", attempt, maxRetries, request.uri());
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                logger.debug("HTTP request successful (attempt {}): Status {}", attempt, response.statusCode());
+                return response;
+                
+            } catch (java.io.IOException e) {
+                lastException = e;
+                logger.warn("HTTP request failed (attempt {}/{}): {}", attempt, maxRetries, e.getMessage());
+                
+                if (attempt < maxRetries) {
+                    try {
+                        // Exponential backoff: wait 2^attempt seconds
+                        long waitTime = (long) Math.pow(2, attempt);
+                        logger.info("Retrying in {} seconds...", waitTime);
+                        Thread.sleep(waitTime * 1000);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        logger.error("Retry interrupted", ie);
+                        break;
+                    }
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                logger.error("HTTP request interrupted (attempt {}/{}): {}", attempt, maxRetries, e.getMessage());
+                lastException = e;
+                break;
+            }
+        }
+        
+        logger.error("All {} attempts failed for HTTP request: {}", maxRetries, request.uri());
+        if (lastException != null) {
+            logger.error("Last exception:", lastException);
+        }
+        
+        return null;
+    }
 
     /**
      * Gets the external IP of the existing sandbox-loadbalancer Kubernetes service
@@ -126,6 +213,12 @@ public class DigitalOceanService {
         try {
             if (doToken == null || doToken.trim().isEmpty()) {
                 logger.error("DigitalOcean API token is not configured");
+                return false;
+            }
+
+            // Validate API token before making requests
+            if (!validateApiToken()) {
+                logger.error("DigitalOcean API token validation failed");
                 return false;
             }
 
@@ -201,7 +294,12 @@ public class DigitalOceanService {
                     .GET()
                     .build();
 
-            HttpResponse<String> response = httpClient.send(listReq, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = executeWithRetry(listReq, 3);
+            
+            if (response == null) {
+                logger.error("Failed to execute DNS records request after all retries");
+                return null;
+            }
             
             if (response.statusCode() != 200) {
                 logger.error("Failed to list DNS records. Status: {}, Body: {}", 
@@ -1204,31 +1302,97 @@ public class DigitalOceanService {
     public boolean deployTenantInfrastructure(String tenantName) {
         logger.info("Starting comprehensive tenant deployment for: {}", tenantName);
         
+        boolean overallSuccess = true;
+        
         // Clean up any duplicate DNS records first
-        boolean cleanupSuccess = cleanupDuplicateDnsRecords(tenantName);
-        if (!cleanupSuccess) {
-            logger.warn("Failed to cleanup duplicate DNS records for tenant: {}", tenantName);
+        try {
+            boolean cleanupSuccess = cleanupDuplicateDnsRecords(tenantName);
+            if (!cleanupSuccess) {
+                logger.warn("Failed to cleanup duplicate DNS records for tenant: {}", tenantName);
+            }
+        } catch (Exception e) {
+            logger.error("Error during DNS cleanup for tenant: {}", tenantName, e);
         }
         
-        boolean dnsSuccess = createOrUpdateDnsRecord(tenantName);
-        boolean certSuccess = createLetsEncryptCertificate(tenantName);
-        boolean schemaSuccess = createPostgreSQLSchema(tenantName);
+        // Create or update DNS record
+        boolean dnsSuccess = false;
+        try {
+            dnsSuccess = createOrUpdateDnsRecord(tenantName);
+            if (!dnsSuccess) {
+                logger.error("Failed to create/update DNS record for tenant: {}", tenantName);
+                overallSuccess = false;
+            }
+        } catch (Exception e) {
+            logger.error("Error creating/updating DNS record for tenant: {}", tenantName, e);
+            overallSuccess = false;
+        }
+        
+        // Create SSL certificate
+        boolean certSuccess = false;
+        try {
+            certSuccess = createLetsEncryptCertificate(tenantName);
+            if (!certSuccess) {
+                logger.error("Failed to create SSL certificate for tenant: {}", tenantName);
+                overallSuccess = false;
+            }
+        } catch (Exception e) {
+            logger.error("Error creating SSL certificate for tenant: {}", tenantName, e);
+            overallSuccess = false;
+        }
+        
+        // Create PostgreSQL schema
+        boolean schemaSuccess = false;
+        try {
+            schemaSuccess = createPostgreSQLSchema(tenantName);
+            if (!schemaSuccess) {
+                logger.error("Failed to create PostgreSQL schema for tenant: {}", tenantName);
+                overallSuccess = false;
+            }
+        } catch (Exception e) {
+            logger.error("Error creating PostgreSQL schema for tenant: {}", tenantName, e);
+            overallSuccess = false;
+        }
         
         // Add Kubernetes nodes to load balancer if this is the first deployment
-        boolean lbUpdated = addKubernetesNodesToLoadBalancer();
+        boolean lbUpdated = false;
+        try {
+            lbUpdated = addKubernetesNodesToLoadBalancer();
+            if (!lbUpdated) {
+                logger.warn("Failed to add Kubernetes nodes to load balancer for tenant: {}", tenantName);
+            }
+        } catch (Exception e) {
+            logger.error("Error adding Kubernetes nodes to load balancer for tenant: {}", tenantName, e);
+        }
         
         // Wait for certificate to become active if it was created
         boolean certActive = true;
         if (certSuccess) {
-            logger.info("Certificate creation successful, waiting for it to become active...");
-            certActive = waitForCertificateActive(tenantName, certificateWaitMinutes);
+            try {
+                logger.info("Certificate creation successful, waiting for it to become active...");
+                certActive = waitForCertificateActive(tenantName, certificateWaitMinutes);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                logger.error("Certificate activation wait interrupted for tenant: {}", tenantName, e);
+                certActive = false;
+                overallSuccess = false;
+            } catch (Exception e) {
+                logger.error("Error waiting for certificate activation for tenant: {}", tenantName, e);
+                certActive = false;
+                overallSuccess = false;
+            }
         }
         
         // Attach certificate to load balancer if certificate is active
         boolean certAttached = true;
         if (certActive && certSuccess) {
-            logger.info("Certificate is active, attaching to load balancer...");
-            certAttached = attachCertificateToLoadBalancer(tenantName);
+            try {
+                logger.info("Certificate is active, attaching to load balancer...");
+                certAttached = attachCertificateToLoadBalancer(tenantName);
+            } catch (Exception e) {
+                logger.error("Error attaching certificate to load balancer for tenant: {}", tenantName, e);
+                certAttached = false;
+                overallSuccess = false;
+            }
         }
         
         // Set up Kubernetes resources (namespace and RBAC)
@@ -1240,7 +1404,7 @@ public class DigitalOceanService {
             logger.warn("Kubernetes service not configured, skipping Kubernetes setup");
         }
         
-        boolean overallSuccess = dnsSuccess && certSuccess && certActive && certAttached && schemaSuccess && k8sSuccess;
+        overallSuccess = dnsSuccess && certSuccess && certActive && certAttached && schemaSuccess && k8sSuccess;
         
         if (overallSuccess) {
             logger.info("Successfully deployed all infrastructure for tenant: {}", tenantName);
