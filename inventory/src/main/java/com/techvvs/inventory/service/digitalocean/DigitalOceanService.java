@@ -1087,6 +1087,69 @@ public class DigitalOceanService {
     }
 
     /**
+     * Gets the actual load balancer ID, handling both numeric IDs and names
+     * 
+     * @param loadBalancerIdOrName The configured load balancer ID or name
+     * @return The actual numeric load balancer ID, or null if not found
+     */
+    private String getActualLoadBalancerId(String loadBalancerIdOrName) {
+        try {
+            // If it's already a numeric ID, return it
+            if (loadBalancerIdOrName.matches("\\d+")) {
+                logger.debug("Load balancer ID is numeric: {}", loadBalancerIdOrName);
+                return loadBalancerIdOrName;
+            }
+            
+            // Otherwise, search by name
+            logger.info("Searching for load balancer by name: {}", loadBalancerIdOrName);
+            
+            String listUrl = "https://api.digitalocean.com/v2/load_balancers";
+            HttpRequest listReq = HttpRequest.newBuilder(URI.create(listUrl))
+                    .header("Authorization", "Bearer " + doToken)
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = executeWithRetry(listReq, 3);
+            
+            if (response == null) {
+                logger.error("Failed to list load balancers after all retries");
+                return null;
+            }
+            
+            if (response.statusCode() != 200) {
+                logger.error("Failed to list load balancers. Status: {}, Body: {}", 
+                           response.statusCode(), response.body());
+                return null;
+            }
+
+            JsonNode list = objectMapper.readTree(response.body());
+            JsonNode loadBalancers = list.path("load_balancers");
+            
+            logger.info("Found {} load balancers", loadBalancers.size());
+            
+            // Look for load balancer with matching name
+            for (JsonNode lb : loadBalancers) {
+                String lbName = lb.path("name").asText();
+                String lbId = lb.path("id").asText();
+                
+                logger.debug("Checking load balancer: name='{}', id='{}'", lbName, lbId);
+                
+                if (loadBalancerIdOrName.equals(lbName)) {
+                    logger.info("Found load balancer: name='{}', id='{}'", lbName, lbId);
+                    return lbId;
+                }
+            }
+            
+            logger.warn("No load balancer found with name: {}", loadBalancerIdOrName);
+            return null;
+            
+        } catch (Exception e) {
+            logger.error("Error resolving load balancer ID for: {}", loadBalancerIdOrName, e);
+            return null;
+        }
+    }
+
+    /**
      * Adds Kubernetes nodes (droplets) to the existing DigitalOcean Load Balancer
      * 
      * @return true if successful, false otherwise
@@ -1103,10 +1166,17 @@ public class DigitalOceanService {
                 return false;
             }
 
-            logger.info("Adding Kubernetes nodes to load balancer: {}", loadbalancerId);
+            // Get the actual load balancer ID (handle both numeric ID and name)
+            String actualLoadBalancerId = getActualLoadBalancerId(loadbalancerId);
+            if (actualLoadBalancerId == null) {
+                logger.error("Could not find load balancer with ID/name: {}", loadbalancerId);
+                return false;
+            }
+
+            logger.info("Adding Kubernetes nodes to load balancer: {} (ID: {})", loadbalancerId, actualLoadBalancerId);
 
             // Get current load balancer configuration
-            String getUrl = "https://api.digitalocean.com/v2/load_balancers/" + loadbalancerId;
+            String getUrl = "https://api.digitalocean.com/v2/load_balancers/" + actualLoadBalancerId;
             HttpRequest getReq = HttpRequest.newBuilder(URI.create(getUrl))
                     .header("Authorization", "Bearer " + doToken)
                     .GET()
@@ -1183,7 +1253,7 @@ public class DigitalOceanService {
             
             updateBody.set("load_balancer", lbUpdate);
 
-            String updateUrl = "https://api.digitalocean.com/v2/load_balancers/" + loadbalancerId;
+            String updateUrl = "https://api.digitalocean.com/v2/load_balancers/" + actualLoadBalancerId;
             HttpRequest updateReq = HttpRequest.newBuilder(URI.create(updateUrl))
                     .header("Authorization", "Bearer " + doToken)
                     .header("Content-Type", "application/json")
