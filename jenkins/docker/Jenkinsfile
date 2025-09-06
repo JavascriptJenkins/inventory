@@ -492,6 +492,8 @@ CMD ["java", "-jar", "app.jar"]
             }
             steps {
                 script {
+                    // Create Kubernetes deployment manifest with persistent volume
+                    def k8sNamespace = (params.K8S_NAMESPACE && params.K8S_NAMESPACE.trim() != '') ? params.K8S_NAMESPACE : "tenant-${params.TENANT_NAME.toLowerCase().replaceAll('[^a-z0-9-]', '-')}"
 
                     withCredentials(
                        [string(credentialsId: 'DO_DOMAIN', variable: 'DO_DOMAIN')]
@@ -500,8 +502,6 @@ CMD ["java", "-jar", "app.jar"]
 
 
 
-                    // Create Kubernetes deployment manifest with persistent volume
-                    def k8sNamespace = (params.K8S_NAMESPACE && params.K8S_NAMESPACE.trim() != '') ? params.K8S_NAMESPACE : "tenant-${params.TENANT_NAME.toLowerCase().replaceAll('[^a-z0-9-]', '-')}"
                     echo "Constructed Kubernetes namespace: ${k8sNamespace}"
                     echo "TENANT_NAME parameter: ${params.TENANT_NAME}"
                     echo "K8S_NAMESPACE parameter: '${params.K8S_NAMESPACE}'"
