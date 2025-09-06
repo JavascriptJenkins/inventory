@@ -918,6 +918,15 @@ public class DigitalOceanService {
     }
 
     /**
+     * Gets the configured load balancer ID
+     * 
+     * @return the load balancer ID
+     */
+    public String getLoadbalancerId() {
+        return loadbalancerId;
+    }
+    
+    /**
      * Checks if the service is properly configured
      * 
      * @return true if configured, false otherwise
