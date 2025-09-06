@@ -14,6 +14,9 @@ pipeline {
         string(name: 'BILLING_EMAIL', defaultValue: '', description: 'Billing email address')
         string(name: 'K8S_NAMESPACE', defaultValue: '', description: 'Kubernetes namespace (auto-generated if empty)')
         
+        // DigitalOcean parameters
+        string(name: 'DO_LOADBALANCER_ID', defaultValue: '', description: 'DigitalOcean Load Balancer ID for Kubernetes Service annotation')
+        
         // Docker parameters
         string(name: 'DOCKER_USER', defaultValue: 'techvvsadmin', description: 'Docker Hub username')
         
@@ -91,7 +94,6 @@ pipeline {
                         string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN'),
                         string(credentialsId: 'DO_DOMAIN', variable: 'DO_DOMAIN'),
                         string(credentialsId: 'DO_LB_IP', variable: 'DO_LB_IP'),
-                        // string(credentialsId: 'DO_LOADBALANCER_ID', variable: 'DO_LOADBALANCER_ID'), // TODO: Add this credential to Jenkins
                         string(credentialsId: 'SANDBOX_POSTGRESQL_PUBLIC_USER', variable: 'SANDBOX_POSTGRESQL_PUBLIC_USER'),
                         string(credentialsId: 'SANDBOX_POSTGRESQL_PUBLIC_URI', variable: 'SANDBOX_POSTGRESQL_PUBLIC_URI'),
                         string(credentialsId: 'SANDBOX_POSTGRESQL_PASSWORD', variable: 'SANDBOX_POSTGRESQL_PASSWORD'),
@@ -389,8 +391,8 @@ metadata:
   labels:
     app: inventory
     tenant: ${params.TENANT_NAME}
-  # annotations:
-  #   kubernetes.digitalocean.com/load-balancer-id: "${DO_LOADBALANCER_ID ?: ''}" # TODO: Add DO_LOADBALANCER_ID credential to Jenkins
+  annotations:
+    kubernetes.digitalocean.com/load-balancer-id: "${DO_LOADBALANCER_ID}"
 spec:
   selector:
     app: inventory
