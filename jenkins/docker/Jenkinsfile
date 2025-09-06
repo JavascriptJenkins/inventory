@@ -239,41 +239,7 @@ pipeline {
          sh "mkdir -p kubeconfig"
          sh "cp ${KUBECONFIG_FILE} kubeconfig/tulip-sandbox-kubeconfig.yaml"
          sh "chmod 600 kubeconfig/tulip-sandbox-kubeconfig.yaml"
-         sh """if [ -f "kubeconfig/tulip-sandbox-kubeconfig.yaml" ]; then
-                 echo "Kubeconfig file created successfully"
-                 echo "File size: $(wc -c < kubeconfig/tulip-sandbox-kubeconfig.yaml) bytes"
-                 echo "First 5 lines of kubeconfig:"
-                 head -5 kubeconfig/tulip-sandbox-kubeconfig.yaml
-                 ls -la kubeconfig/
-             else
-                 echo "ERROR: Failed to create kubeconfig file"
-                 exit 1
-             fi"""
 
-         sh """
-         # Validate kubeconfig is valid YAML
-         if command -v yq >/dev/null 2>&1; then
-             echo "Validating kubeconfig YAML structure..."
-             yq eval '.apiVersion' kubeconfig/tulip-sandbox-kubeconfig.yaml || {
-                 echo "ERROR: Invalid kubeconfig YAML structure"
-                 echo "File contents:"
-                 cat kubeconfig/tulip-sandbox-kubeconfig.yaml
-                 exit 1
-             }
-         elif python3 -c "import yaml" 2>/dev/null; then
-             echo "Validating kubeconfig with Python..."
-             python3 -c "
-         import yaml
-         try:
-             with open('kubeconfig/tulip-sandbox-kubeconfig.yaml', 'r') as f:
-                 yaml.safe_load(f)
-             print('✓ Valid YAML')
-         except Exception as e:
-             print(f'✗ Invalid YAML: {e}')
-             exit(1)
-         "
-         fi
-         """
 
                              // Construct BASE_QR_DOMAIN from tenant name and DO domain
                              def baseQrDomain = "https://${params.TENANT_NAME}.${DO_DOMAIN}"
