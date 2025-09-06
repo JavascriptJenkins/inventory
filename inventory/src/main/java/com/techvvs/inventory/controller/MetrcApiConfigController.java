@@ -23,7 +23,7 @@ public class MetrcApiConfigController {
         MetrcApiConfigVO config = metrcApiConfigService.getCurrentConfig();
         model.addAttribute("metrcConfig", config);
         model.addAttribute("configExists", metrcApiConfigService.configExists());
-        return "metrc-config-admin";
+        return "metrcconfig/metrc-config-admin";
     }
     
     /**
@@ -76,8 +76,8 @@ public class MetrcApiConfigController {
             MetrcApiConfigVO defaultConfig = new MetrcApiConfigVO();
             defaultConfig.setApiKeyUsername("");
             defaultConfig.setApiKeyPassword("");
-            defaultConfig.setTestApiKeyBaseUri("https://sandbox-api-il.metrc.com");
-            defaultConfig.setProdApiKeyBaseUri("https://api-il.metrc.com");
+            defaultConfig.setTestApiKeyBaseUri("https://sandbox-api-mn.metrc.com");
+            defaultConfig.setProdApiKeyBaseUri("https://api-mn.metrc.com");
             
             metrcApiConfigService.saveConfig(defaultConfig);
             redirectAttributes.addFlashAttribute("successMessage", 
