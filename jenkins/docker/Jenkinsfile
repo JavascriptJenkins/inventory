@@ -386,7 +386,8 @@ EOF
                              
                              // Update kubeconfig path to point to the copied file
                              echo "Updating kubernetes.kubeconfig.path to: kubeconfig/tulip-sandbox-kubeconfig.yaml"
-                             sh "sed -i 's|^kubernetes\\.kubeconfig\\.path=.*|kubernetes.kubeconfig.path=kubeconfig/tulip-sandbox-kubeconfig.yaml|' src/main/resources/application.properties"
+
+                             sh "sed -i 's|^kubernetes\\.kubeconfig\\.path=.*|kubernetes.kubeconfig.path=/app/kubeconfig/tulip-sandbox-kubeconfig.yaml|' src/main/resources/application.properties"
                              
                              // Verify the kubeconfig file exists
                              sh """
