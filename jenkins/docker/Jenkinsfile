@@ -593,6 +593,13 @@ metadata:
     service.beta.kubernetes.io/do-loadbalancer-tls-passthrough: "false"
     service.beta.kubernetes.io/do-loadbalancer-certificate-id: "${params.TENANT_NAME}.${DO_DOMAIN}"
     service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol: "true"
+    service.beta.kubernetes.io/do-loadbalancer-healthcheck-protocol: "http"
+    service.beta.kubernetes.io/do-loadbalancer-healthcheck-port: "8080"
+    service.beta.kubernetes.io/do-loadbalancer-healthcheck-path: "/actuator/health"
+    service.beta.kubernetes.io/do-loadbalancer-healthcheck-check-interval-seconds: "10"
+    service.beta.kubernetes.io/do-loadbalancer-healthcheck-response-timeout-seconds: "5"
+    service.beta.kubernetes.io/do-loadbalancer-healthcheck-healthy-threshold: "3"
+    service.beta.kubernetes.io/do-loadbalancer-healthcheck-unhealthy-threshold: "3"
 spec:
   type: LoadBalancer
   externalTrafficPolicy: Local
@@ -759,6 +766,25 @@ spec:
                                     fi
                                     
                                     echo "Note: This manual addition fixes the CCM issue where nodes aren't automatically added"
+                                    
+                                    # Check application health
+                                    echo "=== Checking application health ==="
+                                    POD_NAME=\$(kubectl get pods -n tenant-${params.TENANT_NAME} -l app=inventory -o jsonpath='{.items[0].metadata.name}')
+                                    if [ -n "\$POD_NAME" ]; then
+                                        echo "Testing application health endpoint..."
+                                        kubectl exec -n tenant-${params.TENANT_NAME} \$POD_NAME -- curl -f http://localhost:8080/actuator/health || echo "Health check failed - app may still be starting"
+                                    fi
+                                    
+                                    # Check LoadBalancer health status
+                                    echo "=== Checking LoadBalancer health status ==="
+                                    echo "LoadBalancer health check configuration:"
+                                    echo "  Protocol: HTTP"
+                                    echo "  Port: 8080"
+                                    echo "  Path: /actuator/health"
+                                    echo "  Check interval: 10 seconds"
+                                    echo "  Response timeout: 5 seconds"
+                                    echo ""
+                                    echo "Note: It may take 1-2 minutes for the node to show as 'Up' after health checks pass"
                                 else
                                     echo "Warning: Load Balancer ID not found in service annotations"
                                 fi
