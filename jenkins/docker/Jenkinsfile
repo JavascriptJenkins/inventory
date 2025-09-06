@@ -577,15 +577,26 @@ metadata:
   labels:
     app: inventory
     tenant: ${params.TENANT_NAME}
+  annotations:
+    service.beta.kubernetes.io/do-loadbalancer-name: "inventory-${params.TENANT_NAME}-lb"
+    service.beta.kubernetes.io/do-loadbalancer-algorithm: "round_robin"
+    service.beta.kubernetes.io/do-loadbalancer-protocol: "http"
+    service.beta.kubernetes.io/do-loadbalancer-tls-passthrough: "false"
+    service.beta.kubernetes.io/do-loadbalancer-certificate-id: "${params.TENANT_NAME}.${DO_DOMAIN}"
 spec:
   selector:
     app: inventory
     tenant: ${params.TENANT_NAME}
   ports:
-  - port: 80
+  - name: http
+    port: 80
     targetPort: 8080
     protocol: TCP
-  type: ClusterIP
+  - name: https
+    port: 443
+    targetPort: 8080
+    protocol: TCP
+  type: LoadBalancer
 """
                     
                     // Write deployment manifest to file
@@ -613,6 +624,30 @@ spec:
                             # Apply the deployment
                             kubectl apply -f k8s-deployment.yaml
                             kubectl rollout status deployment/inventory-${params.TENANT_NAME} -n ${k8sNamespace} --timeout=300s
+                            
+                            # Wait for LoadBalancer to get external IP
+                            echo "Waiting for LoadBalancer to get external IP..."
+                            timeout=300
+                            while [ \$timeout -gt 0 ]; do
+                                EXTERNAL_IP=\$(kubectl get service inventory-${params.TENANT_NAME}-service -n ${k8sNamespace} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+                                if [ -n "\$EXTERNAL_IP" ] && [ "\$EXTERNAL_IP" != "null" ]; then
+                                    echo "LoadBalancer external IP: \$EXTERNAL_IP"
+                                    break
+                                fi
+                                echo "Waiting for external IP... (\$timeout seconds remaining)"
+                                sleep 10
+                                timeout=\$((timeout - 10))
+                            done
+                            
+                            if [ -z "\$EXTERNAL_IP" ] || [ "\$EXTERNAL_IP" = "null" ]; then
+                                echo "ERROR: LoadBalancer did not get external IP within timeout"
+                                kubectl get service inventory-${params.TENANT_NAME}-service -n ${k8sNamespace}
+                                exit 1
+                            fi
+                            
+                            # Update DNS record with LoadBalancer IP
+                            echo "Updating DNS record for ${params.TENANT_NAME}.${DO_DOMAIN} to point to \$EXTERNAL_IP"
+                            # This will be handled by the Java application's DNS management
                             
                         """
                     }
