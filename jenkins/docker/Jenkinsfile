@@ -33,6 +33,7 @@ pipeline {
         string(name: 'DB_JPA_HIBERNATE_DIALECT', defaultValue: 'org.hibernate.dialect.PostgreSQLDialect', description: 'Hibernate dialect')
         string(name: 'DB_USERNAME', defaultValue: 'postgres', description: 'Database username')
         string(name: 'SANDBOX_POSTGRESQL_URI', defaultValue: 'jdbc:postgresql://sandbox-cluster-do-user-1326368-0.e.db.ondigitalocean.com:25060', description: 'Database uri')
+        string(name: 'DB_URI', defaultValue: 'jdbc:postgresql://sandbox-cluster-do-user-1326368-0.e.db.ondigitalocean.com:25060', description: 'Database uri')
         string(name: 'SPRING_DATABASE_ACTION', defaultValue: 'update', description: 'Database action (update, create-drop)')
         string(name: 'DB_H2_CONSOLE_ENABLED', defaultValue: 'false', description: 'Enable H2 console')
         string(name: 'DB_H2_WEB_ALLOWOTHERS', defaultValue: 'false', description: 'Allow others to access H2 console')
@@ -109,6 +110,7 @@ pipeline {
                     echo "  DB_JPA_HIBERNATE_DIALECT: ${params.DB_JPA_HIBERNATE_DIALECT}"
                     echo "  DB_USERNAME: ${params.DB_USERNAME}"
                     echo "  SANDBOX_POSTGRESQL_URI: ${params.SANDBOX_POSTGRESQL_URI}"
+                    echo "  DB_URI: ${params.DB_URI}"
                     echo "  SPRING_DATABASE_ACTION: ${params.SPRING_DATABASE_ACTION}"
                     echo "  DB_H2_CONSOLE_ENABLED: ${params.DB_H2_CONSOLE_ENABLED}"
                     echo "  DB_H2_WEB_ALLOWOTHERS: ${params.DB_H2_WEB_ALLOWOTHERS}"
@@ -292,7 +294,7 @@ EOF
                                 sed -i 's/^spring\\.servlet\\.multipart\\.max-request-size=.*/spring.servlet.multipart.max-request-size=${params.MAX_REQ_SIZE}/' src/main/resources/application.properties
                                 
                                 # Database settings
-                                sed -i 's|^spring\\.datasource\\.url=.*|spring.datasource.url=${params.SANDBOX_POSTGRESQL_URI}|' src/main/resources/application.properties
+                                sed -i 's|^spring\\.datasource\\.url=.*|spring.datasource.url=${params.DB_URI}|' src/main/resources/application.properties
                                 sed -i 's/^spring\\.datasource\\.driver-class-name=.*/spring.datasource.driver-class-name=${params.DB_DRIVER_CLASS_NAME}/' src/main/resources/application.properties
                                 sed -i 's/^spring\\.jpa\\.database-platform=.*/spring.jpa.database-platform=${params.DB_JPA_DATABASE_PLATFORM}/' src/main/resources/application.properties
                                 sed -i 's/^spring\\.jpa\\.properties\\.hibernate\\.dialect=.*/spring.jpa.properties.hibernate.dialect=${params.DB_JPA_HIBERNATE_DIALECT}/' src/main/resources/application.properties
