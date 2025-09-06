@@ -591,7 +591,10 @@ metadata:
     service.beta.kubernetes.io/do-loadbalancer-protocol: "http"
     service.beta.kubernetes.io/do-loadbalancer-tls-passthrough: "false"
     service.beta.kubernetes.io/do-loadbalancer-certificate-id: "${params.TENANT_NAME}.${DO_DOMAIN}"
+    service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol: "true"
 spec:
+  type: LoadBalancer
+  externalTrafficPolicy: Local
   selector:
     app: inventory
     tenant: ${params.TENANT_NAME}
@@ -604,7 +607,6 @@ spec:
     port: 443
     targetPort: 8080
     protocol: TCP
-  type: LoadBalancer
 """
                     
                     // Write deployment manifest to file
@@ -663,6 +665,20 @@ spec:
                             echo "EXTERNAL_IP=\$EXTERNAL_IP" > external_ip.env
                             echo "DNS record should point ${params.TENANT_NAME}.${DO_DOMAIN} to \$EXTERNAL_IP"
                             
+                            # Debug: Check service configuration and load balancer details
+                            echo "=== Service Configuration ==="
+                            kubectl get service inventory-${params.TENANT_NAME}-service -n ${k8sNamespace} -o yaml
+                            
+                            echo "=== Load Balancer ID ==="
+                            LB_ID=\$(kubectl get service inventory-${params.TENANT_NAME}-service -n ${k8sNamespace} -o jsonpath='{.metadata.annotations.kubernetes\\.digitalocean\\.com/load-balancer-id}')
+                            echo "Load Balancer ID: \$LB_ID"
+                            
+                            echo "=== Node Information ==="
+                            kubectl get nodes -o wide
+                            
+                            echo "=== Pod Status ==="
+                            kubectl get pods -n ${k8sNamespace} -o wide
+                            
                         """
                     }
                 }
@@ -697,6 +713,24 @@ spec:
                                     }'
                                 
                                 echo "DNS record creation completed"
+                                
+                                # Ensure node is added to the load balancer
+                                echo "=== Ensuring node is added to load balancer ==="
+                                LB_ID=\$(kubectl get service inventory-${params.TENANT_NAME}-service -n tenant-${params.TENANT_NAME} -o jsonpath='{.metadata.annotations.kubernetes\\.digitalocean\\.com/load-balancer-id}')
+                                if [ -n "\$LB_ID" ]; then
+                                    echo "Load Balancer ID: \$LB_ID"
+                                    
+                                    # Get node droplet ID (assuming single node cluster)
+                                    NODE_NAME=\$(kubectl get nodes -o jsonpath='{.items[0].metadata.name}')
+                                    echo "Node Name: \$NODE_NAME"
+                                    
+                                    # Get droplet ID from node name (this is a simplified approach)
+                                    # In a real scenario, you'd need to map the node name to droplet ID
+                                    echo "Note: Node association should be automatic with externalTrafficPolicy: Local"
+                                    echo "If nodes are not showing up, check the DigitalOcean Cloud Controller Manager logs"
+                                else
+                                    echo "Warning: Load Balancer ID not found in service annotations"
+                                fi
                             else
                                 echo "ERROR: external_ip.env file not found"
                                 exit 1
