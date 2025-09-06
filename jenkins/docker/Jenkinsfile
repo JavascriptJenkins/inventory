@@ -75,8 +75,8 @@ pipeline {
             steps {
                 script {
                     // Replace spring.datasource.url if provided
-                    if (params.SANDBOX_POSTGRESQL_URI) {
-                        env.DB_URI = "${params.SANDBOX_POSTGRESQL_URI}/${params.TENANT_NAME}?sslmode=require"
+                    if (params.DB_URI) {
+                        env.DB_URI = "${params.DB_URI}/${params.TENANT_NAME}?sslmode=require"
                         echo "env DB_URI: ${env.DB_URI}"
 
                     }
