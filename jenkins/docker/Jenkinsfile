@@ -237,7 +237,7 @@ pipeline {
                             // Copy kubeconfig to a writable location and update the path in application.properties
                // Create kubeconfig from string content
          sh "mkdir -p kubeconfig"
-         sh "cp "${KUBECONFIG_FILE}" kubeconfig/tulip-sandbox-kubeconfig.yaml"
+         sh "cp ${KUBECONFIG_FILE} kubeconfig/tulip-sandbox-kubeconfig.yaml"
          sh "chmod 600 kubeconfig/tulip-sandbox-kubeconfig.yaml"
          sh """if [ -f "kubeconfig/tulip-sandbox-kubeconfig.yaml" ]; then
                  echo "Kubeconfig file created successfully"
