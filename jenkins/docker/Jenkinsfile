@@ -919,6 +919,7 @@ spec:
                     sh """
 
                         echo "Updating Load Balancer with certificate and droplet in single call: ${env.LB_ID}"
+                        sleep 60
 
                         set -e
                         jq -n \\
