@@ -86,6 +86,7 @@ pipeline {
                     echo "  BRANCH: ${params.BRANCH}"
                     echo "  TENANT_NAME: ${params.TENANT_NAME}"
                     echo "  APP_NAME: ${params.APP_NAME}"
+                    echo "  APP_CODEBASE: ${params.APP_CODEBASE}"
                     echo "  SUBSCRIPTION_TIER: ${params.SUBSCRIPTION_TIER}"
                     echo "  BILLING_EMAIL: ${params.BILLING_EMAIL}"
                     echo "  K8S_NAMESPACE: ${params.K8S_NAMESPACE}"
@@ -590,7 +591,7 @@ spec:
             app: inventory
             tenant: ${params.TENANT_NAME}
           annotations:
-            service.beta.kubernetes.io/do-loadbalancer-name: "${params.APP_NAME}"
+            service.beta.kubernetes.io/do-loadbalancer-name: "${params.APP_CODEBASE}"
             service.beta.kubernetes.io/do-loadbalancer-algorithm: "round_robin"
             service.beta.kubernetes.io/do-loadbalancer-protocol: "http"
             service.beta.kubernetes.io/do-loadbalancer-tls-passthrough: "false"
@@ -792,7 +793,7 @@ spec:
                                     # Verify LoadBalancer configuration
                                     echo "=== Verifying LoadBalancer configuration ==="
                                     echo "LoadBalancer ID: \$LB_ID"
-                                    echo "LoadBalancer Name: ${params.APP_NAME}"
+                                    echo "LoadBalancer Name: ${params.APP_CODEBASE}"
                                     
                                     # Get the current LoadBalancer configuration
                                     LB_CONFIG=\$(curl -s -H "Authorization: Bearer \$DO_API_TOKEN" \\
