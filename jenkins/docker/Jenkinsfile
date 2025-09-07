@@ -786,48 +786,7 @@ spec:
                                 exit 1
                             fi
                                 
-                                # Ensure node is added to the load balancer
-                                echo "=== Adding node to load balancer ==="
-                                LB_ID=\$(kubectl get service inventory-${params.TENANT_NAME}-service -n tenant-${params.TENANT_NAME} -o jsonpath='{.metadata.annotations.kubernetes\\.digitalocean\\.com/load-balancer-id}')
-                                if [ -n "\$LB_ID" ]; then
-                                    echo "Load Balancer ID: \$LB_ID"
-                                    
-                                    # Get node droplet ID (assuming single node cluster)
-                                    NODE_NAME=\$(kubectl get nodes -o jsonpath='{.items[0].metadata.name}')
-                                    echo "Node Name: \$NODE_NAME"
-                                    
-                                    # Manually add the droplet to the load balancer
-                                    # This fixes the issue where CCM doesn't automatically add nodes
-                                    echo "Adding droplet 516774967 to load balancer \$LB_ID"
-                                    curl -X POST \\
-                                      "https://api.digitalocean.com/v2/load_balancers/\$LB_ID/droplets" \\
-                                      -H "Content-Type: application/json" \\
-                                      -H "Authorization: Bearer \$DO_API_TOKEN" \\
-                                      -d '{"droplet_ids": [516774967]}'
-                                    
-                                    if [ \$? -eq 0 ]; then
-                                        echo "✅ Node successfully added to load balancer"
-                                        
-                                        # Verify the node was added by checking the load balancer details
-                                        echo "Verifying node addition..."
-                                        sleep 5  # Wait a moment for the API to update
-                                        
-                                        # Check if the droplet is now in the load balancer
-                                        DROPLET_CHECK=\$(curl -s -H "Authorization: Bearer \$DO_API_TOKEN" \\
-                                          "https://api.digitalocean.com/v2/load_balancers/\$LB_ID" | \\
-                                          grep -o "516774967" || echo "not_found")
-                                        
-                                        if [ "\$DROPLET_CHECK" = "516774967" ]; then
-                                            echo "✅ Verification successful: Droplet 516774967 is now in the load balancer"
-                                        else
-                                            echo "⚠️  Verification failed: Droplet may not be visible yet (this can take a few minutes)"
-                                        fi
-                                    else
-                                        echo "❌ Failed to add node to load balancer"
-                                    fi
-                                    
-                                    echo "Note: This manual addition fixes the CCM issue where nodes aren't automatically added"
-                                    
+
                                     # LoadBalancer created with correct configuration from start
                                     echo "=== LoadBalancer Created Successfully ==="
                                     echo "LoadBalancer ID: \$LB_ID"
