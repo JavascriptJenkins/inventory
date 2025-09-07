@@ -875,40 +875,7 @@ spec:
             }
         }
 
-        stage('LB: Add Droplet Only') {
-            steps {
-                withCredentials([string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN')]) {
-                    sh """
-                        echo "Adding droplet to LoadBalancer (Kubernetes will handle configuration): ${env.LB_ID}"
-                        
-                        # Only add the droplet - let Kubernetes handle the LoadBalancer configuration
-                        echo "Adding droplet 516774967 to LoadBalancer..."
-                        curl -X POST \\
-                          "https://api.digitalocean.com/v2/load_balancers/${env.LB_ID}/droplets" \\
-                          -H "Content-Type: application/json" \\
-                          -H "Authorization: Bearer \$DO_API_TOKEN" \\
-                          -d '{"droplet_ids": [516774967]}'
-                        
-                        if [ \$? -eq 0 ]; then
-                            echo "✅ Droplet added to LoadBalancer"
-                        else
-                            echo "⚠️  Droplet may already be in LoadBalancer or addition failed"
-                        fi
-                        
-                        # Wait for droplet to be added
-                        sleep 30
-                        
-                        # Verify the droplet is in the LoadBalancer
-                        echo "Verifying droplet is in LoadBalancer..."
-                        curl -s -H "Authorization: Bearer \$DO_API_TOKEN" \\
-                          "https://api.digitalocean.com/v2/load_balancers/${env.LB_ID}" | \\
-                          jq '.load_balancer.droplet_ids[]'
-                        
-                        echo "Droplet addition complete - Kubernetes will handle LoadBalancer configuration"
-                    """
-                }
-            }
-        }
+
 
         stage('DNS: Create A Record') {
             steps {
