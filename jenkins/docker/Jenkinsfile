@@ -607,7 +607,7 @@ spec:
             service.beta.kubernetes.io/do-loadbalancer-healthcheck-healthy-threshold: "3"
             service.beta.kubernetes.io/do-loadbalancer-healthcheck-unhealthy-threshold: "3"
             # Forwarding rules configuration - CRITICAL: Route to port 8080 (single-line JSON format)
-            Force HTTP forwarding rules explicitly
+            #Force HTTP forwarding rules explicitly
             service.beta.kubernetes.io/do-loadbalancer-forwarding-rules: |
               [
                 {
