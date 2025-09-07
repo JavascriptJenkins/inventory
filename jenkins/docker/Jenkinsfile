@@ -865,14 +865,13 @@ spec:
         failure {
             echo "Deployment failed for tenant: ${params.TENANT_NAME}"
         }
-    }
-    
-    post {
         always {
             // Clean up temporary files
             sh 'rm -f Dockerfile k8s-deployment.yaml'
         }
     }
+    
+
 }
 
 stage('Attach Certificate and Create DNS') {
