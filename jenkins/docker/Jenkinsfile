@@ -10,7 +10,6 @@ pipeline {
         string(name: 'BRANCH', defaultValue: 'test1', description: 'Branch to build from')
         string(name: 'TENANT_NAME', defaultValue: '', description: 'Tenant name for deployment')
         string(name: 'APP_NAME', defaultValue: 'inventory', description: 'Application name')
-        string(name: 'APP_CODEBASE', defaultValue: '', description: 'The app codebase')
         string(name: 'SUBSCRIPTION_TIER', defaultValue: 'BASIC', description: 'Subscription tier')
         string(name: 'BILLING_EMAIL', defaultValue: '', description: 'Billing email address')
         string(name: 'K8S_NAMESPACE', defaultValue: '', description: 'Kubernetes namespace (auto-generated if empty)')
@@ -87,7 +86,6 @@ pipeline {
                     echo "  BRANCH: ${params.BRANCH}"
                     echo "  TENANT_NAME: ${params.TENANT_NAME}"
                     echo "  APP_NAME: ${params.APP_NAME}"
-                    echo "  APP_CODEBASE: ${params.APP_CODEBASE}"
                     echo "  SUBSCRIPTION_TIER: ${params.SUBSCRIPTION_TIER}"
                     echo "  BILLING_EMAIL: ${params.BILLING_EMAIL}"
                     echo "  K8S_NAMESPACE: ${params.K8S_NAMESPACE}"
@@ -592,7 +590,7 @@ spec:
             app: inventory
             tenant: ${params.TENANT_NAME}
           annotations:
-            service.beta.kubernetes.io/do-loadbalancer-name: "${params.APP_CODEBASE}"
+            service.beta.kubernetes.io/do-loadbalancer-name: "${params.APP_NAME}"
             service.beta.kubernetes.io/do-loadbalancer-algorithm: "round_robin"
             service.beta.kubernetes.io/do-loadbalancer-protocol: "http"
             service.beta.kubernetes.io/do-loadbalancer-tls-passthrough: "false"
@@ -645,33 +643,8 @@ spec:
                     
                     // Write deployment manifest to file
                     writeFile file: 'k8s-deployment.yaml', text: deploymentYaml
-                    
-                    // Force delete and recreate service to remove stale LoadBalancer annotations
-                    echo "Force deleting any existing service with stale LoadBalancer annotations..."
-                    sh """
-                        export KUBECONFIG="\$KCFG"
-                        
-                        # Force delete the existing service completely
-                        echo "Deleting existing service: inventory-${params.TENANT_NAME}-service"
-                        kubectl delete service inventory-${params.TENANT_NAME}-service -n ${k8sNamespace} --ignore-not-found=true
-                        
-                        # Wait for complete deletion
-                        echo "Waiting for service deletion to complete..."
-                        sleep 10
-                        
-                        # Verify service is gone
-                        if kubectl get service inventory-${params.TENANT_NAME}-service -n ${k8sNamespace} >/dev/null 2>&1; then
-                            echo "Service still exists, waiting longer..."
-                            sleep 20
-                            
-                            # Try force delete again if still exists
-                            kubectl delete service inventory-${params.TENANT_NAME}-service -n ${k8sNamespace} --force --grace-period=0 || true
-                            sleep 5
-                        fi
-                        
-                        echo "Service cleanup completed, ready to create fresh service"
-                    """
                     }
+                    
                     // Apply the deployment using kubectl with file credential
                     withCredentials(
                     [file(credentialsId: 'KUBECONFIG_PATH', variable: 'KCFG'),
@@ -682,6 +655,29 @@ spec:
                             
                             # Verify kubectl can connect to the cluster
                             kubectl config get-contexts
+                            
+                            # Force delete and recreate service to remove stale LoadBalancer annotations
+                            echo "Force deleting any existing service with stale LoadBalancer annotations..."
+                            
+                            # Force delete the existing service completely
+                            echo "Deleting existing service: inventory-${params.TENANT_NAME}-service"
+                            kubectl delete service inventory-${params.TENANT_NAME}-service -n ${k8sNamespace} --ignore-not-found=true
+                            
+                            # Wait for complete deletion
+                            echo "Waiting for service deletion to complete..."
+                            sleep 10
+                            
+                            # Verify service is gone
+                            if kubectl get service inventory-${params.TENANT_NAME}-service -n ${k8sNamespace} >/dev/null 2>&1; then
+                                echo "Service still exists, waiting longer..."
+                                sleep 20
+                                
+                                # Try force delete again if still exists
+                                kubectl delete service inventory-${params.TENANT_NAME}-service -n ${k8sNamespace} --force --grace-period=0 || true
+                                sleep 5
+                            fi
+                            
+                            echo "Service cleanup completed, ready to create fresh service"
                             kubectl cluster-info
                             
                             # Check if the service account exists in the namespace
@@ -822,7 +818,7 @@ spec:
                                     # Verify LoadBalancer configuration
                                     echo "=== Verifying LoadBalancer configuration ==="
                                     echo "LoadBalancer ID: \$LB_ID"
-                                    echo "LoadBalancer Name: ${params.APP_CODEBASE}"
+                                    echo "LoadBalancer Name: ${params.APP_NAME}"
                                     
                                     # Get the current LoadBalancer configuration
                                     LB_CONFIG=\$(curl -s -H "Authorization: Bearer \$DO_API_TOKEN" \\
