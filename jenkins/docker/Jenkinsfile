@@ -774,7 +774,28 @@ spec:
                                     # Update LoadBalancer configuration via API
                                     echo "=== Updating LoadBalancer configuration ==="
                                     echo "Fixing forwarding rules and health check configuration"
-                                    curl -X PUT \\
+                                    echo "LoadBalancer ID: \$LB_ID"
+                                    
+                                    # First, get the current LoadBalancer details to understand the structure
+                                    echo "Getting current LoadBalancer configuration..."
+                                    CURRENT_CONFIG=\$(curl -s -H "Authorization: Bearer \$DO_API_TOKEN" \\
+                                      "https://api.digitalocean.com/v2/load_balancers/\$LB_ID")
+                                    
+                                    if [ \$? -ne 0 ]; then
+                                        echo "❌ Failed to get current LoadBalancer configuration"
+                                        exit 1
+                                    fi
+                                    
+                                    echo "Current LoadBalancer details:"
+                                    echo "\$CURRENT_CONFIG" | grep -E '"name"|"region"|"size"|"algorithm"' || echo "Could not parse basic details"
+                                    
+                                    # Extract region from current config
+                                    LB_REGION=\$(echo "\$CURRENT_CONFIG" | grep -o '"region":"[^"]*"' | cut -d'"' -f4)
+                                    echo "LoadBalancer region: \$LB_REGION"
+                                    
+                                    # Update LoadBalancer configuration
+                                    echo "Updating LoadBalancer with correct forwarding rules..."
+                                    UPDATE_RESPONSE=\$(curl -w "HTTPSTATUS:%{http_code}" -X PUT \\
                                       "https://api.digitalocean.com/v2/load_balancers/\$LB_ID" \\
                                       -H "Content-Type: application/json" \\
                                       -H "Authorization: Bearer \$DO_API_TOKEN" \\
@@ -804,10 +825,17 @@ spec:
                                           "healthy_threshold": 3,
                                           "unhealthy_threshold": 3
                                         }
-                                      }'
+                                      }')
                                     
-                                    if [ \$? -eq 0 ]; then
-                                        echo "✅ LoadBalancer configuration updated successfully"
+                                    # Extract HTTP status code
+                                    HTTP_STATUS=\$(echo "\$UPDATE_RESPONSE" | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
+                                    UPDATE_BODY=\$(echo "\$UPDATE_RESPONSE" | sed -e 's/HTTPSTATUS:.*//g')
+                                    
+                                    echo "Update API Response Status: \$HTTP_STATUS"
+                                    echo "Update API Response Body: \$UPDATE_BODY"
+                                    
+                                    if [ "\$HTTP_STATUS" = "200" ] || [ "\$HTTP_STATUS" = "202" ]; then
+                                        echo "✅ LoadBalancer configuration updated successfully (HTTP \$HTTP_STATUS)"
                                         echo "  - Forwarding rules: HTTP/HTTPS → port 8080"
                                         echo "  - Health checks: HTTP on port 8080 with /login path"
                                         
@@ -846,7 +874,44 @@ spec:
                                         fi
                                         
                                     else
-                                        echo "❌ Failed to update LoadBalancer configuration"
+                                        echo "❌ Failed to update LoadBalancer configuration (HTTP \$HTTP_STATUS)"
+                                        echo "Response: \$UPDATE_BODY"
+                                        echo ""
+                                        echo "MANUAL FIX REQUIRED:"
+                                        echo "1. Go to DigitalOcean Dashboard → Load Balancers"
+                                        echo "2. Find LoadBalancer ID: \$LB_ID"
+                                        echo "3. Click 'Settings' → 'Forwarding Rules'"
+                                        echo "4. Change rules to:"
+                                        echo "   - HTTP (port 80) → HTTP (port 8080)"
+                                        echo "   - HTTPS (port 443) → HTTP (port 8080)"
+                                        echo "5. Click 'Settings' → 'Health Checks'"
+                                        echo "6. Change to:"
+                                        echo "   - Protocol: HTTP"
+                                        echo "   - Port: 8080"
+                                        echo "   - Path: /login"
+                                        echo ""
+                                        echo "Common API failure reasons:"
+                                        echo "- Invalid LoadBalancer ID"
+                                        echo "- Missing required fields in request"
+                                        echo "- LoadBalancer in wrong state"
+                                        echo "- API rate limiting"
+                                        echo ""
+                                        echo "ATTEMPTING KUBERNETES SERVICE ANNOTATION UPDATE..."
+                                        
+                                        # Try updating via Kubernetes service annotations as fallback
+                                        echo "Updating Kubernetes service with correct annotations..."
+                                        kubectl annotate service inventory-${params.TENANT_NAME}-service -n tenant-${params.TENANT_NAME} \\
+                                          service.beta.kubernetes.io/do-loadbalancer-healthcheck-protocol="http" \\
+                                          service.beta.kubernetes.io/do-loadbalancer-healthcheck-port="8080" \\
+                                          service.beta.kubernetes.io/do-loadbalancer-healthcheck-path="/login" \\
+                                          --overwrite
+                                        
+                                        if [ \$? -eq 0 ]; then
+                                            echo "✅ Kubernetes service annotations updated"
+                                            echo "Note: This may trigger a LoadBalancer recreation with correct settings"
+                                        else
+                                            echo "❌ Failed to update Kubernetes service annotations"
+                                        fi
                                     fi
                                     
                                     # Check application health
