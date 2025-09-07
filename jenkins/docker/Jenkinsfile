@@ -498,9 +498,19 @@ CMD ["java", "-jar", "app.jar"]
                     def k8sNamespace = (params.K8S_NAMESPACE && params.K8S_NAMESPACE.trim() != '') ? params.K8S_NAMESPACE : "tenant-${params.TENANT_NAME.toLowerCase().replaceAll('[^a-z0-9-]', '-')}"
 
                     withCredentials([
-                        string(credentialsId: 'DO_DOMAIN', variable: 'DO_DOMAIN')
+                        string(credentialsId: 'DO_DOMAIN', variable: 'DO_DOMAIN'),
+                        string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN')
                     ]) {
 
+
+
+                    def fqdn = "${params.TENANT_NAME}.${DO_DOMAIN}"
+                    env.CERT_ID = sh(
+                        script: "curl -s -H 'Authorization: Bearer $DO_API_TOKEN' https://api.digitalocean.com/v2/certificates | jq -r '.certificates[] | select(.dns_names[] == \"${fqdn}\") | .id'",
+                        returnStdout: true
+                    ).trim()
+                    if (!env.CERT_ID) { error "No certificate found for ${fqdn}" }
+                    echo "Using certificate ID: ${env.CERT_ID}"
 
 
 
@@ -581,63 +591,74 @@ spec:
         persistentVolumeClaim:
           claimName: inventory-${params.TENANT_NAME}-uploads-pvc
 ---
-        apiVersion: v1
-        kind: Service
-        metadata:
-          name: inventory-${params.TENANT_NAME}-service
-          namespace: ${k8sNamespace}
-          labels:
-            app: inventory
-            tenant: ${params.TENANT_NAME}
-          annotations:
-            service.beta.kubernetes.io/do-loadbalancer-name: "${WORKSPACE.split('/').last()}"
-            service.beta.kubernetes.io/do-loadbalancer-algorithm: "round_robin"
-            service.beta.kubernetes.io/do-loadbalancer-protocol: "http"
-            service.beta.kubernetes.io/do-loadbalancer-tls-passthrough: "false"
-            service.beta.kubernetes.io/do-loadbalancer-certificate-id: "${params.TENANT_NAME}.${DO_DOMAIN}"
-            service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol: "true"
-            # Health check configuration - CRITICAL: Use HTTP protocol and port 8080
-            service.beta.kubernetes.io/do-loadbalancer-healthcheck-protocol: "http"
-            service.beta.kubernetes.io/do-loadbalancer-healthcheck-port: "8080"
-            service.beta.kubernetes.io/do-loadbalancer-healthcheck-path: "/login"
-            service.beta.kubernetes.io/do-loadbalancer-healthcheck-check-interval-seconds: "10"
-            service.beta.kubernetes.io/do-loadbalancer-healthcheck-response-timeout-seconds: "5"
-            service.beta.kubernetes.io/do-loadbalancer-healthcheck-healthy-threshold: "3"
-            service.beta.kubernetes.io/do-loadbalancer-healthcheck-unhealthy-threshold: "3"
-            # Forwarding rules configuration - CRITICAL: Route to port 8080 (single-line JSON format)
-            #Force HTTP forwarding rules explicitly
-            service.beta.kubernetes.io/do-loadbalancer-forwarding-rules: |
-              [
-                {
-                  "entry_protocol": "http",
-                  "entry_port": 80,
-                  "target_protocol": "http",
-                  "target_port": 8080
-                },
-                {
-                  "entry_protocol": "https",
-                  "entry_port": 443,
-                  "target_protocol": "http",
-                  "target_port": 8080
-                }
-              ]
-            # REMOVED: kubernetes.digitalocean.com/load-balancer-id annotation
-            # This allows Kubernetes to use existing LoadBalancer or create new one
-        spec:
-          type: LoadBalancer
-          externalTrafficPolicy: Local
-          selector:
-            app: inventory
-            tenant: ${params.TENANT_NAME}
-          ports:
-          - name: http
-            port: 80
-            targetPort: 8080
-            protocol: TCP
-          - name: https
-            port: 443
-            targetPort: 8080
-            protocol: TCP
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: inventory-${params.TENANT_NAME}-service
+      namespace: ${k8sNamespace}
+      labels:
+        app: inventory
+        tenant: ${params.TENANT_NAME}
+      annotations:
+        # Optional: friendly LB name
+        service.beta.kubernetes.io/do-loadbalancer-name: "${WORKSPACE.split('/').last()}"
+        service.beta.kubernetes.io/do-loadbalancer-algorithm: "round_robin"
+
+        # Terminate TLS at the LB, not at the pod
+        service.beta.kubernetes.io/do-loadbalancer-tls-passthrough: "false"
+
+        # Redirect all HTTP to HTTPS
+        service.beta.kubernetes.io/do-loadbalancer-redirect-http-to-https: "true"
+
+        # Attach a certificate (use your actual DO certificate UUID)
+        service.beta.kubernetes.io/do-loadbalancer-certificate-id: "${CERT_ID}"
+
+        # (Alternative if you want DO to provision/attach a Let's Encrypt cert automatically)
+        # service.beta.kubernetes.io/do-loadbalancer-hostname: "${params.TENANT_NAME}.${DO_DOMAIN}"
+
+        # Health check against your app
+        service.beta.kubernetes.io/do-loadbalancer-healthcheck-protocol: "http"
+        service.beta.kubernetes.io/do-loadbalancer-healthcheck-port: "8080"
+        service.beta.kubernetes.io/do-loadbalancer-healthcheck-path: "/login"
+        service.beta.kubernetes.io/do-loadbalancer-healthcheck-check-interval-seconds: "10"
+        service.beta.kubernetes.io/do-loadbalancer-healthcheck-response-timeout-seconds: "5"
+        service.beta.kubernetes.io/do-loadbalancer-healthcheck-healthy-threshold: "3"
+        service.beta.kubernetes.io/do-loadbalancer-healthcheck-unhealthy-threshold: "3"
+
+        # Forwarding rules: HTTP 80 → 8080, HTTPS 443 → 8080 with cert
+        service.beta.kubernetes.io/do-loadbalancer-forwarding-rules: |
+          [
+            {
+              "entry_protocol": "http",
+              "entry_port": 80,
+              "target_protocol": "http",
+              "target_port": 8080,
+              "tls_passthrough": false
+            },
+            {
+              "entry_protocol": "https",
+              "entry_port": 443,
+              "target_protocol": "http",
+              "target_port": 8080,
+              "tls_passthrough": false,
+              "certificate_id": "${env.CERT_ID}"
+            }
+          ]
+    spec:
+      type: LoadBalancer
+      externalTrafficPolicy: Local
+      selector:
+        app: inventory
+        tenant: ${params.TENANT_NAME}
+      ports:
+        - name: http
+          port: 80
+          targetPort: 8080
+          protocol: TCP
+        - name: https
+          port: 443
+          targetPort: 8080
+          protocol: TCP
 """
                     
                     // Write deployment manifest to file
@@ -878,24 +899,6 @@ spec:
             }
         }
 
-        stage('Cert: Lookup ID') {
-            steps {
-                withCredentials([
-                    string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN'),
-                    string(credentialsId: 'DO_DOMAIN', variable: 'DO_DOMAIN')
-                ]) {
-                    script {
-                        def fqdn = "${params.TENANT_NAME}.${DO_DOMAIN}"
-                        env.CERT_ID = sh(
-                            script: "curl -s -H 'Authorization: Bearer $DO_API_TOKEN' https://api.digitalocean.com/v2/certificates | jq -r '.certificates[] | select(.dns_names[] == \"${fqdn}\") | .id'",
-                            returnStdout: true
-                        ).trim()
-                        if (!env.CERT_ID) { error "No certificate found for ${fqdn}" }
-                        echo "Using certificate ID: ${env.CERT_ID}"
-                    }
-                }
-            }
-        }
 
         stage('LB: Read Config') {
             steps {
