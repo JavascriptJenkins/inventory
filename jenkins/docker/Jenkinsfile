@@ -918,9 +918,7 @@ spec:
                 withCredentials([string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN')]) {
                     sh """
 
-                        echo "Updating Load Balancer but waiting 10 seconds to not hit api too much: ${env.LB_ID}"
-
-                        sleep 60
+                        echo "Updating Load Balancer with certificate and droplet in single call: ${env.LB_ID}"
 
                         set -e
                         jq -n \\
@@ -932,6 +930,7 @@ spec:
                           --argjson su  ${env.LB_SIZE_UNIT} \\
                           '{
                              name:\$name, algorithm:\$algo, region:\$region, size:\$size, size_unit:\$su,
+                             droplet_ids: [516774967],
                              forwarding_rules: [
                                {entry_protocol:"http",  entry_port:80,  target_protocol:"http", target_port:8080, tls_passthrough:false},
                                {entry_protocol:"https", entry_port:443, target_protocol:"http", target_port:8080, tls_passthrough:false, certificate_id:\$cert}
@@ -946,36 +945,7 @@ spec:
                             -H "Content-Type: application/json" \\
                             -H "Authorization: Bearer \$DO_API_TOKEN" \\
                             -d @-
-                        echo "✅ Load Balancer updated"
-                        
-                        # CRITICAL: Re-add the droplet after LoadBalancer update
-                        # DigitalOcean removes all droplets when updating LoadBalancer configuration
-                        echo "Re-adding droplet 516774967 to LoadBalancer after update..."
-                        curl -X POST \\
-                          "https://api.digitalocean.com/v2/load_balancers/${env.LB_ID}/droplets" \\
-                          -H "Content-Type: application/json" \\
-                          -H "Authorization: Bearer \$DO_API_TOKEN" \\
-                          -d '{"droplet_ids": [516774967]}'
-                        
-                        if [ \$? -eq 0 ]; then
-                            echo "✅ Droplet successfully re-added to LoadBalancer after update"
-                            
-                            # Wait a moment for the API to update
-                            sleep 60
-                            
-                            # Verify the droplet is back in the load balancer
-                            DROPLET_CHECK=\$(curl -s -H "Authorization: Bearer \$DO_API_TOKEN" \\
-                              "https://api.digitalocean.com/v2/load_balancers/${env.LB_ID}" | \\
-                              grep -o "516774967" || echo "not_found")
-                            
-                            if [ "\$DROPLET_CHECK" = "516774967" ]; then
-                                echo "✅ Verification successful: Droplet 516774967 is back in the LoadBalancer after update"
-                            else
-                                echo "⚠️  Verification failed: Droplet may not be visible yet (this can take a few minutes)"
-                            fi
-                        else
-                            echo "❌ Failed to re-add droplet to LoadBalancer after update"
-                        fi
+                        echo "✅ Load Balancer updated with certificate and droplet in single call"
                     """
                 }
             }
