@@ -913,15 +913,31 @@ spec:
             }
         }
 
-        stage('LB: Attach Cert & Forwarding Rules') {
+        stage('LB: Configure with Certificate') {
             steps {
                 withCredentials([string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN')]) {
                     sh """
-
-                        echo "Updating Load Balancer with certificate and droplet in single call: ${env.LB_ID}"
-                        sleep 60
-
-                        set -e
+                        echo "Configuring LoadBalancer with certificate: ${env.LB_ID}"
+                        
+                        # First, ensure the droplet is added to the LoadBalancer
+                        echo "Adding droplet 516774967 to LoadBalancer..."
+                        curl -X POST \\
+                          "https://api.digitalocean.com/v2/load_balancers/${env.LB_ID}/droplets" \\
+                          -H "Content-Type: application/json" \\
+                          -H "Authorization: Bearer \$DO_API_TOKEN" \\
+                          -d '{"droplet_ids": [516774967]}'
+                        
+                        if [ \$? -eq 0 ]; then
+                            echo "✅ Droplet added to LoadBalancer"
+                        else
+                            echo "⚠️  Droplet may already be in LoadBalancer or addition failed"
+                        fi
+                        
+                        # Wait for droplet to be added
+                        sleep 30
+                        
+                        # Configure LoadBalancer with both HTTP and HTTPS (with certificate)
+                        echo "Configuring LoadBalancer with HTTP and HTTPS forwarding..."
                         jq -n \\
                           --arg name    "${env.LB_NAME}" \\
                           --arg algo    "${env.LB_ALGORITHM}" \\
@@ -933,7 +949,7 @@ spec:
                              name:\$name, algorithm:\$algo, region:\$region, size:\$size, size_unit:\$su,
                              droplet_ids: [516774967],
                              forwarding_rules: [
-                               {entry_protocol:"http",  entry_port:80,  target_protocol:"http", target_port:8080, tls_passthrough:false},
+                               {entry_protocol:"http", entry_port:80, target_protocol:"http", target_port:8080, tls_passthrough:false},
                                {entry_protocol:"https", entry_port:443, target_protocol:"http", target_port:8080, tls_passthrough:false, certificate_id:\$cert}
                              ],
                              health_check: {
@@ -946,7 +962,19 @@ spec:
                             -H "Content-Type: application/json" \\
                             -H "Authorization: Bearer \$DO_API_TOKEN" \\
                             -d @-
-                        echo "✅ Load Balancer updated with certificate and droplet in single call"
+                        
+                        echo "✅ LoadBalancer configured with HTTP and HTTPS (with certificate)"
+                        
+                        # Wait for configuration to take effect
+                        sleep 60
+                        
+                        # Verify the LoadBalancer configuration
+                        echo "Verifying LoadBalancer configuration..."
+                        curl -s -H "Authorization: Bearer \$DO_API_TOKEN" \\
+                          "https://api.digitalocean.com/v2/load_balancers/${env.LB_ID}" | \\
+                          jq '.load_balancer.forwarding_rules[] | {entry_protocol, entry_port, target_protocol, target_port, certificate_id}'
+                        
+                        echo "LoadBalancer configuration complete"
                     """
                 }
             }
