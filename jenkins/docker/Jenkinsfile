@@ -10,6 +10,7 @@ pipeline {
         string(name: 'BRANCH', defaultValue: 'test1', description: 'Branch to build from')
         string(name: 'TENANT_NAME', defaultValue: '', description: 'Tenant name for deployment')
         string(name: 'APP_NAME', defaultValue: 'inventory', description: 'Application name')
+        string(name: 'APP_CODEBASE', defaultValue: '', description: 'The app codebase')
         string(name: 'SUBSCRIPTION_TIER', defaultValue: 'BASIC', description: 'Subscription tier')
         string(name: 'BILLING_EMAIL', defaultValue: '', description: 'Billing email address')
         string(name: 'K8S_NAMESPACE', defaultValue: '', description: 'Kubernetes namespace (auto-generated if empty)')
@@ -645,23 +646,30 @@ spec:
                     // Write deployment manifest to file
                     writeFile file: 'k8s-deployment.yaml', text: deploymentYaml
                     
-                    // Clean up any existing service with stale LoadBalancer annotations
-                    echo "Cleaning up any existing service with stale LoadBalancer annotations..."
+                    // Force delete and recreate service to remove stale LoadBalancer annotations
+                    echo "Force deleting any existing service with stale LoadBalancer annotations..."
                     sh """
                         export KUBECONFIG="\$KCFG"
                         
-                        # Check if service exists and has stale LoadBalancer ID
+                        # Force delete the existing service completely
+                        echo "Deleting existing service: inventory-${params.TENANT_NAME}-service"
+                        kubectl delete service inventory-${params.TENANT_NAME}-service -n ${k8sNamespace} --ignore-not-found=true
+                        
+                        # Wait for complete deletion
+                        echo "Waiting for service deletion to complete..."
+                        sleep 10
+                        
+                        # Verify service is gone
                         if kubectl get service inventory-${params.TENANT_NAME}-service -n ${k8sNamespace} >/dev/null 2>&1; then
-                            echo "Found existing service, checking for stale LoadBalancer ID annotation..."
+                            echo "Service still exists, waiting longer..."
+                            sleep 20
                             
-                            # Remove any existing LoadBalancer ID annotation to prevent 404 errors
-                            kubectl annotate service inventory-${params.TENANT_NAME}-service -n ${k8sNamespace} \\
-                                kubernetes.digitalocean.com/load-balancer-id- || true
-                            
-                            echo "Removed stale LoadBalancer ID annotation"
-                        else
-                            echo "No existing service found, will create new one"
+                            # Try force delete again if still exists
+                            kubectl delete service inventory-${params.TENANT_NAME}-service -n ${k8sNamespace} --force --grace-period=0 || true
+                            sleep 5
                         fi
+                        
+                        echo "Service cleanup completed, ready to create fresh service"
                     """
                     }
                     // Apply the deployment using kubectl with file credential
