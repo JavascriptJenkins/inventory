@@ -137,15 +137,7 @@ public class JenkinsHttpService {
             } else {
                 System.out.println("Warning: DigitalOcean load balancer ID is not configured. Kubernetes Service will create a new load balancer.");
             }
-            
-            // Get LoadBalancer external IP - this is critical before proceeding
-            String loadBalancerIp = digitalOceanService.getSandboxLoadBalancerIp(tenantName);
-            if (loadBalancerIp == null || loadBalancerIp.trim().isEmpty()) {
-                System.out.println("CRITICAL: No LoadBalancer external IP available for tenant: " + tenantName + " - cannot proceed with Jenkins deployment");
-                throw new RuntimeException("LoadBalancer external IP is required but not available");
-            }
-            System.out.println("Retrieved LoadBalancer external IP: " + loadBalancerIp);
-            
+
             // Create job parameters
             MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
             // todo: change this to a legit secret stored in GCP
@@ -156,7 +148,6 @@ public class JenkinsHttpService {
             params.add("APP_NAME", tenantName+"App");
             params.add("K8S_NAMESPACE", "tenant-" + tenantName);
             params.add("BRANCH", "test1"); // todo: change this
-            params.add("EXTERNAL_LB_IP", loadBalancerIp);
             
             // Add DigitalOcean load balancer ID to Jenkins parameters
             if (loadbalancerId != null && !loadbalancerId.trim().isEmpty()) {
@@ -164,15 +155,13 @@ public class JenkinsHttpService {
                 System.out.println("Adding DigitalOcean load balancer ID to Jenkins parameters: " + loadbalancerId);
             }
             
-            System.out.println("Adding LoadBalancer external IP to Jenkins parameters: " + loadBalancerIp);
-            
+
             HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
             
             ResponseEntity<String> response = restTemplate.postForEntity(jobUrl, request, String.class);
             
             if (response.getStatusCode().is2xxSuccessful()) {
                 System.out.println("Successfully triggered generic_tenant_build Jenkins job for tenant: " + tenantName);
-                System.out.println("Jenkins job will handle DNS record creation using LoadBalancer IP: " + loadBalancerIp);
             } else {
                 System.out.println("Failed to trigger generic_tenant_build Jenkins job. Status: " + response.getStatusCode() + ", Body: " + response.getBody());
                 throw new RuntimeException("Jenkins generic_tenant_build job trigger failed");
