@@ -853,6 +853,130 @@ spec:
         }
     }
 
+
+    // 1) Discover IDs (LB + Service IP)
+    stage('LB: Discover IDs') {
+      steps {
+        withCredentials([
+          string(credentialsId: 'DO_DOMAIN',      variable: 'DO_DOMAIN'),
+          file  (credentialsId: 'KUBECONFIG_PATH', variable: 'KCFG')
+        ]) {
+          script {
+            env.LB_ID = sh(
+              script: "export KUBECONFIG=\"$KCFG\"; kubectl get svc inventory-${params.TENANT_NAME}-service -n tenant-${params.TENANT_NAME} -o jsonpath='{.metadata.annotations.kubernetes\\.digitalocean\\.com/load-balancer-id}'",
+              returnStdout: true
+            ).trim()
+            if (!env.LB_ID) { error "LB_ID not found on service annotation" }
+
+            env.EXTERNAL_IP = sh(
+              script: "export KUBECONFIG=\"$KCFG\"; kubectl get svc inventory-${params.TENANT_NAME}-service -n tenant-${params.TENANT_NAME} -o jsonpath='{.status.loadBalancer.ingress[0].ip}'",
+              returnStdout: true
+            ).trim()
+            if (!env.EXTERNAL_IP || env.EXTERNAL_IP == 'null') { error "External IP not found yet" }
+
+            echo "Found LB_ID: ${env.LB_ID}"
+            echo "Service IP : ${env.EXTERNAL_IP}"
+          }
+        }
+      }
+    }
+
+    // 2) Find certificate for tenant FQDN
+    stage('Cert: Lookup ID') {
+      steps {
+        withCredentials([string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN'),
+                         string(credentialsId: 'DO_DOMAIN',    variable: 'DO_DOMAIN')]) {
+          script {
+            def fqdn = "${params.TENANT_NAME}.${DO_DOMAIN}"
+            env.CERT_ID = sh(
+              script: "curl -s -H 'Authorization: Bearer $DO_API_TOKEN' https://api.digitalocean.com/v2/certificates | jq -r '.certificates[] | select(.dns_names[] == \"${fqdn}\") | .id'",
+              returnStdout: true
+            ).trim()
+            if (!env.CERT_ID) { error "No certificate found for ${fqdn}" }
+            echo "Using certificate ID: ${env.CERT_ID}"
+          }
+        }
+      }
+    }
+
+    // 3) Read current LB config (name/region/size/algorithm)
+    stage('LB: Read Config') {
+      steps {
+        withCredentials([string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN')]) {
+          script {
+            def base = "curl -s -H 'Authorization: Bearer $DO_API_TOKEN' https://api.digitalocean.com/v2/load_balancers/${env.LB_ID}"
+            env.LB_NAME       = sh(script: "${base} | jq -r '.load_balancer.name'",        returnStdout: true).trim()
+            env.LB_ALGORITHM  = sh(script: "${base} | jq -r '.load_balancer.algorithm'",   returnStdout: true).trim()
+            env.LB_REGION     = sh(script: "${base} | jq -r '.load_balancer.region.slug'", returnStdout: true).trim()
+            env.LB_SIZE       = sh(script: "${base} | jq -r '.load_balancer.size'",        returnStdout: true).trim()
+            env.LB_SIZE_UNIT  = sh(script: "${base} | jq -r '.load_balancer.size_unit'",   returnStdout: true).trim()
+            echo "LB => name=${env.LB_NAME}, region=${env.LB_REGION}, algo=${env.LB_ALGORITHM}, size=${env.LB_SIZE}/${env.LB_SIZE_UNIT}"
+          }
+        }
+      }
+    }
+
+    // 4) Update LB: attach cert + set forwarding rules (80/443 -> 8080)
+    stage('LB: Attach Cert & Forwarding Rules') {
+      steps {
+        withCredentials([string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN')]) {
+          sh """
+            set -e
+            jq -n \
+              --arg name    "${env.LB_NAME}" \
+              --arg algo    "${env.LB_ALGORITHM}" \
+              --arg region  "${env.LB_REGION}" \
+              --arg size    "${env.LB_SIZE}" \
+              --arg cert    "${env.CERT_ID}" \
+              --argjson su  ${env.LB_SIZE_UNIT} \
+              '{
+                 name:$name, algorithm:$algo, region:$region, size:$size, size_unit:$su,
+                 forwarding_rules: [
+                   {entry_protocol:"http",  entry_port:80,  target_protocol:"http", target_port:8080, tls_passthrough:false},
+                   {entry_protocol:"https", entry_port:443, target_protocol:"http", target_port:8080, tls_passthrough:false, certificate_id:$cert}
+                 ],
+                 health_check: {
+                   protocol:"http", port:8080, path:"/login",
+                   check_interval_seconds:10, response_timeout_seconds:5,
+                   healthy_threshold:3, unhealthy_threshold:3
+                 }
+               }' \
+            | curl --fail-with-body -sS -X PUT "https://api.digitalocean.com/v2/load_balancers/${env.LB_ID}" \
+                -H "Content-Type: application/json" \
+                -H "Authorization: Bearer $DO_API_TOKEN" \
+                -d @-
+            echo "✅ Load Balancer updated"
+          """
+        }
+      }
+    }
+
+    // 5) DNS: create/ensure A record
+    stage('DNS: Create A Record') {
+      steps {
+        withCredentials([string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN'),
+                         string(credentialsId: 'DO_DOMAIN',    variable: 'DO_DOMAIN')]) {
+          sh """
+            set -e
+            FQDN="${params.TENANT_NAME}.\${DO_DOMAIN}"
+            echo "Creating/ensuring A record: \$FQDN -> ${env.EXTERNAL_IP}"
+            # Create (will error if exists) – safe to ignore 422; or upsert by deleting existing first.
+            curl -sS -X POST "https://api.digitalocean.com/v2/domains/\${DO_DOMAIN}/records" \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer $DO_API_TOKEN" \
+              -d '{
+                    "type":"A",
+                    "name":"${params.TENANT_NAME}",
+                    "data":"${env.EXTERNAL_IP}",
+                    "ttl":60
+                  }' || true
+            echo "✅ DNS step done"
+          """
+        }
+      }
+    }
+
+
     post {
         success {
             echo "Deployment completed successfully for tenant: ${params.TENANT_NAME}"
@@ -870,154 +994,5 @@ spec:
             sh 'rm -f Dockerfile k8s-deployment.yaml'
         }
     }
-    
 
-}
-
-    stage('Attach Certificate and Create DNS') {
-
-        steps {
-            script {
-                withCredentials([
-                    string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN'),
-                    string(credentialsId: 'DO_DOMAIN', variable: 'DO_DOMAIN'),
-                    file(credentialsId: 'KUBECONFIG_PATH', variable: 'KCFG')
-                ]) {
-                    sh """
-                        export KUBECONFIG="\$KCFG"
-
-                        echo "=== Attaching Certificate and Creating DNS Record ==="
-
-                        # Get LoadBalancer ID from Kubernetes service
-                        LB_ID=\$(kubectl get service inventory-${params.TENANT_NAME}-service -n tenant-${params.TENANT_NAME} -o jsonpath='{.metadata.annotations.kubernetes\\.digitalocean\\.com/load-balancer-id}')
-
-                        if [ -z "\$LB_ID" ]; then
-                            echo "ERROR: Could not find LoadBalancer ID from Kubernetes service"
-                            exit 1
-                        fi
-
-                        echo "LoadBalancer ID: \$LB_ID"
-
-                        # Get LoadBalancer external IP
-                        EXTERNAL_IP=\$(kubectl get service inventory-${params.TENANT_NAME}-service -n tenant-${params.TENANT_NAME} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-
-                        if [ -z "\$EXTERNAL_IP" ] || [ "\$EXTERNAL_IP" = "null" ]; then
-                            echo "ERROR: Could not get LoadBalancer external IP"
-                            exit 1
-                        fi
-
-                        echo "LoadBalancer external IP: \$EXTERNAL_IP"
-
-                        # Find certificate ID for the domain
-                        echo "Finding certificate for domain: ${params.TENANT_NAME}.${DO_DOMAIN}"
-                        CERT_ID=\$(curl -s -H "Authorization: Bearer \$DO_API_TOKEN" \\
-                          "https://api.digitalocean.com/v2/certificates" | \\
-                          jq -r ".certificates[] | select(.dns_names[] == \"${params.TENANT_NAME}.${DO_DOMAIN}\") | .id")
-
-                        if [ -z "\$CERT_ID" ] || [ "\$CERT_ID" = "null" ]; then
-                            echo "ERROR: No certificate found for domain: ${params.TENANT_NAME}.${DO_DOMAIN}"
-                            exit 1
-                        fi
-
-                        echo "Found certificate ID: \$CERT_ID"
-
-                        # Get current LoadBalancer configuration
-                        echo "Getting current LoadBalancer configuration..."
-                        LB_CONFIG=\$(curl -s -H "Authorization: Bearer \$DO_API_TOKEN" \\
-                          "https://api.digitalocean.com/v2/load_balancers/\$LB_ID")
-
-                        if [ \$? -ne 0 ]; then
-                            echo "ERROR: Failed to get LoadBalancer configuration"
-                            exit 1
-                        fi
-
-                        # Extract current configuration
-                        LB_NAME=\$(echo "\$LB_CONFIG" | jq -r '.load_balancer.name')
-                        LB_ALGORITHM=\$(echo "\$LB_CONFIG" | jq -r '.load_balancer.algorithm')
-                        LB_REGION=\$(echo "\$LB_CONFIG" | jq -r '.load_balancer.region.slug')
-                        LB_SIZE=\$(echo "\$LB_CONFIG" | jq -r '.load_balancer.size')
-                        LB_SIZE_UNIT=\$(echo "\$LB_CONFIG" | jq -r '.load_balancer.size_unit')
-
-                        echo "LoadBalancer details:"
-                        echo "  Name: \$LB_NAME"
-                        echo "  Algorithm: \$LB_ALGORITHM"
-                        echo "  Region: \$LB_REGION"
-                        echo "  Size: \$LB_SIZE"
-                        echo "  Size Unit: \$LB_SIZE_UNIT"
-
-                        # Update LoadBalancer with certificate attached to HTTPS rule
-                        echo "Attaching certificate to LoadBalancer..."
-                        curl -X PUT \\
-                          "https://api.digitalocean.com/v2/load_balancers/\$LB_ID" \\
-                          -H "Content-Type: application/json" \\
-                          -H "Authorization: Bearer \$DO_API_TOKEN" \\
-                          -d '{
-                            "name": "\$LB_NAME",
-                            "algorithm": "\$LB_ALGORITHM",
-                            "region": "\$LB_REGION",
-                            "size": "\$LB_SIZE",
-                            "size_unit": \$LB_SIZE_UNIT,
-                            "forwarding_rules": [
-                              {
-                                "entry_protocol": "http",
-                                "entry_port": 80,
-                                "target_protocol": "http",
-                                "target_port": 8080,
-                                "tls_passthrough": false
-                              },
-                              {
-                                "entry_protocol": "https",
-                                "entry_port": 443,
-                                "target_protocol": "http",
-                                "target_port": 8080,
-                                "tls_passthrough": false,
-                                "certificate_id": "\$CERT_ID"
-                              }
-                            ],
-                            "health_check": {
-                              "protocol": "http",
-                              "port": 8080,
-                              "path": "/login",
-                              "check_interval_seconds": 10,
-                              "response_timeout_seconds": 5,
-                              "healthy_threshold": 3,
-                              "unhealthy_threshold": 3
-                            }
-                          }'
-
-                        if [ \$? -eq 0 ]; then
-                            echo "✅ Certificate successfully attached to LoadBalancer"
-                        else
-                            echo "❌ Failed to attach certificate to LoadBalancer"
-                            exit 1
-                        fi
-
-                        # Create DNS A record
-                        echo "Creating DNS A record for ${params.TENANT_NAME}.${DO_DOMAIN} -> \$EXTERNAL_IP"
-                        curl -X POST "https://api.digitalocean.com/v2/domains/${DO_DOMAIN}/records" \\
-                          -H "Content-Type: application/json" \\
-                          -H "Authorization: Bearer \$DO_API_TOKEN" \\
-                          -d '{
-                            "type": "A",
-                            "name": "${params.TENANT_NAME}",
-                            "data": "\$EXTERNAL_IP",
-                            "ttl": 60
-                          }'
-
-                        if [ \$? -eq 0 ]; then
-                            echo "✅ DNS A record created successfully"
-                            echo "Domain: ${params.TENANT_NAME}.${DO_DOMAIN}"
-                            echo "IP: \$EXTERNAL_IP"
-                            echo "Certificate: \$CERT_ID"
-                        else
-                            echo "❌ Failed to create DNS A record"
-                            exit 1
-                        fi
-
-                        echo "=== Certificate and DNS Setup Complete ==="
-                    """
-                }
-            }
-        }
-    }
 }
