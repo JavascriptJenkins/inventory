@@ -623,6 +623,8 @@ spec:
                   "tls_passthrough": false
                 }
               ]
+            # REMOVED: kubernetes.digitalocean.com/load-balancer-id annotation
+            # This allows Kubernetes to use existing LoadBalancer or create new one
         spec:
           type: LoadBalancer
           externalTrafficPolicy: Local
@@ -642,6 +644,25 @@ spec:
                     
                     // Write deployment manifest to file
                     writeFile file: 'k8s-deployment.yaml', text: deploymentYaml
+                    
+                    // Clean up any existing service with stale LoadBalancer annotations
+                    echo "Cleaning up any existing service with stale LoadBalancer annotations..."
+                    sh """
+                        export KUBECONFIG="\$KCFG"
+                        
+                        # Check if service exists and has stale LoadBalancer ID
+                        if kubectl get service inventory-${params.TENANT_NAME}-service -n ${k8sNamespace} >/dev/null 2>&1; then
+                            echo "Found existing service, checking for stale LoadBalancer ID annotation..."
+                            
+                            # Remove any existing LoadBalancer ID annotation to prevent 404 errors
+                            kubectl annotate service inventory-${params.TENANT_NAME}-service -n ${k8sNamespace} \\
+                                kubernetes.digitalocean.com/load-balancer-id- || true
+                            
+                            echo "Removed stale LoadBalancer ID annotation"
+                        else
+                            echo "No existing service found, will create new one"
+                        fi
+                    """
                     }
                     // Apply the deployment using kubectl with file credential
                     withCredentials(
