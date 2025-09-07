@@ -606,8 +606,8 @@ spec:
             service.beta.kubernetes.io/do-loadbalancer-healthcheck-response-timeout-seconds: "5"
             service.beta.kubernetes.io/do-loadbalancer-healthcheck-healthy-threshold: "3"
             service.beta.kubernetes.io/do-loadbalancer-healthcheck-unhealthy-threshold: "3"
-            # Remove forwarding rules annotation - let service ports handle routing
-            # service.beta.kubernetes.io/do-loadbalancer-forwarding-rules: removed
+            # Forwarding rules configuration - CRITICAL: Route to port 8080 (single-line JSON format)
+            service.beta.kubernetes.io/do-loadbalancer-forwarding-rules: '[{"entry_protocol":"http","entry_port":80,"target_protocol":"http","target_port":8080,"tls_passthrough":false},{"entry_protocol":"https","entry_port":443,"target_protocol":"http","target_port":8080,"tls_passthrough":false}]'
             # REMOVED: kubernetes.digitalocean.com/load-balancer-id annotation
             # This allows Kubernetes to use existing LoadBalancer or create new one
         spec:
