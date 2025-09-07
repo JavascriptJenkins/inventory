@@ -164,7 +164,7 @@ public class DigitalOceanService {
      * @param tenantName The tenant name to get the load balancer IP for
      * @return The external IP of the LoadBalancer service, or null if not found
      */
-    private String getSandboxLoadBalancerIp(String tenantName) {
+    public String getSandboxLoadBalancerIp(String tenantName) {
         try {
             // Try to get the IP from the Kubernetes LoadBalancer service
             String k8sNamespace = "tenant-" + tenantName.toLowerCase().replaceAll("[^a-z0-9-]", "-");
@@ -1529,7 +1529,7 @@ public class DigitalOceanService {
         
         // DNS record creation will be handled after Kubernetes deployment
         // Skip DNS creation here since LoadBalancer service doesn't exist yet
-        boolean dnsSuccess = true; // Will be handled later by Jenkins
+        boolean dnsSuccess = true; // Will be handled after Jenkins deployment
         logger.info("DNS record creation will be handled after Kubernetes LoadBalancer service is deployed");
         
         // Create SSL certificate
@@ -1567,6 +1567,22 @@ public class DigitalOceanService {
             }
         } catch (Exception e) {
             logger.error("Error managing load balancer for tenant: {}", tenantName, e);
+        }
+        
+        // Get LoadBalancer external IP - this is critical before proceeding with Jenkins
+        String loadBalancerIp = null;
+        try {
+            loadBalancerIp = getSandboxLoadBalancerIp(tenantName);
+            if (loadBalancerIp == null || loadBalancerIp.trim().isEmpty()) {
+                logger.error("CRITICAL: No LoadBalancer external IP available for tenant: {} - cannot proceed with Jenkins deployment", tenantName);
+                overallSuccess = false;
+                return overallSuccess;
+            }
+            logger.info("LoadBalancer external IP confirmed for tenant {}: {}", tenantName, loadBalancerIp);
+        } catch (Exception e) {
+            logger.error("CRITICAL: Error getting LoadBalancer external IP for tenant: {} - cannot proceed with Jenkins deployment", tenantName, e);
+            overallSuccess = false;
+            return overallSuccess;
         }
         
         // Wait for certificate to become active if it was created
@@ -1703,7 +1719,155 @@ public class DigitalOceanService {
      */
     public boolean createDnsRecordAfterKubernetesDeployment(String tenantName) {
         logger.info("Creating DNS record after Kubernetes LoadBalancer deployment for tenant: {}", tenantName);
+        
+        // Wait a bit for the LoadBalancer to be fully ready
+        try {
+            Thread.sleep(30000); // Wait 30 seconds for LoadBalancer to be ready
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.warn("Interrupted while waiting for LoadBalancer to be ready");
+        }
+        
         return createOrUpdateDnsRecord(tenantName);
+    }
+    
+    /**
+     * Completes the tenant deployment by creating DNS record after Kubernetes deployment
+     * This method should be called after the Jenkins pipeline has completed successfully
+     * 
+     * @param tenantName The tenant name to complete deployment for
+     * @return true if successful, false otherwise
+     */
+    public boolean completeTenantDeployment(String tenantName) {
+        logger.info("Completing tenant deployment for: {}", tenantName);
+        
+        try {
+            // Create DNS record now that LoadBalancer is ready
+            boolean dnsSuccess = createDnsRecordAfterKubernetesDeployment(tenantName);
+            if (!dnsSuccess) {
+                logger.error("Failed to create DNS record for tenant: {}", tenantName);
+                return false;
+            }
+            
+            // Verify LoadBalancer node association
+            boolean nodeAssociationSuccess = ensureLoadBalancerNodeAssociation(tenantName);
+            if (!nodeAssociationSuccess) {
+                logger.warn("LoadBalancer node association check failed for tenant: {}", tenantName);
+                // Don't fail the deployment for this, just log a warning
+            }
+            
+            logger.info("Tenant deployment completed successfully for: {}", tenantName);
+            return true;
+            
+        } catch (Exception e) {
+            logger.error("Error completing tenant deployment for: {}", tenantName, e);
+            return false;
+        }
+    }
+    
+    /**
+     * Ensures that Kubernetes nodes are properly associated with the LoadBalancer
+     * This method can be called to debug and fix node association issues
+     * 
+     * @param tenantName The tenant name to check load balancer for
+     * @return true if nodes are properly associated, false otherwise
+     */
+    public boolean ensureLoadBalancerNodeAssociation(String tenantName) {
+        try {
+            logger.info("Checking LoadBalancer node association for tenant: {}", tenantName);
+            
+            // Get the load balancer ID from the Kubernetes service
+            String k8sNamespace = "tenant-" + tenantName.toLowerCase().replaceAll("[^a-z0-9-]", "-");
+            String serviceName = "inventory-" + tenantName + "-service";
+            
+            // Use kubectl to get the load balancer ID from service annotations
+            ProcessBuilder pb = new ProcessBuilder("kubectl", "get", "service", serviceName, 
+                "--kubeconfig=src/main/resources/static/kubernetes/tulip-sandbox-kubeconfig.yaml",
+                "-n", k8sNamespace, "-o", "jsonpath={.metadata.annotations.kubernetes\\.digitalocean\\.com/load-balancer-id}");
+            
+            Process process = pb.start();
+            java.io.BufferedReader reader = new java.io.BufferedReader(
+                new java.io.InputStreamReader(process.getInputStream()));
+            
+            String loadBalancerId = reader.readLine();
+            reader.close();
+            
+            int exitCode = process.waitFor();
+            logger.info("kubectl get service annotation exit code: {}", exitCode);
+            logger.info("LoadBalancer ID from service: '{}'", loadBalancerId);
+            
+            if (exitCode == 0 && loadBalancerId != null && !loadBalancerId.trim().isEmpty() && !"null".equals(loadBalancerId)) {
+                logger.info("Found LoadBalancer ID: {}", loadBalancerId);
+                
+                // Get the load balancer details from DigitalOcean API
+                String loadBalancerDetails = getLoadBalancerDetails(loadBalancerId.trim());
+                if (loadBalancerDetails != null) {
+                    logger.info("LoadBalancer details: {}", loadBalancerDetails);
+                    
+                    // Check if nodes are associated
+                    if (loadBalancerDetails.contains("\"droplet_ids\":[]") || !loadBalancerDetails.contains("\"droplet_ids\"")) {
+                        logger.warn("No nodes associated with LoadBalancer: {}", loadBalancerId);
+                        logger.info("This is expected behavior - DigitalOcean Cloud Controller Manager should handle node association automatically");
+                        logger.info("If nodes are not showing up, check CCM logs: kubectl logs -n kube-system -l app=digitalocean-cloud-controller-manager");
+                        return false;
+                    } else {
+                        logger.info("Nodes are associated with LoadBalancer: {}", loadBalancerId);
+                        return true;
+                    }
+                }
+            } else {
+                logger.warn("Could not get LoadBalancer ID from Kubernetes service annotations");
+                return false;
+            }
+            
+        } catch (Exception e) {
+            logger.error("Error checking LoadBalancer node association for tenant: {}", tenantName, e);
+            return false;
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Gets load balancer details from DigitalOcean API
+     * 
+     * @param loadBalancerId The load balancer ID
+     * @return JSON string with load balancer details, or null if error
+     */
+    private String getLoadBalancerDetails(String loadBalancerId) {
+        try {
+            if (doToken == null || doToken.trim().isEmpty()) {
+                logger.error("DigitalOcean API token is not configured");
+                return null;
+            }
+            
+            String url = "https://api.digitalocean.com/v2/load_balancers/" + loadBalancerId;
+            logger.info("Getting LoadBalancer details from: {}", url);
+            
+            java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
+                .uri(java.net.URI.create(url))
+                .header("Authorization", "Bearer " + doToken)
+                .header("Content-Type", "application/json")
+                .GET()
+                .build();
+            
+            java.net.http.HttpResponse<String> response = httpClient.send(request, 
+                java.net.http.HttpResponse.BodyHandlers.ofString());
+            
+            logger.info("LoadBalancer details API response status: {}", response.statusCode());
+            logger.debug("LoadBalancer details API response body: {}", response.body());
+            
+            if (response.statusCode() == 200) {
+                return response.body();
+            } else {
+                logger.error("Failed to get LoadBalancer details. Status: {}, Body: {}", response.statusCode(), response.body());
+                return null;
+            }
+            
+        } catch (Exception e) {
+            logger.error("Error getting LoadBalancer details for ID: {}", loadBalancerId, e);
+            return null;
+        }
     }
     
     /**
