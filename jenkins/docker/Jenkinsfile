@@ -13,7 +13,6 @@ pipeline {
         string(name: 'SUBSCRIPTION_TIER', defaultValue: 'BASIC', description: 'Subscription tier')
         string(name: 'BILLING_EMAIL', defaultValue: '', description: 'Billing email address')
         string(name: 'K8S_NAMESPACE', defaultValue: '', description: 'Kubernetes namespace (auto-generated if empty)')
-        string(name: 'EXTERNAL_LB_IP', defaultValue: '', description: 'the ip of the external loadbalancer that is passed from the java app')
 
         // DigitalOcean parameters
         string(name: 'DO_LOADBALANCER_ID', defaultValue: '', description: 'DigitalOcean Load Balancer ID for Kubernetes Service annotation')
@@ -89,7 +88,6 @@ pipeline {
                     echo "  SUBSCRIPTION_TIER: ${params.SUBSCRIPTION_TIER}"
                     echo "  BILLING_EMAIL: ${params.BILLING_EMAIL}"
                     echo "  K8S_NAMESPACE: ${params.K8S_NAMESPACE}"
-                    echo " EXTERNAL_LB_IP ${params.EXTERNAL_LB_IP}"
                     
                     echo "🌐 DIGITALOCEAN PARAMETERS:"
                     echo "  DO_LOADBALANCER_ID: ${params.DO_LOADBALANCER_ID}"
@@ -695,32 +693,9 @@ spec:
                             kubectl apply -f k8s-deployment.yaml
                             kubectl rollout status deployment/inventory-${params.TENANT_NAME} -n ${k8sNamespace} --timeout=300s
                             
-                            # Wait for LoadBalancer to get external IP
-                            echo "Waiting for LoadBalancer to get external IP..."
-                            timeout=300
-                            while [ \$timeout -gt 0 ]; do
-                                EXTERNAL_IP=\$(kubectl get service inventory-${params.TENANT_NAME}-service -n ${k8sNamespace} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-                                if [ -n "\$EXTERNAL_IP" ] && [ "\$EXTERNAL_IP" != "null" ]; then
-                                    echo "LoadBalancer external IP: \$EXTERNAL_IP"
-                                    break
-                                fi
-                                echo "Waiting for external IP... (\$timeout seconds remaining)"
-                                sleep 10
-                                timeout=\$((timeout - 10))
-                            done
-                            
-                            if [ -z "\$EXTERNAL_IP" ] || [ "\$EXTERNAL_IP" = "null" ]; then
-                                echo "ERROR: LoadBalancer did not get external IP within timeout"
-                                kubectl get service inventory-${params.TENANT_NAME}-service -n ${k8sNamespace}
-                                exit 1
-                            fi
-                            
-                            # Update DNS record with LoadBalancer IP
-                            echo "Updating DNS record for ${params.TENANT_NAME}.${DO_DOMAIN} to point to \$EXTERNAL_IP"
-                            
-                            # Log the external IP for verification
-                            echo "LoadBalancer external IP: \$EXTERNAL_IP"
-                            echo "DNS record will be created using EXTERNAL_LB_IP parameter: ${params.EXTERNAL_LB_IP}"
+                            # LoadBalancer will be created by Jenkins job - no need to wait for external IP
+                            echo "LoadBalancer service created successfully"
+                            echo "DNS record will be created after LoadBalancer is provisioned"
                             
                             # Debug: Check service configuration and load balancer details
                             echo "=== Service Configuration ==="
@@ -756,23 +731,39 @@ spec:
                         sh """
                             export KUBECONFIG="\$KCFG"
                             
-                            # Use the LoadBalancer IP passed from Java application
-                            if [ -n "${params.EXTERNAL_LB_IP}" ]; then
-                                echo "Using LoadBalancer external IP from Java application: ${params.EXTERNAL_LB_IP}"
-                                
-                                # Create DNS A record using DigitalOcean API
-                                echo "Creating DNS record for ${params.TENANT_NAME}.${DO_DOMAIN} -> ${params.EXTERNAL_LB_IP}"
+                            # Get LoadBalancer external IP and create DNS record
+                            echo "Getting LoadBalancer external IP for DNS record creation..."
+                            
+                            # Wait for LoadBalancer to get external IP
+                            timeout=300  # 5 minutes timeout
+                            while [ \$timeout -gt 0 ]; do
+                                EXTERNAL_IP=\$(kubectl get service inventory-${params.TENANT_NAME}-service -n tenant-${params.TENANT_NAME} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+                                if [ -n "\$EXTERNAL_IP" ] && [ "\$EXTERNAL_IP" != "null" ]; then
+                                    echo "LoadBalancer external IP: \$EXTERNAL_IP"
+                                    break
+                                fi
+                                echo "Waiting for external IP... (\$timeout seconds remaining)"
+                                sleep 10
+                                timeout=\$((timeout - 10))
+                            done
+                            
+                            if [ -n "\$EXTERNAL_IP" ] && [ "\$EXTERNAL_IP" != "null" ]; then
+                                echo "Creating DNS record for ${params.TENANT_NAME}.${DO_DOMAIN} -> \$EXTERNAL_IP"
                                 curl -X POST "https://api.digitalocean.com/v2/domains/${DO_DOMAIN}/records" \\
                                     -H "Content-Type: application/json" \\
                                     -H "Authorization: Bearer \$DO_API_TOKEN" \\
                                     -d '{
                                         "type": "A",
                                         "name": "${params.TENANT_NAME}",
-                                        "data": "${params.EXTERNAL_LB_IP}",
+                                        "data": "\$EXTERNAL_IP",
                                         "ttl": 60
                                     }'
                                 
                                 echo "DNS record creation completed"
+                            else
+                                echo "ERROR: LoadBalancer did not get external IP within timeout"
+                                exit 1
+                            fi
                                 
                                 # Ensure node is added to the load balancer
                                 echo "=== Adding node to load balancer ==="
@@ -855,10 +846,6 @@ spec:
                                 else
                                     echo "Warning: Load Balancer ID not found in service annotations"
                                 fi
-                            else
-                                echo "ERROR: EXTERNAL_LB_IP parameter is required but not provided"
-                                exit 1
-                            fi
                         """
                     }
                 }
