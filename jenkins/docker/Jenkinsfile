@@ -620,11 +620,11 @@ spec:
           - name: http
             port: 80
             targetPort: 8080
-            protocol: TCP
+            protocol: http
           - name: https
             port: 443
             targetPort: 8080
-            protocol: TCP
+            protocol: http
 """
                     
                     // Write deployment manifest to file
