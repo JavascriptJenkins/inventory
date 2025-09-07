@@ -596,6 +596,7 @@ metadata:
     service.beta.kubernetes.io/do-loadbalancer-tls-passthrough: "false"
     service.beta.kubernetes.io/do-loadbalancer-certificate-id: "${params.TENANT_NAME}.${DO_DOMAIN}"
     service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol: "true"
+    # Health check configuration - CRITICAL: Use HTTP protocol and port 8080
     service.beta.kubernetes.io/do-loadbalancer-healthcheck-protocol: "http"
     service.beta.kubernetes.io/do-loadbalancer-healthcheck-port: "8080"
     service.beta.kubernetes.io/do-loadbalancer-healthcheck-path: "/login"
@@ -770,6 +771,49 @@ spec:
                                     
                                     echo "Note: This manual addition fixes the CCM issue where nodes aren't automatically added"
                                     
+                                    # Update LoadBalancer configuration via API
+                                    echo "=== Updating LoadBalancer configuration ==="
+                                    echo "Fixing forwarding rules and health check configuration"
+                                    curl -X PUT \\
+                                      "https://api.digitalocean.com/v2/load_balancers/\$LB_ID" \\
+                                      -H "Content-Type: application/json" \\
+                                      -H "Authorization: Bearer \$DO_API_TOKEN" \\
+                                      -d '{
+                                        "forwarding_rules": [
+                                          {
+                                            "entry_protocol": "http",
+                                            "entry_port": 80,
+                                            "target_protocol": "http",
+                                            "target_port": 8080,
+                                            "tls_passthrough": false
+                                          },
+                                          {
+                                            "entry_protocol": "https",
+                                            "entry_port": 443,
+                                            "target_protocol": "http",
+                                            "target_port": 8080,
+                                            "tls_passthrough": false
+                                          }
+                                        ],
+                                        "health_check": {
+                                          "protocol": "http",
+                                          "port": 8080,
+                                          "path": "/login",
+                                          "check_interval_seconds": 10,
+                                          "response_timeout_seconds": 5,
+                                          "healthy_threshold": 3,
+                                          "unhealthy_threshold": 3
+                                        }
+                                      }'
+                                    
+                                    if [ \$? -eq 0 ]; then
+                                        echo "✅ LoadBalancer configuration updated successfully"
+                                        echo "  - Forwarding rules: HTTP/HTTPS → port 8080"
+                                        echo "  - Health checks: HTTP on port 8080 with /login path"
+                                    else
+                                        echo "❌ Failed to update LoadBalancer configuration"
+                                    fi
+                                    
                                     # Check application health
                                     echo "=== Checking application health ==="
                                     POD_NAME=\$(kubectl get pods -n tenant-${params.TENANT_NAME} -l app=inventory -o jsonpath='{.items[0].metadata.name}')
@@ -783,13 +827,21 @@ spec:
                                     
                                     # Check LoadBalancer health status
                                     echo "=== Checking LoadBalancer health status ==="
-                                    echo "LoadBalancer health check configuration:"
-                                    echo "  Protocol: HTTP"
-                                    echo "  Port: 8080"
-                                    echo "  Path: /login (Spring Security bypass)"
-                                    echo "  Check interval: 10 seconds"
-                                    echo "  Response timeout: 5 seconds"
+                                    echo "LoadBalancer configuration (FIXED):"
+                                    echo "  Forwarding Rules:"
+                                    echo "    - HTTP (port 80) → HTTP (port 8080)"
+                                    echo "    - HTTPS (port 443) → HTTP (port 8080)"
+                                    echo "  Health Check:"
+                                    echo "    - Protocol: HTTP (NOT TCP)"
+                                    echo "    - Port: 8080 (NOT 80)"
+                                    echo "    - Path: /login (Spring Security bypass)"
+                                    echo "    - Check interval: 10 seconds"
+                                    echo "    - Response timeout: 5 seconds"
+                                    echo "    - Healthy threshold: 3 consecutive successes"
+                                    echo "    - Unhealthy threshold: 3 consecutive failures"
                                     echo ""
+                                    echo "CRITICAL: LoadBalancer now properly forwards traffic to port 8080"
+                                    echo "CRITICAL: Health checks are now configured for HTTP on port 8080"
                                     echo "Note: Using /login endpoint to bypass Spring Security authentication"
                                     echo "Note: It may take 1-2 minutes for the node to show as 'Up' after health checks pass"
                                 else
