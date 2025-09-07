@@ -581,44 +581,62 @@ spec:
         persistentVolumeClaim:
           claimName: inventory-${params.TENANT_NAME}-uploads-pvc
 ---
-apiVersion: v1
-kind: Service
-metadata:
-  name: inventory-${params.TENANT_NAME}-service
-  namespace: ${k8sNamespace}
-  labels:
-    app: inventory
-    tenant: ${params.TENANT_NAME}
-  annotations:
-    service.beta.kubernetes.io/do-loadbalancer-name: "inventory-${params.TENANT_NAME}-lb"
-    service.beta.kubernetes.io/do-loadbalancer-algorithm: "round_robin"
-    service.beta.kubernetes.io/do-loadbalancer-protocol: "http"
-    service.beta.kubernetes.io/do-loadbalancer-tls-passthrough: "false"
-    service.beta.kubernetes.io/do-loadbalancer-certificate-id: "${params.TENANT_NAME}.${DO_DOMAIN}"
-    service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol: "true"
-    # Health check configuration - CRITICAL: Use HTTP protocol and port 8080
-    service.beta.kubernetes.io/do-loadbalancer-healthcheck-protocol: "http"
-    service.beta.kubernetes.io/do-loadbalancer-healthcheck-port: "8080"
-    service.beta.kubernetes.io/do-loadbalancer-healthcheck-path: "/login"
-    service.beta.kubernetes.io/do-loadbalancer-healthcheck-check-interval-seconds: "10"
-    service.beta.kubernetes.io/do-loadbalancer-healthcheck-response-timeout-seconds: "5"
-    service.beta.kubernetes.io/do-loadbalancer-healthcheck-healthy-threshold: "3"
-    service.beta.kubernetes.io/do-loadbalancer-healthcheck-unhealthy-threshold: "3"
-spec:
-  type: LoadBalancer
-  externalTrafficPolicy: Local
-  selector:
-    app: inventory
-    tenant: ${params.TENANT_NAME}
-  ports:
-  - name: http
-    port: 80
-    targetPort: 8080
-    protocol: TCP
-  - name: https
-    port: 443
-    targetPort: 8080
-    protocol: TCP
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: inventory-${params.TENANT_NAME}-service
+          namespace: ${k8sNamespace}
+          labels:
+            app: inventory
+            tenant: ${params.TENANT_NAME}
+          annotations:
+            service.beta.kubernetes.io/do-loadbalancer-name: "${params.APP_NAME}"
+            service.beta.kubernetes.io/do-loadbalancer-algorithm: "round_robin"
+            service.beta.kubernetes.io/do-loadbalancer-protocol: "http"
+            service.beta.kubernetes.io/do-loadbalancer-tls-passthrough: "false"
+            service.beta.kubernetes.io/do-loadbalancer-certificate-id: "${params.TENANT_NAME}.${DO_DOMAIN}"
+            service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol: "true"
+            # Health check configuration - CRITICAL: Use HTTP protocol and port 8080
+            service.beta.kubernetes.io/do-loadbalancer-healthcheck-protocol: "http"
+            service.beta.kubernetes.io/do-loadbalancer-healthcheck-port: "8080"
+            service.beta.kubernetes.io/do-loadbalancer-healthcheck-path: "/login"
+            service.beta.kubernetes.io/do-loadbalancer-healthcheck-check-interval-seconds: "10"
+            service.beta.kubernetes.io/do-loadbalancer-healthcheck-response-timeout-seconds: "5"
+            service.beta.kubernetes.io/do-loadbalancer-healthcheck-healthy-threshold: "3"
+            service.beta.kubernetes.io/do-loadbalancer-healthcheck-unhealthy-threshold: "3"
+            # Forwarding rules configuration - CRITICAL: Route to port 8080
+            service.beta.kubernetes.io/do-loadbalancer-forwarding-rules: |
+              [
+                {
+                  "entry_protocol": "http",
+                  "entry_port": 80,
+                  "target_protocol": "http",
+                  "target_port": 8080,
+                  "tls_passthrough": false
+                },
+                {
+                  "entry_protocol": "https",
+                  "entry_port": 443,
+                  "target_protocol": "http",
+                  "target_port": 8080,
+                  "tls_passthrough": false
+                }
+              ]
+        spec:
+          type: LoadBalancer
+          externalTrafficPolicy: Local
+          selector:
+            app: inventory
+            tenant: ${params.TENANT_NAME}
+          ports:
+          - name: http
+            port: 80
+            targetPort: 8080
+            protocol: TCP
+          - name: https
+            port: 443
+            targetPort: 8080
+            protocol: TCP
 """
                     
                     // Write deployment manifest to file
@@ -771,123 +789,17 @@ spec:
                                     
                                     echo "Note: This manual addition fixes the CCM issue where nodes aren't automatically added"
                                     
-                                    # Update LoadBalancer configuration via API
-                                    echo "=== Updating LoadBalancer configuration ==="
-                                    echo "Fixing forwarding rules and health check configuration"
+                                    # Verify LoadBalancer configuration
+                                    echo "=== Verifying LoadBalancer configuration ==="
                                     echo "LoadBalancer ID: \$LB_ID"
+                                    echo "LoadBalancer Name: ${params.APP_NAME}"
                                     
-                                    # First, get the current LoadBalancer details to understand the structure
-                                    echo "Getting current LoadBalancer configuration..."
-                                    CURRENT_CONFIG=\$(curl -s -H "Authorization: Bearer \$DO_API_TOKEN" \\
+                                    # Get the current LoadBalancer configuration
+                                    LB_CONFIG=\$(curl -s -H "Authorization: Bearer \$DO_API_TOKEN" \\
                                       "https://api.digitalocean.com/v2/load_balancers/\$LB_ID")
                                     
-                                    if [ \$? -ne 0 ]; then
-                                        echo "❌ Failed to get current LoadBalancer configuration"
-                                        exit 1
-                                    fi
-                                    
-                                    echo "Current LoadBalancer details:"
-                                    echo "\$CURRENT_CONFIG" | grep -E '"name"|"region"|"size"|"algorithm"' || echo "Could not parse basic details"
-                                    
-                                    # Extract region from current config
-                                    LB_REGION=\$(echo "\$CURRENT_CONFIG" | grep -o '"region":"[^"]*"' | cut -d'"' -f4)
-                                    echo "LoadBalancer region: \$LB_REGION"
-                                    
-                                    # Update LoadBalancer configuration - SIMPLIFIED API CALL
-                                    echo "Updating LoadBalancer with correct forwarding rules..."
-                                    echo "Using simplified API call without region parameter..."
-                                    
-                                    # Create the JSON payload as a variable to avoid shell escaping issues
-                                    JSON_PAYLOAD='{
-                                      "forwarding_rules": [
-                                        {
-                                          "entry_protocol": "http",
-                                          "entry_port": 80,
-                                          "target_protocol": "http",
-                                          "target_port": 8080,
-                                          "tls_passthrough": false
-                                        },
-                                        {
-                                          "entry_protocol": "https",
-                                          "entry_port": 443,
-                                          "target_protocol": "http",
-                                          "target_port": 8080,
-                                          "tls_passthrough": false
-                                        }
-                                      ],
-                                      "health_check": {
-                                        "protocol": "http",
-                                        "port": 8080,
-                                        "path": "/login",
-                                        "check_interval_seconds": 10,
-                                        "response_timeout_seconds": 5,
-                                        "healthy_threshold": 3,
-                                        "unhealthy_threshold": 3
-                                      }
-                                    }'
-                                    
-                                    echo "JSON Payload: \$JSON_PAYLOAD"
-                                    
-                                    # Alternative approach: Write JSON to file to avoid shell escaping issues
-                                    echo "Creating JSON file to avoid shell escaping issues..."
-                                    cat > /tmp/lb_update.json << 'EOF'
-{
-  "forwarding_rules": [
-    {
-      "entry_protocol": "http",
-      "entry_port": 80,
-      "target_protocol": "http",
-      "target_port": 8080,
-      "tls_passthrough": false
-    },
-    {
-      "entry_protocol": "https",
-      "entry_port": 443,
-      "target_protocol": "http",
-      "target_port": 8080,
-      "tls_passthrough": false
-    }
-  ],
-  "health_check": {
-    "protocol": "http",
-    "port": 8080,
-    "path": "/login",
-    "check_interval_seconds": 10,
-    "response_timeout_seconds": 5,
-    "healthy_threshold": 3,
-    "unhealthy_threshold": 3
-  }
-}
-EOF
-                                    
-                                    echo "JSON file contents:"
-                                    cat /tmp/lb_update.json
-                                    
-                                    UPDATE_RESPONSE=\$(curl -w "HTTPSTATUS:%{http_code}" -X PUT \\
-                                      "https://api.digitalocean.com/v2/load_balancers/\$LB_ID" \\
-                                      -H "Content-Type: application/json" \\
-                                      -H "Authorization: Bearer \$DO_API_TOKEN" \\
-                                      -d @/tmp/lb_update.json)
-                                    
-                                    # Extract HTTP status code
-                                    HTTP_STATUS=\$(echo "\$UPDATE_RESPONSE" | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
-                                    UPDATE_BODY=\$(echo "\$UPDATE_RESPONSE" | sed -e 's/HTTPSTATUS:.*//g')
-                                    
-                                    echo "Update API Response Status: \$HTTP_STATUS"
-                                    echo "Update API Response Body: \$UPDATE_BODY"
-                                    
-                                    if [ "\$HTTP_STATUS" = "200" ] || [ "\$HTTP_STATUS" = "202" ]; then
-                                        echo "✅ LoadBalancer configuration updated successfully (HTTP \$HTTP_STATUS)"
-                                        echo "  - Forwarding rules: HTTP/HTTPS → port 8080"
-                                        echo "  - Health checks: HTTP on port 8080 with /login path"
-                                        
-                                        # Verify the forwarding rules were actually updated
-                                        echo "=== Verifying LoadBalancer forwarding rules ==="
-                                        sleep 5  # Wait for API to update
-                                        
-                                        # Get the current LoadBalancer configuration
-                                        LB_CONFIG=\$(curl -s -H "Authorization: Bearer \$DO_API_TOKEN" \\
-                                          "https://api.digitalocean.com/v2/load_balancers/\$LB_ID")
+                                    if [ \$? -eq 0 ]; then
+                                        echo "✅ LoadBalancer configuration retrieved successfully"
                                         
                                         # Check forwarding rules
                                         echo "Current forwarding rules:"
@@ -904,7 +816,7 @@ EOF
                                         if [ -n "\$HTTP_RULE" ] && [ -n "\$HTTPS_RULE" ]; then
                                             echo "✅ Forwarding rules verified: Both HTTP and HTTPS route to port 8080"
                                         else
-                                            echo "⚠️  Forwarding rules verification failed - may need manual check"
+                                            echo "⚠️  Forwarding rules verification failed - LoadBalancer may need recreation"
                                         fi
                                         
                                         # Verify health check port
@@ -912,55 +824,10 @@ EOF
                                         if [ -n "\$HEALTH_PORT" ]; then
                                             echo "✅ Health check verified: Configured for port 8080"
                                         else
-                                            echo "⚠️  Health check verification failed - may need manual check"
+                                            echo "⚠️  Health check verification failed - LoadBalancer may need recreation"
                                         fi
-                                        
                                     else
-                                        echo "❌ Failed to update LoadBalancer configuration (HTTP \$HTTP_STATUS)"
-                                        echo "Response: \$UPDATE_BODY"
-                                        echo ""
-                                        echo "MANUAL FIX REQUIRED:"
-                                        echo "1. Go to DigitalOcean Dashboard → Load Balancers"
-                                        echo "2. Find LoadBalancer ID: \$LB_ID"
-                                        echo "3. Click 'Settings' → 'Forwarding Rules'"
-                                        echo "4. Change rules to:"
-                                        echo "   - HTTP (port 80) → HTTP (port 8080)"
-                                        echo "   - HTTPS (port 443) → HTTP (port 8080)"
-                                        echo "5. Click 'Settings' → 'Health Checks'"
-                                        echo "6. Change to:"
-                                        echo "   - Protocol: HTTP"
-                                        echo "   - Port: 8080"
-                                        echo "   - Path: /login"
-                                        echo ""
-                                        echo "Common API failure reasons:"
-                                        echo "- Invalid LoadBalancer ID"
-                                        echo "- Missing required fields in request"
-                                        echo "- LoadBalancer in wrong state"
-                                        echo "- API rate limiting"
-                                        echo ""
-                                        echo "MANUAL TEST COMMAND (run this outside Jenkins to verify):"
-                                        echo "curl -X PUT \\\\"
-                                        echo "  \"https://api.digitalocean.com/v2/load_balancers/\$LB_ID\" \\\\"
-                                        echo "  -H \"Content-Type: application/json\" \\\\"
-                                        echo "  -H \"Authorization: Bearer \$DO_API_TOKEN\" \\\\"
-                                        echo "  -d '\$JSON_PAYLOAD'"
-                                        echo ""
-                                        echo "ATTEMPTING KUBERNETES SERVICE ANNOTATION UPDATE..."
-                                        
-                                        # Try updating via Kubernetes service annotations as fallback
-                                        echo "Updating Kubernetes service with correct annotations..."
-                                        kubectl annotate service inventory-${params.TENANT_NAME}-service -n tenant-${params.TENANT_NAME} \\
-                                          service.beta.kubernetes.io/do-loadbalancer-healthcheck-protocol="http" \\
-                                          service.beta.kubernetes.io/do-loadbalancer-healthcheck-port="8080" \\
-                                          service.beta.kubernetes.io/do-loadbalancer-healthcheck-path="/login" \\
-                                          --overwrite
-                                        
-                                        if [ \$? -eq 0 ]; then
-                                            echo "✅ Kubernetes service annotations updated"
-                                            echo "Note: This may trigger a LoadBalancer recreation with correct settings"
-                                        else
-                                            echo "❌ Failed to update Kubernetes service annotations"
-                                        fi
+                                        echo "❌ Failed to get LoadBalancer configuration"
                                     fi
                                     
                                     # Check application health
