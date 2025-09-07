@@ -947,6 +947,35 @@ spec:
                             -H "Authorization: Bearer \$DO_API_TOKEN" \\
                             -d @-
                         echo "✅ Load Balancer updated"
+                        
+                        # CRITICAL: Re-add the droplet after LoadBalancer update
+                        # DigitalOcean removes all droplets when updating LoadBalancer configuration
+                        echo "Re-adding droplet 516774967 to LoadBalancer after update..."
+                        curl -X POST \\
+                          "https://api.digitalocean.com/v2/load_balancers/${env.LB_ID}/droplets" \\
+                          -H "Content-Type: application/json" \\
+                          -H "Authorization: Bearer \$DO_API_TOKEN" \\
+                          -d '{"droplet_ids": [516774967]}'
+                        
+                        if [ \$? -eq 0 ]; then
+                            echo "✅ Droplet successfully re-added to LoadBalancer after update"
+                            
+                            # Wait a moment for the API to update
+                            sleep 60
+                            
+                            # Verify the droplet is back in the load balancer
+                            DROPLET_CHECK=\$(curl -s -H "Authorization: Bearer \$DO_API_TOKEN" \\
+                              "https://api.digitalocean.com/v2/load_balancers/${env.LB_ID}" | \\
+                              grep -o "516774967" || echo "not_found")
+                            
+                            if [ "\$DROPLET_CHECK" = "516774967" ]; then
+                                echo "✅ Verification successful: Droplet 516774967 is back in the LoadBalancer after update"
+                            else
+                                echo "⚠️  Verification failed: Droplet may not be visible yet (this can take a few minutes)"
+                            fi
+                        else
+                            echo "❌ Failed to re-add droplet to LoadBalancer after update"
+                        fi
                     """
                 }
             }
