@@ -810,6 +810,41 @@ spec:
                                         echo "✅ LoadBalancer configuration updated successfully"
                                         echo "  - Forwarding rules: HTTP/HTTPS → port 8080"
                                         echo "  - Health checks: HTTP on port 8080 with /login path"
+                                        
+                                        # Verify the forwarding rules were actually updated
+                                        echo "=== Verifying LoadBalancer forwarding rules ==="
+                                        sleep 5  # Wait for API to update
+                                        
+                                        # Get the current LoadBalancer configuration
+                                        LB_CONFIG=\$(curl -s -H "Authorization: Bearer \$DO_API_TOKEN" \\
+                                          "https://api.digitalocean.com/v2/load_balancers/\$LB_ID")
+                                        
+                                        # Check forwarding rules
+                                        echo "Current forwarding rules:"
+                                        echo "\$LB_CONFIG" | grep -A 20 '"forwarding_rules"' | grep -E '"entry_protocol"|"entry_port"|"target_protocol"|"target_port"' || echo "Could not parse forwarding rules"
+                                        
+                                        # Check health check configuration
+                                        echo "Current health check configuration:"
+                                        echo "\$LB_CONFIG" | grep -A 10 '"health_check"' | grep -E '"protocol"|"port"|"path"' || echo "Could not parse health check config"
+                                        
+                                        # Verify specific forwarding rules
+                                        HTTP_RULE=\$(echo "\$LB_CONFIG" | grep -A 10 '"entry_protocol": "http"' | grep '"target_port": 8080')
+                                        HTTPS_RULE=\$(echo "\$LB_CONFIG" | grep -A 10 '"entry_protocol": "https"' | grep '"target_port": 8080')
+                                        
+                                        if [ -n "\$HTTP_RULE" ] && [ -n "\$HTTPS_RULE" ]; then
+                                            echo "✅ Forwarding rules verified: Both HTTP and HTTPS route to port 8080"
+                                        else
+                                            echo "⚠️  Forwarding rules verification failed - may need manual check"
+                                        fi
+                                        
+                                        # Verify health check port
+                                        HEALTH_PORT=\$(echo "\$LB_CONFIG" | grep -A 5 '"health_check"' | grep '"port": 8080')
+                                        if [ -n "\$HEALTH_PORT" ]; then
+                                            echo "✅ Health check verified: Configured for port 8080"
+                                        else
+                                            echo "⚠️  Health check verification failed - may need manual check"
+                                        fi
+                                        
                                     else
                                         echo "❌ Failed to update LoadBalancer configuration"
                                     fi
