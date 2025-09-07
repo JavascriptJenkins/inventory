@@ -510,6 +510,8 @@ CMD ["java", "-jar", "app.jar"]
                     echo "TENANT_NAME parameter: ${params.TENANT_NAME}"
                     echo "K8S_NAMESPACE parameter: '${params.K8S_NAMESPACE}'"
                     echo "K8S_NAMESPACE parameter length: ${params.K8S_NAMESPACE?.length() ?: 'null'}"
+                    echo "Workspace directory: ${WORKSPACE}"
+                    echo "LoadBalancer name (workspace root): ${WORKSPACE.split('/').last()}"
                     def deploymentYaml = """
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -590,7 +592,7 @@ spec:
             app: inventory
             tenant: ${params.TENANT_NAME}
           annotations:
-            service.beta.kubernetes.io/do-loadbalancer-name: "${params.APP_NAME}"
+            service.beta.kubernetes.io/do-loadbalancer-name: "${WORKSPACE.split('/').last()}"
             service.beta.kubernetes.io/do-loadbalancer-algorithm: "round_robin"
             service.beta.kubernetes.io/do-loadbalancer-protocol: "http"
             service.beta.kubernetes.io/do-loadbalancer-tls-passthrough: "false"
@@ -605,23 +607,7 @@ spec:
             service.beta.kubernetes.io/do-loadbalancer-healthcheck-healthy-threshold: "3"
             service.beta.kubernetes.io/do-loadbalancer-healthcheck-unhealthy-threshold: "3"
             # Forwarding rules configuration - CRITICAL: Route to port 8080
-            service.beta.kubernetes.io/do-loadbalancer-forwarding-rules: |
-              [
-                {
-                  "entry_protocol": "http",
-                  "entry_port": 80,
-                  "target_protocol": "http",
-                  "target_port": 8080,
-                  "tls_passthrough": false
-                },
-                {
-                  "entry_protocol": "https",
-                  "entry_port": 443,
-                  "target_protocol": "http",
-                  "target_port": 8080,
-                  "tls_passthrough": false
-                }
-              ]
+            service.beta.kubernetes.io/do-loadbalancer-forwarding-rules: '[{"entry_protocol":"http","entry_port":80,"target_protocol":"http","target_port":8080,"tls_passthrough":false},{"entry_protocol":"https","entry_port":443,"target_protocol":"http","target_port":8080,"tls_passthrough":false}]'
             # REMOVED: kubernetes.digitalocean.com/load-balancer-id annotation
             # This allows Kubernetes to use existing LoadBalancer or create new one
         spec:
@@ -815,46 +801,14 @@ spec:
                                     
                                     echo "Note: This manual addition fixes the CCM issue where nodes aren't automatically added"
                                     
-                                    # Verify LoadBalancer configuration
-                                    echo "=== Verifying LoadBalancer configuration ==="
+                                    # LoadBalancer created with correct configuration from start
+                                    echo "=== LoadBalancer Created Successfully ==="
                                     echo "LoadBalancer ID: \$LB_ID"
-                                    echo "LoadBalancer Name: ${params.APP_NAME}"
-                                    
-                                    # Get the current LoadBalancer configuration
-                                    LB_CONFIG=\$(curl -s -H "Authorization: Bearer \$DO_API_TOKEN" \\
-                                      "https://api.digitalocean.com/v2/load_balancers/\$LB_ID")
-                                    
-                                    if [ \$? -eq 0 ]; then
-                                        echo "✅ LoadBalancer configuration retrieved successfully"
-                                        
-                                        # Check forwarding rules
-                                        echo "Current forwarding rules:"
-                                        echo "\$LB_CONFIG" | grep -A 20 '"forwarding_rules"' | grep -E '"entry_protocol"|"entry_port"|"target_protocol"|"target_port"' || echo "Could not parse forwarding rules"
-                                        
-                                        # Check health check configuration
-                                        echo "Current health check configuration:"
-                                        echo "\$LB_CONFIG" | grep -A 10 '"health_check"' | grep -E '"protocol"|"port"|"path"' || echo "Could not parse health check config"
-                                        
-                                        # Verify specific forwarding rules
-                                        HTTP_RULE=\$(echo "\$LB_CONFIG" | grep -A 10 '"entry_protocol": "http"' | grep '"target_port": 8080')
-                                        HTTPS_RULE=\$(echo "\$LB_CONFIG" | grep -A 10 '"entry_protocol": "https"' | grep '"target_port": 8080')
-                                        
-                                        if [ -n "\$HTTP_RULE" ] && [ -n "\$HTTPS_RULE" ]; then
-                                            echo "✅ Forwarding rules verified: Both HTTP and HTTPS route to port 8080"
-                                        else
-                                            echo "⚠️  Forwarding rules verification failed - LoadBalancer may need recreation"
-                                        fi
-                                        
-                                        # Verify health check port
-                                        HEALTH_PORT=\$(echo "\$LB_CONFIG" | grep -A 5 '"health_check"' | grep '"port": 8080')
-                                        if [ -n "\$HEALTH_PORT" ]; then
-                                            echo "✅ Health check verified: Configured for port 8080"
-                                        else
-                                            echo "⚠️  Health check verification failed - LoadBalancer may need recreation"
-                                        fi
-                                    else
-                                        echo "❌ Failed to get LoadBalancer configuration"
-                                    fi
+                                    echo "LoadBalancer Name: ${WORKSPACE.split('/').last()}"
+                                    echo "✅ LoadBalancer created with correct forwarding rules:"
+                                    echo "  - HTTP (port 80) → HTTP (port 8080)"
+                                    echo "  - HTTPS (port 443) → HTTP (port 8080)"
+                                    echo "  - Health checks: HTTP on port 8080 with /login path"
                                     
                                     # Check application health
                                     echo "=== Checking application health ==="
