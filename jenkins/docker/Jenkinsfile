@@ -917,6 +917,11 @@ spec:
             steps {
                 withCredentials([string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN')]) {
                     sh """
+
+                        echo "Updating Load Balancer but waiting 10 seconds to not hit api too much: ${env.LB_ID}"
+
+                        sleep 10
+
                         set -e
                         jq -n \\
                           --arg name    "${env.LB_NAME}" \\
