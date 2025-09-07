@@ -793,39 +793,81 @@ spec:
                                     LB_REGION=\$(echo "\$CURRENT_CONFIG" | grep -o '"region":"[^"]*"' | cut -d'"' -f4)
                                     echo "LoadBalancer region: \$LB_REGION"
                                     
-                                    # Update LoadBalancer configuration
+                                    # Update LoadBalancer configuration - SIMPLIFIED API CALL
                                     echo "Updating LoadBalancer with correct forwarding rules..."
+                                    echo "Using simplified API call without region parameter..."
+                                    
+                                    # Create the JSON payload as a variable to avoid shell escaping issues
+                                    JSON_PAYLOAD='{
+                                      "forwarding_rules": [
+                                        {
+                                          "entry_protocol": "http",
+                                          "entry_port": 80,
+                                          "target_protocol": "http",
+                                          "target_port": 8080,
+                                          "tls_passthrough": false
+                                        },
+                                        {
+                                          "entry_protocol": "https",
+                                          "entry_port": 443,
+                                          "target_protocol": "http",
+                                          "target_port": 8080,
+                                          "tls_passthrough": false
+                                        }
+                                      ],
+                                      "health_check": {
+                                        "protocol": "http",
+                                        "port": 8080,
+                                        "path": "/login",
+                                        "check_interval_seconds": 10,
+                                        "response_timeout_seconds": 5,
+                                        "healthy_threshold": 3,
+                                        "unhealthy_threshold": 3
+                                      }
+                                    }'
+                                    
+                                    echo "JSON Payload: \$JSON_PAYLOAD"
+                                    
+                                    # Alternative approach: Write JSON to file to avoid shell escaping issues
+                                    echo "Creating JSON file to avoid shell escaping issues..."
+                                    cat > /tmp/lb_update.json << 'EOF'
+{
+  "forwarding_rules": [
+    {
+      "entry_protocol": "http",
+      "entry_port": 80,
+      "target_protocol": "http",
+      "target_port": 8080,
+      "tls_passthrough": false
+    },
+    {
+      "entry_protocol": "https",
+      "entry_port": 443,
+      "target_protocol": "http",
+      "target_port": 8080,
+      "tls_passthrough": false
+    }
+  ],
+  "health_check": {
+    "protocol": "http",
+    "port": 8080,
+    "path": "/login",
+    "check_interval_seconds": 10,
+    "response_timeout_seconds": 5,
+    "healthy_threshold": 3,
+    "unhealthy_threshold": 3
+  }
+}
+EOF
+                                    
+                                    echo "JSON file contents:"
+                                    cat /tmp/lb_update.json
+                                    
                                     UPDATE_RESPONSE=\$(curl -w "HTTPSTATUS:%{http_code}" -X PUT \\
                                       "https://api.digitalocean.com/v2/load_balancers/\$LB_ID" \\
                                       -H "Content-Type: application/json" \\
                                       -H "Authorization: Bearer \$DO_API_TOKEN" \\
-                                      -d '{
-                                        "forwarding_rules": [
-                                          {
-                                            "entry_protocol": "http",
-                                            "entry_port": 80,
-                                            "target_protocol": "http",
-                                            "target_port": 8080,
-                                            "tls_passthrough": false
-                                          },
-                                          {
-                                            "entry_protocol": "https",
-                                            "entry_port": 443,
-                                            "target_protocol": "http",
-                                            "target_port": 8080,
-                                            "tls_passthrough": false
-                                          }
-                                        ],
-                                        "health_check": {
-                                          "protocol": "http",
-                                          "port": 8080,
-                                          "path": "/login",
-                                          "check_interval_seconds": 10,
-                                          "response_timeout_seconds": 5,
-                                          "healthy_threshold": 3,
-                                          "unhealthy_threshold": 3
-                                        }
-                                      }')
+                                      -d @/tmp/lb_update.json)
                                     
                                     # Extract HTTP status code
                                     HTTP_STATUS=\$(echo "\$UPDATE_RESPONSE" | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
@@ -895,6 +937,13 @@ spec:
                                         echo "- Missing required fields in request"
                                         echo "- LoadBalancer in wrong state"
                                         echo "- API rate limiting"
+                                        echo ""
+                                        echo "MANUAL TEST COMMAND (run this outside Jenkins to verify):"
+                                        echo "curl -X PUT \\\\"
+                                        echo "  \"https://api.digitalocean.com/v2/load_balancers/\$LB_ID\" \\\\"
+                                        echo "  -H \"Content-Type: application/json\" \\\\"
+                                        echo "  -H \"Authorization: Bearer \$DO_API_TOKEN\" \\\\"
+                                        echo "  -d '\$JSON_PAYLOAD'"
                                         echo ""
                                         echo "ATTEMPTING KUBERNETES SERVICE ANNOTATION UPDATE..."
                                         
