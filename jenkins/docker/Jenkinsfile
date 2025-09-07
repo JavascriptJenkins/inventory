@@ -875,9 +875,7 @@ spec:
 }
 
 stage('Attach Certificate and Create DNS') {
-    when {
-        expression { params.TENANT_NAME != '' }
-    }
+
     steps {
         script {
             withCredentials([
