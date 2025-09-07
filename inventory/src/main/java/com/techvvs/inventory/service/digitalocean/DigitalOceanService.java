@@ -661,113 +661,6 @@ public class DigitalOceanService {
     }
 
     /**
-     * Creates a Let's Encrypt SSL certificate for a tenant subdomain
-     * 
-     * @param tenantName The tenant name to create certificate for
-     * @return true if successful, false otherwise
-     */
-    public boolean createLetsEncryptCertificate(String tenantName) {
-        try {
-            if (doToken == null || doToken.trim().isEmpty()) {
-                logger.error("DigitalOcean API token is not configured");
-                return false;
-            }
-
-            String subdomain = tenantName.toLowerCase().replaceAll("[^a-z0-9-]", "-");
-            String fqdn = subdomain + "." + domain;
-            String certificateName = tenantName + "-ssl-cert-" + UUID.randomUUID().toString().substring(0, 8);
-
-            logger.info("Creating Let's Encrypt certificate for domain: {}", fqdn);
-
-            // Check if certificate already exists for this domain
-            if (certificateExistsForDomain(fqdn)) {
-                logger.info("Certificate already exists for domain: {}, skipping creation", fqdn);
-                return true;
-            }
-
-            // Build certificate request payload
-            ObjectNode body = objectMapper.createObjectNode();
-            body.put("name", certificateName);
-            body.put("type", "lets_encrypt");
-            
-            ObjectNode dnsNames = objectMapper.createObjectNode();
-            dnsNames.putArray("dns_names").add(fqdn);
-            body.set("dns_names", dnsNames.get("dns_names"));
-
-            String createUrl = "https://api.digitalocean.com/v2/certificates";
-            
-            HttpRequest createReq = HttpRequest.newBuilder(URI.create(createUrl))
-                    .header("Authorization", "Bearer " + doToken)
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(body)))
-                    .build();
-
-            HttpResponse<String> response = httpClient.send(createReq, HttpResponse.BodyHandlers.ofString());
-            
-            if (response.statusCode() == 201) {
-                logger.info("Successfully created Let's Encrypt certificate for domain: {}", fqdn);
-                return true;
-            } else {
-                logger.error("Failed to create Let's Encrypt certificate. Status: {}, Body: {}", 
-                           response.statusCode(), response.body());
-                return false;
-            }
-
-        } catch (Exception e) {
-            logger.error("Error creating Let's Encrypt certificate for tenant: {}", tenantName, e);
-            return false;
-        }
-    }
-
-    /**
-     * Checks if a certificate already exists for the given domain
-     * 
-     * @param domain The domain to check
-     * @return true if certificate exists, false otherwise
-     */
-    private boolean certificateExistsForDomain(String domain) {
-        try {
-            String listUrl = "https://api.digitalocean.com/v2/certificates";
-            
-            HttpRequest listReq = HttpRequest.newBuilder(URI.create(listUrl))
-                    .header("Authorization", "Bearer " + doToken)
-                    .GET()
-                    .build();
-
-            HttpResponse<String> response = httpClient.send(listReq, HttpResponse.BodyHandlers.ofString());
-            
-            if (response.statusCode() != 200) {
-                logger.error("Failed to list certificates. Status: {}, Body: {}", 
-                           response.statusCode(), response.body());
-                return false;
-            }
-
-            JsonNode list = objectMapper.readTree(response.body());
-            JsonNode certificates = list.path("certificates");
-            
-            if (certificates.isArray()) {
-                for (JsonNode cert : certificates) {
-                    JsonNode dnsNames = cert.path("dns_names");
-                    if (dnsNames.isArray()) {
-                        for (JsonNode dnsName : dnsNames) {
-                            if (domain.equals(dnsName.asText())) {
-                                logger.info("Found existing certificate for domain: {}", domain);
-                                return true;
-                            }
-                        }
-                    }
-                }
-            }
-
-            return false;
-
-        } catch (Exception e) {
-            logger.error("Error checking for existing certificate for domain: {}", domain, e);
-            return false;
-        }
-    }
-
-    /**
      * Creates a PostgreSQL schema for a tenant if it doesn't exist
      * 
      * @param tenantName The tenant name to create schema for
@@ -907,176 +800,6 @@ public class DigitalOceanService {
         return findExistingLoadBalancer();
     }
 
-    /**
-     * Attaches a certificate to the load balancer for HTTPS traffic
-     * 
-     * @param tenantName The tenant name to attach certificate for
-     * @return true if successful, false otherwise
-     */
-    public boolean attachCertificateToLoadBalancer(String tenantName) {
-        try {
-            if (doToken == null || doToken.trim().isEmpty()) {
-                logger.error("DigitalOcean API token is not configured");
-                return false;
-            }
-
-            // Get load balancer ID (either configured or found by name)
-            String lbId = getLoadBalancerId();
-            if (lbId == null) {
-                logger.error("Could not find load balancer ID");
-                return false;
-            }
-
-            String subdomain = tenantName.toLowerCase().replaceAll("[^a-z0-9-]", "-");
-            String fqdn = subdomain + "." + domain;
-
-            logger.info("Attaching certificate to load balancer for domain: {}", fqdn);
-
-            // First, find the certificate ID for this domain
-            String certificateId = findCertificateIdForDomain(fqdn);
-            if (certificateId == null) {
-                logger.error("No certificate found for domain: {}", fqdn);
-                return false;
-            }
-
-            // Get current load balancer configuration
-            String lbUrl = "https://api.digitalocean.com/v2/load_balancers/" + lbId;
-            
-            HttpRequest getReq = HttpRequest.newBuilder(URI.create(lbUrl))
-                    .header("Authorization", "Bearer " + doToken)
-                    .GET()
-                    .build();
-
-            HttpResponse<String> getResponse = httpClient.send(getReq, HttpResponse.BodyHandlers.ofString());
-            
-            if (getResponse.statusCode() != 200) {
-                logger.error("Failed to get load balancer configuration. Status: {}, Body: {}", 
-                           getResponse.statusCode(), getResponse.body());
-                return false;
-            }
-
-            JsonNode lbConfig = objectMapper.readTree(getResponse.body());
-            JsonNode lb = lbConfig.path("load_balancer");
-            
-            // Debug: log the load balancer configuration
-            logger.info("Load balancer configuration: {}", objectMapper.writeValueAsString(lb));
-            
-            // Build update payload with certificate
-            ObjectNode updateBody = objectMapper.createObjectNode();
-            updateBody.put("name", lb.path("name").asText());
-            updateBody.put("algorithm", lb.path("algorithm").asText());
-            
-            // Handle region - it might be nested in a region object
-            JsonNode regionNode = lb.path("region");
-            String regionSlug;
-            if (regionNode.isObject()) {
-                regionSlug = regionNode.path("slug").asText();
-            } else {
-                regionSlug = regionNode.asText();
-            }
-            updateBody.put("region", regionSlug);
-            
-            updateBody.put("size", lb.path("size").asText());
-            updateBody.put("size_unit", lb.path("size_unit").asInt());
-            
-            // Copy forwarding rules
-            updateBody.set("forwarding_rules", lb.path("forwarding_rules"));
-            
-            // Add certificate to forwarding rules
-            JsonNode forwardingRules = lb.path("forwarding_rules");
-            if (forwardingRules.isArray()) {
-                ObjectNode updatedRules = objectMapper.createObjectNode();
-                updatedRules.putArray("forwarding_rules");
-                
-                for (JsonNode rule : forwardingRules) {
-                    ObjectNode updatedRule = (ObjectNode) rule.deepCopy();
-                    if ("https".equals(rule.path("entry_protocol").asText())) {
-                        updatedRule.put("certificate_id", certificateId);
-                        logger.info("Attaching certificate {} to HTTPS rule", certificateId);
-                    }
-                    updatedRules.withArray("forwarding_rules").add(updatedRule);
-                }
-                updateBody.set("forwarding_rules", updatedRules.get("forwarding_rules"));
-            }
-
-            // Update load balancer
-            String updateUrl = "https://api.digitalocean.com/v2/load_balancers/" + lbId;
-            
-            String updatePayload = objectMapper.writeValueAsString(updateBody);
-            logger.info("Updating load balancer with payload: {}", updatePayload);
-            
-            HttpRequest updateReq = HttpRequest.newBuilder(URI.create(updateUrl))
-                    .header("Authorization", "Bearer " + doToken)
-                    .header("Content-Type", "application/json")
-                    .PUT(HttpRequest.BodyPublishers.ofString(updatePayload))
-                    .build();
-
-            HttpResponse<String> updateResponse = httpClient.send(updateReq, HttpResponse.BodyHandlers.ofString());
-            
-            if (updateResponse.statusCode() == 200) {
-                logger.info("Successfully attached certificate to load balancer for domain: {}", fqdn);
-                return true;
-            } else {
-                logger.error("Failed to attach certificate to load balancer. Status: {}, Body: {}", 
-                           updateResponse.statusCode(), updateResponse.body());
-                return false;
-            }
-
-        } catch (Exception e) {
-            logger.error("Error attaching certificate to load balancer for tenant: {}", tenantName, e);
-            return false;
-        }
-    }
-
-    /**
-     * Finds the certificate ID for a given domain
-     * 
-     * @param domain The domain to find certificate for
-     * @return Certificate ID or null if not found
-     */
-    private String findCertificateIdForDomain(String domain) {
-        try {
-            String listUrl = "https://api.digitalocean.com/v2/certificates";
-            
-            HttpRequest listReq = HttpRequest.newBuilder(URI.create(listUrl))
-                    .header("Authorization", "Bearer " + doToken)
-                    .GET()
-                    .build();
-
-            HttpResponse<String> response = httpClient.send(listReq, HttpResponse.BodyHandlers.ofString());
-            
-            if (response.statusCode() != 200) {
-                logger.error("Failed to list certificates. Status: {}, Body: {}", 
-                           response.statusCode(), response.body());
-                return null;
-            }
-
-            JsonNode list = objectMapper.readTree(response.body());
-            JsonNode certificates = list.path("certificates");
-            
-            if (certificates.isArray()) {
-                for (JsonNode cert : certificates) {
-                    JsonNode dnsNames = cert.path("dns_names");
-                    if (dnsNames.isArray()) {
-                        for (JsonNode dnsName : dnsNames) {
-                            if (domain.equals(dnsName.asText())) {
-                                String certId = cert.path("id").asText();
-                                logger.info("Found certificate ID {} for domain: {}", certId, domain);
-                                return certId;
-                            }
-                        }
-                    }
-                }
-            }
-
-            logger.warn("No certificate found for domain: {}", domain);
-            return null;
-
-        } catch (Exception e) {
-            logger.error("Error finding certificate ID for domain: {}", domain, e);
-            return null;
-        }
-    }
 
     /**
      * Gets the actual load balancer ID, handling both numeric IDs and names
@@ -1532,19 +1255,6 @@ public class DigitalOceanService {
         boolean dnsSuccess = true; // Will be handled after Jenkins deployment
         logger.info("DNS record creation will be handled after Kubernetes LoadBalancer service is deployed");
         
-        // Create SSL certificate
-        boolean certSuccess = false;
-        try {
-            certSuccess = createLetsEncryptCertificate(tenantName);
-            if (!certSuccess) {
-                logger.error("Failed to create SSL certificate for tenant: {}", tenantName);
-                overallSuccess = false;
-            }
-        } catch (Exception e) {
-            logger.error("Error creating SSL certificate for tenant: {}", tenantName, e);
-            overallSuccess = false;
-        }
-        
         // Create PostgreSQL schema
         boolean schemaSuccess = false;
         try {
@@ -1557,32 +1267,7 @@ public class DigitalOceanService {
             logger.error("Error creating PostgreSQL schema for tenant: {}", tenantName, e);
             overallSuccess = false;
         }
-        
-        // Wait for certificate to become active if it was created
-        boolean certActive = true;
-        if (certSuccess) {
-            try {
-                logger.info("Certificate creation successful, waiting for it to become active...");
-                certActive = waitForCertificateActive(tenantName, certificateWaitMinutes);
-            }  catch (Exception e) {
-                logger.error("Error waiting for certificate activation for tenant: {}", tenantName, e);
-                certActive = false;
-                overallSuccess = false;
-            }
-        }
-        
-        // Attach certificate to load balancer if certificate is active
-        boolean certAttached = true;
-        if (certActive && certSuccess) {
-            try {
-                logger.info("Certificate is active, attaching to load balancer...");
-                certAttached = attachCertificateToLoadBalancer(tenantName);
-            } catch (Exception e) {
-                logger.error("Error attaching certificate to load balancer for tenant: {}", tenantName, e);
-                certAttached = false;
-                overallSuccess = false;
-            }
-        }
+
         
         // Set up Kubernetes resources (namespace and RBAC)
         boolean k8sSuccess = true;
@@ -1593,13 +1278,13 @@ public class DigitalOceanService {
             logger.warn("Kubernetes service not configured, skipping Kubernetes setup");
         }
         
-        overallSuccess = dnsSuccess && certSuccess && certActive && certAttached && schemaSuccess && k8sSuccess;
+        overallSuccess = dnsSuccess && schemaSuccess && k8sSuccess;
         
         if (overallSuccess) {
             logger.info("Successfully deployed all infrastructure for tenant: {}", tenantName);
         } else {
-            logger.warn("Partial deployment for tenant: {} - DNS: {}, Certificate: {}, Certificate Active: {}, Certificate Attached: {}, Schema: {}, Kubernetes: {}", 
-                       tenantName, dnsSuccess, certSuccess, certActive, certAttached, schemaSuccess, k8sSuccess);
+            logger.warn("Partial deployment for tenant: {} - DNS: {}, Schema: {}, Kubernetes: {}",
+                       tenantName, dnsSuccess, schemaSuccess, k8sSuccess);
         }
         
         return overallSuccess;
