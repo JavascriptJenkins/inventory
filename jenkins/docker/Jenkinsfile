@@ -600,13 +600,10 @@ metadata:
     app: inventory
     tenant: ${params.TENANT_NAME}
   annotations:
-    service.beta.kubernetes.io/do-loadbalancer-name: "${WORKSPACE.split('/').last()}"
-    service.beta.kubernetes.io/do-loadbalancer-algorithm: "round_robin"
     service.beta.kubernetes.io/do-loadbalancer-tls-passthrough: "false"
     service.beta.kubernetes.io/do-loadbalancer-redirect-http-to-https: "true"
     service.beta.kubernetes.io/do-loadbalancer-certificate-id: "${env.CERT_ID}"
     service.beta.kubernetes.io/do-loadbalancer-tls-ports: "443"
-    service.beta.kubernetes.io/do-loadbalancer-protocol: "https"
     service.beta.kubernetes.io/do-loadbalancer-healthcheck-protocol: "http"
     service.beta.kubernetes.io/do-loadbalancer-healthcheck-port: "8080"
     service.beta.kubernetes.io/do-loadbalancer-healthcheck-check-interval-seconds: "10"
@@ -621,6 +618,10 @@ spec:
     app: inventory
     tenant: ${params.TENANT_NAME}
   ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+    protocol: TCP
   - name: https
     port: 443
     targetPort: 8080
