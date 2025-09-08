@@ -717,7 +717,7 @@ spec:
                             echo "DNS record will be created after LoadBalancer is provisioned"
                             # Verify the annotation details
                             echo "=== Verify the annotation details ==="
-                            kubectl get svc inventory-<tenant>-service -n tenant-<tenant> -o yaml | grep -A4 annotations
+                            kubectl get svc inventory-${params.TENANT_NAME}-service -n ${k8sNamespace} -o yaml | grep -A4 annotations
                             
                             # Debug: Check service configuration and load balancer details
                             echo "=== Service Configuration ==="
