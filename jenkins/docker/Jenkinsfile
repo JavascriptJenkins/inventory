@@ -621,10 +621,6 @@ spec:
     app: inventory
     tenant: ${params.TENANT_NAME}
   ports:
-  - name: http
-    port: 80
-    targetPort: 8080
-    protocol: TCP
   - name: https
     port: 443
     targetPort: 8080
