@@ -15,16 +15,12 @@ public class PaypalRestClient {
     private static final Logger logger = LoggerFactory.getLogger(PaypalRestClient.class);
     
     private final RestTemplate restTemplate;
-    private final String baseUrl;
-    private final String clientId;
-    private final String clientSecret;
+    private final PayPalConfigurationService paypalConfigurationService;
     private String accessToken;
     
-    public PaypalRestClient(RestTemplate restTemplate, String baseUrl, String clientId, String clientSecret) {
+    public PaypalRestClient(RestTemplate restTemplate, PayPalConfigurationService paypalConfigurationService) {
         this.restTemplate = restTemplate;
-        this.baseUrl = baseUrl;
-        this.clientId = clientId;
-        this.clientSecret = clientSecret;
+        this.paypalConfigurationService = paypalConfigurationService;
     }
 
     private volatile long accessTokenExpEpochSec;
@@ -37,6 +33,11 @@ public class PaypalRestClient {
         }
 
         try {
+            // Get credentials from database configuration
+            String clientId = paypalConfigurationService.getClientId();
+            String clientSecret = paypalConfigurationService.getClientSecret();
+            String baseUrl = paypalConfigurationService.getPayPalBaseUrl();
+            
             HttpHeaders headers = new HttpHeaders();
             headers.setBasicAuth(clientId.trim(), clientSecret.trim()); // builds proper Basic header
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -77,6 +78,8 @@ public class PaypalRestClient {
     
     public PaypalOrderResponse createOrder(PaypalOrderRequest orderRequest) {
         try {
+            String baseUrl = paypalConfigurationService.getPayPalBaseUrl();
+            
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.setBearerAuth(getAccessToken());
@@ -98,6 +101,8 @@ public class PaypalRestClient {
     
     public PaypalOrderResponse captureOrder(String orderId) {
         try {
+            String baseUrl = paypalConfigurationService.getPayPalBaseUrl();
+            
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.setBearerAuth(getAccessToken());
@@ -119,6 +124,8 @@ public class PaypalRestClient {
     
     public PaypalOrderResponse getOrder(String orderId) {
         try {
+            String baseUrl = paypalConfigurationService.getPayPalBaseUrl();
+            
             HttpHeaders headers = new HttpHeaders();
             headers.setBearerAuth(getAccessToken());
             
@@ -136,6 +143,27 @@ public class PaypalRestClient {
             logger.error("Error getting PayPal order: {}", e.getResponseBodyAsString());
             throw new RuntimeException("Failed to get PayPal order: " + e.getMessage());
         }
+    }
+    
+    /**
+     * Get return URL from database configuration
+     */
+    public String getReturnUrl() {
+        return paypalConfigurationService.getReturnUrl();
+    }
+    
+    /**
+     * Get cancel URL from database configuration
+     */
+    public String getCancelUrl() {
+        return paypalConfigurationService.getCancelUrl();
+    }
+    
+    /**
+     * Get brand name from database configuration
+     */
+    public String getBrandName() {
+        return paypalConfigurationService.getBrandName();
     }
     
     // PayPal API Response DTOs
