@@ -600,23 +600,13 @@ metadata:
     app: inventory
     tenant: ${params.TENANT_NAME}
   annotations:
-    # Nice name for the DO LB
     service.beta.kubernetes.io/do-loadbalancer-name: "${WORKSPACE.split('/').last()}"
     service.beta.kubernetes.io/do-loadbalancer-algorithm: "round_robin"
-
-    # Terminate TLS at the LB
     service.beta.kubernetes.io/do-loadbalancer-tls-passthrough: "false"
-
-    # Redirect HTTP -> HTTPS at the LB
     service.beta.kubernetes.io/do-loadbalancer-redirect-http-to-https: "true"
-
-    # Attach an existing DO certificate (UUID)
     service.beta.kubernetes.io/do-loadbalancer-certificate-id: "${env.CERT_ID}"
-
-    # Tell DO which ports are HTTPS
     service.beta.kubernetes.io/do-loadbalancer-tls-ports: "443"
-
-    # Health check (note: with externalTrafficPolicy: Local, CCM will prefer NodePort)
+    service.beta.kubernetes.io/do-loadbalancer-protocol: "https"
     service.beta.kubernetes.io/do-loadbalancer-healthcheck-protocol: "http"
     service.beta.kubernetes.io/do-loadbalancer-healthcheck-port: "8080"
     service.beta.kubernetes.io/do-loadbalancer-healthcheck-path: "/login"
