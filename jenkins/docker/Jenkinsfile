@@ -613,6 +613,9 @@ metadata:
     # Attach an existing DO certificate (UUID)
     service.beta.kubernetes.io/do-loadbalancer-certificate-id: "${env.CERT_ID}"
 
+    # Tell DO which ports are HTTPS
+    service.beta.kubernetes.io/do-loadbalancer-tls-ports: "443"
+
     # Health check (note: with externalTrafficPolicy: Local, CCM will prefer NodePort)
     service.beta.kubernetes.io/do-loadbalancer-healthcheck-protocol: "http"
     service.beta.kubernetes.io/do-loadbalancer-healthcheck-port: "8080"
