@@ -609,7 +609,6 @@ metadata:
     service.beta.kubernetes.io/do-loadbalancer-protocol: "https"
     service.beta.kubernetes.io/do-loadbalancer-healthcheck-protocol: "http"
     service.beta.kubernetes.io/do-loadbalancer-healthcheck-port: "8080"
-    service.beta.kubernetes.io/do-loadbalancer-healthcheck-path: "/login"
     service.beta.kubernetes.io/do-loadbalancer-healthcheck-check-interval-seconds: "10"
     service.beta.kubernetes.io/do-loadbalancer-healthcheck-response-timeout-seconds: "5"
     service.beta.kubernetes.io/do-loadbalancer-healthcheck-healthy-threshold: "3"
