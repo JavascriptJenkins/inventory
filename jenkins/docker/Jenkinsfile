@@ -610,6 +610,7 @@ metadata:
     service.beta.kubernetes.io/do-loadbalancer-healthcheck-response-timeout-seconds: "5"
     service.beta.kubernetes.io/do-loadbalancer-healthcheck-healthy-threshold: "3"
     service.beta.kubernetes.io/do-loadbalancer-healthcheck-unhealthy-threshold: "3"
+    service.beta.kubernetes.io/do-loadbalancer-type: "REGIONAL"
 
 spec:
   type: LoadBalancer
