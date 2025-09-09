@@ -80,6 +80,8 @@ class ProductVO implements Serializable, Comparable<ProductVO> {
     Double weight
     @JsonProperty
     String unitofmeasure;
+    @JsonProperty
+    String quickbooksItemId;
 
     // for display purposes only
     @Transient

@@ -66,6 +66,18 @@ class QuickbooksService {
         // Create invoice in QuickBooks
     }
 
+    // Method for QuickBooksSyncJob to call
+    Object createInvoice(Map<String, Object> invoiceData, String correlationId) {
+        // TODO: Implement actual QuickBooks API call
+        // For now, return a mock response
+        Map<String, Object> mockResponse = new HashMap<>()
+        mockResponse.put("QueryResponse", new HashMap<String, Object>())
+        ((Map<String, Object>) mockResponse.get("QueryResponse")).put("Invoice", new HashMap<String, Object>())
+        ((Map<String, Object>) ((Map<String, Object>) mockResponse.get("QueryResponse")).get("Invoice")).put("Id", "QB-" + System.currentTimeMillis())
+        
+        return mockResponse
+    }
+
 
     // todo: implement this
 //    PaymentVO → QuickBooks Payment

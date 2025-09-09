@@ -83,6 +83,9 @@ class TransactionVO implements Serializable {
     @JsonProperty
     String paypalOrderId
 
+    @JsonProperty
+    String quickbooksInvoiceId
+
     // This will be 0 until the transaction is actually processed
     @JsonProperty
     Integer isprocessed = 0
