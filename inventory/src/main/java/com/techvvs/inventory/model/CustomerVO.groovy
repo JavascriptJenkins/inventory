@@ -65,6 +65,13 @@ class CustomerVO implements Serializable {
     @ElementCollection(fetch = FetchType.LAZY)
     List<LocationVO> locationlist = new ArrayList<LocationVO>()
 
+    // These fields are for QuickBooks sync
+    @JsonProperty
+    String quickbooksId
+
+    @JsonProperty
+    LocalDateTime lastQBSync
+
     // generic fields below
     @JsonProperty
     LocalDateTime updateTimeStamp
