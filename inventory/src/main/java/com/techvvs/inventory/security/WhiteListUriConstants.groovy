@@ -28,6 +28,8 @@ class WhiteListUriConstants {
     public static final String PUBLIC_CONFERENCE_PAGE_TULIP_POST = "/conference/**";
     public static final String CHECKOUT_VIEW_PDF = "/checkout/viewpdf";
     public static final String QR_PUBLIC_INFO = "/qr/publicinfo";
+    public static final String LEGAL_PRIVACY_POLICY = "/legal/privacypolicy";
+    public static final String LEGAL_TOS = "/legal/termsofservice";
     public static final String QR_PUBLIC_INFO_WILDCARD = "/qr/publicinfo/*";
     public static final String QR_PUBLIC_INFO_DOUBLE_WILDCARD = "/qr/publicinfo/**";
     public static final String FILE_SMS_DOWNLOAD = "/file/smsdownload/**";

@@ -140,6 +140,8 @@ public class JwtTokenFilter extends OncePerRequestFilter implements CsrfTokenRep
               CREATE_SYSTEM_USER.equals(path) ||
               VERIFY.equals(path) ||
               QR.equals(path) ||
+              LEGAL_TOS.equals(path) ||
+              LEGAL_PRIVACY_POLICY.equals(path) ||
               PUBLIC_LANDING_PAGE_TULIP.equals(path) ||
               PUBLIC_CONFERENCE_PAGE_TULIP.equals(path) ||
               PUBLIC_CONFERENCE_PAGE_TULIP_POST.equals(path) ||
