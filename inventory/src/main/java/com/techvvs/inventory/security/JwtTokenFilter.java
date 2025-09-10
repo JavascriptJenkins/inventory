@@ -1,6 +1,7 @@
 package com.techvvs.inventory.security;
 
 import com.techvvs.inventory.exception.CustomException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -46,7 +47,7 @@ public class JwtTokenFilter extends OncePerRequestFilter implements CsrfTokenRep
           Cookie[] cookies = httpServletRequest.getCookies();
           if (cookies != null) {
               Arrays.stream(cookies)
-                      .filter(cookie -> "techvvs_token".equals(cookie.getName()))
+                      .filter(cookie -> CookieUtils.getJwtCookieName().equals(cookie.getName()))
                       .findFirst()
                       .ifPresent(cookie -> {
                           token = cookie.getValue();
@@ -242,6 +243,9 @@ public class JwtTokenFilter extends OncePerRequestFilter implements CsrfTokenRep
   }
 
 
+    @Autowired
+    CookieUtils cookieUtils;
+
     void logout(HttpServletRequest request, HttpServletResponse response){
 
         // Invalidate the session if it exists
@@ -253,13 +257,12 @@ public class JwtTokenFilter extends OncePerRequestFilter implements CsrfTokenRep
         // Clear authentication information from the SecurityContext
         SecurityContextHolder.clearContext();
 
-        // Remove the JWT cookie
-        Cookie cookie = new Cookie("techvvs_token", null);
-        cookie.setPath("/");
-        cookie.setHttpOnly(true);
-        cookie.setMaxAge(0); // Deletes the cookie
-        response.addCookie(cookie);
-
+        // Wrap response to add SameSite attribute automatically
+        SameSiteCookieResponseWrapper wrappedResponse = cookieUtils.wrapResponse(response);
+        
+        // Remove the JWT cookie using utility
+        Cookie cookie = cookieUtils.createLogoutCookie();
+        wrappedResponse.addCookie(cookie);
 
         SecurityContextHolder.getContext().setAuthentication(null); // clear the internal auth
         SecurityContextHolder.clearContext();

@@ -5,13 +5,14 @@ import com.techvvs.inventory.jparepo.SystemUserRepo;
 import com.techvvs.inventory.jparepo.TokenRepo;
 import com.techvvs.inventory.model.SystemUserDAO;
 import com.techvvs.inventory.model.TokenDAO;
+import com.techvvs.inventory.security.CookieUtils;
 import com.techvvs.inventory.security.JwtTokenProvider;
+import com.techvvs.inventory.security.SameSiteCookieResponseWrapper;
 import com.techvvs.inventory.security.Role;
 import com.techvvs.inventory.security.Token;
 import com.techvvs.inventory.security.UserService;
 import com.techvvs.inventory.service.auth.TechvvsAuthService;
 import com.techvvs.inventory.util.SendgridEmailUtil;
-import com.techvvs.inventory.util.TwilioTextUtil;
 import com.techvvs.inventory.validation.ValidateAuth;
 import com.techvvs.inventory.viewcontroller.helper.CheckoutHelper;
 import com.techvvs.inventory.viewcontroller.helper.MenuHelper;
@@ -77,6 +78,9 @@ public class AuthViewController {
     MenuHelper menuHelper;
 
     @Autowired
+    CookieUtils cookieUtils;
+
+    @Autowired
     TechvvsAuthService techvvsAuthService;
 
     //default home mapping
@@ -110,12 +114,12 @@ public class AuthViewController {
         // Clear authentication information from the SecurityContext
         SecurityContextHolder.clearContext();
 
-        // Remove the JWT cookie
-        Cookie cookie = new Cookie("techvvs_token", null);
-        cookie.setPath("/");
-        cookie.setHttpOnly(true);
-        cookie.setMaxAge(0); // Deletes the cookie
-        response.addCookie(cookie);
+        // Wrap response to add SameSite attribute automatically
+        SameSiteCookieResponseWrapper wrappedResponse = cookieUtils.wrapResponse(response);
+        
+        // Remove the JWT cookie using utility
+        Cookie cookie = cookieUtils.createLogoutCookie();
+        wrappedResponse.addCookie(cookie);
 
 
         SecurityContextHolder.getContext().setAuthentication(null); // clear the internal auth

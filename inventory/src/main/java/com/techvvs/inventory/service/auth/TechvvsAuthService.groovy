@@ -5,6 +5,7 @@ import com.techvvs.inventory.jparepo.SystemUserRepo
 import com.techvvs.inventory.jparepo.TokenRepo
 import com.techvvs.inventory.model.SystemUserDAO
 import com.techvvs.inventory.model.TokenDAO
+import com.techvvs.inventory.security.CookieUtils
 import com.techvvs.inventory.security.JwtTokenProvider
 import com.techvvs.inventory.security.Role
 import com.techvvs.inventory.security.Token
@@ -70,6 +71,9 @@ class TechvvsAuthService {
     @Autowired
     UserDetailsService userDetailsService
 
+    @Autowired
+    CookieUtils cookieUtils
+
 
     void checkuserauth(Model model){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -95,23 +99,14 @@ class TechvvsAuthService {
         Authentication auth = jwtTokenProvider.getAuthentication(token);
         SecurityContextHolder.getContext().setAuthentication(auth);
 
-        // Set the updated JWT token in a cookie
-        Cookie jwtCookie = new Cookie("techvvs_token", token);
-
-        jwtCookie.setHttpOnly(true); // Secure the cookie
-
-        // send user an email link to validate account
-        if ("dev1".equals(env.getProperty("spring.profiles.active"))) {
-            // not setting secure cookie when doing local dev over regular http
-        } else {
-            jwtCookie.setSecure(true);  // Ensure it's sent only over HTTPS
-        }
-
-        jwtCookie.setPath("/");    // Make it available to the entire application
-        jwtCookie.setMaxAge(1 * 24 * 60 * 60); // Set expiration time (e.g., 1 day)
-
-        // Add the cookie to the response
-        response.addCookie(jwtCookie);
+        // Wrap response to add SameSite attribute automatically
+        def wrappedResponse = cookieUtils.wrapResponse(response);
+        
+        // Create secure JWT cookie using utility
+        Cookie jwtCookie = cookieUtils.createSecureJwtCookie(token);
+        
+        // Add the cookie to the wrapped response (SameSite will be added automatically)
+        wrappedResponse.addCookie(jwtCookie);
     }
 
     String getActiveCookie(HttpServletRequest request){
@@ -395,12 +390,12 @@ class TechvvsAuthService {
                                 token1 = new Token();
                                 token1.setToken(token);
 
-                                // Create and add the JWT cookie
-                                Cookie cookie = new Cookie("techvvs_token", token);
-                                cookie.setHttpOnly(true);
-                                cookie.setSecure(true); // Set to true in production with HTTPS
-                                cookie.setPath("/");
-                                response.addCookie(cookie);
+                                // Wrap response to add SameSite attribute automatically
+                                def wrappedResponse = cookieUtils.wrapResponse(response);
+                                
+                                // Create and add the JWT cookie using utility
+                                Cookie cookie = cookieUtils.createSecureJwtCookie(token);
+                                wrappedResponse.addCookie(cookie);
                                 //
                                 checkuserauth(model);
 
@@ -513,12 +508,12 @@ class TechvvsAuthService {
             String longtoken = jwtTokenProvider.createToken(existingUser.get().getEmail(), (List<Role>) Arrays.asList(systemUserRepo.findByEmail(existingUser.get().getEmail()).getRoles()));
 
 
-            // Create and add the JWT cookie
-            Cookie cookie = new Cookie("techvvs_token", longtoken);
-            cookie.setHttpOnly(true);
-            cookie.setSecure(true); // Set to true in production with HTTPS
-            cookie.setPath("/");
-            response.addCookie(cookie);
+            // Wrap response to add SameSite attribute automatically
+            def wrappedResponse = cookieUtils.wrapResponse(response);
+            
+            // Create and add the JWT cookie using utility
+            Cookie cookie = cookieUtils.createSecureJwtCookie(longtoken);
+            wrappedResponse.addCookie(cookie);
             //
             checkuserauth(model);
 

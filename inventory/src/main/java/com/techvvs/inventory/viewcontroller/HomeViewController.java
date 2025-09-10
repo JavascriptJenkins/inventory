@@ -3,6 +3,8 @@ package com.techvvs.inventory.viewcontroller;
 import com.techvvs.inventory.model.MenuVO;
 import com.techvvs.inventory.model.ProductTypeVO;
 import com.techvvs.inventory.model.ProductVO;
+import com.techvvs.inventory.security.CookieUtils;
+import com.techvvs.inventory.security.SameSiteCookieResponseWrapper;
 import com.techvvs.inventory.service.auth.TechvvsAuthService;
 import com.techvvs.inventory.viewcontroller.helper.CheckoutHelper;
 import com.techvvs.inventory.viewcontroller.helper.MenuHelper;
@@ -33,6 +35,9 @@ public class HomeViewController {
 
     @Autowired
     CheckoutHelper checkoutHelper;
+
+    @Autowired
+    CookieUtils cookieUtils;
 
 
 
@@ -74,10 +79,12 @@ public class HomeViewController {
 
         System.out.println("someone is logging out");
 
-        Cookie cookie = new Cookie("techvvs_token", null); // Not necessary, but saves bandwidth.
-        cookie.setPath("/");
-        cookie.setMaxAge(0); // Don't set to -1 or it will become a session cookie!
-        response.addCookie(cookie);
+        // Wrap response to add SameSite attribute automatically
+        SameSiteCookieResponseWrapper wrappedResponse = cookieUtils.wrapResponse(response);
+        
+        // Remove the JWT cookie using utility
+        Cookie cookie = cookieUtils.createLogoutCookie();
+        wrappedResponse.addCookie(cookie);
 
         // Clear the security context
         SecurityContextHolder.clearContext();

@@ -315,13 +315,19 @@ public class JwtTokenProvider {
     Cookie[] cookelist = req.getCookies();
 
     if(cookelist != null){
-      Cookie cookie = cookelist[0];
-
-      String bearerToken = cookie.getValue();
-      if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-        return bearerToken.substring(7);
+      // Find the JWT cookie by name instead of just taking the first one
+      for (Cookie cookie : cookelist) {
+        if (CookieUtils.getJwtCookieName().equals(cookie.getName())) {
+          String token = cookie.getValue();
+          if (token != null && !token.isEmpty()) {
+            // Remove Bearer prefix if present (though it shouldn't be in cookies)
+            if (token.startsWith("Bearer ")) {
+              return token.substring(7);
+            }
+            return token;
+          }
+        }
       }
-
     }
     return null;
   }
@@ -520,6 +526,9 @@ public class JwtTokenProvider {
   }
 
 
+  @Autowired
+  CookieUtils cookieUtils;
+
   void logout(HttpServletRequest request, HttpServletResponse response){
 
     // Invalidate the session if it exists
@@ -531,13 +540,12 @@ public class JwtTokenProvider {
     // Clear authentication information from the SecurityContext
     SecurityContextHolder.clearContext();
 
-    // Remove the JWT cookie
-    Cookie cookie = new Cookie("techvvs_token", null);
-    cookie.setPath("/");
-    cookie.setHttpOnly(true);
-    cookie.setMaxAge(0); // Deletes the cookie
-    response.addCookie(cookie);
-
+    // Wrap response to add SameSite attribute automatically
+    SameSiteCookieResponseWrapper wrappedResponse = cookieUtils.wrapResponse(response);
+    
+    // Remove the JWT cookie using utility
+    Cookie cookie = cookieUtils.createLogoutCookie();
+    wrappedResponse.addCookie(cookie);
 
     SecurityContextHolder.getContext().setAuthentication(null); // clear the internal auth
     SecurityContextHolder.clearContext();

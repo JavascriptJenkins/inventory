@@ -1,5 +1,7 @@
 package com.techvvs.inventory.viewcontroller.helper
 
+import com.techvvs.inventory.security.CookieUtils
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component
 
@@ -10,6 +12,9 @@ import javax.servlet.http.HttpSession
 
 @Component
 class AuthHelper {
+
+    @Autowired
+    CookieUtils cookieUtils
 
 
     void logout(HttpServletRequest request, HttpServletResponse response){
@@ -23,12 +28,12 @@ class AuthHelper {
         // Clear authentication information from the SecurityContext
         SecurityContextHolder.clearContext();
 
-        // Remove the JWT cookie
-        Cookie cookie = new Cookie("techvvs_token", null);
-        cookie.setPath("/");
-        cookie.setHttpOnly(true);
-        cookie.setMaxAge(0); // Deletes the cookie
-        response.addCookie(cookie);
+        // Wrap response to add SameSite attribute automatically
+        def wrappedResponse = cookieUtils.wrapResponse(response);
+        
+        // Remove the JWT cookie using utility
+        Cookie cookie = cookieUtils.createLogoutCookie();
+        wrappedResponse.addCookie(cookie);
 
 
         SecurityContextHolder.getContext().setAuthentication(null); // clear the internal auth
