@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy Techvvs LLC</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #34495e;
+            margin-top: 30px;
+        }
+        h3 {
+            color: #7f8c8d;
+            margin-top: 25px;
+        }
+        .last-updated {
+            background: #e8f4fd;
+            padding: 15px;
+            border-left: 4px solid #3498db;
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+        .contact-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        ul {
+            padding-left: 20px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        .highlight {
+            background: #fff3cd;
+            padding: 15px;
+            border-left: 4px solid #ffc107;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .data-types {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .data-type {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #28a745;
+        }
+        .data-type h4 {
+            margin: 0 0 10px 0;
+            color: #28a745;
+        }
+        a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6;
+            text-align: center;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Privacy Policy</h1>
+        
+        <div class="last-updated">
+            <strong>Last Updated:</strong> <span th:text="${lastUpdated}">January 2025</span>
+        </div>
+
+        <div class="contact-info">
+            <h3>Contact Information</h3>
+            <p><strong>Company:</strong> <span th:text="${companyName}">Techvvs LLC</span></p>
+            <p><strong>Email:</strong> <a th:href="'mailto:' + ${contactEmail}" th:text="${contactEmail}">admin@techvvs.io</a></p>
+            <p>For any privacy-related questions or concerns, please contact us at the email above.</p>
+        </div>
+
+        <h2>1. Introduction</h2>
+        <p>This Privacy Policy describes how <span th:text="${companyName}">Techvvs LLC</span> ("we," "our," or "us") collects, uses, and protects your personal information when you use our inventory management and e-commerce platform (the "Service").</p>
+
+        <h2>2. Information We Collect</h2>
+        
+        <h3>2.1 Personal Information</h3>
+        <div class="data-types">
+            <div class="data-type">
+                <h4>Account Information</h4>
+                <ul>
+                    <li>Name and email address</li>
+                    <li>Phone number (for authentication)</li>
+                    <li>Business information</li>
+                    <li>Profile preferences</li>
+                </ul>
+            </div>
+            <div class="data-type">
+                <h4>Authentication Data</h4>
+                <ul>
+                    <li>OAuth provider information (Google, etc.)</li>
+                    <li>Login credentials and session data</li>
+                    <li>Two-factor authentication tokens</li>
+                </ul>
+            </div>
+            <div class="data-type">
+                <h4>Business Data</h4>
+                <ul>
+                    <li>Inventory items and UPC codes</li>
+                    <li>Product catalogs and menus</li>
+                    <li>Transaction records</li>
+                    <li>Customer information</li>
+                </ul>
+            </div>
+            <div class="data-type">
+                <h4>Technical Data</h4>
+                <ul>
+                    <li>IP addresses and device information</li>
+                    <li>Browser type and version</li>
+                    <li>Usage patterns and analytics</li>
+                    <li>Error logs and performance data</li>
+                </ul>
+            </div>
+        </div>
+
+        <h3>2.2 Cookies and Tracking</h3>
+        <p>We use cookies and similar technologies for:</p>
+        <ul>
+            <li><strong>Authentication:</strong> Secure JWT tokens stored in HttpOnly cookies</li>
+            <li><strong>Session Management:</strong> Maintaining user login state</li>
+            <li><strong>Security:</strong> CSRF protection and fraud prevention</li>
+            <li><strong>Analytics:</strong> Understanding how users interact with our service</li>
+        </ul>
+
+        <div class="highlight">
+            <strong>Cookie Security:</strong> Our authentication cookies are configured with HttpOnly, Secure, and SameSite attributes to maximize security and prevent unauthorized access.
+        </div>
+
+        <h2>3. How We Use Your Information</h2>
+        
+        <h3>3.1 Primary Uses</h3>
+        <ul>
+            <li><strong>Service Provision:</strong> To provide inventory management and e-commerce functionality</li>
+            <li><strong>Authentication:</strong> To verify user identity and maintain secure sessions</li>
+            <li><strong>Account Management:</strong> To create and manage user accounts</li>
+            <li><strong>Business Operations:</strong> To process transactions and manage inventory</li>
+            <li><strong>Customer Support:</strong> To respond to inquiries and provide assistance</li>
+        </ul>
+
+        <h3>3.2 Legal and Compliance</h3>
+        <ul>
+            <li><strong>Legal Compliance:</strong> To comply with applicable laws and regulations</li>
+            <li><strong>Tax Reporting:</strong> To assist with tax code compliance and reporting</li>
+            <li><strong>Audit Requirements:</strong> To maintain records as required by law</li>
+            <li><strong>Security:</strong> To protect against fraud and unauthorized access</li>
+        </ul>
+
+        <h2>4. Data Storage and Security</h2>
+        
+        <h3>4.1 Storage Location</h3>
+        <p>Your data is stored in cloud-managed databases using industry-standard security practices. We use reputable cloud providers that comply with international security standards.</p>
+
+        <h3>4.2 Security Measures</h3>
+        <ul>
+            <li><strong>Encryption:</strong> Data is encrypted in transit and at rest</li>
+            <li><strong>Access Controls:</strong> Strict access controls and authentication requirements</li>
+            <li><strong>Regular Audits:</strong> Security audits and vulnerability assessments</li>
+            <li><strong>Secure Cookies:</strong> HttpOnly, Secure, and SameSite cookie attributes</li>
+            <li><strong>HTTPS:</strong> All communications encrypted using TLS/SSL</li>
+        </ul>
+
+        <h3>4.3 Data Retention</h3>
+        <p>We retain your data for as long as necessary to:</p>
+        <ul>
+            <li>Provide our services to you</li>
+            <li>Comply with legal and regulatory requirements</li>
+            <li>Resolve disputes and enforce our agreements</li>
+            <li>Meet audit and compliance obligations</li>
+        </ul>
+
+        <h2>5. Data Sharing and Third Parties</h2>
+        
+        <div class="highlight">
+            <strong>No Data Sales:</strong> We do not sell, rent, or trade your personal information to third parties for marketing purposes.
+        </div>
+
+        <h3>5.1 Limited Sharing</h3>
+        <p>We may share your information only in the following circumstances:</p>
+        <ul>
+            <li><strong>Service Providers:</strong> With trusted third-party service providers who assist in operating our platform (payment processors, cloud hosting, etc.)</li>
+            <li><strong>Legal Requirements:</strong> When required by law, court order, or government request</li>
+            <li><strong>Business Transfers:</strong> In connection with a merger, acquisition, or sale of assets</li>
+            <li><strong>Consent:</strong> When you have given explicit consent for specific sharing</li>
+        </ul>
+
+        <h3>5.2 Payment Processing</h3>
+        <p>When you integrate payment APIs, those third-party services may collect and process payment information according to their own privacy policies. We do not store credit card information on our servers.</p>
+
+        <h2>6. Your Rights and Choices</h2>
+        
+        <h3>6.1 Data Access and Control</h3>
+        <p>You have the right to:</p>
+        <ul>
+            <li><strong>Access:</strong> Request a copy of your personal data</li>
+            <li><strong>Correction:</strong> Request correction of inaccurate data</li>
+            <li><strong>Deletion:</strong> Request deletion of your personal data</li>
+            <li><strong>Portability:</strong> Request transfer of your data to another service</li>
+            <li><strong>Restriction:</strong> Request limitation of data processing</li>
+        </ul>
+
+        <h3>6.2 How to Exercise Your Rights</h3>
+        <p>To exercise any of these rights, please contact us at <a th:href="'mailto:' + ${contactEmail}" th:text="${contactEmail}">admin@techvvs.io</a>. We will respond to your request within 30 days.</p>
+
+        <h3>6.3 Account Deletion</h3>
+        <p>You can request complete deletion of your account and associated data by emailing <a th:href="'mailto:' + ${contactEmail}" th:text="${contactEmail}">admin@techvvs.io</a>. Upon verification of your identity, we will delete your data within 30 days, except where retention is required by law.</p>
+
+        <h2>7. International Data Transfers</h2>
+        <p>Your data may be transferred to and processed in countries other than your own. We ensure appropriate safeguards are in place to protect your data during such transfers, including:</p>
+        <ul>
+            <li>Standard contractual clauses</li>
+            <li>Adequacy decisions by relevant authorities</li>
+            <li>Certification schemes and codes of conduct</li>
+        </ul>
+
+        <h2>8. Children's Privacy</h2>
+        <p>Our service is not intended for children under 13 years of age. We do not knowingly collect personal information from children under 13. If we become aware that we have collected personal information from a child under 13, we will take steps to delete such information.</p>
+
+        <h2>9. Changes to This Privacy Policy</h2>
+        <p>We may update this Privacy Policy from time to time. We will notify you of any material changes by:</p>
+        <ul>
+            <li>Posting the updated policy on our website</li>
+            <li>Sending an email notification to registered users</li>
+            <li>Displaying a notice in the application</li>
+        </ul>
+        <p>Your continued use of the service after changes become effective constitutes acceptance of the updated policy.</p>
+
+        <h2>10. Contact Us</h2>
+        <p>If you have any questions about this Privacy Policy or our data practices, please contact us:</p>
+        <div class="contact-info">
+            <p><strong>Email:</strong> <a th:href="'mailto:' + ${contactEmail}" th:text="${contactEmail}">admin@techvvs.io</a></p>
+            <p><strong>Company:</strong> <span th:text="${companyName}">Techvvs LLC</span></p>
+        </div>
+
+        <div class="footer">
+            <p>&copy; 2025 <span th:text="${companyName}">Techvvs LLC</span>. All rights reserved.</p>
+            <p>This Privacy Policy is effective as of <span th:text="${lastUpdated}">January 2025</span>.</p>
+        </div>
+    </div>
+</body>
+</html>
