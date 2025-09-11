@@ -8,6 +8,9 @@ import org.springframework.stereotype.Component
 class WhiteListUriConstants {
 
 
+    public static final String OAUTH_GOOGLE_CALLBACK = "/oauth2/callback/google";
+    public static final String OAUTH_GOOGLE_LOGIN = "/oauth2/login/google";
+    public static final String OAUTH_GOOGLE_AUTH = "/oauth2/authorization/google";
     public static final String LOGIN = "/login";
     public static final String LOGIN_REQUEST_LINK = "/login/requestlink";
     public static final String LOGIN_MAGIC_LINK_GATEWAY = "/login/magiclinkgateway";

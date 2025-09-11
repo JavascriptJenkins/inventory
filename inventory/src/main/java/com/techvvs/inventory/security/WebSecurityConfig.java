@@ -46,6 +46,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     // No session will be created or used by spring security
     http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
+    // Configure OAuth2 login
+    http.oauth2Login()
+        .loginPage("/login")
+        .defaultSuccessUrl("/dashboard/index", true)
+        .failureUrl("/oauth/error")
+        .and()
+        .oauth2Client();
+
     // Apply JWT
     http.apply(new JwtTokenFilterConfigurer(jwtTokenProvider));
 
@@ -55,6 +63,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     // NOTE: To let things through without throwing and exception and routing to the login page, must also add URI to the JwtTokenFilter Exception Catcher
     // Then the request will be either handled by a dispatcher -> ErrorController, or let through on a normal Auth Flow / Login Page
     http.authorizeRequests()
+            .antMatchers(OAUTH_GOOGLE_CALLBACK).permitAll()
+            .antMatchers(OAUTH_GOOGLE_LOGIN).permitAll()
+            .antMatchers(OAUTH_GOOGLE_AUTH).permitAll()
             .antMatchers(LOGIN).permitAll()
             .antMatchers(LOGIN_REQUEST_LINK).permitAll()
             .antMatchers(LOGIN_MAGIC_LINK_GATEWAY).permitAll()

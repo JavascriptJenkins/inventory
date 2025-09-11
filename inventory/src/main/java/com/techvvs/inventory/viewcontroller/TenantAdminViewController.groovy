@@ -7,6 +7,7 @@ import com.techvvs.inventory.model.Tenant
 import com.techvvs.inventory.model.TenantConfig
 import com.techvvs.inventory.service.auth.TechvvsAuthService
 import com.techvvs.inventory.service.tenant.TenantService
+import com.techvvs.inventory.service.tenant.TenantDeploymentScheduler
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -33,6 +34,9 @@ public class TenantAdminViewController {
 
     @Autowired
     TenantConfigRepo tenantConfigRepo
+
+    @Autowired
+    TenantDeploymentScheduler tenantDeploymentScheduler
 
     @GetMapping
     String viewNewForm(
@@ -292,6 +296,31 @@ public class TenantAdminViewController {
             model.addAttribute(MessageConstants.ERROR_MSG, "Failed to get deployment status: " + e.message)
         }
         
+        bindStaticValues(model)
+        
+        return "tenant/admin.html"
+    }
+
+    @GetMapping("/test-scheduler")
+    String testScheduler(Model model) {
+        techvvsAuthService.checkuserauth(model)
+        
+        try {
+            // Get deployment status
+            Map<String, Object> status = tenantDeploymentScheduler.getDeploymentStatus()
+            model.addAttribute("deploymentStatus", status)
+            
+            // Test the scheduler manually
+            tenantDeploymentScheduler.testScheduler()
+            
+            model.addAttribute(MessageConstants.SUCCESS_MSG, "Scheduler test triggered. Check logs for results.")
+            
+        } catch (Exception e) {
+            model.addAttribute(MessageConstants.ERROR_MSG, "Failed to test scheduler: " + e.message)
+        }
+        
+        // Load tenant data
+        tenantService.addPaginatedData(model, Optional.of(0), Optional.of(1000))
         bindStaticValues(model)
         
         return "tenant/admin.html"

@@ -56,6 +56,22 @@ public class SystemUserDAO {
     @Column(name="isuseractive")
     Integer isuseractive;
 
+    // OAuth-related fields
+    @Column(name="google_id", unique = true)
+    String googleId;
+
+    @Column(name="oauth_provider")
+    String oauthProvider;
+
+    @Column(name="oauth_email")
+    String oauthEmail;
+
+    @Column(name="created_via_oauth")
+    Boolean createdViaOauth = false;
+
+    @Column(name="oauth_linked")
+    Boolean oauthLinked = false;
+
     // each systemuser may administrate multiple metrc license's from a single TULIP account
     @OneToMany(mappedBy = "systemUserDAO", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     List<MetrcLicenseVO> metrcLicenseVOS;
@@ -176,6 +192,47 @@ public class SystemUserDAO {
 
     public void setChats(List<Chat> chats) {
         this.chats = chats;
+    }
+
+    // OAuth getters and setters
+    public String getGoogleId() {
+        return googleId;
+    }
+
+    public void setGoogleId(String googleId) {
+        this.googleId = googleId;
+    }
+
+    public String getOauthProvider() {
+        return oauthProvider;
+    }
+
+    public void setOauthProvider(String oauthProvider) {
+        this.oauthProvider = oauthProvider;
+    }
+
+    public String getOauthEmail() {
+        return oauthEmail;
+    }
+
+    public void setOauthEmail(String oauthEmail) {
+        this.oauthEmail = oauthEmail;
+    }
+
+    public Boolean getCreatedViaOauth() {
+        return createdViaOauth;
+    }
+
+    public void setCreatedViaOauth(Boolean createdViaOauth) {
+        this.createdViaOauth = createdViaOauth;
+    }
+
+    public Boolean getOauthLinked() {
+        return oauthLinked;
+    }
+
+    public void setOauthLinked(Boolean oauthLinked) {
+        this.oauthLinked = oauthLinked;
     }
 
     public List<LicenseType> getLicenseTypes() {

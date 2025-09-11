@@ -17,6 +17,12 @@ public interface SystemUserRepo extends JpaRepository<SystemUserDAO, Integer> {
         
         // Find system users by tenant
         List<SystemUserDAO> findByTenantEntityId(UUID tenantId);
+        
+        // OAuth-related queries
+        SystemUserDAO findByGoogleId(String googleId);
+        SystemUserDAO findByOauthEmail(String oauthEmail);
+        List<SystemUserDAO> findByOauthProvider(String oauthProvider);
+        List<SystemUserDAO> findByOauthLinkedTrue();
 
 
        // List<SystemUserDAO> findByOrderByUpvotesDesc();

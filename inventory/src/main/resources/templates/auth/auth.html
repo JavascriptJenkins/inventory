@@ -248,6 +248,18 @@
         <h1>Login</h1>
     </div>
 
+    <!-- Google OAuth Login Button -->
+    <div style="margin-bottom: 20px;">
+        <a href="/oauth2/login/google" class="btn-submit-dark" style="background: #4285f4; border: none; color: white; text-decoration: none; display: inline-block; width: 100%; text-align: center; padding: 12px;">
+            <span style="margin-right: 8px;">🔍</span> Login with Google
+        </a>
+    </div>
+
+    <div style="text-align: center; margin: 20px 0; color: #666;">
+        <span style="background: white; padding: 0 15px;">or</span>
+        <hr style="margin: -10px 0 0 0; border: none; border-top: 1px solid #ddd;">
+    </div>
+
     <form th:action="@{/login/systemuser}" th:object="${systemuser}" method="post">
         <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
         <div class="alert alert-info" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
@@ -258,7 +270,7 @@
             </div>
         </div>
 
-        <button type="submit" class="btn-submit-dark btn-secondary" onclick="hideform()">Login</button>
+        <button type="submit" class="btn-submit-dark btn-secondary" onclick="hideform()">Login with Email</button>
     </form>
 
     <br>
