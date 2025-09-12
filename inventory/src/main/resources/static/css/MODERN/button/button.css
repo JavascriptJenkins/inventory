@@ -17,7 +17,7 @@
 }
 
 .btn-hover {
-    font-size: 18px;
+    font-size: 24px;
     font-weight: bold;
     text-align: center;
     text-decoration: none;
@@ -27,6 +27,8 @@
     border-radius: 10px;
     transition: all 0.3s ease-in-out;
     touch-action: manipulation;
+    padding: 20px 30px;
+    min-height: 70px;
 }
 
 .btn-hover:hover {
