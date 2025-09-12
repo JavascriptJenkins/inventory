@@ -1,0 +1,43 @@
+/* RETRO UI Mode - Form Styles */
+
+.form-control, .form-select {
+    background: rgba(255, 255, 255, 0.95);
+    color: #222;
+    border: 3px solid #000;
+    border-radius: 8px;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.7rem;
+    box-shadow: 0 3px 0 #000;
+    padding: 15px;
+    min-height: 50px;
+}
+
+.form-control:focus, .form-select:focus {
+    background: rgba(255, 255, 255, 1);
+    color: #222;
+    border-color: var(--brand-color);
+    box-shadow: 0 3px 0 #000, 0 0 10px var(--brand-color);
+}
+
+.form-label {
+    color: #fff;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.7rem;
+    text-shadow: 2px 2px 0 #000;
+}
+
+.form-check-input {
+    transform: scale(2);
+    margin-right: 1rem;
+    margin-top: 1rem;
+    margin-left: 1rem;
+    border: 2px solid #000;
+    box-shadow: 0 2px 0 #000;
+    min-width: 25px;
+    min-height: 25px;
+}
+
+.required:after {
+    content: " *";
+    color: var(--danger-color);
+}

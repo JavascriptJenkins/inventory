@@ -1,0 +1,33 @@
+/* RETRO UI Mode - Header Styles */
+
+.header-dark {
+    background: var(--brand-color);
+    color: white;
+    padding: 25px 40px;
+    border-radius: 20px;
+    text-align: center;
+    margin: 20px 0;
+    font-weight: bold;
+    font-size: 2rem;
+    box-shadow: 0 0 30px var(--brand-color);
+    animation: headerGlow 2s infinite alternate;
+    border: 3px solid #000;
+    box-shadow: 0 6px 0 #000;
+}
+
+@keyframes headerGlow {
+    0% { box-shadow: 0 0 10px var(--brand-color), 0 6px 0 #000; }
+    100% { box-shadow: 0 0 30px var(--brand-color), 0 6px 0 #000; }
+}
+
+.header-small {
+    background: var(--info-color);
+    color: white;
+    padding: 15px 25px;
+    border-radius: 15px;
+    margin: 15px 0;
+    font-size: 1rem;
+    border: 3px solid #000;
+    box-shadow: 0 4px 0 #000;
+    text-align: center;
+}

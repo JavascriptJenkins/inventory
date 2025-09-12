@@ -1,0 +1,18 @@
+/* MODERN UI Mode - Pagination Styles */
+
+.pagination .page-link {
+    color: #fff;
+    background-color: #343a40;
+    border: 1px solid #343a40;
+}
+
+.pagination .page-link:hover {
+    background-color: #23272b;
+    border-color: #1d2124;
+}
+
+.pagination .active .page-link {
+    color: #fff;
+    background-color: #007bff;
+    border-color: #007bff;
+}

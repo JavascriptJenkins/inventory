@@ -1,0 +1,44 @@
+/* MODERN UI Mode - Button Styles */
+
+.btn-secondary, .btn-primary {
+    color: #fff;
+    background-color: #343a40;
+    border-color: #343a40;
+    padding: 15px 25px;
+    font-size: 18px;
+    min-height: 50px;
+    border-radius: 10px;
+    touch-action: manipulation;
+}
+
+.btn-secondary:hover, .btn-primary:hover {
+    background-color: #23272b;
+    border-color: #1d2124;
+}
+
+.btn-hover {
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+    text-decoration: none;
+    color: #000;
+    background-color: #ffc107;
+    border: 2px solid #ffc107;
+    border-radius: 10px;
+    transition: all 0.3s ease-in-out;
+    touch-action: manipulation;
+}
+
+.btn-hover:hover {
+    background-color: #ffd700;
+    color: #fff;
+    border-color: #ffd700;
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Make 100% width include padding/border */
+.btn-hover {
+    display: block;           /* not inline-block */
+    width: 100%;
+    box-sizing: border-box;   /* key fix */
+}

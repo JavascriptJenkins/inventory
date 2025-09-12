@@ -1,0 +1,31 @@
+/* RETRO UI Mode - Alert Styles */
+
+.alert {
+    background: rgba(255, 255, 255, 0.95);
+    color: #222;
+    border: 3px solid #000;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 15px 0;
+    box-shadow: 0 6px 0 #000;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.8rem;
+}
+
+.alert-danger {
+    background: var(--danger-color);
+    color: white;
+    border-color: #000;
+}
+
+.alert-success {
+    background: var(--success-color);
+    color: white;
+    border-color: #000;
+}
+
+.alert-info {
+    background: var(--info-color);
+    color: white;
+    border-color: #000;
+}

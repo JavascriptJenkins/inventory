@@ -1,0 +1,13 @@
+/* MODERN UI Mode - Main CSS File */
+/* This file imports all MODERN UI mode styles */
+
+/* Import all MODERN UI mode styles */
+@import url('body/body.css');
+@import url('header/header.css');
+@import url('table/table.css');
+@import url('button/button.css');
+@import url('form/form.css');
+@import url('alert/alert.css');
+@import url('pagination/pagination.css');
+@import url('popup/popup.css');
+@import url('responsive/responsive.css');

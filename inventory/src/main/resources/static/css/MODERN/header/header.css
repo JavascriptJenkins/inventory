@@ -1,0 +1,33 @@
+/* MODERN UI Mode - Header Styles */
+
+.header-dark {
+    background-color: #343a40;
+    color: #fff;
+    padding: 15px;
+    border-radius: 5px;
+    font-family: 'Roboto', sans-serif;
+    border: 1px solid transparent;
+    border-image: linear-gradient(to right, #c0c0c0, #ffffff);
+    border-image-slice: 1;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.header-small {
+    background-color: #343a40;
+    color: #fff;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    font-family: 'Roboto', sans-serif;
+    border: 1px solid transparent;
+    border-image: linear-gradient(to right, #c0c0c0, #ffffff);
+    border-image-slice: 1;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: fit-content;
+    max-width: 400px;
+    margin: 0 auto 15px auto;
+    text-align: center;
+}

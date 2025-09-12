@@ -1,0 +1,47 @@
+/* MODERN UI Mode - Responsive Styles */
+
+@media (max-width: 768px) {
+    .btn-secondary, .btn-primary {
+        padding: 20px 30px;
+        font-size: 20px;
+        min-height: 60px;
+    }
+    .form-control, .form-select {
+        padding: 20px;
+        font-size: 18px;
+        min-height: 60px;
+    }
+    .table {
+        font-size: 18px;
+    }
+    .btn-hover {
+        font-size: 20px;
+    }
+    /* Ensure buttons stack properly on mobile */
+    .row .col-md-6 {
+        width: 100% !important;
+        margin-top: 15px;
+        margin-bottom: 15px;
+    }
+    .row .col-md-6:last-child {
+        margin-bottom: 15px;
+    }
+    .row {
+        display: flex;
+        flex-wrap: wrap;
+    }
+}
+
+/* Optional: tame the padding on small screens */
+@media (max-width: 768px) {
+    .btn-hover {
+        padding: 14px 18px;     /* was 20–30px */
+        min-height: 0;          /* avoid huge fixed height on tiny screens */
+    }
+}
+
+/* If columns still feel tight, remove column side padding on this row only */
+.row.mb-12 > [class*="col-"] {
+    padding-left: 0;
+    padding-right: 0;
+}

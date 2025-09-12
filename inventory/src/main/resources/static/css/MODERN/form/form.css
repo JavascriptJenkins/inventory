@@ -1,0 +1,35 @@
+/* MODERN UI Mode - Form Styles */
+
+.form-control, .form-select {
+    background-color: #343a40;
+    color: #fff;
+    border: 1px solid #343a40;
+    padding: 15px;
+    font-size: 16px;
+    min-height: 50px;
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: #343a40;
+    color: #fff;
+    border-color: #1d2124;
+    box-shadow: none;
+}
+
+.form-label {
+    color: #000;
+}
+
+.form-check-input {
+    transform: scale(2.5);
+    margin-right: 1.5rem;
+    margin-top: 3rem;
+    margin-left: 3rem;
+    min-width: 25px;
+    min-height: 25px;
+}
+
+.required:after {
+    content: " *";
+    color: red;
+}

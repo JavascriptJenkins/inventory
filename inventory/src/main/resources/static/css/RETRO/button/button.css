@@ -1,0 +1,81 @@
+/* RETRO UI Mode - Button Styles */
+
+.btn {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.8rem;
+    border: 3px solid #000;
+    box-shadow: 0 4px 0 #000;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 8px;
+    padding: 20px 30px;
+    min-height: 60px;
+    touch-action: manipulation;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 #000;
+}
+
+.btn-primary {
+    background: var(--brand-color);
+    color: white;
+    border-color: #000;
+}
+
+.btn-primary:hover {
+    background: var(--brand-dark);
+    color: white;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+    border-color: #000;
+}
+
+.btn-success {
+    background: var(--success-color);
+    color: white;
+    border-color: #000;
+}
+
+.btn-warning {
+    background: var(--warning-color);
+    color: #000;
+    border-color: #000;
+}
+
+.btn-outline-primary {
+    background: transparent;
+    color: var(--brand-color);
+    border-color: var(--brand-color);
+}
+
+.btn-outline-primary:hover {
+    background: var(--brand-color);
+    color: white;
+}
+
+.btn-hover {
+    background: var(--warning-color);
+    color: #000;
+    border: 3px solid #000;
+    border-radius: 8px;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.8rem;
+    box-shadow: 0 4px 0 #000;
+    transition: all 0.2s ease;
+    padding: 20px 30px;
+    min-height: 60px;
+    touch-action: manipulation;
+}
+
+.btn-hover:hover {
+    background: var(--warning-dark);
+    color: #000;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 #000;
+}
