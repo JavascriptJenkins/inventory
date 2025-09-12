@@ -527,7 +527,8 @@ public class GoogleOAuthService {
      */
     private String extractJsonValue(String json, String key) {
         try {
-            String searchKey = "\"" + key + "\":\"";
+            // Try with space after colon first (standard JSON format)
+            String searchKey = "\"" + key + "\": \"";
             int startIndex = json.indexOf(searchKey);
             if (startIndex != -1) {
                 startIndex += searchKey.length();
