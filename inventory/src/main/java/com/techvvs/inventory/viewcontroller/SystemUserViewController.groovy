@@ -1,16 +1,14 @@
 package com.techvvs.inventory.viewcontroller
 
-import com.techvvs.inventory.model.BatchVO
-import com.techvvs.inventory.model.CartVO
-import com.techvvs.inventory.model.MenuVO
+
 import com.techvvs.inventory.model.SystemUserDAO
-import com.techvvs.inventory.security.Role
 import com.techvvs.inventory.service.auth.TechvvsAuthService
 import com.techvvs.inventory.service.transactional.CartDeleteService
 import com.techvvs.inventory.viewcontroller.helper.BatchControllerHelper
 import com.techvvs.inventory.viewcontroller.helper.CheckoutHelper
 import com.techvvs.inventory.viewcontroller.helper.MenuHelper
 import com.techvvs.inventory.viewcontroller.helper.SystemUserHelper
+import com.techvvs.inventory.service.UiModeService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
@@ -41,6 +39,9 @@ public class SystemUserViewController {
 
     @Autowired
     SystemUserHelper systemUserHelper
+
+    @Autowired
+    UiModeService uiModeService
     
 
 
@@ -62,6 +63,9 @@ public class SystemUserViewController {
 
         systemUserHelper.loadAllSystemUsers(model, page, size)
 
+        // Add available UI modes to model
+        model.addAttribute("availableUiModes", uiModeService.getAvailableUiModes())
+
 //        systemUserHelper.loadAllSystemUsers(model)
         return "systemuser/systemuser.html";
     }
@@ -82,6 +86,9 @@ public class SystemUserViewController {
             systemUserHelper.loadSystemUser(Integer.valueOf(systemuserid.get()), model)
         }
         systemUserHelper.loadAllSystemUsers(model, page, size)
+
+        // Add available UI modes to model
+        model.addAttribute("availableUiModes", uiModeService.getAvailableUiModes())
 
         return "systemuser/systemuser.html";
     }
@@ -109,6 +116,8 @@ public class SystemUserViewController {
 
         systemUserHelper.loadAllSystemUsers(model, page, size)
 
+        // Add available UI modes to model
+        model.addAttribute("availableUiModes", uiModeService.getAvailableUiModes())
 
         String token = techvvsAuthService.getActiveCookie(request)
         // update the active jwt
@@ -142,6 +151,8 @@ public class SystemUserViewController {
 //        systemUserHelper.loadAllSystemUsers(model)
         systemUserHelper.loadAllSystemUsers(model, page, size)
 
+        // Add available UI modes to model
+        model.addAttribute("availableUiModes", uiModeService.getAvailableUiModes())
 
         // update the active jwt
         techvvsAuthService.updateJwtToken(techvvsAuthService.getActiveCookie(request), response)
