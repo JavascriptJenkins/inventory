@@ -2,16 +2,17 @@ package com.techvvs.inventory.service.oauth;
 
 import com.techvvs.inventory.jparepo.SystemUserRepo;
 import com.techvvs.inventory.jparepo.TenantRepo;
-import com.techvvs.inventory.model.GoogleUserInfo;
-import com.techvvs.inventory.model.OAuth2CallbackRequest;
-import com.techvvs.inventory.model.SystemUserDAO;
-import com.techvvs.inventory.model.Tenant;
+import com.techvvs.inventory.jparepo.TokenRepo;
+import com.techvvs.inventory.model.*;
 import com.techvvs.inventory.security.JwtTokenProvider;
 import com.techvvs.inventory.security.Role;
+import com.techvvs.inventory.service.auth.TechvvsAuthService;
 import com.techvvs.inventory.util.SendgridEmailUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.http.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ import org.springframework.web.client.RestTemplate;
 import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -60,6 +62,11 @@ public class GoogleOAuthService {
     @Autowired
     RestTemplate restTemplate;
 
+    @Autowired
+    TokenRepo tokenRepo;
+
+    @Autowired
+    TechvvsAuthService techvvsAuthService;
 
     /**
      * Processes Google OAuth callback with authorization code.
@@ -152,6 +159,16 @@ public class GoogleOAuthService {
 
         // Send email verification for account linking
         String verificationToken = generateVerificationToken();
+
+        // save the verification token in the database
+        TokenDAO token = new TokenDAO();
+        token.setToken(verificationToken);
+        token.setUsermetadata(existingUser.getEmail());
+        token.setTokenused(0);
+        token.setCreatetimestamp(LocalDateTime.now());
+        token.setUpdatedtimestamp(LocalDateTime.now());
+        tokenRepo.save(token); // this entry will be verified when the user clicks the link in the email
+
         sendAccountLinkingEmail(existingUser, verificationToken, googleId, email, name);
 
         return OAuthResult.verificationRequired("Please check your email to verify account linking.", existingUser);
@@ -220,10 +237,26 @@ public class GoogleOAuthService {
                 return OAuthResult.error("User not found.");
             }
 
-            // In a real implementation, you would verify the token from your database
-            // For now, we'll accept any non-empty token as valid
+
+            // tcheck the verification token
             if (verificationToken == null || verificationToken.trim().isEmpty()) {
                 return OAuthResult.error("Invalid verification token.");
+            } else {
+
+                // Check if the user has any existing tokens and set the existing tokens to used if they have any
+                // pass the parse accessToken.email value into this method to find the existing token for the user
+                Optional<TokenDAO> token = tokenRepo.findByToken(verificationToken);
+
+                // todo: should probably check if there are any tokens for the user that are not used and set them to used.
+                // todo cont. however, this is not a priority because google tokens expire so we dont really care - won't affect anything i dont think
+                if(token.isPresent()){
+                    // set the token to used and then let the user login
+                    token.get().setTokenused(1);
+                    tokenRepo.save(token.get());
+                } else{
+                    return OAuthResult.error("Invalid verification token.");
+                }
+
             }
 
             // Link the accounts

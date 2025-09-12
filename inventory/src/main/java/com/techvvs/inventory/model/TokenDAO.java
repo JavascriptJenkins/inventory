@@ -17,6 +17,17 @@ public class TokenDAO {
     @Column(name="token", length = 1024)
     String token;
 
+    public String getRefreshToken() {
+        return refreshToken;
+    }
+
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
+    }
+
+    @Column(name="refresh_token", length = 1024)
+    String refreshToken;
+
     @Column(name="usermetadata")
     String usermetadata;
 
