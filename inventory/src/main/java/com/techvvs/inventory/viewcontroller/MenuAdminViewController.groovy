@@ -90,7 +90,7 @@ public class MenuAdminViewController {
         if(rbacEnforcer.enforceAdminRights(model,req)) {
             // do nothing, proceed.  We have injected a value into the model for viewing admin buttons on the ui too
         } else {
-            return "auth/index.html" // return to home page, will send user to logout page if they have expired cookie i think
+            return "auth/access-denied.html" // return to access denied page with proper message
         }
 
         // todo: need to bind the productPage from the menu_product_list
@@ -141,7 +141,7 @@ public class MenuAdminViewController {
         if(rbacEnforcer.enforceAdminRights(model,req)) {
             // do nothing, proceed.  We have injected a value into the model for viewing admin buttons on the ui too
         } else {
-            return "auth/index.html" // return to home page, will send user to logout page if they have expired cookie i think
+            return "auth/access-denied.html" // return to access denied page with proper message
         }
 
 
@@ -194,7 +194,7 @@ public class MenuAdminViewController {
         if(rbacEnforcer.enforceAdminRights(model,req)) {
             // do nothing, proceed.  We have injected a value into the model for viewing admin buttons on the ui too
         } else {
-            return "auth/index.html" // return to home page, will send user to logout page if they have expired cookie i think
+            return "auth/access-denied.html" // return to access denied page with proper message
         }
 
         // todo: need to bind the productPage from the menu_product_list
@@ -245,7 +245,7 @@ public class MenuAdminViewController {
         if(rbacEnforcer.enforceAdminRights(model,req)) {
             // do nothing, proceed.  We have injected a value into the model for viewing admin buttons on the ui too
         } else {
-            return "auth/index.html" // return to home page, will send user to logout page if they have expired cookie i think
+            return "auth/access-denied.html" // return to access denied page with proper message
         }
 
 
@@ -336,7 +336,7 @@ public class MenuAdminViewController {
         if(rbacEnforcer.enforceAdminRights(model,req)) {
             // do nothing, proceed.  We have injected a value into the model for viewing admin buttons on the ui too
         } else {
-            return "auth/index.html" // return to home page, will send user to logout page if they have expired cookie i think
+            return "auth/access-denied.html" // return to access denied page with proper message
         }
 
         // todo: need to bind the productPage from the menu_product_list
@@ -389,7 +389,7 @@ public class MenuAdminViewController {
         if(rbacEnforcer.enforceAdminRights(model,req)) {
             // do nothing, proceed.  We have injected a value into the model for viewing admin buttons on the ui too
         } else {
-            return "auth/index.html" // return to home page, will send user to logout page if they have expired cookie i think
+            return "auth/access-denied.html" // return to access denied page with proper message
         }
 
         // load selected menu into scope
