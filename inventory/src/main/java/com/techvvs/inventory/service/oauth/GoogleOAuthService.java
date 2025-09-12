@@ -240,14 +240,35 @@ public class GoogleOAuthService {
      */
     private void sendAccountLinkingEmail(SystemUserDAO user, String verificationToken, String googleId, String googleEmail, String googleName) {
         try {
+            String userEmail = user.getEmail();
+            
+            // Validate email format
+            if (userEmail == null || userEmail.trim().isEmpty() || !isValidEmail(userEmail)) {
+                System.err.println("Invalid email address for user: " + userEmail);
+                return;
+            }
+            
             String subject = "Verify Google Account Linking - Techvvs";
             String htmlContent = buildAccountLinkingEmail(user, verificationToken, googleId, googleEmail, googleName);
 
-            emailUtil.sendEmail(user.getEmail(), subject, htmlContent);
+            emailUtil.sendEmail(htmlContent, userEmail.trim(), subject);
         } catch (Exception e) {
             // Log error but don't fail the OAuth process
             System.err.println("Failed to send account linking email: " + e.getMessage());
+            e.printStackTrace();
         }
+    }
+    
+    /**
+     * Simple email validation.
+     */
+    private boolean isValidEmail(String email) {
+        return email != null && 
+               email.contains("@") && 
+               email.contains(".") && 
+               email.length() > 5 &&
+               !email.startsWith("@") &&
+               !email.endsWith("@");
     }
 
     /**
@@ -280,7 +301,7 @@ public class GoogleOAuthService {
                 
                 <p>If the button doesn't work, you can copy and paste this link into your browser:</p>
                 <p style="word-break: break-all; color: #666;">
-                    %s/oauth/verify-linking?email=%s&token=%s&googleId=%s&googleEmail=%s&googleName=%s
+                    %s/oauth2/verify-linking?email=%s&token=%s&googleId=%s&googleEmail=%s&googleName=%s
                 </p>
                 
                 <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">

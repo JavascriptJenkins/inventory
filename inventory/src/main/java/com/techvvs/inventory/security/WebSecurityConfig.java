@@ -60,6 +60,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .antMatchers(OAUTH_GOOGLE_CALLBACK).permitAll()
             .antMatchers(OAUTH_GOOGLE_LOGIN).permitAll()
             .antMatchers(OAUTH_GOOGLE_AUTH).permitAll()
+            .antMatchers(OAUTH_VERIFY_LINKING).permitAll()
             .antMatchers("/oauth/oauth-success").permitAll()
             .antMatchers(LOGIN).permitAll()
             .antMatchers(LOGIN_REQUEST_LINK).permitAll()

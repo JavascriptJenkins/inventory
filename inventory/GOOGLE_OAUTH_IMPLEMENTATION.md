@@ -97,9 +97,9 @@ spring.security.oauth2.client.provider.google.user-name-attribute=sub
 **Location**: `com.techvvs.inventory.viewcontroller.OAuthController`
 
 **Endpoints**:
-- `GET /oauth/login/google`: Initiates Google OAuth flow
-- `GET /oauth/callback/google`: Handles OAuth callback
-- `GET /oauth/verify-linking`: Handles email verification
+- `GET /oauth2/login/google`: Initiates Google OAuth flow
+- `GET /oauth2/callback/google`: Handles OAuth callback
+- `GET /oauth2/verify-linking`: Handles email verification
 
 ### 3. UI Integration
 **Login Page Updates**: Added Google OAuth button to `auth/auth.html`
@@ -239,7 +239,7 @@ curl -X GET "http://localhost:8080/oauth/login/google"
 
 # Test OAuth callback (requires valid OAuth flow)
 # Test account linking verification
-curl -X GET "http://localhost:8080/oauth/verify-linking?email=test@example.com&token=test&googleId=test&googleEmail=test@example.com&googleName=Test"
+curl -X GET "http://localhost:8080/oauth2/verify-linking?email=test@example.com&token=test&googleId=test&googleEmail=test@example.com&googleName=Test"
 ```
 
 ### 2. Database Testing
