@@ -85,8 +85,15 @@ public class AuthViewController {
 
     //default home mapping
     @GetMapping
-    String viewAuthPage(Model model) {
-
+    String viewAuthPage(Model model, HttpServletRequest request, HttpServletResponse response) {
+        
+        // Check if user already has a valid JWT cookie
+        String token = jwtTokenProvider.resolveTokenFromCookies(request);
+        if (token != null && jwtTokenProvider.validateToken(token, request, response)) {
+            System.out.println("User already authenticated, redirecting to dashboard");
+            // User is already logged in, redirect to dashboard with POST
+            return "redirect:/dashboard/index";
+        }
 
         model.addAttribute("systemuser", new SystemUserDAO());
         return "auth/auth.html";
