@@ -72,6 +72,9 @@ public class SystemUserDAO {
     @Column(name="oauth_linked")
     Boolean oauthLinked = false;
 
+    @Column(name="ui_mode")
+    String uiMode = "MODERN"; // Default to MODERN UI mode
+
     // each systemuser may administrate multiple metrc license's from a single TULIP account
     @OneToMany(mappedBy = "systemUserDAO", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     List<MetrcLicenseVO> metrcLicenseVOS;
@@ -233,6 +236,14 @@ public class SystemUserDAO {
 
     public void setOauthLinked(Boolean oauthLinked) {
         this.oauthLinked = oauthLinked;
+    }
+
+    public String getUiMode() {
+        return uiMode;
+    }
+
+    public void setUiMode(String uiMode) {
+        this.uiMode = uiMode;
     }
 
     public List<LicenseType> getLicenseTypes() {

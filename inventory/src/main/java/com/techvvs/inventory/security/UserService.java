@@ -2,6 +2,7 @@ package com.techvvs.inventory.security;
 
 import com.techvvs.inventory.exception.CustomException;
 import com.techvvs.inventory.jparepo.SystemUserRepo;
+import com.techvvs.inventory.model.SystemUserDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -35,7 +36,8 @@ public class UserService {
 
 
 
-            return jwtTokenProvider.createToken(username, (List<Role>) Arrays.asList(systemUserRepo.findByEmail(username).getRoles()));
+            SystemUserDAO user = systemUserRepo.findByEmail(username);
+            return jwtTokenProvider.createToken(username, (List<Role>) Arrays.asList(user.getRoles()), user.getUiMode());
         } catch (AuthenticationException e) {
             throw new CustomException("Invalid username/password supplied", HttpStatus.UNPROCESSABLE_ENTITY);
         }

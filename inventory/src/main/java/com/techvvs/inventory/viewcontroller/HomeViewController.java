@@ -41,6 +41,7 @@ public class HomeViewController {
 
 
 
+
     @GetMapping("/index")
     String index(Model model,
                  @ModelAttribute( "menu" ) MenuVO menuVO,
@@ -49,9 +50,7 @@ public class HomeViewController {
 
         System.out.println("hit the dashboard index page");
 
-
-        // todo: pull this from the logged in systemuser?  or pull it from a new table UICONFIG
-        model.addAttribute("UIMODE", "RETRO");
+        // UIMODE is now automatically added by GlobalModelAttributes
 
         // bind the menu options here
         menuHelper.findMenus(model, page, size);
@@ -79,8 +78,7 @@ public class HomeViewController {
 
         System.out.println("hit the dashboard index page via POST (OAuth redirect)");
 
-        // todo: pull this from the logged in systemuser?  or pull it from a new table UICONFIG
-        model.addAttribute("UIMODE", "RETRO");
+        // UIMODE is now automatically added by GlobalModelAttributes
 
         // bind the menu options here
         menuHelper.findMenus(model, page, size);

@@ -278,6 +278,23 @@ public class JwtTokenProvider {
         .compact();
   }
 
+  public String createToken(String username, List<Role> roles, String uiMode) {
+
+    Claims claims = Jwts.claims().setSubject(username);
+    claims.put("auth", roles.stream().map(s -> new SimpleGrantedAuthority(s.getAuthority())).filter(Objects::nonNull).collect(Collectors.toList()));
+    claims.put("UIMODE", uiMode != null ? uiMode : "MODERN"); // Add UIMODE to JWT claims
+
+    Date now = new Date();
+    Date validity = new Date(now.getTime() + validityInMilliseconds);
+
+    return Jwts.builder()//
+        .setClaims(claims)//
+        .setIssuedAt(now)//
+        .setExpiration(validity)//
+        .signWith(SignatureAlgorithm.HS256, secretKey)//
+        .compact();
+  }
+
 
   public String createTokenForLogin(String username, List<Role> roles, List<String> orgs){
     Claims claims = Jwts.claims().setSubject(username);
@@ -308,6 +325,16 @@ public class JwtTokenProvider {
 
   public String getTokenSubject(String token) {
     return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().getSubject();
+  }
+
+  public String getTokenUiMode(String token) {
+    try {
+      Claims claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody();
+      String uiMode = (String) claims.get("UIMODE");
+      return uiMode != null ? uiMode : "MODERN"; // Default to MODERN if not set
+    } catch (Exception e) {
+      return "MODERN"; // Default to MODERN on error
+    }
   }
 
   public String resolveTokenFromCookies(HttpServletRequest req) {

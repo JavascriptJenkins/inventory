@@ -139,7 +139,7 @@ public class GoogleOAuthService {
         }
 
         // Set JWT cookie for successful login
-        setJwtCookie(jwtTokenProvider.createTokenForLogin(user.getEmail(), Arrays.asList(user.getRoles()), Arrays.asList(user.getTenant())), response);
+        setJwtCookie(jwtTokenProvider.createToken(user.getEmail(), Arrays.asList(user.getRoles()), user.getUiMode()), response);
 
         return OAuthResult.success("Login successful", user);
     }
@@ -208,7 +208,7 @@ public class GoogleOAuthService {
             SystemUserDAO savedUser = systemUserRepo.save(newUser);
 
             // Set JWT cookie for successful login
-            setJwtCookie(jwtTokenProvider.createTokenForLogin(savedUser.getEmail(), Arrays.asList(savedUser.getRoles()), Arrays.asList(savedUser.getTenant())), response);
+            setJwtCookie(jwtTokenProvider.createToken(savedUser.getEmail(), Arrays.asList(savedUser.getRoles()), savedUser.getUiMode()), response);
 
             return OAuthResult.success("Account created and login successful", savedUser);
         } catch (Exception e) {
@@ -269,7 +269,7 @@ public class GoogleOAuthService {
             SystemUserDAO savedUser = systemUserRepo.save(user);
 
             // Set JWT cookie for successful login - this is the same as the cookie set in the login endpoint
-            setJwtCookie(jwtTokenProvider.createTokenForLogin(savedUser.getEmail(), Arrays.asList(savedUser.getRoles()), Arrays.asList(savedUser.getTenant())), response);
+            setJwtCookie(jwtTokenProvider.createToken(savedUser.getEmail(), Arrays.asList(savedUser.getRoles()), savedUser.getUiMode()), response);
             
             model.addAttribute("successMessage", "Account successfully linked with email.  You may now login.  ");
 

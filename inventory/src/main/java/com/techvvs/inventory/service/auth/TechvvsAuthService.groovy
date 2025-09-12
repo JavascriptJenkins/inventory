@@ -505,7 +505,8 @@ class TechvvsAuthService {
                     userDetails, null, userDetails.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(auth);
 
-            String longtoken = jwtTokenProvider.createToken(existingUser.get().getEmail(), (List<Role>) Arrays.asList(systemUserRepo.findByEmail(existingUser.get().getEmail()).getRoles()));
+            SystemUserDAO user = systemUserRepo.findByEmail(existingUser.get().getEmail());
+            String longtoken = jwtTokenProvider.createToken(existingUser.get().getEmail(), (List<Role>) Arrays.asList(user.getRoles()), user.getUiMode());
 
 
             // Wrap response to add SameSite attribute automatically
