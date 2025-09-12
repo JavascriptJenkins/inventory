@@ -120,7 +120,7 @@ public class OAuthController {
         try {
             // Verify account linking
             GoogleOAuthService.OAuthResult result = googleOAuthService.verifyAccountLinking(
-                email, token, googleId, googleEmail, googleName, response);
+                email, token, googleId, googleEmail, googleName, response, model);
 
             if (result.isSuccess()) {
                 // JWT cookie is already set by the OAuth service

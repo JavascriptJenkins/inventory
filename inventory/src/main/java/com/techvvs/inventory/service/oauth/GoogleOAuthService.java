@@ -15,6 +15,7 @@ import org.springframework.http.*;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.ui.Model;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
@@ -203,7 +204,16 @@ public class GoogleOAuthService {
     /**
      * Verifies account linking token and links the accounts.
      */
-    public OAuthResult verifyAccountLinking(String email, String verificationToken, String googleId, String googleEmail, String googleName, HttpServletResponse response) {
+    public OAuthResult verifyAccountLinking(
+            String email,
+            String verificationToken,
+            String googleId,
+            String googleEmail,
+            String googleName,
+            HttpServletResponse response,
+            Model model
+
+    ) {
         try {
             SystemUserDAO user = systemUserRepo.findByEmail(email);
             if (user == null) {
@@ -225,8 +235,13 @@ public class GoogleOAuthService {
 
             SystemUserDAO savedUser = systemUserRepo.save(user);
 
-            // Set JWT cookie for successful login
-            setJwtCookie(jwtTokenProvider.createTokenForLogin(savedUser.getEmail(), Arrays.asList(savedUser.getRoles()), Arrays.asList(savedUser.getTenant())), response);
+            model.addAttribute("successMessage", "Account successfully linked with email.  You may now login.  ");
+
+//            // Set the Spring Authentication Context
+//            userService.singInWithOauth(user.getEmail(), user.getPassword());
+//
+//            // Set JWT cookie for successful login - this is the same as the cookie set in the login endpoint
+//            setJwtCookie(jwtTokenProvider.createTokenForLogin(savedUser.getEmail(), Arrays.asList(savedUser.getRoles()), Arrays.asList(savedUser.getTenant())), response);
 
             return OAuthResult.success("Account successfully linked and login successful", savedUser);
 
