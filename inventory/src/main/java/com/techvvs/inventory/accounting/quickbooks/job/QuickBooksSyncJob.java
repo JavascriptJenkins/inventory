@@ -18,19 +18,19 @@ import java.util.*;
 public class QuickBooksSyncJob {
 
     @Autowired
-    private LoggingService loggingService;
+    LoggingService loggingService;
 
     @Autowired
-    private QuickbooksService quickBooksService;
+    QuickbooksService quickBooksService;
 
     @Autowired
-    private RestTemplate restTemplate;
+    RestTemplate restTemplate;
 
     @Autowired
-    private ObjectMapper objectMapper;
+    ObjectMapper objectMapper;
 
     @Autowired
-    private TransactionRepo transactionRepository;
+    TransactionRepo transactionRepository;
 
     @Scheduled(fixedRate = 3600000) // Every hour
     public void syncTransactionsToQuickBooks() {
