@@ -48,13 +48,38 @@ public class OAuthController {
      */
     @GetMapping("/callback/google")
     public String googleCallback(@RequestParam String state,
-                                @RequestParam String code,
-                                @RequestParam String scope,
+                                @RequestParam(required = false) String code,
+                                @RequestParam(required = false) String scope,
                                 @RequestParam(required = false) String authuser,
                                 @RequestParam(required = false) String prompt,
+                                @RequestParam(required = false) String error,
+                                @RequestParam(required = false) String error_description,
                                 Model model, 
                                 HttpServletResponse response) {
         try {
+            // Handle OAuth errors first
+            if (error != null && !error.trim().isEmpty()) {
+                System.err.println("OAuth Callback - Error: " + error + " - " + error_description);
+                String errorMessage = "OAuth authentication failed";
+                if ("access_denied".equals(error)) {
+                    errorMessage = "Access was denied. Please try again and grant the necessary permissions.";
+                } else if ("invalid_request".equals(error)) {
+                    errorMessage = "Invalid OAuth request. Please try again.";
+                } else if ("unauthorized_client".equals(error)) {
+                    errorMessage = "OAuth client is not authorized. Please contact support.";
+                } else if ("unsupported_response_type".equals(error)) {
+                    errorMessage = "Unsupported response type. Please contact support.";
+                } else if ("invalid_scope".equals(error)) {
+                    errorMessage = "Invalid scope requested. Please contact support.";
+                } else if ("server_error".equals(error)) {
+                    errorMessage = "OAuth server error. Please try again later.";
+                } else if ("temporarily_unavailable".equals(error)) {
+                    errorMessage = "OAuth service is temporarily unavailable. Please try again later.";
+                }
+                model.addAttribute("errorMessage", errorMessage);
+                return "auth/oauth-error.html";
+            }
+            
             // Create callback request object
             OAuth2CallbackRequest callbackRequest = new OAuth2CallbackRequest(state, code, scope, authuser, prompt);
             
@@ -74,8 +99,10 @@ public class OAuthController {
             if (result.isSuccess()) {
                 System.out.println("OAuth Callback - Successful login for user: " + result.getUser().getEmail());
                 // JWT cookie is already set by the OAuth service
-                // Successful login - redirect to dashboard
-                return "redirect:/dashboard/index";
+                // Instead of redirecting directly, show intermediate page that will auto-submit form
+                model.addAttribute("userEmail", result.getUser().getEmail());
+                model.addAttribute("redirectUrl", "/dashboard/index");
+                return "auth/oauth-success.html";
             } else if (result.isVerificationRequired()) {
                 System.out.println("OAuth Callback - Email verification required for: " + result.getUser().getEmail());
                 // Email verification required for account linking
@@ -124,7 +151,10 @@ public class OAuthController {
 
             if (result.isSuccess()) {
                 // JWT cookie is already set by the OAuth service
-                return "redirect:/dashboard/index";
+                // Instead of redirecting directly, show intermediate page that will auto-submit form
+                model.addAttribute("userEmail", email);
+                model.addAttribute("redirectUrl", "/dashboard/index");
+                return "auth/oauth-success.html";
             } else {
                 model.addAttribute("errorMessage", result.getMessage());
                 return "auth/oauth-error.html";

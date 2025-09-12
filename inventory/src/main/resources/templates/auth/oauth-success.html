@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OAuth Login Successful - Techvvs</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f25e5a, #e24a47);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+        .success-icon {
+            font-size: 48px;
+            color: #28a745;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        p {
+            color: #555;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .redirect-info {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            border-left: 4px solid #3498db;
+        }
+        .redirect-info p {
+            margin: 0;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="success-icon">✅</div>
+        <h1>Login Successful!</h1>
+        <p>Welcome back, <strong th:text="${userEmail}">user@example.com</strong>!</p>
+        <p>You are being redirected to your dashboard...</p>
+        
+        <div class="redirect-info">
+            <p><span class="loading"></span>Redirecting to dashboard...</p>
+        </div>
+    </div>
+
+    <!-- Hidden form that will auto-submit to set cookies properly -->
+    <form id="redirectForm" method="POST" th:action="${redirectUrl}" style="display: none;">
+        <!-- This form will be submitted automatically to ensure cookies are set -->
+        <input type="hidden" name="oauth_success" value="true">
+    </form>
+
+    <script>
+        // Auto-submit the form after a short delay to ensure cookies are set
+        setTimeout(function() {
+            document.getElementById('redirectForm').submit();
+        }, 1500); // 1.5 second delay to show success message
+        
+        // Fallback: if form submission fails, redirect after 3 seconds
+        setTimeout(function() {
+            window.location.href = /*[[${redirectUrl}]]*/ '/dashboard/index';
+        }, 3000);
+    </script>
+</body>
+</html>

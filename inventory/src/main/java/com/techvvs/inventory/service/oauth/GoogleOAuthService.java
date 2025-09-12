@@ -235,13 +235,10 @@ public class GoogleOAuthService {
 
             SystemUserDAO savedUser = systemUserRepo.save(user);
 
+            // Set JWT cookie for successful login - this is the same as the cookie set in the login endpoint
+            setJwtCookie(jwtTokenProvider.createTokenForLogin(savedUser.getEmail(), Arrays.asList(savedUser.getRoles()), Arrays.asList(savedUser.getTenant())), response);
+            
             model.addAttribute("successMessage", "Account successfully linked with email.  You may now login.  ");
-
-//            // Set the Spring Authentication Context
-//            userService.singInWithOauth(user.getEmail(), user.getPassword());
-//
-//            // Set JWT cookie for successful login - this is the same as the cookie set in the login endpoint
-//            setJwtCookie(jwtTokenProvider.createTokenForLogin(savedUser.getEmail(), Arrays.asList(savedUser.getRoles()), Arrays.asList(savedUser.getTenant())), response);
 
             return OAuthResult.success("Account successfully linked and login successful", savedUser);
 

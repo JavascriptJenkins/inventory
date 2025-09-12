@@ -70,6 +70,34 @@ public class HomeViewController {
         return "auth/index.html";
     }
 
+    @PostMapping("/index")
+    String indexPost(Model model,
+                     @ModelAttribute( "menu" ) MenuVO menuVO,
+                     @RequestParam("page") Optional<Integer> page,
+                     @RequestParam("size") Optional<Integer> size,
+                     @RequestParam(value = "oauth_success", required = false) String oauthSuccess){
+
+        System.out.println("hit the dashboard index page via POST (OAuth redirect)");
+
+        // todo: pull this from the logged in systemuser?  or pull it from a new table UICONFIG
+        model.addAttribute("UIMODE", "RETRO");
+
+        // bind the menu options here
+        menuHelper.findMenus(model, page, size);
+
+        checkoutHelper.getAllCustomers(model);
+
+        techvvsAuthService.checkuserauth(model);
+        model.addAttribute("menu",menuVO);
+        
+        // Add success message if this is from OAuth
+        if ("true".equals(oauthSuccess)) {
+            model.addAttribute("successMessage", "Successfully logged in with Google OAuth!");
+        }
+        
+        return "auth/index.html";
+    }
+
 
    // @PostMapping("/login")
 
