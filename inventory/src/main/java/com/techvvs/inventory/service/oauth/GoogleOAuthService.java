@@ -275,46 +275,137 @@ public class GoogleOAuthService {
      * Builds the HTML email content for account linking verification.
      */
     private String buildAccountLinkingEmail(SystemUserDAO user, String verificationToken, String googleId, String googleEmail, String googleName) {
-        return String.format("""
-            <html>
-            <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                <h2 style="color: #2c3e50;">Verify Google Account Linking</h2>
-                
-                <p>Hello %s,</p>
-                
-                <p>Someone (likely you) is trying to link a Google account to your Techvvs account:</p>
-                
-                <div style="background: #f8f9fa; padding: 15px; border-left: 4px solid #3498db; margin: 20px 0;">
-                    <strong>Google Account:</strong> %s (%s)
-                </div>
-                
-                <p>To complete the account linking process, please click the button below:</p>
-                
-                <div style="text-align: center; margin: 30px 0;">
-                    <a href="%s/oauth/verify-linking?email=%s&token=%s&googleId=%s&googleEmail=%s&googleName=%s" 
-                       style="background: #3498db; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">
-                        Verify Account Linking
-                    </a>
-                </div>
-                
-                <p><strong>Security Note:</strong> This link will expire in 24 hours. If you didn't request this linking, please ignore this email and contact support.</p>
-                
-                <p>If the button doesn't work, you can copy and paste this link into your browser:</p>
-                <p style="word-break: break-all; color: #666;">
-                    %s/oauth2/verify-linking?email=%s&token=%s&googleId=%s&googleEmail=%s&googleName=%s
-                </p>
-                
-                <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
-                <p style="color: #666; font-size: 12px;">
-                    This email was sent by Techvvs. If you have any questions, please contact us at admin@techvvs.io
-                </p>
-            </body>
-            </html>
-            """,
-                user.getName(), googleName, googleEmail,
-                getBaseUrl(), user.getEmail(), verificationToken, googleId, googleEmail, googleName,
-                getBaseUrl(), user.getEmail(), verificationToken, googleId, googleEmail, googleName
-        );
+        try {
+            String baseUrl = getBaseUrl();
+            String logoUrl = baseUrl + "/image/images/photos/red_tulip_adhoc_1.png";
+            
+            // Build URL with proper encoding for all parameters
+            String verifyUrl = baseUrl + "/oauth2/verify-linking?email=" + 
+                              java.net.URLEncoder.encode(user.getEmail(), "UTF-8") + 
+                              "&token=" + java.net.URLEncoder.encode(verificationToken, "UTF-8") + 
+                              "&googleId=" + java.net.URLEncoder.encode(googleId, "UTF-8") + 
+                              "&googleEmail=" + java.net.URLEncoder.encode(googleEmail, "UTF-8") + 
+                              "&googleName=" + java.net.URLEncoder.encode(googleName, "UTF-8");
+            
+            return String.format("""
+                <html>
+                <head>
+                    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+                </head>
+                <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+                    <table width="100%%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f4;">
+                        <tr>
+                            <td align="center" style="padding: 20px 0;">
+                                <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                    
+                                    <!-- Header with Logo -->
+                                    <tr>
+                                        <td style="background: #f25e5a; padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
+                                            <img src="%s" alt="Techvvs Logo" style="max-width: 120px; height: auto; border-radius: 8px;">
+                                            <h1 style="color: white; margin: 15px 0 0 0; font-size: 24px; font-weight: 300;">Techvvs</h1>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Main Content -->
+                                    <tr>
+                                        <td style="padding: 40px 30px;">
+                                            <h2 style="color: #2c3e50; margin: 0 0 20px 0; font-size: 28px; font-weight: 600;">Verify Google Account Linking</h2>
+                                            
+                                            <p style="color: #555; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
+                                                Hello <strong>%s</strong>,
+                                            </p>
+                                            
+                                            <p style="color: #555; font-size: 16px; line-height: 1.6; margin: 0 0 25px 0;">
+                                                Someone (likely you) is trying to link a Google account to your Techvvs account:
+                                            </p>
+                                            
+                                            <!-- Google Account Info Box -->
+                                            <table width="100%%" cellpadding="0" cellspacing="0" style="background: #f8f9fa; border-left: 4px solid #3498db; margin: 25px 0;">
+                                                <tr>
+                                                    <td style="padding: 20px;">
+                                                        <p style="margin: 0; color: #2c3e50; font-size: 16px;">
+                                                            <strong>Google Account:</strong><br>
+                                                            <span style="color: #3498db; font-weight: 600;">%s</span><br>
+                                                            <span style="color: #7f8c8d; font-size: 14px;">%s</span>
+                                                        </p>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                            
+                                            <p style="color: #555; font-size: 16px; line-height: 1.6; margin: 0 0 30px 0;">
+                                                To complete the account linking process, please click the button below:
+                                            </p>
+                                            
+                                            <!-- Verify Button -->
+                                            <table width="100%%" cellpadding="0" cellspacing="0" style="margin: 40px 0;">
+                                                <tr>
+                                                    <td align="center">
+                                                        <a href="%s" 
+                                                           style="background: #3498db; 
+                                                                  color: white; 
+                                                                  padding: 15px 30px; 
+                                                                  text-decoration: none; 
+                                                                  border-radius: 8px; 
+                                                                  display: inline-block;
+                                                                  font-size: 16px;
+                                                                  font-weight: 600;">
+                                                            Verify Account Linking
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                            
+                                            <!-- Security Note -->
+                                            <table width="100%%" cellpadding="0" cellspacing="0" style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 6px; margin: 30px 0;">
+                                                <tr>
+                                                    <td style="padding: 15px;">
+                                                        <p style="margin: 0; color: #856404; font-size: 14px;">
+                                                            <strong>Security Note:</strong> This link will expire in 24 hours. If you didn't request this linking, please ignore this email and contact support.
+                                                        </p>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                            
+                                            <!-- Backup Link -->
+                                            <p style="color: #555; font-size: 14px; margin: 0 0 10px 0;">
+                                                If the button doesn't work, you can copy and paste this link into your browser:
+                                            </p>
+                                            <p style="word-break: break-all; color: #666; font-size: 12px; background: #f8f9fa; padding: 10px; border-radius: 4px; border-left: 3px solid #ddd;">
+                                                %s
+                                            </p>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Footer with Logo -->
+                                    <tr>
+                                        <td style="background: #f8f9fa; padding: 30px; text-align: center; border-top: 1px solid #eee; border-radius: 0 0 8px 8px;">
+                                            <img src="%s" alt="Techvvs Logo" style="max-width: 80px; height: auto; border-radius: 6px; margin-bottom: 15px;">
+                                            <p style="color: #666; font-size: 12px; margin: 0;">
+                                                This email was sent by <strong>Techvvs</strong><br>
+                                                If you have any questions, please contact us at <a href="mailto:admin@techvvs.io" style="color: #3498db;">admin@techvvs.io</a>
+                                            </p>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </body>
+                </html>
+                """,
+                    logoUrl,  // Header logo
+                    user.getName(),  // User name
+                    googleName,  // Google account name
+                    googleEmail,  // Google email
+                    verifyUrl,  // Verification button URL
+                    verifyUrl,  // Backup link URL
+                    logoUrl  // Footer logo
+            );
+        } catch (Exception e) {
+            System.err.println("Error building email content: " + e.getMessage());
+            e.printStackTrace();
+            return "Error building email content";
+        }
     }
 
     /**
