@@ -46,13 +46,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     // No session will be created or used by spring security
     http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
-    // Configure OAuth2 login
-    http.oauth2Login()
-        .loginPage("/login")
-        .defaultSuccessUrl("/oauth/oauth-success", true)
-        .failureUrl("/oauth/error")
-        .and()
-        .oauth2Client();
+    // OAuth2 configuration removed - using manual OAuth2 handling instead
 
     // Apply JWT
     http.apply(new JwtTokenFilterConfigurer(jwtTokenProvider));

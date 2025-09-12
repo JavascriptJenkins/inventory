@@ -144,7 +144,19 @@ public class OAuthController {
     @GetMapping("/login/google")
     public String googleLogin() {
         System.out.println("OAuth Login - Initiating Google OAuth flow");
-        return "redirect:/oauth2/authorization/google";
+        
+        // Build Google OAuth2 authorization URL manually
+        String clientId = "807918590933-vgi6hgorvor0a70bg31ttla2m994kb5d.apps.googleusercontent.com";
+        String redirectUri = "http://localhost:8080/oauth2/callback/google";
+        String scope = "email profile https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email openid";
+        String state = java.util.UUID.randomUUID().toString();
+        
+        String authUrl = String.format(
+            "https://accounts.google.com/o/oauth2/v2/auth?client_id=%s&redirect_uri=%s&scope=%s&response_type=code&state=%s&access_type=offline&prompt=consent",
+            clientId, redirectUri, scope, state
+        );
+        
+        return "redirect:" + authUrl;
     }
 
     /**
