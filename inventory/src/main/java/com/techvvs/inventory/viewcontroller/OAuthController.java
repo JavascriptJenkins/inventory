@@ -1,12 +1,11 @@
 package com.techvvs.inventory.viewcontroller;
 
+import com.techvvs.inventory.model.OAuth2CallbackRequest;
 import com.techvvs.inventory.security.CookieUtils;
 import com.techvvs.inventory.security.JwtTokenProvider;
 import com.techvvs.inventory.security.SameSiteCookieResponseWrapper;
 import com.techvvs.inventory.service.oauth.GoogleOAuthService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,32 +35,41 @@ public class OAuthController {
 
     /**
      * Handles Google OAuth callback after user authorization.
-     * 
-     * @param oauth2User The authenticated OAuth2 user from Google
+     * Uses basic Spring functionality to handle OAuth2 callback parameters.
+     *
+     * @param state OAuth2 state parameter
+     * @param code OAuth2 authorization code
+     * @param scope OAuth2 scope parameter
+     * @param authuser OAuth2 authuser parameter
+     * @param prompt OAuth2 prompt parameter
      * @param model Spring MVC model
      * @param response HTTP response for setting cookies
      * @return Redirect to appropriate page based on OAuth result
      */
     @GetMapping("/callback/google")
-    public String googleCallback(@AuthenticationPrincipal OAuth2User oauth2User, 
+    public String googleCallback(@RequestParam String state,
+                                @RequestParam String code,
+                                @RequestParam String scope,
+                                @RequestParam(required = false) String authuser,
+                                @RequestParam(required = false) String prompt,
                                 Model model, 
                                 HttpServletResponse response) {
         try {
-            // Extract user information from Google OAuth
-            String googleId = oauth2User.getAttribute("sub");
-            String email = oauth2User.getAttribute("email");
-            String name = oauth2User.getAttribute("name");
+            // Create callback request object
+            OAuth2CallbackRequest callbackRequest = new OAuth2CallbackRequest(state, code, scope, authuser, prompt);
             
-            System.out.println("OAuth Callback - Google ID: " + googleId + ", Email: " + email + ", Name: " + name);
+            System.out.println("OAuth Callback - Received: " + callbackRequest);
             
-            if (googleId == null || email == null) {
-                System.err.println("OAuth Callback - Missing required user information from Google");
-                model.addAttribute("errorMessage", "Failed to retrieve user information from Google.");
+            // Validate required parameters
+            if (code == null || code.trim().isEmpty()) {
+                System.err.println("OAuth Callback - Missing authorization code");
+                model.addAttribute("errorMessage", "OAuth authentication failed: Missing authorization code.");
                 return "auth/oauth-error.html";
             }
 
-            // Process OAuth authentication
-            GoogleOAuthService.OAuthResult result = googleOAuthService.processGoogleOAuth(googleId, email, name, response);
+            // Exchange authorization code for user information
+            // This will be handled by the GoogleOAuthService
+            GoogleOAuthService.OAuthResult result = googleOAuthService.processGoogleOAuthCallback(callbackRequest, response);
 
             if (result.isSuccess()) {
                 System.out.println("OAuth Callback - Successful login for user: " + result.getUser().getEmail());

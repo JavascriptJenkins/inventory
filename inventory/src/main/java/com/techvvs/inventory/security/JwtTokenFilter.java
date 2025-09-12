@@ -139,6 +139,7 @@ public class JwtTokenFilter extends OncePerRequestFilter implements CsrfTokenRep
               OAUTH_GOOGLE_CALLBACK.equals(path) ||
               OAUTH_GOOGLE_LOGIN.equals(path) ||
               OAUTH_GOOGLE_AUTH.equals(path) ||
+              "/oauth/oauth-success".equals(path) ||
               LOGIN_MAGIC_LINK_GATEWAY.equals(path) ||
               CREATE_SYSTEM_USER.equals(path) ||
               VERIFY.equals(path) ||

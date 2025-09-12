@@ -49,7 +49,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     // Configure OAuth2 login
     http.oauth2Login()
         .loginPage("/login")
-        .defaultSuccessUrl("/dashboard/index", true)
+        .defaultSuccessUrl("/oauth/oauth-success", true)
         .failureUrl("/oauth/error")
         .and()
         .oauth2Client();
@@ -66,6 +66,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .antMatchers(OAUTH_GOOGLE_CALLBACK).permitAll()
             .antMatchers(OAUTH_GOOGLE_LOGIN).permitAll()
             .antMatchers(OAUTH_GOOGLE_AUTH).permitAll()
+            .antMatchers("/oauth/oauth-success").permitAll()
             .antMatchers(LOGIN).permitAll()
             .antMatchers(LOGIN_REQUEST_LINK).permitAll()
             .antMatchers(LOGIN_MAGIC_LINK_GATEWAY).permitAll()

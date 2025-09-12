@@ -2,6 +2,8 @@ package com.techvvs.inventory.service.oauth;
 
 import com.techvvs.inventory.jparepo.SystemUserRepo;
 import com.techvvs.inventory.jparepo.TenantRepo;
+import com.techvvs.inventory.model.GoogleUserInfo;
+import com.techvvs.inventory.model.OAuth2CallbackRequest;
 import com.techvvs.inventory.model.SystemUserDAO;
 import com.techvvs.inventory.model.Tenant;
 import com.techvvs.inventory.security.JwtTokenProvider;
@@ -9,10 +11,13 @@ import com.techvvs.inventory.security.Role;
 import com.techvvs.inventory.util.SendgridEmailUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.http.*;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
@@ -51,10 +56,44 @@ public class GoogleOAuthService {
     @Autowired
     TenantRepo tenantRepo;
 
+    @Autowired
+    RestTemplate restTemplate;
+
+
+    /**
+     * Processes Google OAuth callback with authorization code.
+     * Exchanges authorization code for user information and handles authentication.
+     *
+     * @param callbackRequest OAuth2 callback request with authorization code
+     * @param response HTTP response for setting cookies
+     * @return OAuthResult indicating the outcome
+     */
+    public OAuthResult processGoogleOAuthCallback(OAuth2CallbackRequest callbackRequest, HttpServletResponse response) {
+        try {
+            System.out.println("Processing OAuth2 callback with code: " + callbackRequest.getCode());
+
+            // Exchange authorization code for access token and user info
+            GoogleUserInfo userInfo = exchangeCodeForUserInfo(callbackRequest.getCode());
+
+            if (userInfo == null) {
+                return OAuthResult.error("Failed to retrieve user information from Google.");
+            }
+
+            System.out.println("Retrieved user info: " + userInfo);
+
+            // Process OAuth authentication with user info
+            return processGoogleOAuth(userInfo.getGoogleId(), userInfo.getEmail(), userInfo.getName(), response);
+
+        } catch (Exception e) {
+            System.err.println("Failed to process OAuth2 callback: " + e.getMessage());
+            e.printStackTrace();
+            return OAuthResult.error("OAuth authentication failed: " + e.getMessage());
+        }
+    }
 
     /**
      * Processes Google OAuth authentication and handles account linking.
-     * 
+     *
      * @param googleId Google user ID
      * @param email Google user email
      * @param name Google user name
@@ -124,7 +163,7 @@ public class GoogleOAuthService {
         try {
             // Get or create a default tenant for OAuth users
             Tenant defaultTenant = getActiveTenant(environment.getProperty("active.tenant"));
-            
+
             SystemUserDAO newUser = new SystemUserDAO();
             newUser.setEmail(email);
             newUser.setName(name);
@@ -137,19 +176,19 @@ public class GoogleOAuthService {
             newUser.setIsuseractive(1);
             newUser.setCreatetimestamp(LocalDateTime.now());
             newUser.setUpdatedtimestamp(LocalDateTime.now());
-            
+
             // Set tenant information (required fields)
             newUser.setTenantEntity(defaultTenant);
             newUser.setTenant(defaultTenant.getTenantName());
-            
+
             // Set default role for new OAuth users
             newUser.setRoles(new Role[]{Role.EMPLOYEE});
-            
+
             // Generate a random password for OAuth users (they won't use it)
             newUser.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
 
             SystemUserDAO savedUser = systemUserRepo.save(newUser);
-            
+
             // Set JWT cookie for successful login
             setJwtCookie(jwtTokenProvider.createTokenForLogin(savedUser.getEmail(), Arrays.asList(savedUser.getRoles()), Arrays.asList(savedUser.getTenant())), response);
 
@@ -203,7 +242,7 @@ public class GoogleOAuthService {
         try {
             String subject = "Verify Google Account Linking - Techvvs";
             String htmlContent = buildAccountLinkingEmail(user, verificationToken, googleId, googleEmail, googleName);
-            
+
             emailUtil.sendEmail(user.getEmail(), subject, htmlContent);
         } catch (Exception e) {
             // Log error but don't fail the OAuth process
@@ -250,10 +289,10 @@ public class GoogleOAuthService {
                 </p>
             </body>
             </html>
-            """, 
-            user.getName(), googleName, googleEmail,
-            getBaseUrl(), user.getEmail(), verificationToken, googleId, googleEmail, googleName,
-            getBaseUrl(), user.getEmail(), verificationToken, googleId, googleEmail, googleName
+            """,
+                user.getName(), googleName, googleEmail,
+                getBaseUrl(), user.getEmail(), verificationToken, googleId, googleEmail, googleName,
+                getBaseUrl(), user.getEmail(), verificationToken, googleId, googleEmail, googleName
         );
     }
 
@@ -265,18 +304,18 @@ public class GoogleOAuthService {
     private void setJwtCookie(String token, HttpServletResponse response) {
         try {
             // Wrap response to add SameSite attribute automatically
-            com.techvvs.inventory.security.SameSiteCookieResponseWrapper wrappedResponse = 
-                cookieUtils.wrapResponse(response);
-            
+            com.techvvs.inventory.security.SameSiteCookieResponseWrapper wrappedResponse =
+                    cookieUtils.wrapResponse(response);
+
             // Create secure JWT cookie using utility
             // This creates a cookie with HttpOnly, Secure (in production), and SameSite=Strict
             javax.servlet.http.Cookie jwtCookie = cookieUtils.createSecureJwtCookie(token);
-            
+
             // Add the cookie to the wrapped response (SameSite will be added automatically)
             wrappedResponse.addCookie(jwtCookie);
-            
+
             System.out.println("JWT cookie set successfully for OAuth user");
-            
+
         } catch (Exception e) {
             System.err.println("Failed to set JWT cookie for OAuth user: " + e.getMessage());
             e.printStackTrace();
@@ -300,13 +339,219 @@ public class GoogleOAuthService {
 
             tenant = tenantRepo.findByTenantName(activeTenant);
             return tenant.get();
-            
+
         } catch (Exception e) {
             System.err.println("Failed to get or create default tenant: " + e.getMessage());
             e.printStackTrace();
             return tenant.get(); // return null on failure
         }
 
+    }
+
+    /**
+     * Exchanges authorization code for Google user information.
+     *
+     * @param authorizationCode The authorization code from Google OAuth2 callback
+     * @return GoogleUserInfo object with user details, or null if failed
+     */
+    private GoogleUserInfo exchangeCodeForUserInfo(String authorizationCode) {
+        try {
+            System.out.println("Exchanging authorization code for user info: " + authorizationCode);
+
+            // Step 1: Exchange authorization code for access token
+            String accessToken = exchangeCodeForAccessToken(authorizationCode);
+            if (accessToken == null) {
+                System.err.println("Failed to exchange authorization code for access token");
+                return null;
+            }
+
+            System.out.println("Successfully obtained access token");
+
+            // Step 2: Use access token to get user information
+            GoogleUserInfo userInfo = getUserInfoFromGoogle(accessToken);
+            if (userInfo == null) {
+                System.err.println("Failed to retrieve user information from Google");
+                return null;
+            }
+
+            System.out.println("Successfully retrieved user info: " + userInfo);
+            return userInfo;
+
+        } catch (Exception e) {
+            System.err.println("Failed to exchange authorization code for user info: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Exchanges authorization code for access token.
+     */
+    private String exchangeCodeForAccessToken(String authorizationCode) {
+        try {
+            String tokenUrl = "https://www.googleapis.com/oauth2/v4/token";
+
+            // Prepare request headers
+
+            // Get client credentials
+            String clientId = environment.getProperty("spring.security.oauth2.client.registration.google.client-id");
+            String clientSecret = environment.getProperty("spring.security.oauth2.client.registration.google.client-secret");
+            String redirectUri = environment.getProperty("base.qr.domain") + "/oauth2/callback/google";
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+            // Prepare request body
+            // Create Basic Auth header manually
+            String credentials = clientId + ":" + clientSecret;
+            String encodedCredentials = java.util.Base64.getEncoder().encodeToString(credentials.getBytes());
+            headers.set("Authorization", "Basic " + encodedCredentials);
+
+            MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+            body.add("code", authorizationCode);
+            body.add("grant_type", "authorization_code");
+            body.add("redirect_uri", redirectUri);
+
+            HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
+
+            // Make HTTP POST request
+            ResponseEntity<String> response = restTemplate.postForEntity(tokenUrl, request, String.class);
+
+            if (response.getStatusCode() == HttpStatus.OK) {
+                // Parse the response to extract access token
+                String responseBody = response.getBody();
+                System.out.println("Token response: " + responseBody);
+
+                // Simple JSON parsing to extract access_token
+                // In a real implementation, you might want to use a JSON library
+                if (responseBody != null && responseBody.contains("\"access_token\"")) {
+                    String accessToken = extractAccessTokenFromResponse(responseBody);
+                    return accessToken;
+                }
+            }
+
+            System.err.println("Failed to exchange code for token. Status: " + response.getStatusCode());
+            return null;
+
+        } catch (Exception e) {
+            System.err.println("Exception during token exchange: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Gets user information from Google using access token.
+     */
+    private GoogleUserInfo getUserInfoFromGoogle(String accessToken) {
+        try {
+            String userInfoUrl = "https://www.googleapis.com/oauth2/v3/userinfo";
+
+            // Prepare request headers
+            HttpHeaders headers = new HttpHeaders();
+            headers.setBearerAuth(accessToken);
+
+            HttpEntity<String> request = new HttpEntity<>(headers);
+
+            // Make HTTP GET request
+            ResponseEntity<String> response = restTemplate.exchange(
+                    userInfoUrl,
+                    HttpMethod.GET,
+                    request,
+                    String.class
+            );
+
+            if (response.getStatusCode() == HttpStatus.OK) {
+                String responseBody = response.getBody();
+                System.out.println("User info response: " + responseBody);
+
+                if (responseBody != null) {
+                    return parseUserInfoFromResponse(responseBody);
+                }
+            }
+
+            System.err.println("Failed to get user info. Status: " + response.getStatusCode());
+            return null;
+
+        } catch (Exception e) {
+            System.err.println("Exception during user info retrieval: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Extracts access token from Google's token response.
+     */
+    private String extractAccessTokenFromResponse(String responseBody) {
+        try {
+            // Simple JSON parsing - look for "access_token": "value" (with space after colon)
+            int startIndex = responseBody.indexOf("\"access_token\": \"");
+            if (startIndex != -1) {
+                startIndex += 17; // Length of "\"access_token\": \""
+                int endIndex = responseBody.indexOf("\"", startIndex);
+                if (endIndex != -1) {
+                    return responseBody.substring(startIndex, endIndex);
+                }
+            }
+            return null;
+        } catch (Exception e) {
+            System.err.println("Failed to extract access token: " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Parses user information from Google's userinfo response.
+     */
+    private GoogleUserInfo parseUserInfoFromResponse(String responseBody) {
+        try {
+            GoogleUserInfo userInfo = new GoogleUserInfo();
+
+            // Simple JSON parsing - extract key fields
+            userInfo.setGoogleId(extractJsonValue(responseBody, "sub"));
+            userInfo.setEmail(extractJsonValue(responseBody, "email"));
+            userInfo.setName(extractJsonValue(responseBody, "name"));
+            userInfo.setPicture(extractJsonValue(responseBody, "picture"));
+            userInfo.setGivenName(extractJsonValue(responseBody, "given_name"));
+            userInfo.setFamilyName(extractJsonValue(responseBody, "family_name"));
+
+            return userInfo;
+        } catch (Exception e) {
+            System.err.println("Failed to parse user info: " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Helper method to extract JSON values from response string.
+     */
+    private String extractJsonValue(String json, String key) {
+        try {
+            String searchKey = "\"" + key + "\":\"";
+            int startIndex = json.indexOf(searchKey);
+            if (startIndex != -1) {
+                startIndex += searchKey.length();
+                int endIndex = json.indexOf("\"", startIndex);
+                if (endIndex != -1) {
+                    return json.substring(startIndex, endIndex);
+                }
+            }
+
+            // Fallback: try without space (in case of compact JSON)
+            searchKey = "\"" + key + "\":\"";
+            startIndex = json.indexOf(searchKey);
+            if (startIndex != -1) {
+                startIndex += searchKey.length();
+                int endIndex = json.indexOf("\"", startIndex);
+                if (endIndex != -1) {
+                    return json.substring(startIndex, endIndex);
+                }
+            }
+
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     /**
