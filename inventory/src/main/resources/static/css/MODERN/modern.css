@@ -4,6 +4,7 @@
 /* Import all MODERN UI mode styles */
 @import url('body/body.css');
 @import url('header/header.css');
+@import url('table/table.css');
 @import url('button/button.css');
 @import url('form/form.css');
 @import url('alert/alert.css');
