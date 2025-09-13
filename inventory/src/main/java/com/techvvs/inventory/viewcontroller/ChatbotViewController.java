@@ -87,7 +87,14 @@ public class ChatbotViewController {
             Optional<ChatModel> chatModel = chatModelService.getChatModelById(chatModelId);
             if (chatModel.isPresent()) {
                 Chat chat = chatService.createChat(title, currentUser, chatModel.get());
-                return ResponseEntity.ok(chat);
+                
+                // Re-fetch the chat with all lazy-loaded fields hydrated
+                Optional<Chat> hydratedChat = chatService.getChatById(chat.getId(), currentUser);
+                if (hydratedChat.isPresent()) {
+                    return ResponseEntity.ok(hydratedChat.get());
+                } else {
+                    return ResponseEntity.status(500).body(Map.of("error", "Failed to retrieve created chat"));
+                }
             } else {
                 return ResponseEntity.status(400).body(Map.of("error", "Chat model not found"));
             }

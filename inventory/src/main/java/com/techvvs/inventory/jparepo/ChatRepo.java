@@ -22,10 +22,10 @@ public interface ChatRepo extends JpaRepository<Chat, Integer> {
     @Query("SELECT c FROM Chat c WHERE c.systemUser = :systemUser AND c.isActive = true ORDER BY c.updatedTimestamp DESC")
     List<Chat> findActiveChatsByUser(@Param("systemUser") SystemUserDAO systemUser);
     
-    @Query("SELECT c FROM Chat c LEFT JOIN FETCH c.chatModel WHERE c.systemUser = :systemUser AND c.isActive = true ORDER BY c.updatedTimestamp DESC")
+    @Query("SELECT c FROM Chat c LEFT JOIN FETCH c.chatModel cm LEFT JOIN FETCH cm.createdByUser WHERE c.systemUser = :systemUser AND c.isActive = true ORDER BY c.updatedTimestamp DESC")
     List<Chat> findActiveChatsByUserWithChatModel(@Param("systemUser") SystemUserDAO systemUser);
-    
-    @Query("SELECT c FROM Chat c LEFT JOIN FETCH c.chatModel WHERE c.id = :id AND c.systemUser = :systemUser")
+
+    @Query("SELECT c FROM Chat c LEFT JOIN FETCH c.chatModel cm LEFT JOIN FETCH cm.createdByUser WHERE c.id = :id AND c.systemUser = :systemUser")
     Optional<Chat> findByIdAndSystemUserWithChatModel(@Param("id") Integer id, @Param("systemUser") SystemUserDAO systemUser);
     
     @Query("SELECT COUNT(c) FROM Chat c WHERE c.systemUser = :systemUser")

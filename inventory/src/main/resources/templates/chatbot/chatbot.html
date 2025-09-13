@@ -1238,43 +1238,108 @@
             }
 
             async function createNewChat() {
-                const title = prompt('Enter chat title:', 'New METRC Chat');
-                if (!title) return;
+                // Get selected chat model ID - this is now required
+                const selectedChatModelId = chatModelSelect.val();
                 
-                try {
-                    // Get selected chat model ID - this is now required
-                    const selectedChatModelId = chatModelSelect.val();
-                    
-                    // Validate that a chat model is selected
-                    if (!selectedChatModelId || selectedChatModelId === 'default' || selectedChatModelId === 'null') {
-                        alert('Please select a chat model before creating a new chat.');
+                // Validate that a chat model is selected
+                if (!selectedChatModelId || selectedChatModelId === 'default' || selectedChatModelId === 'null') {
+                    alert('Please select a chat model before creating a new chat.');
+                    return;
+                }
+                
+                // Get the selected chat model name for display
+                const selectedOption = chatModelSelect.find('option:selected');
+                const selectedModelName = selectedOption.text().split(' - ')[0];
+                
+                // Create custom modal HTML
+                const modalHtml = `
+                    <div class="modal fade" id="createChatModal" tabindex="-1" aria-labelledby="createChatModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content" style="background: var(--gameboy-bg); color: var(--gameboy-screen); border: 2px solid var(--gameboy-screen);">
+                                <div class="modal-header" style="border-bottom: 1px solid var(--gameboy-screen);">
+                                    <h5 class="modal-title" id="createChatModalLabel" style="color: var(--gameboy-screen);">Create New Chat</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="filter: invert(1);"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label for="chatTitleInput" class="form-label" style="color: var(--gameboy-screen);">Chat Title:</label>
+                                        <input type="text" class="form-control" id="chatTitleInput" value="New METRC Chat" style="background: var(--gameboy-bg); color: var(--gameboy-screen); border: 1px solid var(--gameboy-screen);">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label" style="color: var(--gameboy-screen);">Chat Model:</label>
+                                        <div class="alert alert-info" style="background: var(--gameboy-dark); color: var(--gameboy-screen); border: 1px solid var(--gameboy-screen);">
+                                            <i class="bi bi-info-circle me-2"></i>
+                                            <strong>${selectedModelName}</strong>
+                                            <br><small>This chat will be created using the selected chat model and its uploaded documents.</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer" style="border-top: 1px solid var(--gameboy-screen);">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="background: var(--gameboy-dark); color: var(--gameboy-screen); border: 1px solid var(--gameboy-screen);">Cancel</button>
+                                    <button type="button" class="btn btn-primary" id="createChatBtn" style="background: var(--gameboy-screen); color: var(--gameboy-bg); border: 1px solid var(--gameboy-screen);">Create Chat</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Remove existing modal if any
+                $('#createChatModal').remove();
+                
+                // Add modal to body
+                $('body').append(modalHtml);
+                
+                // Show modal
+                const modal = new bootstrap.Modal(document.getElementById('createChatModal'));
+                modal.show();
+                
+                // Focus on title input
+                $('#chatTitleInput').focus().select();
+                
+                // Handle create button click
+                $('#createChatBtn').on('click', async function() {
+                    const title = $('#chatTitleInput').val().trim();
+                    if (!title) {
+                        alert('Please enter a chat title.');
                         return;
                     }
                     
-                    // Build request body with required chatModelId
-                    const requestBody = `title=${encodeURIComponent(title)}&chatModelId=${selectedChatModelId}`;
-                    
-                    const response = await fetch('/chatbot/api/chat/create', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                        },
-                        body: requestBody
-                    });
-                    
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+                    try {
+                        // Build request body with required chatModelId
+                        const requestBody = `title=${encodeURIComponent(title)}&chatModelId=${selectedChatModelId}`;
+                        
+                        const response = await fetch('/chatbot/api/chat/create', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: requestBody
+                        });
+                        
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+                        }
+                        
+                        const data = await response.json();
+                        
+                        // Hide modal
+                        modal.hide();
+                        
+                        // Reload page with new chat
+                        window.location.href = `/chatbot?chatId=${data.id}`;
+                    } catch (error) {
+                        console.error('Error creating chat:', error);
+                        alert('Error creating new chat: ' + error.message);
                     }
-                    
-                    const data = await response.json();
-                    
-                    // Reload page with new chat
-                    window.location.href = `/chatbot?chatId=${data.id}`;
-                } catch (error) {
-                    console.error('Error creating chat:', error);
-                    alert('Error creating new chat: ' + error.message);
-                }
+                });
+                
+                // Handle Enter key in title input
+                $('#chatTitleInput').on('keypress', function(e) {
+                    if (e.which === 13) {
+                        $('#createChatBtn').click();
+                    }
+                });
             }
 
             async function editChatTitle(chatId = currentChatId, currentTitle = currentChatTitle.text()) {
