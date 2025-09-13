@@ -189,7 +189,7 @@
     <!-- Admin Navigation Bar -->
     <div th:insert="fragments/adminnavbar :: adminnavbarfragment"></div>
     
-    <div class="container-fluid mt-4" th:data-chatmodel-id="${chatModel.id}">
+    <div class="container-fluid mt-4" th:data-chatmodel-id="${chatModel.id}"  th:data-chatmodel-name="${chatModel.name}" th:data-chatmodel-description="${chatModel.description}"    >
         <!-- Chat Header -->
         <div class="chat-header">
             <div class="chat-info">
@@ -278,8 +278,8 @@
         const container = document.querySelector('.container-fluid');
         const chatModel = {
             id: container.getAttribute('data-chatmodel-id'),
-            name: /*[[${chatModel.name}]]*/ null,
-            description: /*[[${chatModel.description}]]*/ null
+            name: container.getAttribute('data-chatmodel-name'),
+            description: container.getAttribute('data-chatmodel-description')
         };
         
         // Debug logging
