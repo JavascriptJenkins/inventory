@@ -48,7 +48,7 @@
 
     <!-- Top Requested URIs Section -->
     <div th:if="${topRequestedUris != null and !topRequestedUris.empty}" class="row mb-12" style="margin-top: 30px;">
-        <div class="col-12">
+        <div class="col-12"  style="margin-top: 50px; padding: 0 15px;">
             <h4 style="margin-bottom: 20px; color: #333;">Your Most Visited Pages</h4>
             <div class="row">
                 <div th:each="uri, iterStat : ${topRequestedUris}" 
