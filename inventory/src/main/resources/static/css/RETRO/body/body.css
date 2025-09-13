@@ -20,4 +20,26 @@ body {
     background: linear-gradient(135deg, #2c3e50, #34495e);
     min-height: 100vh;
     color: #fff;
+    width: 100%;
+}
+
+/* Ensure full width utilization */
+.container-fluid {
+    width: 100%;
+    max-width: 100%;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+/* Full width rows */
+.row {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+/* Full width columns */
+[class*="col-"] {
+    padding-left: 15px;
+    padding-right: 15px;
 }

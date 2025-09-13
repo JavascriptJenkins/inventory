@@ -6,4 +6,26 @@ body {
     margin: 0;
     padding: 0;
     min-height: 100vh;
+    width: 100%;
+}
+
+/* Ensure full width utilization */
+.container-fluid {
+    width: 100%;
+    max-width: 100%;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+/* Full width rows */
+.row {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+/* Full width columns */
+[class*="col-"] {
+    padding-left: 15px;
+    padding-right: 15px;
 }

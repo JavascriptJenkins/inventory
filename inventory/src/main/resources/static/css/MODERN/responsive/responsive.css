@@ -45,3 +45,32 @@
     padding-left: 0;
     padding-right: 0;
 }
+
+/* Ensure full width on all screen sizes */
+@media (min-width: 1200px) {
+    .container-fluid {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+}
+
+@media (min-width: 992px) and (max-width: 1199px) {
+    .container-fluid {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+    .container-fluid {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+}
+
+@media (max-width: 767px) {
+    .container-fluid {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+}
