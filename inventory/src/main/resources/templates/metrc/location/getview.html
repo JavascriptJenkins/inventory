@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>METRC Locations View</title>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-kQtW33rZJAHjgefvhyyzcGF3C5TFyBQBA13V1RKPf4uH+bwyzQxZ6CmMZHmNBEfJ" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            color: #fff;
+            font-family: 'Roboto', sans-serif;
+            background-color: #343a40;
+        }
+        .alert-primary {
+            background-color: #343a40;
+            color: #fff;
+            border-color: #343a40;
+        }
+        .alert-warning {
+            background-color: transparent;
+            border: none;
+        }
+        .alert-warning .btn-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            color: #fff;
+            font-size: 1.5rem;
+            text-decoration: none;
+        }
+        .alert-warning .btn-link i {
+            color: #fff;
+        }
+        .alert-warning .btn-link:hover {
+            background-color: #555;
+            border-color: #fff;
+            text-decoration: none;
+        }
+        .required:after {
+            content: " *";
+            color: red;
+        }
+        .card {
+            background-color: #495057;
+            border: 1px solid #6c757d;
+        }
+        .card-header {
+            background-color: #343a40;
+            border-bottom: 1px solid #6c757d;
+        }
+        .table-dark {
+            background-color: #495057;
+        }
+        .table-dark th {
+            background-color: #343a40;
+            border-color: #6c757d;
+        }
+        .table-dark td {
+            border-color: #6c757d;
+        }
+        .badge {
+            font-size: 0.75em;
+        }
+        .location-details {
+            background-color: #495057;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .location-details h6 {
+            color: #17a2b8;
+            margin-bottom: 10px;
+        }
+        .location-details p {
+            margin-bottom: 5px;
+        }
+        .status-badge {
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+        .modal-content {
+            background-color: #495057;
+            color: #fff;
+        }
+        .modal-header {
+            background-color: #343a40;
+            border-bottom: 1px solid #6c757d;
+        }
+        .modal-footer {
+            background-color: #343a40;
+            border-top: 1px solid #6c757d;
+        }
+        .form-control, .form-select {
+            background-color: #6c757d;
+            border-color: #495057;
+            color: #fff;
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: #6c757d;
+            border-color: #17a2b8;
+            color: #fff;
+            box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
+        }
+        .form-control::placeholder {
+            color: #adb5bd;
+        }
+    </style>
+</head>
+<body>
+
+<div th:insert="fragments/metrcnavbar.html :: metrcnavbarfragment"> </div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-auto">
+            <div class="alert alert-warning" role="alert">
+                <a th:href="@{/metrc/admin}" class="btn btn-link">
+                    <i class="bi bi-arrow-left"></i>
+                </a>
+            </div>
+        </div>
+        <div class="col">
+            <div class="alert alert-primary" role="alert">
+                <h4 class="alert-heading">
+                    <i class="bi bi-geo-alt"></i> METRC <span th:text="${locationType}">Locations</span> Management
+                </h4>
+                <p class="mb-0" th:if="${licenseNumber != null && licenseNumber != ''}">
+                    Viewing <span th:text="${locationType}">locations</span> for license: <strong th:text="${licenseNumber}"></strong>
+                </p>
+                <p class="mb-0" th:if="${licenseNumber == null || licenseNumber == ''}">
+                    Comprehensive view of all <span th:text="${locationType}">locations</span> under management.
+                </p>
+            </div>
+        </div>
+        <div class="col-auto">
+            <a th:href="@{/metrc/admin}" class="btn btn-outline-light">
+                <i class="bi bi-building"></i> Back to Facilities
+            </a>
+            <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#createLocationModal" 
+                    th:if="${locationType == 'Active'}">
+                <i class="bi bi-plus-circle"></i> Create New Location
+            </button>
+        </div>
+    </div>
+
+    <!-- Success/Error Message Display -->
+    <div class="row" th:if="${successMessage != null}">
+        <div class="col-12">
+            <div class="alert alert-success" role="alert">
+                <i class="bi bi-check-circle"></i>
+                <span th:text="${successMessage}"></span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row" th:if="${errorMessage != null}">
+        <div class="col-12">
+            <div class="alert alert-danger" role="alert">
+                <i class="bi bi-exclamation-triangle"></i>
+                <span th:text="${errorMessage}"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Locations Overview -->
+    <div class="row" th:if="${locations != null && locations.data != null && locations.data.size() > 0}">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list-ul"></i>
+                        <span th:text="${locationType}">Locations</span> Overview (<span th:text="${locations.totalRecords}">0</span> total)
+                        <span th:if="${licenseNumber != null && licenseNumber != ''}" class="badge bg-info ms-2">
+                            License: <span th:text="${licenseNumber}"></span>
+                        </span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Type</th>
+                                    <th>Type ID</th>
+                                    <th>Purposes</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="location : ${locations.data}">
+                                    <td th:text="${location.id}"></td>
+                                    <td th:text="${location.name}"></td>
+                                    <td th:text="${location.locationTypeName}"></td>
+                                    <td th:text="${location.locationTypeId}"></td>
+                                    <td>
+                                        <span th:if="${location.forPlantBatches}" class="badge bg-primary status-badge">Plant Batches</span>
+                                        <span th:if="${location.forPlants}" class="badge bg-success status-badge">Plants</span>
+                                        <span th:if="${location.forHarvests}" class="badge bg-warning status-badge">Harvests</span>
+                                        <span th:if="${location.forPackages}" class="badge bg-info status-badge">Packages</span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-info" 
+                                                th:attr="data-location-id=${location.id}"
+                                                onclick="showLocationDetails(this.getAttribute('data-location-id'))">
+                                            <i class="bi bi-eye"></i> Details
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-warning" 
+                                                th:attr="data-location-id=${location.id}, data-location-name=${location.name}, data-location-type=${location.locationTypeName}, data-location-type-id=${location.locationTypeId}"
+                                                onclick="editLocation(this.getAttribute('data-location-id'), this.getAttribute('data-location-name'), this.getAttribute('data-location-type'), this.getAttribute('data-location-type-id'))"
+                                                th:if="${locationType == 'Active'}">
+                                            <i class="bi bi-pencil"></i> Edit
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" 
+                                                th:attr="data-location-id=${location.id}, data-location-name=${location.name}"
+                                                onclick="archiveLocation(this.getAttribute('data-location-id'), this.getAttribute('data-location-name'))"
+                                                th:if="${locationType == 'Active'}">
+                                            <i class="bi bi-archive"></i> Archive
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Location Information -->
+    <div class="row" th:if="${locations != null && locations.data != null && locations.data.size() > 0}">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle"></i> Detailed Location Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row" th:each="location : ${locations.data}">
+                        <div class="col-12">
+                            <div class="location-details" th:attr="data-location-id=${location.id}">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6><i class="bi bi-geo-alt"></i> Basic Information</h6>
+                                        <p><strong>ID:</strong> <span th:text="${location.id}"></span></p>
+                                        <p><strong>Name:</strong> <span th:text="${location.name}"></span></p>
+                                        <p><strong>Type:</strong> <span th:text="${location.locationTypeName}"></span></p>
+                                        <p><strong>Type ID:</strong> <span th:text="${location.locationTypeId}"></span></p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6><i class="bi bi-card-text"></i> Purposes</h6>
+                                        <p><strong>For Plant Batches:</strong> <span th:text="${location.forPlantBatches ? 'Yes' : 'No'}" th:class="${location.forPlantBatches ? 'text-success' : 'text-danger'}"></span></p>
+                                        <p><strong>For Plants:</strong> <span th:text="${location.forPlants ? 'Yes' : 'No'}" th:class="${location.forPlants ? 'text-success' : 'text-danger'}"></span></p>
+                                        <p><strong>For Harvests:</strong> <span th:text="${location.forHarvests ? 'Yes' : 'No'}" th:class="${location.forHarvests ? 'text-success' : 'text-danger'}"></span></p>
+                                        <p><strong>For Packages:</strong> <span th:text="${location.forPackages ? 'Yes' : 'No'}" th:class="${location.forPackages ? 'text-success' : 'text-danger'}"></span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- No Locations Message -->
+    <div class="row" th:if="${locations == null || locations.data == null || locations.data.size() == 0}">
+        <div class="col-12">
+            <div class="alert alert-info" role="alert">
+                <i class="bi bi-info-circle"></i>
+                No <span th:text="${locationType}">locations</span> found. Please check your METRC configuration and license number.
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Location Modal -->
+<div class="modal fade" id="createLocationModal" tabindex="-1" aria-labelledby="createLocationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createLocationModalLabel">Create New Location</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form th:action="@{/metrc/admin/locations/create}" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="locationName" class="form-label">Location Name</label>
+                        <input type="text" class="form-control" id="locationName" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="locationType" class="form-label">Location Type</label>
+                        <select class="form-select" id="locationType" name="locationTypeName" required>
+                            <option value="">Select a location type...</option>
+                            <option th:each="type : ${locationTypes.data}" 
+                                    th:value="${type.name}" 
+                                    th:text="${type.name + ' (ID: ' + type.id + ')'}">
+                                Location Type
+                            </option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="locationTypeId" class="form-label">Type ID</label>
+                        <input type="number" class="form-control" id="locationTypeId" name="locationTypeId" required readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="licenseNumber" class="form-label">License Number</label>
+                        <input type="text" class="form-control" id="licenseNumber" name="licenseNumber" 
+                               th:value="${licenseNumber}" readonly>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Create Location</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Location Modal -->
+<div class="modal fade" id="editLocationModal" tabindex="-1" aria-labelledby="editLocationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editLocationModalLabel">Edit Location</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form th:action="@{/metrc/admin/locations/update}" method="post">
+                <div class="modal-body">
+                    <input type="hidden" id="editLocationId" name="id">
+                    <div class="mb-3">
+                        <label for="editLocationName" class="form-label">Location Name</label>
+                        <input type="text" class="form-control" id="editLocationName" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editLocationType" class="form-label">Location Type</label>
+                        <select class="form-select" id="editLocationType" name="locationTypeName" required>
+                            <option value="">Select a location type...</option>
+                            <option th:each="type : ${locationTypes.data}" 
+                                    th:value="${type.name}" 
+                                    th:text="${type.name + ' (ID: ' + type.id + ')'}">
+                                Location Type
+                            </option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editLocationTypeId" class="form-label">Type ID</label>
+                        <input type="number" class="form-control" id="editLocationTypeId" name="locationTypeId" required readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editLicenseNumber" class="form-label">License Number</label>
+                        <input type="text" class="form-control" id="editLicenseNumber" name="licenseNumber" readonly>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning">Update Location</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Archive Location Modal -->
+<div class="modal fade" id="archiveLocationModal" tabindex="-1" aria-labelledby="archiveLocationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="archiveLocationModalLabel">Archive Location</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to archive the location "<span id="archiveLocationName"></span>"?</p>
+                <p class="text-warning">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form th:action="@{/metrc/admin/locations/archive}" method="post" style="display: inline;">
+                    <input type="hidden" id="archiveLocationId" name="locationId">
+                    <input type="hidden" id="archiveLicenseNumber" name="licenseNumber" th:value="${licenseNumber}">
+                    <button type="submit" class="btn btn-danger">Archive Location</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showLocationDetails(locationId) {
+    // Scroll to the location details section
+    const locationElement = document.querySelector(`[data-location-id="${locationId}"]`);
+    if (locationElement) {
+        locationElement.scrollIntoView({ behavior: 'smooth' });
+    }
+}
+
+function editLocation(locationId, locationName, locationType, locationTypeId) {
+    // Populate the edit modal
+    document.getElementById('editLocationId').value = locationId;
+    document.getElementById('editLocationName').value = locationName;
+    document.getElementById('editLocationType').value = locationType;
+    document.getElementById('editLocationTypeId').value = locationTypeId;
+    document.getElementById('editLicenseNumber').value = document.getElementById('licenseNumber').value;
+    
+    // Show the modal
+    new bootstrap.Modal(document.getElementById('editLocationModal')).show();
+}
+
+function archiveLocation(locationId, locationName) {
+    // Populate the archive modal
+    document.getElementById('archiveLocationId').value = locationId;
+    document.getElementById('archiveLocationName').textContent = locationName;
+    
+    // Show the modal
+    new bootstrap.Modal(document.getElementById('archiveLocationModal')).show();
+}
+
+// Function to populate Type ID when location type is selected
+function populateTypeId(selectElement, targetIdField) {
+    const selectedOption = selectElement.options[selectElement.selectedIndex];
+    if (selectedOption && selectedOption.value) {
+        // Extract the ID from the option text (format: "Type Name (ID: 123)")
+        const text = selectedOption.text;
+        const idMatch = text.match(/ID: (\d+)\)/);
+        if (idMatch) {
+            document.getElementById(targetIdField).value = idMatch[1];
+        }
+    } else {
+        document.getElementById(targetIdField).value = '';
+    }
+}
+
+// Add event listeners when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Create location modal
+    const createLocationTypeSelect = document.getElementById('locationType');
+    if (createLocationTypeSelect) {
+        createLocationTypeSelect.addEventListener('change', function() {
+            populateTypeId(this, 'locationTypeId');
+        });
+    }
+
+    // Edit location modal
+    const editLocationTypeSelect = document.getElementById('editLocationType');
+    if (editLocationTypeSelect) {
+        editLocationTypeSelect.addEventListener('change', function() {
+            populateTypeId(this, 'editLocationTypeId');
+        });
+    }
+});
+</script>
+
+</body>
+</html>

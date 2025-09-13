@@ -480,12 +480,17 @@
 
                     <td th:text="${item.displayquantity}">Quantity</td>
                     <td th:if="${transaction.discount_list.?[isactive == 1]?.size() > 0}">
+                        <!-- Product Type Discount -->
                         <span th:each="discount : ${transaction.discount_list}"
                               th:if="${discount.producttype != null && discount.producttype?.producttypeid == item.producttypeid?.producttypeid && discount.isactive == 1}"
                               th:text="'$' + ${#numbers.formatDecimal(T(java.lang.Math).max((item.price - discount.discountamount) * 1.0, 0.0), 1, 2)}">
                         </span>
-
-
+                        
+                        <!-- Per Product Discount -->
+                        <span th:each="discount : ${transaction.discount_list}"
+                              th:if="${discount.product != null && discount.product?.product_id == item.product_id && discount.isactive == 1}"
+                              th:text="'$' + ${#numbers.formatDecimal(T(java.lang.Math).max((item.price - discount.discountamount) * 1.0, 0.0), 1, 2)}">
+                        </span>
                     </td>
                 </tr>
                 </tbody>
