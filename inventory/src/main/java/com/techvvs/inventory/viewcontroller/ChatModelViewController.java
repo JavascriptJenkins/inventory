@@ -317,8 +317,15 @@ public class ChatModelViewController {
             Resource resource = chatModelService.getDocumentResource(chatModelId, filename);
             
             if (resource.exists() && resource.isReadable()) {
+                // Determine content type based on file extension
+                String contentType = getContentType(filename);
+                
                 return ResponseEntity.ok()
+                    .header("Content-Type", contentType)
                     .header("Content-Disposition", "inline; filename=\"" + filename + "\"")
+                    .header("Cache-Control", "no-cache, no-store, must-revalidate")
+                    .header("Pragma", "no-cache")
+                    .header("Expires", "0")
                     .body(resource);
             } else {
                 return ResponseEntity.notFound().build();
@@ -326,6 +333,40 @@ public class ChatModelViewController {
             
         } catch (Exception e) {
             return ResponseEntity.status(500).build();
+        }
+    }
+    
+    // Helper method to determine content type based on file extension
+    private String getContentType(String filename) {
+        String extension = filename.substring(filename.lastIndexOf('.') + 1).toLowerCase();
+        
+        switch (extension) {
+            case "pdf":
+                return "application/pdf";
+            case "txt":
+                return "text/plain; charset=utf-8";
+            case "md":
+                return "text/markdown; charset=utf-8";
+            case "doc":
+                return "application/msword";
+            case "docx":
+                return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+            case "rtf":
+                return "application/rtf";
+            case "odt":
+                return "application/vnd.oasis.opendocument.text";
+            case "html":
+                return "text/html; charset=utf-8";
+            case "htm":
+                return "text/html; charset=utf-8";
+            case "xml":
+                return "application/xml; charset=utf-8";
+            case "json":
+                return "application/json; charset=utf-8";
+            case "csv":
+                return "text/csv; charset=utf-8";
+            default:
+                return "application/octet-stream";
         }
     }
 
