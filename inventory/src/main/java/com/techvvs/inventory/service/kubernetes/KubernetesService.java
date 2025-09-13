@@ -22,6 +22,7 @@ import java.util.Map;
 /**
  * Service for managing Kubernetes resources including namespaces and RBAC
  * Handles creation of tenant namespaces and associated RBAC configurations
+ * Only initializes when not using H2 database (development mode)
  */
 @Service
 public class KubernetesService {
@@ -31,12 +32,21 @@ public class KubernetesService {
     @Value("${kubernetes.kubeconfig.path:static/kubernetes/tulip-sandbox-kubeconfig.yaml}")
     private String kubeconfigPath;
 
+    @Value("${spring.datasource.url:}")
+    private String datasourceUrl;
+
     private ApiClient apiClient;
     private CoreV1Api coreV1Api;
     private RbacAuthorizationV1Api rbacApi;
 
     @PostConstruct
     public void initializeKubernetesClient() {
+        // Skip initialization if using H2 database (development mode)
+        if (datasourceUrl != null && datasourceUrl.toLowerCase().contains("h2")) {
+            logger.info("Skipping Kubernetes client initialization - H2 database detected (development mode)");
+            return;
+        }
+        
         try {
             logger.info("Initializing Kubernetes client with kubeconfig: {}", kubeconfigPath);
             
@@ -67,6 +77,11 @@ public class KubernetesService {
      * @return true if successful, false otherwise
      */
     public boolean createNamespace(String tenantName) {
+        if (!isActive()) {
+            logger.info("Kubernetes service is not active (H2 mode) - skipping namespace creation for tenant: {}", tenantName);
+            return true; // Return true to indicate "success" in development mode
+        }
+        
         try {
             String namespaceName = "tenant-" + tenantName.toLowerCase().replaceAll("[^a-z0-9-]", "-");
             
@@ -129,6 +144,11 @@ public class KubernetesService {
      * @return true if successful, false otherwise
      */
     public boolean createRBACConfiguration(String tenantName) {
+        if (!isActive()) {
+            logger.info("Kubernetes service is not active (H2 mode) - skipping RBAC creation for tenant: {}", tenantName);
+            return true; // Return true to indicate "success" in development mode
+        }
+        
         try {
             String namespaceName = "tenant-" + tenantName.toLowerCase().replaceAll("[^a-z0-9-]", "-");
             String serviceAccountName = tenantName + "-admin";
@@ -343,6 +363,11 @@ public class KubernetesService {
      * @return true if all operations successful, false otherwise
      */
     public boolean setupTenantKubernetes(String tenantName) {
+        if (!isActive()) {
+            logger.info("Kubernetes service is not active (H2 mode) - skipping tenant setup for: {}", tenantName);
+            return true; // Return true to indicate "success" in development mode
+        }
+        
         logger.info("Starting Kubernetes setup for tenant: {}", tenantName);
         
         boolean namespaceSuccess = createNamespace(tenantName);
@@ -366,6 +391,19 @@ public class KubernetesService {
      * @return true if configured, false otherwise
      */
     public boolean isConfigured() {
+        // If using H2 database, consider it "configured" but not active
+        if (datasourceUrl != null && datasourceUrl.toLowerCase().contains("h2")) {
+            return true;
+        }
         return apiClient != null && coreV1Api != null && rbacApi != null;
+    }
+
+    /**
+     * Checks if the service is active (not in H2 mode)
+     * 
+     * @return true if active, false if in H2 mode
+     */
+    private boolean isActive() {
+        return !(datasourceUrl != null && datasourceUrl.toLowerCase().contains("h2"));
     }
 }
