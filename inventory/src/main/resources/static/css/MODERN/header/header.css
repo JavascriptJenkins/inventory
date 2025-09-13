@@ -5,6 +5,7 @@
     color: #fff;
     padding: 15px;
     border-radius: 5px;
+    margin-top: 20px;
     margin-bottom: 15px;
     font-family: 'Roboto', sans-serif;
     border: 1px solid transparent;
@@ -13,58 +14,34 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
+    position: relative;
 }
 
 .header-dark h1 {
     margin: 0;
     font-size: 2.5rem;
     font-weight: 700;
+    text-align: center;
 }
 
 .header-dark p {
     margin: 10px 0 0 0;
     font-size: 1.1rem;
     opacity: 0.9;
+    text-align: center;
 }
 
-/* Back button styling */
-.header-dark a {
-    color: #fff;
-    text-decoration: none;
-    font-size: 2rem;
-    transition: color 0.3s;
-}
-
-.header-dark a:hover {
-    color: #ffc107;
-}
-
-/* Back button specific styling for checkout page */
 .back-button {
-    margin-right: 20px;
-    font-size: 2rem;
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 .back-button a {
-    color: #343a40;
-    background-color: #fff;
-    padding: 10px;
-    border-radius: 50%;
-    border: 2px solid #343a40;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 48px;
-    height: 48px;
-    transition: all 0.3s;
-}
-
-.back-button a:hover {
-    background-color: #23272b;
     color: #fff;
-    border-color: #23272b;
+    font-size: 2rem;
 }
 
 .header-small {

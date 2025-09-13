@@ -30,46 +30,14 @@ body {
     padding-right: 15px;
 }
 
-/* Alert styles */
-.alert {
-    border-radius: 8px;
-    border: none;
-    padding: 15px 20px;
-    margin-bottom: 20px;
-}
-
-.alert-danger {
-    background-color: #f8d7da;
-    color: #721c24;
-}
-
-.alert-success {
-    background-color: #d4edda;
-    color: #155724;
-}
+/* Alert styles moved to alert/alert.css to avoid duplication */
 
 /* Checkout-specific body styles */
 .col-md-8, .col-md-4 {
     padding: 10px;
 }
 
-/* Form controls */
-.form-control, .form-select {
-    background-color: #343a40;
-    color: #fff;
-    border: 1px solid #343a40;
-}
-
-.form-control:focus, .form-select:focus {
-    background-color: #343a40;
-    color: #fff;
-    border-color: #1d2124;
-    box-shadow: none;
-}
-
-.form-label {
-    color: #000;
-}
+/* Form controls moved to form/form.css to avoid duplication */
 
 .price-class {
     color: #000;

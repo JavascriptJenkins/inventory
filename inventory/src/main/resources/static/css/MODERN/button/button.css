@@ -207,36 +207,4 @@
     color: white;
 }
 
-/* Delivery Queue Back Button Styles */
-.back-button {
-    position: absolute;
-    left: 15px;
-    top: 15px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 60px;
-    height: 60px;
-    background-color: #007bff;
-    color: #ffffff;
-    font-size: 2rem;
-    font-weight: bold;
-    border-radius: 50%;
-    text-decoration: none;
-    text-align: center;
-    z-index: 1000;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.back-button:hover {
-    background-color: #0056b3;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    transform: scale(1.05);
-}
-
-.back-button:active {
-    background-color: #004085;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-    transform: scale(0.95);
-}
+/* Back button styles moved to header/header.css to avoid conflicts */
