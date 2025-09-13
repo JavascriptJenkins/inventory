@@ -211,32 +211,33 @@
                         <i class="bi bi-currency-dollar me-2"></i>
                         Show Underpaid (2 weeks)
                     </a>
-                    <a th:href="@{/transaction/listall(size=${size}, page=0, filter=underpaid, days=7)}" 
+
+                    <a th:href="@{/transaction/listall(size=${size}, page=0, filter=underpaid, days=7, customerid=${customerid == 0 ? 0 : customerid}, productinscope=${productinscope == 0 ? 0 : productinscope})}" 
                        class="btn btn-danger btn-lg">
                         <i class="bi bi-exclamation-circle me-2"></i>
                         Show Underpaid (1 week)
                     </a>
-                    <a th:href="@{/transaction/listall(size=${size}, page=0, filter=underpaid, days=3)}" 
+                    <a th:href="@{/transaction/listall(size=${size}, page=0, filter=underpaid, days=3, customerid=${customerid == 0 ? 0 : customerid}, productinscope=${productinscope == 0 ? 0 : productinscope})}" 
                        class="btn btn-danger btn-lg">
                         <i class="bi bi-exclamation-triangle me-2"></i>
                         Show Underpaid (3 days)
                     </a>
-                    <a th:href="@{/transaction/listall(size=${size}, page=0, filter=underpaid, days=1)}" 
+                    <a th:href="@{/transaction/listall(size=${size}, page=0, filter=underpaid, days=1, customerid=${customerid == 0 ? 0 : customerid}, productinscope=${productinscope == 0 ? 0 : productinscope})}" 
                        class="btn btn-danger btn-lg">
                         <i class="bi bi-exclamation-diamond me-2"></i>
                         Show Underpaid (1 day)
                     </a>
-                    <a th:href="@{/transaction/listall(size=${size}, page=0, filter=underpaid, days=30)}" 
+                    <a th:href="@{/transaction/listall(size=${size}, page=0, filter=underpaid, days=30, customerid=${customerid == 0 ? 0 : customerid}, productinscope=${productinscope == 0 ? 0 : productinscope})}" 
                        class="btn btn-warning btn-lg">
                         <i class="bi bi-calendar-month me-2"></i>
                         Show Underpaid (1 month)
                     </a>
-                    <a th:href="@{/transaction/listall(size=${size}, page=0, filter=underpaid, days=90)}" 
+                    <a th:href="@{/transaction/listall(size=${size}, page=0, filter=underpaid, days=90, customerid=${customerid == 0 ? 0 : customerid}, productinscope=${productinscope == 0 ? 0 : productinscope})}" 
                        class="btn btn-info btn-lg">
                         <i class="bi bi-calendar-range me-2"></i>
                         Show Underpaid (3 months)
                     </a>
-                    <a th:href="@{/transaction/listall(size=${size}, page=0, filter=underpaid, days=9999)}" 
+                    <a th:href="@{/transaction/listall(size=${size}, page=0, filter=underpaid, days=9999, customerid=${customerid == 0 ? 0 : customerid}, productinscope=${productinscope == 0 ? 0 : productinscope})}" 
                        class="btn btn-secondary btn-lg">
                         <i class="bi bi-calendar-check me-2"></i>
                         Show All Underpaid

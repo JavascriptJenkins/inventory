@@ -35,7 +35,7 @@ public interface TransactionRepo extends JpaRepository<TransactionVO, Integer> {
             Pageable pageable
     );
 
-    @Query(value = """
+    @Query("""
     SELECT DISTINCT t
     FROM TransactionVO t
     JOIN t.product_list p
@@ -43,36 +43,6 @@ public interface TransactionRepo extends JpaRepository<TransactionVO, Integer> {
       AND (:productid IS NULL OR :productid = 0 OR p.product_id = :productid)
       AND t.paid < t.totalwithtax
       AND t.createTimeStamp >= :cutoffDate
-      AND (
-        NOT EXISTS (
-          SELECT 1 FROM PaymentVO pay WHERE pay.transaction = t
-        )
-        OR
-        (
-          SELECT MAX(pay.createTimeStamp) 
-          FROM PaymentVO pay 
-          WHERE pay.transaction = t
-        ) < :cutoffDate
-      )
-    """, countQuery = """
-    SELECT COUNT(DISTINCT t)
-    FROM TransactionVO t
-    JOIN t.product_list p
-    WHERE (:customerid IS NULL OR t.customervo.customerid = :customerid)
-      AND (:productid IS NULL OR :productid = 0 OR p.product_id = :productid)
-      AND t.paid < t.totalwithtax
-      AND t.createTimeStamp >= :cutoffDate
-      AND (
-        NOT EXISTS (
-          SELECT 1 FROM PaymentVO pay WHERE pay.transaction = t
-        )
-        OR
-        (
-          SELECT MAX(pay.createTimeStamp) 
-          FROM PaymentVO pay 
-          WHERE pay.transaction = t
-        ) < :cutoffDate
-      )
     """)
     Page<TransactionVO> findUnderpaidTransactions(
             @Param("customerid") Integer customerid,
@@ -182,6 +152,21 @@ public interface TransactionRepo extends JpaRepository<TransactionVO, Integer> {
         ORDER BY purchaseCount DESC
     """)
     List<Object[]> findMostPurchasedProducts();
+
+    // Simple method to find all underpaid transactions (without date filtering)
+    @Query("""
+    SELECT DISTINCT t
+    FROM TransactionVO t
+    JOIN t.product_list p
+    WHERE (:customerid IS NULL OR t.customervo.customerid = :customerid)
+      AND (:productid IS NULL OR :productid = 0 OR p.product_id = :productid)
+      AND t.paid < t.totalwithtax
+    """)
+    Page<TransactionVO> findAllUnderpaidTransactions(
+            @Param("customerid") Integer customerid,
+            @Param("productid") Integer productid,
+            Pageable pageable
+    );
 
     // Simple test method to count basic underpaid transactions
     @Query("""
