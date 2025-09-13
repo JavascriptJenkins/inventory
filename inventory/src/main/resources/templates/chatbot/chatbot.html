@@ -20,6 +20,7 @@
     <script th:inline="javascript">
         var currentChatId = /*[[${currentChat.id}]]*/ null;
         var currentChatTitle = /*[[${currentChat.title}]]*/ 'New Chat';
+        var currentChatModelId = /*[[${currentChat.chatModel.id}]]*/ null;
         var userChats = /*[[${userChats}]]*/ [];
     </script>
     
@@ -1120,6 +1121,16 @@
                             
                             chatModelSelect.append(option);
                         });
+                        
+                        // Pre-select the chat model based on current chat
+                        if (currentChatModelId && currentChatModelId !== null) {
+                            chatModelSelect.val(currentChatModelId);
+                            
+                            // Trigger the change event to show the model selection info
+                            chatModelSelect.trigger('change');
+                            
+                            console.log('Pre-selected chat model:', currentChatModelId);
+                        }
                     }
                 } catch (error) {
                     console.error('Error loading chat models:', error);
@@ -1176,10 +1187,22 @@
                 $('.chat-item').removeClass('active');
                 $(`.chat-item[data-chat-id="${chatId}"]`).addClass('active');
                 
-                // Update chat title
+                // Update chat title and pre-select chat model
                 const chat = userChats.find(c => c.id === chatId);
                 if (chat) {
                     currentChatTitle.text(chat.title);
+                    
+                    // Pre-select the chat model for this chat
+                    if (chat.chatModel && chat.chatModel.id) {
+                        chatModelSelect.val(chat.chatModel.id);
+                        chatModelSelect.trigger('change');
+                        console.log('Switched to chat model:', chat.chatModel.id);
+                    } else {
+                        // If no chat model, reset to default
+                        chatModelSelect.val('default');
+                        chatModelSelect.trigger('change');
+                        console.log('No chat model for this chat, using default');
+                    }
                 }
             }
 

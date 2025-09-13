@@ -41,17 +41,17 @@ public class ChatService {
     }
 
     /**
-     * Get all active chats for a user
+     * Get all active chats for a user with ChatModel eagerly loaded
      */
     public List<Chat> getUserChats(SystemUserDAO systemUser) {
-        return chatRepo.findActiveChatsByUser(systemUser);
+        return chatRepo.findActiveChatsByUserWithChatModel(systemUser);
     }
 
     /**
-     * Get a specific chat by ID for a user
+     * Get a specific chat by ID for a user with ChatModel eagerly loaded
      */
     public Optional<Chat> getChatById(Integer chatId, SystemUserDAO systemUser) {
-        return chatRepo.findByIdAndSystemUser(chatId, systemUser);
+        return chatRepo.findByIdAndSystemUserWithChatModel(chatId, systemUser);
     }
 
     /**
@@ -150,7 +150,7 @@ public class ChatService {
     public Map<String, Object> getChatStats(SystemUserDAO systemUser) {
         Map<String, Object> stats = new HashMap<>();
         
-        List<Chat> activeChats = chatRepo.findActiveChatsByUser(systemUser);
+        List<Chat> activeChats = chatRepo.findActiveChatsByUserWithChatModel(systemUser);
         Long totalChats = chatRepo.countChatsByUser(systemUser);
         
         stats.put("activeChats", activeChats.size());
