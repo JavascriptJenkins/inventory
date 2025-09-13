@@ -32,6 +32,71 @@
     <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
     <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
     <br>
+
+    <!-- Filter Form -->
+    <form th:action="@{/batch/browseBatch}" method="get" id="filterForm">
+        <!-- Preserve page value on submit -->
+        <input type="hidden" name="page" th:value="${page}"/>
+        
+        <!-- Preserve filter parameters -->
+        <input type="hidden" name="filter" th:value="${filter}"/>
+        <input type="hidden" name="vendorid" th:value="${vendorid}" id="hiddenVendorId"/>
+        <input type="hidden" name="producttypeid" th:value="${producttypeid}" id="hiddenProductTypeId"/>
+        <input type="hidden" name="batchtypeid" th:value="${batchtypeid}" id="hiddenBatchTypeId"/>
+
+        <!-- Dropdown for selecting record size -->
+        <div class="record-selector">
+            <label for="recordSize">Display Records:</label>
+            <select name="size" id="recordSize" class="form-select" onchange="document.getElementById('filterForm').submit()">
+                <option value="5" th:selected="${size == 5}">5 Records</option>
+                <option value="10" th:selected="${size == 10}">10 Records</option>
+                <option value="20" th:selected="${size == 20}">20 Records</option>
+                <option value="100" th:selected="${size == 100}">100 Records</option>
+                <option value="1000" th:selected="${size == 1000}">1000 Records</option>
+                <option value="10000" th:selected="${size == 10000}">10000 Records</option>
+            </select>
+        </div>
+
+        <!-- Vendor Filter -->
+        <div class="record-selector">
+            <label for="vendorselectid">Vendor:</label>
+            <select class="form-control" id="vendorselectid" onchange="updateHiddenField('hiddenVendorId', this.value); document.getElementById('filterForm').submit()">
+                <option value="0">Filter by vendor</option>
+                <option th:each="vendor : ${vendors}"
+                        th:value="${vendor.vendorid}"
+                        th:text="${vendor.name}"
+                        th:selected="${vendor.vendorid == vendorid}">
+                </option>
+            </select>
+        </div>
+
+        <!-- Product Type Filter -->
+        <div class="record-selector">
+            <label for="producttypeselectid">Product Type:</label>
+            <select class="form-control" id="producttypeselectid" onchange="updateHiddenField('hiddenProductTypeId', this.value); document.getElementById('filterForm').submit()">
+                <option value="0">Filter by product type</option>
+                <option th:each="producttype : ${producttypes}"
+                        th:value="${producttype.producttypeid}"
+                        th:text="${producttype.name}"
+                        th:selected="${producttype.producttypeid == producttypeid}">
+                </option>
+            </select>
+        </div>
+
+        <!-- Batch Type Filter -->
+        <div class="record-selector">
+            <label for="batchtypeselectid">Batch Type:</label>
+            <select class="form-control" id="batchtypeselectid" onchange="updateHiddenField('hiddenBatchTypeId', this.value); document.getElementById('filterForm').submit()">
+                <option value="0">Filter by batch type</option>
+                <option th:each="batchtype : ${batchtypes}"
+                        th:value="${batchtype.batch_type_id}"
+                        th:text="${batchtype.name}"
+                        th:selected="${batchtype.batch_type_id == batchtypeid}">
+                </option>
+            </select>
+        </div>
+    </form>
+
     <br>
 
     <table class="table table-hover table-striped table-dark">
@@ -64,7 +129,7 @@
         <ul class="pagination flex-wrap justify-content-center">
             <li class="page-item" th:each="pageNumber : ${pageNumbers}">
                 <a class="page-link btn btn-secondary btn-sm m-1"
-                   th:href="@{/batch/browseBatch(size=${#lists.size(batchPage.content)}, page=${pageNumber})}"
+                   th:href="@{/batch/browseBatch(size=${size}, page=${pageNumber}, vendorid=${vendorid}, producttypeid=${producttypeid}, batchtypeid=${batchtypeid}, filter=${filter})}"
                    th:text="${pageNumber}"
                    th:classappend="${pageNumber==batchPage.number + 1} ? 'active'">
                 </a>
@@ -75,6 +140,12 @@
     <br>
     <br>
 </div>
+
+<script>
+function updateHiddenField(fieldId, value) {
+    document.getElementById(fieldId).value = value;
+}
+</script>
 
 </body>
 </html>

@@ -33,3 +33,25 @@
     content: " *";
     color: red;
 }
+
+/* Record selector dropdown styles */
+.record-selector {
+    margin-bottom: 15px;
+    background-color: #343a40;
+    color: #fff;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+    display: inline-block;
+}
+
+.record-selector select {
+    background-color: #23272b;
+    color: #fff;
+    border: 1px solid #343a40;
+}
+
+.record-selector select:focus {
+    border-color: #1d2124;
+    box-shadow: none;
+}

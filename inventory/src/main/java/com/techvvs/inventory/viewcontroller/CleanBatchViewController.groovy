@@ -632,12 +632,16 @@ public class CleanBatchViewController {
                              Model model,
                              
                              @RequestParam("page") Optional<Integer> page,
-                             @RequestParam("size") Optional<Integer> size ){
+                             @RequestParam("size") Optional<Integer> size,
+                             @RequestParam("vendorid") Optional<Integer> vendorid,
+                             @RequestParam("producttypeid") Optional<Integer> producttypeid,
+                             @RequestParam("batchtypeid") Optional<Integer> batchtypeid,
+                             @RequestParam("filter") Optional<String> filter ){
 
         // https://www.baeldung.com/spring-data-jpa-pagination-sorting
         //pagination
         int currentPage = page.orElse(0);
-        int pageSize = 5;
+        int pageSize = size.orElse(5);
         Pageable pageable;
         if(currentPage == 0){
             pageable = PageRequest.of(0 , pageSize, Sort.by(Sort.Direction.DESC, "batchid"));
@@ -645,7 +649,8 @@ public class CleanBatchViewController {
             pageable = PageRequest.of(currentPage - 1, pageSize, Sort.by(Sort.Direction.DESC, "batchid"));
         }
 
-        Page<BatchVO> pageOfBatch = batchRepo.findAll(pageable);
+        // Apply filtering logic following TransactionHelper pattern
+        Page<BatchVO> pageOfBatch = runPageRequest(pageable, vendorid, producttypeid, batchtypeid);
 
         int totalPages = pageOfBatch.getTotalPages();
 
@@ -656,9 +661,21 @@ public class CleanBatchViewController {
             totalPages = totalPages - 1;
         }
 
+        // Add filter data to model
+        model.addAttribute("vendors", vendorRepo.findAllByOrderByNameAsc());
+        model.addAttribute("vendorid", vendorid.orElse(0));
+        
+        model.addAttribute("producttypes", productTypeRepo.findAll());
+        model.addAttribute("producttypeid", producttypeid.orElse(0));
+        
+        model.addAttribute("batchtypes", batchTypeRepo.findAll());
+        model.addAttribute("batchtypeid", batchtypeid.orElse(0));
+        
+        model.addAttribute("filter", filter.orElse(""));
+
         model.addAttribute("pageNumbers", pageNumbers);
         model.addAttribute("page", currentPage);
-        model.addAttribute("size", pageOfBatch.getTotalPages());
+        model.addAttribute("size", pageSize);
         model.addAttribute("batchPage", pageOfBatch);
         techvvsAuthService.checkuserauth(model)
         model.addAttribute("batch", new BatchVO());
@@ -1043,7 +1060,19 @@ public class CleanBatchViewController {
         model.addAttribute("batch", new BatchVO());
     }
 
+    @Transactional
+    Page<BatchVO> runPageRequest(
+            Pageable pageable,
+            Optional<Integer> vendorid,
+            Optional<Integer> producttypeid,
+            Optional<Integer> batchtypeid
+    ) {
+        // Convert Optional parameters to null/values following TransactionHelper pattern
+        Integer vendorId = (vendorid.present && vendorid.get() > 0) ? vendorid.get() : null
+        Integer productTypeId = (producttypeid.present && producttypeid.get() > 0) ? producttypeid.get() : null
+        Integer batchTypeId = (batchtypeid.present && batchtypeid.get() > 0) ? batchtypeid.get() : null
 
-
+        return batchRepo.findFilteredBatches(vendorId, productTypeId, batchTypeId, pageable)
+    }
 
 }
