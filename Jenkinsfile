@@ -107,6 +107,8 @@ pipeline {
                             if (params.DB_URI) {
                                 sh "sed -i 's|^spring\\.datasource\\.url=.*|spring.datasource.url=${params.DB_URI}|' src/main/resources/application.properties"
                             }
+                            // Replace port to run on 8081
+                            sh "sed -i 's|^server\\.port=.*|server.port=8081|' src/main/resources/application.properties"
                             // Replace spring.h2.console.enabled if provided
                             if (params.DB_H2_CONSOLE_ENABLED) {
                                 sh "sed -i 's/^spring\\.h2\\.console\\.enabled=.*/spring.h2.console.enabled=${params.DB_H2_CONSOLE_ENABLED}/' src/main/resources/application.properties"
