@@ -4,103 +4,17 @@
     <meta charset="UTF-8">
     <title>Admin Vendor Page</title>
 
-    <link rel="stylesheet" type="text/css" media="all" href="/css/table.css" th:href="@{/css/table.css}" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-
 
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <style>
-        .glowing-valid {
-            box-shadow: 0 0 8px 2px #00ffff !important;
-        }
-        .glowing-invalid {
-            box-shadow: 0 0 8px 2px #ff0000 !important;
-        }
-    </style>
-    <style>
-        .table-hover tbody tr:hover {
-            background-color: #e0f7fa;
-        }
-        .table-striped tbody tr:nth-of-type(odd) {
-            background-color: #f1f8fa;
-        }
-        .table-dark thead {
-            background-color: #343a40;
-            color: #fff;
-        }
-        .btn-secondary {
-            color: #fff;
-            background-color: #343a40;
-            border-color: #343a40;
-        }
-        .btn-secondary:hover {
-            background-color: #23272b;
-            border-color: #1d2124;
-        }
-        .header-dark {
-            background-color: #343a40;
-            color: #fff;
-            padding: 15px;
-            border-radius: 5px;
-            text-align: center;
-            margin-bottom: 15px;
-            font-family: 'Roboto', sans-serif;
-            border: 1px solid transparent;
-            border-image: linear-gradient(to right, #c0c0c0, #ffffff);
-            border-image-slice: 1;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        .tip-box {
-            text-align: center;
-            font-size: 18px;
-            font-weight: bold;
-            color: #00ffff;
-            text-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff, 0 0 15px #00ffff;
-            padding: 10px;
-            border-radius: 8px;
-            background-color: rgba(0, 0, 0, 0.7);
-            margin-bottom: 15px;
-            animation: glow 1.5s infinite alternate;
-        }
-        .btn-dark-custom {
-            background-color: #343a40;
-            color: #fff;
-            border: 1px solid #343a40;
-            transition: background-color 0.3s ease, color 0.3s ease;
-        }
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
-        .btn-dark-custom:hover {
-            background-color: #1d2124; /* Darker shade on hover */
-            color: #f8f9fa; /* Lighter text on hover */
-        }
-        @keyframes glow {
-            from {
-                text-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff, 0 0 15px #00ffff;
-            }
-            to {
-                text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px #00ffff;
-            }
-        }
-        .record-selector {
-            margin-bottom: 15px;
-            background-color: #343a40;
-            color: #fff;
-            padding: 10px;
-            border-radius: 5px;
-            text-align: center;
-            display: inline-block;
-        }
-        .record-selector select {
-            background-color: #23272b;
-            color: #fff;
-            border: 1px solid #343a40;
-        }
-        .record-selector select:focus {
-            border-color: #1d2124;
-            box-shadow: none;
-        }
-    </style>
+    <!-- CSS Theme Selection based on UIMODE -->
+    <link rel="stylesheet" type="text/css" media="all" href="/css/MODERN/modern.css" th:if="${UIMODE != 'RETRO'}" />
+    <link rel="stylesheet" type="text/css" media="all" href="/css/RETRO/retro.css" th:if="${UIMODE == 'RETRO'}" />
+    <link rel="stylesheet" type="text/css" media="all" href="/css/VEGAS/vegas.css" th:if="${UIMODE == 'VEGAS'}" />
 
 
 </head>

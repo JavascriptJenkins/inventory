@@ -47,3 +47,76 @@
 .expandable-row td {
     background-color: #e9ecef;
 }
+
+/* Underpaid Transactions Alert */
+.underpaid-alert {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    border: 2px solid #ffc107;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
+}
+
+.underpaid-alert .alert-heading {
+    color: #856404;
+    font-weight: 600;
+}
+
+.underpaid-alert p {
+    color: #856404;
+    font-weight: 500;
+}
+
+.underpaid-alert .btn {
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.underpaid-alert .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+}
+
+.underpaid-alert .btn-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%);
+    color: #000;
+}
+
+.underpaid-alert .btn-danger {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: #fff;
+}
+
+.underpaid-alert .btn-lg {
+    padding: 12px 24px;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+    .underpaid-alert .d-flex {
+        flex-direction: column;
+    }
+    
+    .underpaid-alert .btn {
+        width: 100%;
+        margin-bottom: 8px;
+    }
+}
+
+/* Clear filter button styling */
+.btn-outline-light {
+    border: 2px solid #6c757d;
+    color: #6c757d;
+    background: transparent;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-light:hover {
+    background: #6c757d;
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(108, 117, 125, 0.4);
+}

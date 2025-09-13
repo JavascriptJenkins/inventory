@@ -186,3 +186,57 @@
     word-break: break-word;
     hyphens: auto;
 }
+
+/* Transaction and Product Pill Links */
+.transaction-pill-link, .product-pill-link {
+    border: 2px solid white;
+    color: white;
+    background: linear-gradient(to right, #2c2c2c, #3a3a3a);
+    transition: transform 0.2s ease, background 0.3s ease;
+}
+
+.transaction-pill-link:hover, .product-pill-link:hover {
+    transform: translateY(-2px);
+    background: linear-gradient(to right, #444, #666);
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    color: white;
+}
+
+.transaction-pill-link i, .product-pill-link i {
+    color: white;
+}
+
+/* Delivery Queue Back Button Styles */
+.back-button {
+    position: absolute;
+    left: 15px;
+    top: 15px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    background-color: #007bff;
+    color: #ffffff;
+    font-size: 2rem;
+    font-weight: bold;
+    border-radius: 50%;
+    text-decoration: none;
+    text-align: center;
+    z-index: 1000;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.back-button:hover {
+    background-color: #0056b3;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transform: scale(1.05);
+}
+
+.back-button:active {
+    background-color: #004085;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    transform: scale(0.95);
+}

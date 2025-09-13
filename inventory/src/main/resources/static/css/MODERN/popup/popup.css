@@ -1,5 +1,28 @@
 /* MODERN UI Mode - Popup Styles */
 
+/* Tip Box Styles */
+.tip-box {
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    color: #007bff;
+    text-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+    padding: 10px;
+    border-radius: 8px;
+    background-color: rgba(0, 123, 255, 0.1);
+    margin-bottom: 15px;
+    animation: glow 1.5s infinite alternate;
+}
+
+@keyframes glow {
+    from {
+        text-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+    }
+    to {
+        text-shadow: 0 0 10px rgba(0, 123, 255, 0.8);
+    }
+}
+
 .custom-popup-overlay {
     position: fixed;
     top: 0;

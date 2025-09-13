@@ -72,3 +72,33 @@
 #quantityModeCheckbox:focus + .form-check-label {
     outline: 2px solid white;
 }
+
+/* Delivery Queue Form Styles */
+.search-bar {
+    display: flex;
+    align-items: end;
+}
+
+.search-bar .form-control {
+    margin-bottom: 0;
+}
+
+.search-bar .btn {
+    margin-bottom: 0;
+}
+
+/* Adjust for Alignment */
+.align-items-center .form-control,
+.align-items-center .form-select,
+.align-items-center .btn {
+    height: calc(2.5rem + 2px);
+}
+
+/* Glowing validation styles */
+.glowing-valid {
+    box-shadow: 0 0 8px 2px #00ffff !important;
+}
+
+.glowing-invalid {
+    box-shadow: 0 0 8px 2px #ff0000 !important;
+}

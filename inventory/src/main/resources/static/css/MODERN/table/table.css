@@ -80,3 +80,108 @@
 .cart-table td:last-child {
     min-width: 120px;
 }
+
+/* Delivery Queue Table Styles */
+.table-bordered {
+    border: 2px solid #dee2e6;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.table-bordered th, .table-bordered td {
+    border: 2px solid #dee2e6;
+    color: #000;
+}
+
+/* Status Icon Styles */
+.status-icon-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.status-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    font-weight: bold;
+    text-align: center;
+    font-size: 0.8em;
+    margin: auto;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Status Colors - MODERN Theme with VEGAS-style appearance */
+.status-created {
+    background-color: #007bff;
+    color: #ffffff;
+    border: 2px solid #0056b3;
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+}
+
+.status-prep {
+    background-color: #fd7e14;
+    color: #ffffff;
+    border: 2px solid #e55a00;
+    box-shadow: 0 2px 8px rgba(253, 126, 20, 0.3);
+}
+
+.status-dispatch {
+    background-color: #6f42c1;
+    color: #ffffff;
+    border: 2px solid #5a2d91;
+    box-shadow: 0 2px 8px rgba(111, 66, 193, 0.3);
+}
+
+.status-enroute {
+    background-color: #ffc107;
+    color: #000000;
+    border: 2px solid #e0a800;
+    box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
+}
+
+.status-complete {
+    background-color: #28a745;
+    color: #ffffff;
+    border: 2px solid #1e7e34;
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+}
+
+.status-canceled {
+    background-color: #dc3545;
+    color: #ffffff;
+    border: 2px solid #c82333;
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+}
+
+/* Pulsing Animations - MODERN Theme */
+.pulsing-status-0 { animation: pulse 2s infinite; }
+.pulsing-status-1 { animation: pulse 1.5s infinite; }
+.pulsing-status-2 { animation: pulse 1.2s infinite; }
+.pulsing-status-3 { animation: pulse 0.8s infinite; }
+
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+    }
+    50% {
+        box-shadow: 0 4px 16px rgba(0, 123, 255, 0.6);
+    }
+}
+
+/* Hover Effects - VEGAS-style with MODERN colors */
+.status-icon:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 123, 255, 0.5);
+    transition: all 0.3s ease-in-out;
+}
+
+.status-icon:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+}
