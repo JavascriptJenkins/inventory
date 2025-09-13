@@ -16,7 +16,6 @@ class WhiteListUriConstants {
     public static final String LOGIN_REQUEST_LINK = "/login/requestlink";
     public static final String LOGIN_MAGIC_LINK_GATEWAY = "/login/magiclinkgateway";
     public static final String FAVICON = "/favicon.ico";
-    public static final String CSS_TABLE = "/css/table.css";
     public static final String LOGIN_SYSTEMUSER_DOUBLE_WILDCARD = "/login/systemuser/**";
     public static final String LOGIN_SYSTEMUSER = "/login/systemuser";
     public static final String VERIFY_PHONE_TOKEN = "/login/verifyphonetoken";

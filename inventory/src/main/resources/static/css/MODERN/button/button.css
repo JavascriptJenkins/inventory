@@ -44,3 +44,51 @@
     width: 100%;
     box-sizing: border-box;   /* key fix */
 }
+
+/* Batch button icon style - similar to cart-button from pendingcarts */
+.batch-button {
+    display: inline-flex !important;
+    justify-content: center;
+    align-items: center;
+    width: 48px;
+    height: 48px;
+    background-color: #ffffff !important;
+    color: #343a40 !important;
+    border-radius: 50%;
+    text-decoration: none;
+    border: 2px solid #343a40;
+    transition: background-color 0.3s, color 0.3s;
+    font-size: 1.5rem;
+}
+
+.batch-button:hover {
+    background-color: #23272b !important;
+    color: #ffffff !important;
+    border-color: #23272b;
+}
+
+.batch-button i {
+    color: inherit !important;
+}
+
+/* Cart button icon style - from pendingcarts */
+.cart-button {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 48px;
+    height: 48px;
+    background-color: #ffffff;
+    color: #343a40;
+    border-radius: 50%;
+    text-decoration: none;
+    border: 2px solid #343a40;
+    transition: background-color 0.3s, color 0.3s;
+    font-size: 1.5rem;
+}
+
+.cart-button:hover {
+    background-color: #23272b;
+    color: #ffffff;
+    border-color: #23272b;
+}
