@@ -14,7 +14,7 @@ import java.util.List;
 public class UserAnalyticsService {
 
     @Autowired
-    private RequestLogRepo requestLogRepo;
+    RequestLogRepo requestLogRepo;
 
     /**
      * Gets the top 10 most frequently accessed GET URIs for a specific user
