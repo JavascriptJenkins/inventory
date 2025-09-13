@@ -355,6 +355,10 @@ public class ChatModelViewController {
                 return "application/rtf";
             case "odt":
                 return "application/vnd.oasis.opendocument.text";
+            case "xls":
+                return "application/vnd.ms-excel";
+            case "xlsx":
+                return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
             case "html":
                 return "text/html; charset=utf-8";
             case "htm":

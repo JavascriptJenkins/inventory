@@ -248,7 +248,7 @@ public class ChatModelService {
         // Check file extension
         String fileExtension = getFileExtension(originalFilename);
         if (!isValidDocumentExtension(fileExtension)) {
-            throw new IllegalArgumentException("Invalid file type. Allowed: .txt, .md, .pdf, .doc, .docx, .rtf, .odt");
+            throw new IllegalArgumentException("Invalid file type. Allowed: .txt, .md, .pdf, .doc, .docx, .rtf, .odt, .xls, .xlsx");
         }
 
         // Create organized directory structure
@@ -283,7 +283,7 @@ public class ChatModelService {
     private boolean isValidDocumentExtension(String extension) {
         if (extension == null) return false;
         
-        String[] allowedExtensions = {".txt", ".md", ".pdf", ".doc", ".docx", ".rtf", ".odt"};
+        String[] allowedExtensions = {".txt", ".md", ".pdf", ".doc", ".docx", ".rtf", ".odt", ".xls", ".xlsx"};
         return Arrays.asList(allowedExtensions).contains(extension.toLowerCase());
     }
 

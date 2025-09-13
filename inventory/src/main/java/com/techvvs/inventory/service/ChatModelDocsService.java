@@ -24,6 +24,10 @@ import org.apache.poi.hwpf.HWPFDocument;
 import org.apache.poi.hwpf.extractor.WordExtractor;
 import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
+// Excel document processing imports
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 
 @Service
 public class ChatModelDocsService {
@@ -245,6 +249,9 @@ public class ChatModelDocsService {
         } else if (fileName.endsWith(".docx")) {
             // Use Apache POI for DOCX text extraction
             return extractDocxText(file);
+        } else if (fileName.endsWith(".xls") || fileName.endsWith(".xlsx")) {
+            // Use Apache POI for Excel text extraction
+            return extractExcelText(file);
         } else {
             // For other file types, try to read as text
             try {
@@ -290,6 +297,133 @@ public class ChatModelDocsService {
             return extractor.getText();
         } catch (Exception e) {
             return "Error extracting DOCX text from " + file.getFileName() + ": " + e.getMessage();
+        }
+    }
+
+    /**
+     * Extract text from Excel files (.xls, .xlsx) using Apache POI
+     */
+    private String extractExcelText(Path file) throws IOException {
+        StringBuilder content = new StringBuilder();
+        
+        try (FileInputStream fis = new FileInputStream(file.toFile());
+             Workbook workbook = createWorkbook(file, fis)) {
+            
+            // Process each sheet
+            for (int sheetIndex = 0; sheetIndex < workbook.getNumberOfSheets(); sheetIndex++) {
+                Sheet sheet = workbook.getSheetAt(sheetIndex);
+                String sheetName = sheet.getSheetName();
+                
+                content.append("=== Sheet: ").append(sheetName).append(" ===\n");
+                
+                // Process each row
+                for (Row row : sheet) {
+                    StringBuilder rowContent = new StringBuilder();
+                    boolean hasData = false;
+                    
+                    // Process each cell in the row
+                    for (Cell cell : row) {
+                        String cellValue = getCellValueAsString(cell);
+                        if (cellValue != null && !cellValue.trim().isEmpty()) {
+                            if (hasData) {
+                                rowContent.append(" | ");
+                            }
+                            rowContent.append(cellValue);
+                            hasData = true;
+                        }
+                    }
+                    
+                    // Only add rows that have data
+                    if (hasData) {
+                        content.append("Row ").append(row.getRowNum() + 1).append(": ").append(rowContent).append("\n");
+                    }
+                }
+                
+                content.append("\n");
+            }
+            
+            return content.toString();
+            
+        } catch (Exception e) {
+            return "Error extracting Excel text from " + file.getFileName() + ": " + e.getMessage();
+        }
+    }
+
+    /**
+     * Create appropriate Workbook instance based on file extension
+     */
+    private Workbook createWorkbook(Path file, FileInputStream fis) throws IOException {
+        String fileName = file.getFileName().toString().toLowerCase();
+        
+        if (fileName.endsWith(".xlsx")) {
+            return new XSSFWorkbook(fis);
+        } else if (fileName.endsWith(".xls")) {
+            return new HSSFWorkbook(fis);
+        } else {
+            throw new IllegalArgumentException("Unsupported Excel file format: " + fileName);
+        }
+    }
+
+    /**
+     * Get cell value as string, handling different cell types
+     */
+    private String getCellValueAsString(Cell cell) {
+        if (cell == null) {
+            return null;
+        }
+        
+        switch (cell.getCellType()) {
+            case STRING:
+                return cell.getStringCellValue();
+            case NUMERIC:
+                if (DateUtil.isCellDateFormatted(cell)) {
+                    return cell.getDateCellValue().toString();
+                } else {
+                    // Format numbers to avoid scientific notation for large numbers
+                    double numericValue = cell.getNumericCellValue();
+                    if (numericValue == (long) numericValue) {
+                        return String.valueOf((long) numericValue);
+                    } else {
+                        return String.valueOf(numericValue);
+                    }
+                }
+            case BOOLEAN:
+                return String.valueOf(cell.getBooleanCellValue());
+            case FORMULA:
+                try {
+                    return getCellValueAsString(cell.getCachedFormulaResultType(), cell);
+                } catch (Exception e) {
+                    return cell.getCellFormula();
+                }
+            case BLANK:
+                return "";
+            default:
+                return "";
+        }
+    }
+
+    /**
+     * Helper method to get cached formula result as string
+     */
+    private String getCellValueAsString(CellType cellType, Cell cell) {
+        switch (cellType) {
+            case STRING:
+                return cell.getStringCellValue();
+            case NUMERIC:
+                if (DateUtil.isCellDateFormatted(cell)) {
+                    return cell.getDateCellValue().toString();
+                } else {
+                    double numericValue = cell.getNumericCellValue();
+                    if (numericValue == (long) numericValue) {
+                        return String.valueOf((long) numericValue);
+                    } else {
+                        return String.valueOf(numericValue);
+                    }
+                }
+            case BOOLEAN:
+                return String.valueOf(cell.getBooleanCellValue());
+            default:
+                return "";
         }
     }
 
