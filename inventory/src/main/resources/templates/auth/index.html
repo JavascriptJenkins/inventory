@@ -46,6 +46,24 @@
         </div>
     </div>
 
+    <!-- Top Requested URIs Section -->
+    <div th:if="${topRequestedUris != null and !topRequestedUris.empty}" class="row mb-12" style="margin-top: 30px;">
+        <div class="col-12">
+            <h4 style="margin-bottom: 20px; color: #333;">Your Most Visited Pages</h4>
+            <div class="row">
+                <div th:each="uri, iterStat : ${topRequestedUris}" 
+                     class="col-12 col-md-6 col-lg-4 mb-2" 
+                     style="padding: 0 10px;">
+                    <a th:href="${uri}" 
+                       class="btn btn-outline-primary w-100" 
+                       style="padding: 12px 20px; text-align: left; border-radius: 8px; text-decoration: none; display: block;">
+                        <i class="fas fa-link" style="margin-right: 8px;"></i>
+                        <span th:text="${#strings.capitalizeWords(#strings.replace(#strings.replace(uri, '/', ' '), '_', ' '))}">Page Name</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div style="margin-top: 40px;" class="alert alert-info" role="alert">Welcome to the TULIP POS Dashboard.  Let's sell some stuff! </div>
     <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>

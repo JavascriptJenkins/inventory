@@ -106,6 +106,10 @@ public interface RequestLogRepo extends JpaRepository<RequestLog, UUID> {
     @Query("SELECT r.requestUri, COUNT(r) FROM RequestLog r GROUP BY r.requestUri ORDER BY COUNT(r) DESC")
     List<Object[]> getTopRequestedUris();
     
+    // Get top requested GET URIs for a specific user
+    @Query("SELECT r.requestUri, COUNT(r) FROM RequestLog r WHERE r.httpMethod = 'GET' AND r.remoteUser = :remoteUser GROUP BY r.requestUri ORDER BY COUNT(r) DESC")
+    List<Object[]> getTopGetRequestedUrisByUser(@Param("remoteUser") String remoteUser);
+    
     // Get top client IPs
     @Query("SELECT r.clientIp, COUNT(r) FROM RequestLog r WHERE r.clientIp IS NOT NULL GROUP BY r.clientIp ORDER BY COUNT(r) DESC")
     List<Object[]> getTopClientIps();

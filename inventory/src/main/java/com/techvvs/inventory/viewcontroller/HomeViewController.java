@@ -5,6 +5,7 @@ import com.techvvs.inventory.model.ProductTypeVO;
 import com.techvvs.inventory.model.ProductVO;
 import com.techvvs.inventory.security.CookieUtils;
 import com.techvvs.inventory.security.SameSiteCookieResponseWrapper;
+import com.techvvs.inventory.service.UserAnalyticsService;
 import com.techvvs.inventory.service.auth.TechvvsAuthService;
 import com.techvvs.inventory.viewcontroller.helper.CheckoutHelper;
 import com.techvvs.inventory.viewcontroller.helper.MenuHelper;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -39,6 +41,9 @@ public class HomeViewController {
     @Autowired
     CookieUtils cookieUtils;
 
+    @Autowired
+    UserAnalyticsService userAnalyticsService;
+
 
 
 
@@ -51,6 +56,13 @@ public class HomeViewController {
         System.out.println("hit the dashboard index page");
 
         // UIMODE is now automatically added by GlobalModelAttributes
+
+        // Get current user's top requested URIs
+        String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
+        if (currentUser != null && !"anonymousUser".equals(currentUser)) {
+            List<String> topUris = userAnalyticsService.getTopRequestedUrisForUser(currentUser);
+            model.addAttribute("topRequestedUris", topUris);
+        }
 
         // bind the menu options here
         menuHelper.findMenus(model, page, size);
@@ -79,6 +91,13 @@ public class HomeViewController {
         System.out.println("hit the dashboard index page via POST (OAuth redirect)");
 
         // UIMODE is now automatically added by GlobalModelAttributes
+
+        // Get current user's top requested URIs
+        String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
+        if (currentUser != null && !"anonymousUser".equals(currentUser)) {
+            List<String> topUris = userAnalyticsService.getTopRequestedUrisForUser(currentUser);
+            model.addAttribute("topRequestedUris", topUris);
+        }
 
         // bind the menu options here
         menuHelper.findMenus(model, page, size);
