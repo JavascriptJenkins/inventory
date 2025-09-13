@@ -285,8 +285,8 @@
                     </div>
                         <!-- Quantity Mode Checkbox -->
                     <div class="form-check float-end mt-2 me-2" style="margin-top: 10px;">
-                        <input type="checkbox" class="form-check-input" style="margin-right: 15px;" id="quantityModeCheckbox">
-                        <label class="form-check-label" for="quantityModeCheckbox">Quantity Mode</label>
+                        <input type="checkbox" class="form-check-input" style="margin-right: 15px;margin-top: 15px;" id="quantityModeCheckbox">
+                        <label class="form-check-label" style="margin-left: 15px;margin-top: 15px;" for="quantityModeCheckbox">Quantity Mode</label>
                     </div>
 
                     <!-- Add this inside the form containing "Quantity Mode" -->
@@ -368,6 +368,7 @@
                     type="button" 
                     class="product-scan-btn"
                     th:data-barcode="${product.barcode}"
+                    th:data-quantity-remaining="${product.quantityremaining}"
                     th:title="${product.name}">
                 <i class="bi bi-upc-scan btn-icon"></i>
                 <span class="btn-text" th:text="${product.name} + ' - Scan'"></span>
@@ -383,6 +384,7 @@
                     type="button" 
                     class="product-scan-btn"
                     th:data-barcode="${product.barcode}"
+                    th:data-quantity-remaining="${product.quantityremaining}"
                     th:title="${product.name}">
                 <i class="bi bi-pencil-square btn-icon"></i>
                 <span class="btn-text" th:text="${product.name} + ' - Scan'"></span>
@@ -520,12 +522,12 @@
         }
 
         // Function to scan product barcode from most purchased products
-        window.scanProductBarcode = function(barcode, productName = '') {
+        window.scanProductBarcode = function(barcode, productName = '', quantityRemaining = null) {
             const isQuantityMode = $('#quantityModeCheckbox').is(':checked');
             
             if (isQuantityMode) {
                 // Show quantity selection modal
-                showScanQuantityModal(barcode, productName);
+                showScanQuantityModal(barcode, productName, quantityRemaining);
             } else {
                 // Direct scan - set quantity to 1 and submit
                 document.getElementById('barcodeInput').value = barcode;
@@ -535,16 +537,36 @@
         };
 
         // Function to show the scan quantity modal
-        function showScanQuantityModal(barcode, productName) {
+        function showScanQuantityModal(barcode, productName, quantityRemaining = null) {
             // Set the product name in the modal
             document.getElementById('scanProductNameSpan').textContent = productName || 'this product';
             
             // Store the barcode for when the modal is confirmed
             document.getElementById('scanQuantityModal').setAttribute('data-barcode', barcode);
             
+            // Populate quantity dropdown based on available quantity
+            populateQuantityDropdown(quantityRemaining);
+            
             // Show the modal
             const modal = new bootstrap.Modal(document.getElementById('scanQuantityModal'));
             modal.show();
+        }
+
+        // Function to populate quantity dropdown based on available quantity
+        function populateQuantityDropdown(quantityRemaining) {
+            const select = document.getElementById('quantityToScanSelect');
+            const maxQuantity = quantityRemaining ? parseInt(quantityRemaining, 10) : 10;
+            
+            // Clear existing options
+            select.innerHTML = '';
+            
+            // Add options from 1 to maxQuantity (or 10 if no quantity specified)
+            for (let i = 1; i <= maxQuantity; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = i;
+                select.appendChild(option);
+            }
         }
 
         // Handle scan quantity modal confirmation
@@ -571,8 +593,9 @@
                 const button = e.target.classList.contains('product-scan-btn') ? e.target : e.target.closest('.product-scan-btn');
                 const barcode = button.getAttribute('data-barcode');
                 const productName = button.getAttribute('title');
+                const quantityRemaining = button.getAttribute('data-quantity-remaining');
                 if (barcode) {
-                    scanProductBarcode(barcode, productName);
+                    scanProductBarcode(barcode, productName, quantityRemaining);
                 }
             }
         });
@@ -585,8 +608,9 @@
                     e.preventDefault();
                     const barcode = this.getAttribute('data-barcode');
                     const productName = this.getAttribute('title');
+                    const quantityRemaining = this.getAttribute('data-quantity-remaining');
                     if (barcode) {
-                        scanProductBarcode(barcode, productName);
+                        scanProductBarcode(barcode, productName, quantityRemaining);
                     }
                 });
             });
