@@ -31,3 +31,52 @@
     vertical-align: middle;
     padding: 15px;
 }
+
+/* Checkout-specific table styles */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table {
+    width: 100%;
+    min-width: 600px;
+}
+
+/* Cart table improvements */
+.cart-table-container {
+    overflow-x: auto;
+    min-width: 100%;
+}
+
+.cart-table {
+    width: 100%;
+    min-width: 600px;
+}
+
+.cart-table th,
+.cart-table td {
+    padding: 8px 12px;
+    white-space: nowrap;
+}
+
+.cart-table th:first-child,
+.cart-table td:first-child {
+    min-width: 200px;
+}
+
+.cart-table th:nth-child(2),
+.cart-table td:nth-child(2) {
+    min-width: 80px;
+}
+
+.cart-table th:nth-child(3),
+.cart-table td:nth-child(3) {
+    min-width: 80px;
+}
+
+.cart-table th:last-child,
+.cart-table td:last-child {
+    min-width: 120px;
+}

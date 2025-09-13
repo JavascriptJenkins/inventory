@@ -55,3 +55,20 @@
     border-color: #1d2124;
     box-shadow: none;
 }
+
+/* Checkout-specific form styles */
+#quantityModeCheckbox {
+    width: 25px;
+    height: 25px;
+}
+
+.form-check-label {
+    background-color: #343a40;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+#quantityModeCheckbox:focus + .form-check-label {
+    outline: 2px solid white;
+}

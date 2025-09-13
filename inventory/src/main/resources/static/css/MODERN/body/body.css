@@ -47,3 +47,47 @@ body {
     background-color: #d4edda;
     color: #155724;
 }
+
+/* Checkout-specific body styles */
+.col-md-8, .col-md-4 {
+    padding: 10px;
+}
+
+/* Form controls */
+.form-control, .form-select {
+    background-color: #343a40;
+    color: #fff;
+    border: 1px solid #343a40;
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: #343a40;
+    color: #fff;
+    border-color: #1d2124;
+    box-shadow: none;
+}
+
+.form-label {
+    color: #000;
+}
+
+.price-class {
+    color: #000;
+}
+
+.customer-name {
+    color: #000;
+}
+
+.required:after {
+    content: " *";
+    color: red;
+}
+
+.notes-bubble {
+    background-color: #f1f8fa;
+    border: 1px solid #c0c0c0;
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 15px;
+}

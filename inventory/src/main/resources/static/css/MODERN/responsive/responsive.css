@@ -140,3 +140,68 @@
         font-size: 12px;
     }
 }
+
+/* Checkout-specific responsive styles */
+@media (max-width: 768px) {
+    .btn-lg {
+        padding: 10px 20px;
+        font-size: 1rem;
+    }
+    
+    .col-md-8, .col-md-4 {
+        padding: 5px;
+    }
+    
+    .header-dark {
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+    
+    .header-small {
+        padding: 8px;
+        margin-bottom: 10px;
+    }
+    
+    .product-scan-buttons {
+        gap: 6px;
+    }
+    
+    .product-scan-btn {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+        max-width: 150px;
+        min-height: 50px;
+    }
+    
+    .cart-table {
+        min-width: 500px;
+    }
+}
+
+@media (max-width: 576px) {
+    .btn-lg {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+    }
+    
+    .table {
+        min-width: 400px;
+        font-size: 0.9rem;
+    }
+    
+    .form-control, .form-select {
+        font-size: 16px;
+    }
+    
+    .product-scan-btn {
+        padding: 5px 10px;
+        font-size: 0.75rem;
+        max-width: 120px;
+        min-height: 45px;
+    }
+    
+    .most-purchased-title,
+    .most-recently-edited-title {
+        font-size: 1rem;
+    }
+}
