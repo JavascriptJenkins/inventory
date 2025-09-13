@@ -159,13 +159,13 @@
     box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
 }
 
-/* Pulsing Animations - MODERN Theme */
-.pulsing-status-0 { animation: pulse 2s infinite; }
-.pulsing-status-1 { animation: pulse 1.5s infinite; }
-.pulsing-status-2 { animation: pulse 1.2s infinite; }
-.pulsing-status-3 { animation: pulse 0.8s infinite; }
+/* Pulsing Animations - Status-specific MODERN Theme */
+.pulsing-status-0 { animation: pulse-created 2s infinite; }
+.pulsing-status-1 { animation: pulse-prep 1.5s infinite; }
+.pulsing-status-2 { animation: pulse-dispatch 1.2s infinite; }
+.pulsing-status-3 { animation: pulse-enroute 0.8s infinite; }
 
-@keyframes pulse {
+@keyframes pulse-created {
     0%, 100% {
         box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
     }
@@ -174,14 +174,87 @@
     }
 }
 
-/* Hover Effects - VEGAS-style with MODERN colors */
+@keyframes pulse-prep {
+    0%, 100% {
+        box-shadow: 0 2px 8px rgba(253, 126, 20, 0.3);
+    }
+    50% {
+        box-shadow: 0 4px 16px rgba(253, 126, 20, 0.6);
+    }
+}
+
+@keyframes pulse-dispatch {
+    0%, 100% {
+        box-shadow: 0 2px 8px rgba(111, 66, 193, 0.3);
+    }
+    50% {
+        box-shadow: 0 4px 16px rgba(111, 66, 193, 0.6);
+    }
+}
+
+@keyframes pulse-enroute {
+    0%, 100% {
+        box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
+    }
+    50% {
+        box-shadow: 0 4px 16px rgba(255, 193, 7, 0.6);
+    }
+}
+
+/* Hover Effects - Status-specific with MODERN colors */
 .status-icon:hover {
     transform: scale(1.1);
-    box-shadow: 0 6px 20px rgba(0, 123, 255, 0.5);
     transition: all 0.3s ease-in-out;
+}
+
+.status-created:hover {
+    box-shadow: 0 6px 20px rgba(0, 123, 255, 0.5);
+}
+
+.status-prep:hover {
+    box-shadow: 0 6px 20px rgba(253, 126, 20, 0.5);
+}
+
+.status-dispatch:hover {
+    box-shadow: 0 6px 20px rgba(111, 66, 193, 0.5);
+}
+
+.status-enroute:hover {
+    box-shadow: 0 6px 20px rgba(255, 193, 7, 0.5);
+}
+
+.status-complete:hover {
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.5);
+}
+
+.status-canceled:hover {
+    box-shadow: 0 6px 20px rgba(220, 53, 69, 0.5);
 }
 
 .status-icon:active {
     transform: scale(0.95);
+}
+
+.status-created:active {
     box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+}
+
+.status-prep:active {
+    box-shadow: 0 2px 8px rgba(253, 126, 20, 0.3);
+}
+
+.status-dispatch:active {
+    box-shadow: 0 2px 8px rgba(111, 66, 193, 0.3);
+}
+
+.status-enroute:active {
+    box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
+}
+
+.status-complete:active {
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+}
+
+.status-canceled:active {
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
 }
