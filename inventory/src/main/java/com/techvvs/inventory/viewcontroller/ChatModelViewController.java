@@ -13,10 +13,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.*;
+
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.ResponseEntity;
@@ -353,13 +351,22 @@ public class ChatModelViewController {
     // Chat interface for a specific chat model
     @GetMapping("/chat/{id}")
     public String chatWithModel(@PathVariable Integer id, Model model) {
-        return chatModelService.getChatModelById(id)
-            .map(chatModel -> {
-                model.addAttribute("chatModel", chatModel);
-                model.addAttribute("documentCount", chatModelService.getDocumentCount(id));
-                return "chatmodel/chat";
-            })
-            .orElse("redirect:/chatmodel/list");
+        System.out.println("Loading chat model with ID: " + id);
+        
+        Optional<ChatModel> chatModelOpt = chatModelService.getChatModelById(id);
+        if (chatModelOpt.isPresent()) {
+            ChatModel chatModel = chatModelOpt.get();
+            System.out.println("Found chat model: " + chatModel.getName() + " (ID: " + chatModel.getId() + ")");
+            
+            model.addAttribute("chatModel", chatModel);
+            model.addAttribute("documentCount", chatModelService.getDocumentCount(id));
+            
+            System.out.println("Added chatModel to model: " + chatModel.getName());
+            return "chatmodel/chat";
+        } else {
+            System.out.println("Chat model not found with ID: " + id);
+            return "redirect:/chatmodel/list";
+        }
     }
 }
 

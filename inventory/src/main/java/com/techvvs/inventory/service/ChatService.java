@@ -6,6 +6,7 @@ import com.techvvs.inventory.jparepo.ChatMessageRepo;
 import com.techvvs.inventory.jparepo.ChatRepo;
 import com.techvvs.inventory.model.Chat;
 import com.techvvs.inventory.model.ChatMessage;
+import com.techvvs.inventory.model.ChatModel;
 import com.techvvs.inventory.model.SystemUserDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,10 +32,11 @@ public class ChatService {
     private ObjectMapper objectMapper;
 
     /**
-     * Create a new chat session for a user
+     * Create a new chat session for a user with a specific chat model
      */
-    public Chat createChat(String title, SystemUserDAO systemUser) {
+    public Chat createChat(String title, SystemUserDAO systemUser, ChatModel chatModel) {
         Chat chat = new Chat(title, systemUser);
+        chat.setChatModel(chatModel);
         return chatRepo.save(chat);
     }
 
@@ -160,27 +162,4 @@ public class ChatService {
         return stats;
     }
 
-    /**
-     * Create a default welcome chat if user has no chats
-     */
-    public Chat createDefaultChat(SystemUserDAO systemUser) {
-        List<Chat> existingChats = chatRepo.findActiveChatsByUser(systemUser);
-        
-        if (existingChats.isEmpty()) {
-            Chat defaultChat = createChat("New METRC Chat", systemUser);
-            
-            // Add welcome message
-            ChatMessage welcomeMessage = new ChatMessage(
-                "Hello! I'm your METRC documentation assistant. Ask me anything about METRC APIs, packages, transfers, or any other METRC-related topics!",
-                false,
-                defaultChat
-            );
-            chatMessageRepo.save(welcomeMessage);
-            defaultChat.addMessage(welcomeMessage);
-            
-            return chatRepo.save(defaultChat);
-        }
-        
-        return existingChats.get(0); // Return the most recent chat
-    }
 }

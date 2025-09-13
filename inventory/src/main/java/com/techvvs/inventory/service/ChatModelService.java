@@ -54,8 +54,10 @@ public class ChatModelService {
         // Create the directory structure
         createChatModelDirectory(chatModel);
 
-        // Generate MCP connector file
-        generateMcpConnector(chatModel);
+        // Generate MCP connector file and save config to database
+        String mcpConfig = generateMcpConnector(chatModel);
+        chatModel.setMcpConnectorConfig(mcpConfig);
+        chatModel = chatModelRepo.save(chatModel);
 
         return chatModel;
     }
@@ -95,7 +97,14 @@ public class ChatModelService {
     }
 
     public Optional<ChatModel> getChatModelById(Integer id) {
-        return chatModelRepo.findById(id);
+        System.out.println("ChatModelService.getChatModelById called with ID: " + id);
+        Optional<ChatModel> result = chatModelRepo.findById(id);
+        if (result.isPresent()) {
+            System.out.println("Found chat model: " + result.get().getName() + " (ID: " + result.get().getId() + ")");
+        } else {
+            System.out.println("No chat model found with ID: " + id);
+        }
+        return result;
     }
 
     public Optional<ChatModel> getChatModelByFolderPath(String folderPath) {
@@ -143,7 +152,7 @@ public class ChatModelService {
         Files.write(readmePath, readmeContent.getBytes());
     }
 
-    private void generateMcpConnector(ChatModel chatModel) throws IOException {
+    private String generateMcpConnector(ChatModel chatModel) throws IOException {
         Path mcpConnectorPath = Paths.get(BASE_UPLOAD_DIR, chatModel.getFolderPath(), "mcp", "mcp-connector.dxt");
         
         String connectorContent = String.format(
@@ -173,6 +182,7 @@ public class ChatModelService {
         );
         
         Files.write(mcpConnectorPath, connectorContent.getBytes());
+        return connectorContent;
     }
 
     private void deleteChatModelDirectory(ChatModel chatModel) throws IOException {
@@ -284,12 +294,25 @@ public class ChatModelService {
             throw new IllegalArgumentException("Chat model not found with ID: " + chatModelId);
         }
 
-        Path documentsPath = Paths.get(BASE_UPLOAD_DIR, chatModel.get().getFolderPath(), "documents");
+        Path documentsPath = Paths.get(BASE_UPLOAD_DIR, chatModel.get().getFolderPath(), "documents").normalize();
         List<Map<String, Object>> documents = new ArrayList<>();
+
+        // Security check: ensure we're only accessing the chat model's documents folder
+        Path basePath = Paths.get(BASE_UPLOAD_DIR, chatModel.get().getFolderPath()).normalize();
+        if (!documentsPath.startsWith(basePath)) {
+            throw new SecurityException("Access denied: Documents path outside chat model scope");
+        }
 
         if (Files.exists(documentsPath)) {
             Files.list(documentsPath).forEach(file -> {
                 try {
+                    // Additional security check: ensure file is within the documents folder
+                    Path normalizedFile = file.normalize();
+                    if (!normalizedFile.startsWith(documentsPath)) {
+                        System.err.println("Security warning: Skipping file outside documents folder: " + file);
+                        return;
+                    }
+                    
                     Map<String, Object> docInfo = new HashMap<>();
                     docInfo.put("name", file.getFileName().toString());
                     docInfo.put("type", getFileExtension(file.getFileName().toString()));
@@ -312,7 +335,16 @@ public class ChatModelService {
             throw new IllegalArgumentException("Chat model not found with ID: " + chatModelId);
         }
 
-        Path documentPath = Paths.get(BASE_UPLOAD_DIR, chatModel.get().getFolderPath(), "documents", filename);
+        // Sanitize filename to prevent path traversal
+        String sanitizedFilename = sanitizeFilename(filename);
+        Path documentPath = Paths.get(BASE_UPLOAD_DIR, chatModel.get().getFolderPath(), "documents", sanitizedFilename).normalize();
+        
+        // Security check: ensure the file is within the chat model's documents folder
+        Path documentsPath = Paths.get(BASE_UPLOAD_DIR, chatModel.get().getFolderPath(), "documents").normalize();
+        if (!documentPath.startsWith(documentsPath)) {
+            throw new SecurityException("Access denied: Document path outside chat model scope");
+        }
+        
         if (Files.exists(documentPath)) {
             Files.delete(documentPath);
         } else {
@@ -327,7 +359,16 @@ public class ChatModelService {
             throw new IllegalArgumentException("Chat model not found with ID: " + chatModelId);
         }
 
-        Path documentPath = Paths.get(BASE_UPLOAD_DIR, chatModel.get().getFolderPath(), "documents", filename);
+        // Sanitize filename to prevent path traversal
+        String sanitizedFilename = sanitizeFilename(filename);
+        Path documentPath = Paths.get(BASE_UPLOAD_DIR, chatModel.get().getFolderPath(), "documents", sanitizedFilename).normalize();
+        
+        // Security check: ensure the file is within the chat model's documents folder
+        Path documentsPath = Paths.get(BASE_UPLOAD_DIR, chatModel.get().getFolderPath(), "documents").normalize();
+        if (!documentPath.startsWith(documentsPath)) {
+            throw new SecurityException("Access denied: Document path outside chat model scope");
+        }
+        
         if (!Files.exists(documentPath)) {
             throw new IllegalArgumentException("Document not found: " + filename);
         }

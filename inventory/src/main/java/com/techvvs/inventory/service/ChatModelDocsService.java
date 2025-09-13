@@ -116,10 +116,16 @@ public class ChatModelDocsService {
      * Search documents in the chat model folder
      */
     private String searchChatModelDocs(ChatModel chatModel, String query) throws IOException {
-        Path documentsPath = Paths.get(BASE_UPLOAD_DIR, chatModel.getFolderPath(), "documents");
+        Path documentsPath = Paths.get(BASE_UPLOAD_DIR, chatModel.getFolderPath(), "documents").normalize();
         
         if (!Files.exists(documentsPath)) {
             return "";
+        }
+
+        // Security check: ensure we're only accessing the chat model's documents folder
+        Path basePath = Paths.get(BASE_UPLOAD_DIR, chatModel.getFolderPath()).normalize();
+        if (!documentsPath.startsWith(basePath)) {
+            throw new SecurityException("Access denied: Documents path outside chat model scope");
         }
 
         StringBuilder content = new StringBuilder();
@@ -130,6 +136,13 @@ public class ChatModelDocsService {
             .filter(Files::isRegularFile)
             .forEach(file -> {
                 try {
+                    // Additional security check: ensure file is within the documents folder
+                    Path normalizedFile = file.normalize();
+                    if (!normalizedFile.startsWith(documentsPath)) {
+                        System.err.println("Security warning: Skipping file outside documents folder: " + file);
+                        return;
+                    }
+                    
                     String fileName = file.getFileName().toString();
                     String fileContent = readDocumentContent(file);
                     

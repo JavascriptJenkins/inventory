@@ -189,7 +189,7 @@
     <!-- Admin Navigation Bar -->
     <div th:insert="fragments/adminnavbar :: adminnavbarfragment"></div>
     
-    <div class="container-fluid mt-4">
+    <div class="container-fluid mt-4" th:data-chatmodel-id="${chatModel.id}">
         <!-- Chat Header -->
         <div class="chat-header">
             <div class="chat-info">
@@ -274,6 +274,17 @@
 
 
     <script>
+        // Get chat model data from data attributes and Thymeleaf
+        const container = document.querySelector('.container-fluid');
+        const chatModel = {
+            id: container.getAttribute('data-chatmodel-id'),
+            name: /*[[${chatModel.name}]]*/ null,
+            description: /*[[${chatModel.description}]]*/ null
+        };
+        
+        // Debug logging
+        console.log('Chat model data:', chatModel);
+        
         let currentChatId = null;
         const chatMessages = document.getElementById('chatMessages');
         const chatInput = document.getElementById('chatInput');
@@ -307,13 +318,30 @@
             try {
                 // Create or get chat session
                 if (!currentChatId) {
+                    // Get chat model ID from data attribute for reliability
+                    const chatModelId = container.getAttribute('data-chatmodel-id');
+                    
+                    // Validate that chat model ID is available
+                    if (!chatModelId || chatModelId === 'null') {
+                        throw new Error('Chat model ID is required but not available');
+                    }
+                    
+                    // Build request body with required chatModelId
+                    const requestBody = `title=Chat with ${chatModel.name}&chatModelId=${chatModelId}`;
+                    
                     const chatResponse = await fetch('/chatbot/api/chat/create', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/x-www-form-urlencoded',
                         },
-                        body: `title=Chat with [[${chatModel.name}]]`
+                        body: requestBody
                     });
+                    
+                    if (!chatResponse.ok) {
+                        const errorData = await chatResponse.json();
+                        throw new Error(errorData.error || 'Failed to create chat');
+                    }
+                    
                     const chatData = await chatResponse.json();
                     currentChatId = chatData.id;
                 }

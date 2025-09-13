@@ -254,14 +254,26 @@ public class ChatModelMcpController {
         String uri = params.path("uri").asText();
         
         try {
-            // Extract file path from URI
+            // Extract file path from URI and normalize it to prevent path traversal
             String filePath = uri.replace("file://", "");
-            Path file = Paths.get(filePath);
+            Path file = Paths.get(filePath).normalize();
             
             // Verify the file is within the chat model's documents folder
-            Path documentsPath = Paths.get(chatModel.getFullFolderPath(), "documents");
+            Path documentsPath = Paths.get(chatModel.getFullFolderPath(), "documents").normalize();
+            
+            // Additional security check: ensure the file path doesn't contain path traversal sequences
+            if (filePath.contains("..") || filePath.contains("~")) {
+                return createErrorResponse(id, -32603, "Access denied: Invalid file path");
+            }
+            
+            // Verify the file is within the chat model's documents folder
             if (!file.startsWith(documentsPath)) {
                 return createErrorResponse(id, -32603, "Access denied: File outside chat model scope");
+            }
+            
+            // Additional check: ensure the file exists and is a regular file
+            if (!Files.exists(file) || !Files.isRegularFile(file)) {
+                return createErrorResponse(id, -32603, "File not found or not accessible");
             }
             
             String content = Files.readString(file);

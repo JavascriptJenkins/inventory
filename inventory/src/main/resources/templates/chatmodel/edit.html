@@ -81,7 +81,7 @@
 </head>
 <body>
     <!-- Admin Navigation Bar -->
-    <div th:insert="fragments/adminnavbar :: adminnavbarfragment"></div>
+    <div th:insert="~{fragments/adminnavbar :: adminnavbarfragment}"></div>
     
     <div class="container mt-4">
         <div class="form-container">
@@ -237,7 +237,7 @@
                         </div>
                         <div class="col-md-3">
                             <div class="text-center">
-                                <h4 class="text-info" th:text="${chatModel.messages != null ? chatModel.messages.size() : 0}">0</h4>
+                                <h4 class="text-info" th:text="${chatModel.chats != null ? chatModel.chats.size() : 0}">0</h4>
                                 <small class="text-muted">Total Messages</small>
                             </div>
                         </div>

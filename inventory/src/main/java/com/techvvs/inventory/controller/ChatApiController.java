@@ -16,10 +16,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/chat")
@@ -58,20 +55,29 @@ public class ChatApiController {
             // Add user message to chat
             ChatMessage userMessage = chatService.addUserMessage(chatId, message, currentUser);
 
-            // Get response based on selected chat model or fallback to METRC docs
+            // Get the chat to check its associated chat model
+            Optional<Chat> chat = chatService.getChatById(chatId, currentUser);
+            if (chat.isEmpty()) {
+                return ResponseEntity.status(404).body(Map.of("error", "Chat not found"));
+            }
+
+            // Get response based on chat's associated chat model or fallback to METRC docs
             Map<String, Object> responseData;
             
-            if (chatModelId != null) {
+            if (chat.get().getChatModel() != null) {
                 try {
-                    // Use the selected chat model's documents via MCP
-                    responseData = getResponseFromChatModel(chatModelId, message);
+                    // Use the chat's associated chat model's documents via MCP
+                    responseData = getResponseFromChatModel(chat.get().getChatModel().getId(), message);
                 } catch (Exception e) {
-                    System.err.println("Error using chat model " + chatModelId + ": " + e.getMessage());
-                    // Fallback to METRC docs if chat model fails
-                    responseData = getResponseFromMetrcDocs(message);
+                    System.err.println("Error using chat model " + chat.get().getChatModel().getId() + ": " + e.getMessage());
+                    // Return error instead of falling back to METRC docs for security
+                    responseData = Map.of(
+                        "answer", "Sorry, I couldn't access the documents for this chat model. Please check if documents are uploaded and try again.",
+                        "error", "Chat model access failed: " + e.getMessage()
+                    );
                 }
             } else {
-                // No chat model selected, use default METRC docs
+                // No chat model associated, use default METRC docs
                 responseData = getResponseFromMetrcDocs(message);
             }
 
@@ -163,20 +169,28 @@ public class ChatApiController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<Map<String, Object>> createChat(@RequestParam String title) {
+    public ResponseEntity<Map<String, Object>> createChat(
+            @RequestParam String title,
+            @RequestParam Integer chatModelId) {
         try {
             SystemUserDAO currentUser = getCurrentUser();
             if (currentUser == null) {
                 return ResponseEntity.status(401).body(Map.of("error", "User not authenticated"));
             }
 
-            var chat = chatService.createChat(title, currentUser);
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("chat", chat);
+            // Get the chat model and create chat with it - chatModelId is required
+            Optional<ChatModel> chatModel = chatModelService.getChatModelById(chatModelId);
+            if (chatModel.isPresent()) {
+                Chat chat = chatService.createChat(title, currentUser, chatModel.get());
+                
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", true);
+                response.put("chat", chat);
 
-            return ResponseEntity.ok(response);
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.status(400).body(Map.of("error", "Chat model not found"));
+            }
 
         } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
