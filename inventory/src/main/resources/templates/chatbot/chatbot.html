@@ -1263,7 +1263,7 @@
                                 <div class="modal-body">
                                     <div class="mb-3">
                                         <label for="chatTitleInput" class="form-label" style="color: var(--gameboy-screen);">Chat Title:</label>
-                                        <input type="text" class="form-control" id="chatTitleInput" value="New METRC Chat" style="background: var(--gameboy-bg); color: var(--gameboy-screen); border: 1px solid var(--gameboy-screen);">
+                                        <input type="text" class="form-control" id="chatTitleInput" placeholder="Enter chat title..." style="background: var(--gameboy-bg); color: var(--gameboy-screen); border: 1px solid var(--gameboy-screen);">
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label" style="color: var(--gameboy-screen);">Chat Model:</label>
@@ -1293,8 +1293,8 @@
                 const modal = new bootstrap.Modal(document.getElementById('createChatModal'));
                 modal.show();
                 
-                // Focus on title input
-                $('#chatTitleInput').focus().select();
+                // Focus on title input (no text to select since it's empty)
+                $('#chatTitleInput').focus();
                 
                 // Handle create button click
                 $('#createChatBtn').on('click', async function() {
