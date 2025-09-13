@@ -11,6 +11,12 @@
     <!-- Retro Gameboy Styling -->
     <link rel="stylesheet" type="text/css" media="all" href="/css/RETRO/retro.css" th:if="${UIMODE == 'RETRO'}" />
 
+    <!-- Google Fonts - Roboto (for MODERN mode) -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Google Fonts - Press Start 2P (for RETRO mode) -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
 </head>
 <body>
 
@@ -19,9 +25,11 @@
 <div class="container-fluid">
 
     <div class="header-dark">
+        <div></div>
         <div>
-            <h1 style="font-family: 'Press Start 2P', cursive;">TULIP POS</h1>
+            <h1>TULIP POS</h1>
         </div>
+        <div></div>
     </div>
 
     <br>
@@ -40,6 +48,10 @@
             </a>
         </div>
     </div>
+
+    <div style="margin-top: 40px;" class="alert alert-info" role="alert">Welcome to the TULIP POS Dashboard.  Let's sell some stuff! </div>
+    <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
+    <div class="alert alert-info" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
 
     <!-- Top Requested URIs Section -->
     <div th:if="${topRequestedUris != null and !topRequestedUris.empty}" class="row mb-12" style="margin-top: 30px;">
@@ -60,9 +72,6 @@
         </div>
     </div>
 
-    <div style="margin-top: 40px;" class="alert alert-info" role="alert">Welcome to the TULIP POS Dashboard.  Let's sell some stuff! </div>
-    <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
-    <div class="alert alert-info" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
 
 
 

@@ -66,7 +66,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .antMatchers(LOGIN_REQUEST_LINK).permitAll()
             .antMatchers(LOGIN_MAGIC_LINK_GATEWAY).permitAll()
             .antMatchers(FAVICON).permitAll()
-            .antMatchers(CSS_TABLE).permitAll()
             .antMatchers(LOGIN_SYSTEMUSER).permitAll()
             .antMatchers(VERIFY_PHONE_TOKEN).permitAll()
             .antMatchers(CREATE_ACCOUNT).permitAll()
