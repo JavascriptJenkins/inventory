@@ -74,3 +74,38 @@
         padding-right: 5px;
     }
 }
+
+/* Browse Batch specific responsive styles */
+@media (max-width: 768px) {
+    .table {
+        font-size: 14px;
+    }
+    .table th, .table td {
+        padding: 8px 4px;
+    }
+    .btn-sm {
+        padding: 4px 8px;
+        font-size: 12px;
+    }
+    .pagination .page-link {
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 576px) {
+    .table {
+        font-size: 12px;
+    }
+    .table th, .table td {
+        padding: 6px 2px;
+    }
+    .btn-sm {
+        padding: 2px 6px;
+        font-size: 10px;
+    }
+    .pagination .page-link {
+        padding: 6px 8px;
+        font-size: 12px;
+    }
+}
