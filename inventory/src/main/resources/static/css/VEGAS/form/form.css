@@ -1,0 +1,29 @@
+/* VEGAS UI Mode - Form Styles */
+
+/* Themed Form Controls */
+.form-select, .form-control, .btn {
+    border: 2px solid transparent;
+    border-image: linear-gradient(90deg, #0f2027, #203a43, #2c5364) 1;
+    color: #00ffff;
+    background-color: #121212;
+    text-shadow: 0px 0px 10px #00ffff;
+    transition: all 0.3s ease;
+}
+
+.form-select:focus, .form-control:focus, .btn:focus {
+    border-color: #00ffff;
+    box-shadow: 0px 0px 10px #00ffff;
+}
+
+/* Consistent Label Spacing */
+.form-label {
+    margin-bottom: 5px;
+    color: #00ffff;
+    text-shadow: 0px 0px 10px #00ffff;
+}
+
+/* Adjust for Alignment */
+.align-items-center .form-control,
+.align-items-center .form-select {
+    margin-bottom: 0;
+}

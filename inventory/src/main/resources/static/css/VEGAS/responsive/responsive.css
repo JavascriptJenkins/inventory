@@ -1,0 +1,22 @@
+/* VEGAS UI Mode - Responsive Styles */
+
+/* Responsive adjustments for VEGAS theme */
+@media (max-width: 768px) {
+    .glowing-text {
+        font-size: 2rem;
+    }
+    
+    .status-text {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .glowing-text {
+        font-size: 1.5rem;
+    }
+    
+    .table-bordered th, .table-bordered td {
+        font-size: 0.9rem;
+    }
+}

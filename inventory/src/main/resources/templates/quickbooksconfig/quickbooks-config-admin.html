@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>QuickBooks API Configuration</title>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" type="text/css" media="all" href="/css/table.css" th:href="@{/css/table.css}" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Bundle JS (Includes Popper.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        .glowing-valid {
+            box-shadow: 0 0 8px 2px #00ffff !important;
+        }
+        .glowing-invalid {
+            box-shadow: 0 0 8px 2px #ff0000 !important;
+        }
+        .table-hover tbody tr:hover {
+            background-color: #e0f7fa;
+        }
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: #f1f8fa;
+        }
+        .table-dark thead {
+            background-color: #343a40;
+            color: #fff;
+        }
+        .btn-secondary {
+            color: #fff;
+            background-color: #343a40;
+            border-color: #343a40;
+        }
+        .btn-secondary:hover {
+            background-color: #23272b;
+            border-color: #1d2124;
+        }
+        .header-dark {
+            background-color: #343a40;
+            color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .config-section {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .config-header {
+            background-color: #0070ba;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+        .form-control:focus {
+            border-color: #0070ba;
+            box-shadow: 0 0 0 0.2rem rgba(0, 112, 186, 0.25);
+        }
+        .btn-primary {
+            background-color: #0070ba;
+            border-color: #0070ba;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+        .btn-success {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+        .btn-success:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+        }
+        .alert {
+            border-radius: 5px;
+        }
+        .form-label {
+            font-weight: 500;
+            color: #495057;
+        }
+        .required {
+            color: #dc3545;
+        }
+        .token-section {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        .token-info {
+            font-size: 0.9em;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+<div th:insert="~{fragments/adminnavbar.html :: adminnavbarfragment}"> </div>
+
+    <div class="container-fluid">
+        <div class="header-dark">
+            <h1><i class="bi bi-calculator"></i> QuickBooks API Configuration</h1>
+            <p class="mb-0">Manage QuickBooks API settings for SANDBOX and PROD environments</p>
+        </div>
+
+        <!-- Success/Error Messages -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle"></i> <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle"></i> <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- SANDBOX Configuration -->
+        <div class="config-section">
+            <div class="config-header">
+                <h4><i class="bi bi-cloud-sandbox"></i> SANDBOX Environment Configuration</h4>
+            </div>
+            
+            <form th:action="@{/quickbooks-config/save-sandbox}" method="post" th:object="${sandboxConfig}">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="sandboxAppId" class="form-label">App ID <span class="required">*</span></label>
+                            <input type="text" class="form-control" id="sandboxAppId" name="appId" 
+                                   th:value="${sandboxConfig?.appId}" placeholder="Enter SANDBOX App ID" required>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="sandboxClientId" class="form-label">Client ID <span class="required">*</span></label>
+                            <input type="text" class="form-control" id="sandboxClientId" name="clientId" 
+                                   th:value="${sandboxConfig?.clientId}" placeholder="Enter SANDBOX Client ID" required>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="sandboxClientSecret" class="form-label">Client Secret <span class="required">*</span></label>
+                            <input type="password" class="form-control" id="sandboxClientSecret" name="clientSecret" 
+                                   th:value="${sandboxConfig?.clientSecret}" placeholder="Enter SANDBOX Client Secret" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="sandboxBaseUrl" class="form-label">Sandbox Base URL</label>
+                            <input type="url" class="form-control" id="sandboxBaseUrl" name="sandboxBaseUrl" 
+                                   th:value="${sandboxConfig?.sandboxBaseUrl}" placeholder="https://sandbox-quickbooks.api.intuit.com">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="sandboxProdBaseUrl" class="form-label">Production Base URL</label>
+                            <input type="url" class="form-control" id="sandboxProdBaseUrl" name="prodBaseUrl" 
+                                   th:value="${sandboxConfig?.prodBaseUrl}" placeholder="https://quickbooks.api.intuit.com">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="sandboxRedirectUri" class="form-label">Redirect URI</label>
+                            <input type="text" class="form-control" id="sandboxRedirectUri" name="redirectUri" 
+                                   th:value="${sandboxConfig?.redirectUri}" placeholder="/quickbooks/oauth/callback">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="sandboxScope" class="form-label">OAuth Scope</label>
+                            <input type="text" class="form-control" id="sandboxScope" name="scope" 
+                                   th:value="${sandboxConfig?.scope}" placeholder="com.intuit.quickbooks.accounting">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Token Information Section -->
+                <div class="token-section" th:if="${sandboxConfig?.accessToken != null and !sandboxConfig?.accessToken.isEmpty()}">
+                    <h6><i class="bi bi-key"></i> OAuth Token Information</h6>
+                    <div class="token-info">
+                        <p><strong>Access Token:</strong> <span th:text="${sandboxConfig?.accessToken?.substring(0, 20)} + '...'"></span></p>
+                        <p><strong>Token Expires:</strong> <span th:text="${sandboxConfig?.tokenExpiresAt}"></span></p>
+                        <p><strong>Status:</strong> 
+                            <span th:if="${sandboxConfig?.tokenExpiresAt != null and sandboxConfig?.tokenExpiresAt.isAfter(T(java.time.LocalDateTime).now())}" 
+                                  class="text-success">Valid</span>
+                            <span th:if="${sandboxConfig?.tokenExpiresAt == null or sandboxConfig?.tokenExpiresAt.isBefore(T(java.time.LocalDateTime).now())}" 
+                                  class="text-danger">Expired</span>
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="text-end">
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle"></i> Save SANDBOX Configuration
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- PROD Configuration -->
+        <div class="config-section">
+            <div class="config-header">
+                <h4><i class="bi bi-cloud-check"></i> PROD Environment Configuration</h4>
+            </div>
+            
+            <form th:action="@{/quickbooks-config/save-prod}" method="post" th:object="${prodConfig}">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="prodAppId" class="form-label">App ID <span class="required">*</span></label>
+                            <input type="text" class="form-control" id="prodAppId" name="appId" 
+                                   th:value="${prodConfig?.appId}" placeholder="Enter PROD App ID" required>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="prodClientId" class="form-label">Client ID <span class="required">*</span></label>
+                            <input type="text" class="form-control" id="prodClientId" name="clientId" 
+                                   th:value="${prodConfig?.clientId}" placeholder="Enter PROD Client ID" required>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="prodClientSecret" class="form-label">Client Secret <span class="required">*</span></label>
+                            <input type="password" class="form-control" id="prodClientSecret" name="clientSecret" 
+                                   th:value="${prodConfig?.clientSecret}" placeholder="Enter PROD Client Secret" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="prodBaseUrl" class="form-label">Sandbox Base URL</label>
+                            <input type="url" class="form-control" id="prodBaseUrl" name="sandboxBaseUrl" 
+                                   th:value="${prodConfig?.sandboxBaseUrl}" placeholder="https://sandbox-quickbooks.api.intuit.com">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="prodProdBaseUrl" class="form-label">Production Base URL</label>
+                            <input type="url" class="form-control" id="prodProdBaseUrl" name="prodBaseUrl" 
+                                   th:value="${prodConfig?.prodBaseUrl}" placeholder="https://quickbooks.api.intuit.com">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="prodRedirectUri" class="form-label">Redirect URI</label>
+                            <input type="text" class="form-control" id="prodRedirectUri" name="redirectUri" 
+                                   th:value="${prodConfig?.redirectUri}" placeholder="/quickbooks/oauth/callback">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="prodScope" class="form-label">OAuth Scope</label>
+                            <input type="text" class="form-control" id="prodScope" name="scope" 
+                                   th:value="${prodConfig?.scope}" placeholder="com.intuit.quickbooks.accounting">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Token Information Section -->
+                <div class="token-section" th:if="${prodConfig?.accessToken != null and !prodConfig?.accessToken.isEmpty()}">
+                    <h6><i class="bi bi-key"></i> OAuth Token Information</h6>
+                    <div class="token-info">
+                        <p><strong>Access Token:</strong> <span th:text="${prodConfig?.accessToken?.substring(0, 20)} + '...'"></span></p>
+                        <p><strong>Token Expires:</strong> <span th:text="${prodConfig?.tokenExpiresAt}"></span></p>
+                        <p><strong>Status:</strong> 
+                            <span th:if="${prodConfig?.tokenExpiresAt != null and prodConfig?.tokenExpiresAt.isAfter(T(java.time.LocalDateTime).now())}" 
+                                  class="text-success">Valid</span>
+                            <span th:if="${prodConfig?.tokenExpiresAt == null or prodConfig?.tokenExpiresAt.isBefore(T(java.time.LocalDateTime).now())}" 
+                                  class="text-danger">Expired</span>
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="text-end">
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle"></i> Save PROD Configuration
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- SANDBOX Company Management Section -->
+        <div class="config-section">
+            <div class="config-header">
+                <h4><i class="bi bi-building"></i> SANDBOX Company Management</h4>
+            </div>
+            
+            <!-- Active Company Display -->
+            <div class="alert alert-info" th:if="${activeSandboxCompany != null}">
+                <strong>Active Company:</strong> 
+                <span th:text="${activeSandboxCompany.companyName} + ' (' + ${activeSandboxCompany.companyId} + ')'"></span>
+                <span class="badge bg-success ms-2" th:if="${activeSandboxCompany.isSandboxCreated}">Sandbox Created</span>
+            </div>
+            <div class="alert alert-warning" th:if="${activeSandboxCompany == null}">
+                <strong>No Active Company:</strong> Please create or select a company to use for SANDBOX environment.
+            </div>
+            
+            <!-- Create Sandbox Company -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-plus-circle"></i> Create Sandbox Company</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <input type="text" class="form-control" id="sandboxCompanyName" 
+                                   placeholder="Enter company name (e.g., Test Company)">
+                        </div>
+                        <div class="col-md-4">
+                            <button type="button" class="btn btn-primary w-100" onclick="createSandboxCompany()">
+                                <i class="bi bi-plus-circle"></i> Create Company
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-text">
+                        <strong>💡 Quick Check:</strong> This will create a new sandbox company and automatically set it as active.
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Company List -->
+            <div class="card mb-3" th:if="${sandboxCompanies != null and !sandboxCompanies.isEmpty()}">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-list"></i> Available Companies</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Company Name</th>
+                                    <th>Company ID</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="company : ${sandboxCompanies}">
+                                    <td th:text="${company.companyName}"></td>
+                                    <td th:text="${company.companyId}"></td>
+                                    <td>
+                                        <span class="badge bg-success" th:if="${company.isActive}">Active</span>
+                                        <span class="badge bg-secondary" th:if="${!company.isActive}">Inactive</span>
+                                        <span class="badge bg-info ms-1" th:if="${company.isSandboxCreated}">Sandbox</span>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-outline-primary set-active-btn" 
+                                                th:if="${!company.isActive}"
+                                                th:data-company-id="${company.id}"
+                                                data-environment="SANDBOX">
+                                            Set Active
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-danger delete-company-btn" 
+                                                th:data-company-id="${company.id}">
+                                            Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Manual Company Addition -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-plus-square"></i> Add Company Manually</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" id="manualSandboxCompanyId" 
+                                   placeholder="Company ID (e.g., 9130347382539802)">
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" id="manualSandboxCompanyName" 
+                                   placeholder="Company Name">
+                        </div>
+                        <div class="col-md-4">
+                            <button type="button" class="btn btn-outline-primary w-100" onclick="addManualCompany('SANDBOX')">
+                                <i class="bi bi-plus-square"></i> Add Company
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-text">
+                        <strong>What it is:</strong> Identifies the QuickBooks company you're connecting to<br>
+                        <strong>Where you get it:</strong> From OAuth callback or QuickBooks company creation<br>
+                        <strong>Used for:</strong> All API calls to specific company data<br>
+                        <strong>Example:</strong> 9130347382539802 (Different for each company)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PROD Company Management Section -->
+        <div class="config-section">
+            <div class="config-header">
+                <h4><i class="bi bi-building"></i> PROD Company Management</h4>
+            </div>
+            
+            <!-- Active Company Display -->
+            <div class="alert alert-info" th:if="${activeProdCompany != null}">
+                <strong>Active Company:</strong> 
+                <span th:text="${activeProdCompany.companyName} + ' (' + ${activeProdCompany.companyId} + ')'"></span>
+            </div>
+            <div class="alert alert-warning" th:if="${activeProdCompany == null}">
+                <strong>No Active Company:</strong> Please add or select a company to use for PROD environment.
+            </div>
+            
+            <!-- Company List -->
+            <div class="card mb-3" th:if="${prodCompanies != null and !prodCompanies.isEmpty()}">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-list"></i> Available Companies</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Company Name</th>
+                                    <th>Company ID</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="company : ${prodCompanies}">
+                                    <td th:text="${company.companyName}"></td>
+                                    <td th:text="${company.companyId}"></td>
+                                    <td>
+                                        <span class="badge bg-success" th:if="${company.isActive}">Active</span>
+                                        <span class="badge bg-secondary" th:if="${!company.isActive}">Inactive</span>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-outline-primary set-active-btn" 
+                                                th:if="${!company.isActive}"
+                                                th:data-company-id="${company.id}"
+                                                data-environment="PROD">
+                                            Set Active
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-danger delete-company-btn" 
+                                                th:data-company-id="${company.id}">
+                                            Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Manual Company Addition -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-plus-square"></i> Add Company Manually</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" id="manualProdCompanyId" 
+                                   placeholder="Company ID (e.g., 9130347382539802)">
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" id="manualProdCompanyName" 
+                                   placeholder="Company Name">
+                        </div>
+                        <div class="col-md-4">
+                            <button type="button" class="btn btn-outline-primary w-100" onclick="addManualCompany('PROD')">
+                                <i class="bi bi-plus-square"></i> Add Company
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-text">
+                        <strong>What it is:</strong> Identifies the QuickBooks company you're connecting to<br>
+                        <strong>Where you get it:</strong> From OAuth callback when user connects their company<br>
+                        <strong>Used for:</strong> All API calls to specific company data<br>
+                        <strong>Example:</strong> 9130347382539802 (Different for each company)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Information Section -->
+        <div class="config-section">
+            <div class="config-header">
+                <h4><i class="bi bi-info-circle"></i> Configuration Information</h4>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <h6><i class="bi bi-gear"></i> Environment Usage</h6>
+                    <ul class="list-unstyled">
+                        <li><strong>SANDBOX:</strong> Used when Spring profile is NOT "prod"</li>
+                        <li><strong>PROD:</strong> Used when Spring profile is "prod"</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6><i class="bi bi-shield-check"></i> Security Notes</h6>
+                    <ul class="list-unstyled">
+                        <li>Client secrets are stored securely in the database</li>
+                        <li>OAuth tokens are encrypted and stored securely</li>
+                        <li>Company ID is required for API calls</li>
+                        <li>Test all configurations before going live</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-12">
+                    <h6><i class="bi bi-link-45deg"></i> QuickBooks OAuth Flow</h6>
+                    <ol>
+                        <li>Configure App ID, Client ID and Client Secret from QuickBooks Developer Dashboard</li>
+                        <li>Set up Redirect URI in QuickBooks app settings</li>
+                        <li>Use OAuth 2.0 flow to obtain access and refresh tokens</li>
+                        <li>Company ID (Realm ID) is obtained during OAuth callback or from sandbox company creation</li>
+                        <li>Tokens will be automatically stored and managed</li>
+                        <li>Access tokens expire and need to be refreshed using refresh tokens</li>
+                    </ol>
+                    
+                    <h6><i class="bi bi-building"></i> Company ID (Realm ID) Details</h6>
+                    <ul>
+                        <li><strong>Purpose:</strong> Uniquely identifies each QuickBooks company</li>
+                        <li><strong>Format:</strong> Numeric string (e.g., 9130347382539802)</li>
+                        <li><strong>Sandbox:</strong> Create a sandbox company to get the Company ID</li>
+                        <li><strong>Production:</strong> Obtained during OAuth flow when user connects their company</li>
+                        <li><strong>Usage:</strong> Required in all API calls to specify which company's data to access</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="text-center mt-4">
+            <a href="/" class="btn btn-secondary">
+                <i class="bi bi-house"></i> Back to Home
+            </a>
+            <a href="/admin" class="btn btn-primary">
+                <i class="bi bi-gear"></i> Admin Dashboard
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Form validation and enhancement
+        $(document).ready(function() {
+            // Add form validation
+            $('form').on('submit', function(e) {
+                let isValid = true;
+                
+                // Validate required fields
+                $(this).find('input[required]').each(function() {
+                    if (!$(this).val().trim()) {
+                        $(this).addClass('is-invalid');
+                        isValid = false;
+                    } else {
+                        $(this).removeClass('is-invalid');
+                    }
+                });
+                
+                if (!isValid) {
+                    e.preventDefault();
+                    alert('Please fill in all required fields.');
+                }
+            });
+            
+            // Real-time validation for URLs (excluding redirect URI fields)
+            $('input[type="url"]').on('blur', function() {
+                const url = $(this).val();
+                // Skip validation for redirect URI fields as they only need to be path segments
+                if (url && !isValidUrl(url)) {
+                    $(this).addClass('is-invalid');
+                } else {
+                    $(this).removeClass('is-invalid');
+                }
+            });
+            
+            // Show/hide password toggle
+            $('input[type="password"]').each(function() {
+                const $input = $(this);
+                const $toggle = $('<button type="button" class="btn btn-outline-secondary btn-sm position-absolute top-50 end-0 translate-middle-y me-2" style="z-index: 10;"><i class="bi bi-eye"></i></button>');
+                
+                $input.parent().addClass('position-relative');
+                $input.parent().append($toggle);
+                
+                $toggle.on('click', function() {
+                    if ($input.attr('type') === 'password') {
+                        $input.attr('type', 'text');
+                        $(this).find('i').removeClass('bi-eye').addClass('bi-eye-slash');
+                    } else {
+                        $input.attr('type', 'password');
+                        $(this).find('i').removeClass('bi-eye-slash').addClass('bi-eye');
+                    }
+                });
+            });
+        });
+        
+        function isValidUrl(string) {
+            try {
+                new URL(string);
+                return true;
+            } catch (_) {
+                return false;
+            }
+        }
+        
+        // Event delegation for company management buttons
+        $(document).on('click', '.set-active-btn', function() {
+            const companyId = $(this).data('company-id');
+            const environment = $(this).data('environment');
+            setActiveCompany(companyId, environment);
+        });
+        
+        $(document).on('click', '.delete-company-btn', function() {
+            const companyId = $(this).data('company-id');
+            deleteCompany(companyId);
+        });
+        
+        // Company Management Functions
+        function createSandboxCompany() {
+            const companyName = document.getElementById('sandboxCompanyName').value.trim();
+            if (!companyName) {
+                alert('Please enter a company name');
+                return;
+            }
+            
+            fetch('/quickbooks-config/api/create-sandbox-company', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'companyName=' + encodeURIComponent(companyName)
+            })
+            .then(response => response.text())
+            .then(data => {
+                alert(data);
+                if (data.includes('successfully')) {
+                    location.reload(); // Reload page to show new company
+                }
+            })
+            .catch(error => {
+                alert('Error: ' + error);
+            });
+        }
+        
+        function addManualCompany(environment) {
+            const companyIdField = environment === 'SANDBOX' ? 'manualSandboxCompanyId' : 'manualProdCompanyId';
+            const companyNameField = environment === 'SANDBOX' ? 'manualSandboxCompanyName' : 'manualProdCompanyName';
+            
+            const companyId = document.getElementById(companyIdField).value.trim();
+            const companyName = document.getElementById(companyNameField).value.trim();
+            
+            if (!companyId || !companyName) {
+                alert('Please enter both Company ID and Company Name');
+                return;
+            }
+            
+            fetch('/quickbooks-config/api/add-company', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'companyId=' + encodeURIComponent(companyId) + 
+                      '&companyName=' + encodeURIComponent(companyName) + 
+                      '&environment=' + encodeURIComponent(environment)
+            })
+            .then(response => response.text())
+            .then(data => {
+                alert(data);
+                if (data.includes('successfully')) {
+                    // Clear form fields
+                    document.getElementById(companyIdField).value = '';
+                    document.getElementById(companyNameField).value = '';
+                    location.reload(); // Reload page to show new company
+                }
+            })
+            .catch(error => {
+                alert('Error: ' + error);
+            });
+        }
+        
+        function setActiveCompany(companyId, environment) {
+            if (!confirm('Are you sure you want to set this company as active? This will deactivate other companies in the ' + environment + ' environment.')) {
+                return;
+            }
+            
+            fetch('/quickbooks-config/api/set-active-company', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'companyId=' + companyId + '&environment=' + environment
+            })
+            .then(response => response.text())
+            .then(data => {
+                alert(data);
+                if (data.includes('successfully')) {
+                    location.reload(); // Reload page to show updated active company
+                }
+            })
+            .catch(error => {
+                alert('Error: ' + error);
+            });
+        }
+        
+        function deleteCompany(companyId) {
+            if (!confirm('Are you sure you want to delete this company? This action cannot be undone.')) {
+                return;
+            }
+            
+            fetch('/quickbooks-config/api/delete-company', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'companyId=' + companyId
+            })
+            .then(response => response.text())
+            .then(data => {
+                alert(data);
+                if (data.includes('successfully')) {
+                    location.reload(); // Reload page to remove deleted company
+                }
+            })
+            .catch(error => {
+                alert('Error: ' + error);
+            });
+        }
+    </script>
+</body>
+</html>

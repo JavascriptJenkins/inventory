@@ -1,0 +1,97 @@
+/* VEGAS UI Mode - Table Styles */
+
+.table-bordered {
+    border: 2px solid transparent;
+    border-image: linear-gradient(90deg, #0f2027, #203a43, #2c5364) 1;
+    box-shadow: 0px 0px 15px rgba(0, 255, 255, 0.5);
+}
+
+.table-bordered th, .table-bordered td {
+    border: 2px solid transparent;
+    border-image: linear-gradient(90deg, #0f2027, #203a43, #2c5364) 1;
+    color: #00ffff;
+    text-shadow: 0px 0px 10px #00ffff;
+}
+
+/* Status Icon Styles */
+.status-icon-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.status-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    font-weight: bold;
+    text-align: center;
+    font-size: 0.8em;
+    margin: auto;
+    text-shadow: 0px 0px 8px rgba(255, 255, 255, 0.7);
+    box-shadow: 0px 0px 15px rgba(0, 255, 255, 0.7);
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+}
+
+/* Status Colors */
+.status-created {
+    background-color: #0d6efd;
+    color: #80dfff;
+}
+
+.status-prep {
+    background-color: #fd7e14;
+    color: #ffe0b3;
+}
+
+.status-dispatch {
+    background-color: #6f42c1;
+    color: #d9b3ff;
+}
+
+.status-enroute {
+    background-color: #ffc107;
+    color: #fff5cc;
+}
+
+.status-complete {
+    background-color: #28a745;
+    color: #99ffcc;
+}
+
+.status-canceled {
+    background-color: #dc3545;
+    color: #ffb3b3;
+}
+
+/* Pulsing Animations */
+.pulsing-status-0 { animation: pulse 2s infinite; }
+.pulsing-status-1 { animation: pulse 1.5s infinite; }
+.pulsing-status-2 { animation: pulse 1.2s infinite; }
+.pulsing-status-3 { animation: pulse 0.8s infinite; }
+
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 0px 0px 15px rgba(0, 255, 255, 0.7);
+    }
+    50% {
+        box-shadow: 0px 0px 40px rgba(0, 255, 255, 1);
+    }
+}
+
+/* Hover Effects */
+.status-icon:hover {
+    transform: scale(1.1);
+    box-shadow: 0px 0px 30px rgba(255, 255, 255, 1);
+    transition: all 0.3s ease-in-out;
+}
+
+.status-icon:active {
+    transform: scale(0.95);
+    box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.8);
+}

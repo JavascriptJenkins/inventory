@@ -1,0 +1,10 @@
+/* VEGAS UI Mode - Main CSS File */
+
+/* Import all VEGAS theme components */
+@import url('body/body.css');
+@import url('header/header.css');
+@import url('table/table.css');
+@import url('form/form.css');
+@import url('button/button.css');
+@import url('pagination/pagination.css');
+@import url('responsive/responsive.css');
