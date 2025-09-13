@@ -720,13 +720,15 @@ class DeliveryHelper {
         deliveryVO.progressWidth = calculateProgressWidth(deliveryVO)
         deliveryVO.allproductsinpackages = new ArrayList<>(productMap.values());
 
-        deliveryVO.displayCreateDateTimeStamp = deliveryVO.createTimeStamp
-                .atZone(ZoneId.of("America/Chicago"))
-                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm a"));
+        deliveryVO.displayCreateDateTimeStamp = deliveryVO.createTimeStamp != null ?
+                deliveryVO.createTimeStamp
+                        .atZone(ZoneId.of("America/Chicago"))
+                        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm a")) : "N/A";
 
-        deliveryVO.displayUpdateDateTimeStamp = deliveryVO.updateTimeStamp
-                .atZone(ZoneId.of("America/Chicago"))
-                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm a"));
+        deliveryVO.displayUpdateDateTimeStamp = deliveryVO.updateTimeStamp != null ?
+                deliveryVO.updateTimeStamp
+                        .atZone(ZoneId.of("America/Chicago"))
+                        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm a")) : "N/A";
 
 
         return deliveryVO

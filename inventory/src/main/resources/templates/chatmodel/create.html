@@ -110,11 +110,9 @@
                         <div class="col-md-6">
                             <label for="modelType" class="form-label">Model Type</label>
                             <select class="form-select" id="modelType" name="modelType" th:field="*{modelType}">
-                                <option value="local">Local (File-based)</option>
-                                <option value="external">External API</option>
-                                <option value="hybrid">Hybrid (Local + External)</option>
+                                <option value="local" selected>Local (File-based)</option>
                             </select>
-                            <div class="help-text">Determines how the model sources information</div>
+                            <div class="help-text">Only Local (File-based) models are currently supported</div>
                         </div>
                     </div>
                     
@@ -140,8 +138,8 @@
                         <div class="col-md-6">
                             <label for="folderPath" class="form-label">Folder Path *</label>
                             <input type="text" class="form-control" id="folderPath" name="folderPath" 
-                                   required placeholder="e.g., metrc-compliance">
-                            <div class="help-text">This will create a folder under uploads/chatmodel/</div>
+                                   required placeholder="e.g., metrc-compliance" readonly>
+                            <div class="help-text">This will create a folder under uploads/chatmodel/ (auto-generated from model name)</div>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Full Path Preview</label>
@@ -211,6 +209,30 @@
 
 
     <script>
+        // Function to sanitize folder name from model name
+        function sanitizeFolderName(modelName) {
+            return modelName
+                .trim()
+                .toLowerCase()
+                .replace(/\s+/g, '_')  // Replace spaces with underscores
+                .replace(/[^a-zA-Z0-9_-]/g, '')  // Remove invalid characters
+                .replace(/_+/g, '_')  // Replace multiple underscores with single underscore
+                .replace(/^_|_$/g, '');  // Remove leading/trailing underscores
+        }
+
+        // Auto-populate folder path when model name changes
+        document.getElementById('name').addEventListener('input', function() {
+            const modelName = this.value.trim();
+            const folderPathInput = document.getElementById('folderPath');
+            
+            // Always update the folder path based on the current model name
+            const sanitizedFolderName = sanitizeFolderName(modelName);
+            folderPathInput.value = sanitizedFolderName;
+            
+            // Trigger the folder path preview update
+            folderPathInput.dispatchEvent(new Event('input'));
+        });
+
         // Update folder path preview in real-time
         document.getElementById('folderPath').addEventListener('input', function() {
             const folderPath = this.value.trim();
@@ -240,16 +262,8 @@
             
             if (!folderPath) {
                 e.preventDefault();
-                alert('Please enter a folder path.');
-                document.getElementById('folderPath').focus();
-                return;
-            }
-            
-            // Validate folder path format
-            if (!/^[a-zA-Z0-9_-]+$/.test(folderPath)) {
-                e.preventDefault();
-                alert('Folder path can only contain letters, numbers, hyphens, and underscores.');
-                document.getElementById('folderPath').focus();
+                alert('Please enter a chat model name to generate a folder path.');
+                document.getElementById('name').focus();
                 return;
             }
         });
