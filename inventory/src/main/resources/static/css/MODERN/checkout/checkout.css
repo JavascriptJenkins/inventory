@@ -56,3 +56,98 @@
 .progress-bar {
     background-color: #6c757d;
 }
+
+/* Pending carts specific styles */
+.pending-carts-page .form-label {
+    color: #000; /* Override for pending carts page */
+}
+
+.pending-carts-page .table-hover tbody tr:hover {
+    background-color: #e0f7fa;
+}
+
+.pending-carts-page .table-striped tbody tr:nth-of-type(odd) {
+    background-color: #f1f8fa;
+}
+
+.pending-carts-page .table-dark thead {
+    background-color: #343a40;
+    color: #fff;
+}
+
+/* Pending carts modal styles */
+.pending-carts-page .modal-content {
+    background-color: #343a40;
+    color: #fff;
+    border: 1px solid #23272b;
+}
+
+.pending-carts-page .modal-header {
+    background-color: #23272b;
+    border-bottom: 1px solid #343a40;
+}
+
+.pending-carts-page .modal-footer {
+    background-color: #23272b;
+    border-top: 1px solid #343a40;
+}
+
+.pending-carts-page .modal-body strong {
+    color: #fff;
+}
+
+/* Pending carts responsive styles */
+@media (max-width: 768px) {
+    .pending-carts-page .table {
+        font-size: 14px;
+    }
+    
+    .pending-carts-page .table th,
+    .pending-carts-page .table td {
+        padding: 8px 4px;
+    }
+    
+    .pending-carts-page .cart-button {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+    }
+    
+    .pending-carts-page .btn-sm {
+        padding: 4px 8px;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 576px) {
+    .pending-carts-page .table {
+        font-size: 12px;
+    }
+    
+    .pending-carts-page .table th,
+    .pending-carts-page .table td {
+        padding: 6px 2px;
+    }
+    
+    .pending-carts-page .cart-button {
+        width: 36px;
+        height: 36px;
+        font-size: 1rem;
+    }
+    
+    .pending-carts-page .btn-sm {
+        padding: 2px 6px;
+        font-size: 10px;
+    }
+    
+    .pending-carts-page .header-dark {
+        flex-direction: column;
+        text-align: center;
+        padding: 15px;
+    }
+    
+    .pending-carts-page .back-button {
+        margin-right: 0;
+        margin-bottom: 15px;
+    }
+}
