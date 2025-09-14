@@ -212,4 +212,39 @@
     border-color: #fff;
 }
 
+/* Return-specific button styles */
+.btn-submit-dark {
+    font-size: 1.2rem;
+    background-color: #444;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    border: 2px solid #343a40;
+    display: inline-block;
+    text-align: center;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+    margin-top: 10px;
+    width: 100%;
+}
+
+.btn-submit-dark:hover {
+    background-color: #333;
+    border-color: #23272b;
+}
+
+/* Return action button styles */
+.return-action-btn {
+    background: none;
+    border: none;
+    color: #dc3545;
+    font-size: 1.3rem;
+    padding: 0;
+    transition: color 0.3s ease;
+}
+
+.return-action-btn:hover {
+    color: #ff6b6b;
+}
+
 /* Back button styles moved to header/header.css to avoid conflicts */

@@ -127,3 +127,37 @@ body.blur-background {
     filter: blur(5px);
     pointer-events: none;
 }
+
+/* Return page modal styles */
+.return-modal .modal-content {
+    background-color: #343a40;
+    color: #fff;
+    border: 1px solid #23272b;
+}
+
+.return-modal .modal-header {
+    background-color: #23272b;
+    border-bottom: 1px solid #343a40;
+}
+
+.return-modal .modal-footer {
+    background-color: #23272b;
+    border-top: 1px solid #343a40;
+}
+
+.return-modal .form-control {
+    background-color: #23272b;
+    color: #fff;
+    border: 1px solid #343a40;
+}
+
+.return-modal .form-control:focus {
+    background-color: #23272b;
+    color: #fff;
+    border-color: #1d2124;
+    box-shadow: none;
+}
+
+.return-modal .form-control::placeholder {
+    color: #c0c0c0;
+}

@@ -339,3 +339,107 @@
         font-size: 0.9rem;
     }
 }
+
+/* Return page specific responsive styles */
+@media (max-width: 768px) {
+    .return-table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .return-table {
+        min-width: 600px;
+    }
+    
+    .return-table th,
+    .return-table td {
+        padding: 8px 4px;
+        font-size: 14px;
+    }
+    
+    .return-action-btn {
+        font-size: 1.1rem;
+    }
+    
+    .form-check {
+        margin-bottom: 20px;
+    }
+    
+    .form-check-input {
+        transform: scale(1.2);
+        margin-right: 8px;
+    }
+    
+    .form-check-label {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .return-table {
+        min-width: 500px;
+        font-size: 12px;
+    }
+    
+    .return-table th,
+    .return-table td {
+        padding: 6px 2px;
+        font-size: 12px;
+    }
+    
+    .return-action-btn {
+        font-size: 1rem;
+    }
+    
+    .form-check-label {
+        font-size: 1rem;
+    }
+    
+    .btn-submit-dark {
+        font-size: 1rem;
+        padding: 8px 16px;
+    }
+}
+
+/* Full width utilization for return page */
+.return-container {
+    width: 100%;
+    max-width: 100%;
+    padding: 0;
+    margin: 0;
+}
+
+.return-container .container {
+    width: 100%;
+    max-width: 100%;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+@media (min-width: 1200px) {
+    .return-container .container {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+}
+
+@media (min-width: 992px) and (max-width: 1199px) {
+    .return-container .container {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+    .return-container .container {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+}
+
+@media (max-width: 767px) {
+    .return-container .container {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+}
