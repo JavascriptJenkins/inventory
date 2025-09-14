@@ -110,21 +110,21 @@
             <!-- Name -->
             <div class="col-md-4 mb-3">
                 <label class="form-label">Name</label>
-                <input type="text" class="form-control" th:field="*{name}" required>
+                <input type="text" th:field="*{name}" id="name" class="form-control edit-validation-group" placeholder="Name">
                 <span class="validation-error"></span>
             </div>
 
             <!-- Email -->
             <div class="col-md-4 mb-3">
                 <label class="form-label">Email</label>
-                <input type="email" class="form-control" th:field="*{email}" required>
+                <input type="email" th:field="*{email}" id="email" class="form-control edit-validation-group email" placeholder="Email">
                 <span class="validation-error"></span>
             </div>
 
             <!-- Phone -->
             <div class="col-md-4 mb-3">
                 <label class="form-label">Phone</label>
-                <input type="text" class="form-control" th:field="*{phone}" required>
+                <input type="tel" th:field="*{phone}" id="phone" class="form-control edit-validation-group phone" placeholder="Phone">
                 <span class="validation-error"></span>
             </div>
 
@@ -139,14 +139,14 @@
             <!-- Project -->
             <div class="col-md-4 mb-3">
                 <label class="form-label">Tenant</label>
-                <input type="text" class="form-control" th:field="*{tenant}" required>
+                <input type="text" th:field="*{tenant}" id="tenant" class="form-control edit-validation-group" placeholder="Tenant">
                 <span class="validation-error"></span>
             </div>
 
             <!-- UI Mode -->
             <div class="col-md-4 mb-3">
                 <label class="form-label">UI Mode</label>
-                <select class="form-select" th:field="*{uiMode}">
+                <select th:field="*{uiMode}" id="uiMode" class="form-select edit-validation-group">
                     <option th:each="uiMode : ${availableUiModes}" 
                             th:value="${uiMode}" 
                             th:text="${uiMode}"
@@ -508,5 +508,19 @@
     </nav>
 
 </div>
+
+<div th:insert="fragments/validation.html :: validationfragment"> </div>
+<script>
+    const inputFields = [
+        'name', 'email', 'phone', 'tenant', 'uiMode'
+    ];
+
+    const optionalFields = [];
+
+    document.addEventListener("DOMContentLoaded", () => {
+        initializeValidation(inputFields, optionalFields);
+    });
+</script>
+
 </body>
 </html>
