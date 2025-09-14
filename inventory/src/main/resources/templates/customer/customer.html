@@ -5,349 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Customer Management</title>
 
-    <link rel="stylesheet" type="text/css" media="all" href="/css/table.css" th:href="@{/css/table.css}" />
 
+    <!-- CSS Theme Selection based on UIMODE -->
+    <link rel="stylesheet" type="text/css" media="all" href="/css/MODERN/modern.css" th:if="${UIMODE != 'RETRO'}" />
+    <link rel="stylesheet" type="text/css" media="all" href="/css/RETRO/retro.css" th:if="${UIMODE == 'RETRO'}" />
+    <link rel="stylesheet" type="text/css" media="all" href="/css/VEGAS/vegas.css" th:if="${UIMODE == 'VEGAS'}" />
 
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-
-    <style>
-        body {
-            color: #fff;
-            font-family: 'Roboto', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-        }
-        
-        .container {
-            max-width: 100%;
-            padding: 20px;
-        }
-        
-        .table-hover tbody tr:hover {
-            background-color: rgba(224, 247, 250, 0.1) !important;
-            transform: translateY(-2px);
-            transition: all 0.3s ease;
-        }
-        
-        .table-striped tbody tr:nth-of-type(odd) {
-            background-color: rgba(241, 248, 250, 0.05);
-        }
-        
-        .table-dark thead {
-            background-color: rgba(52, 58, 64, 0.9);
-            color: #fff;
-            backdrop-filter: blur(10px);
-        }
-        
-        .btn {
-            border-radius: 25px;
-            padding: 10px 25px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            border: none;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-        
-        .btn-secondary, .btn-primary {
-            color: #fff;
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            border: none;
-        }
-        
-        .btn-secondary:hover, .btn-primary:hover {
-            background: linear-gradient(45deg, #764ba2, #667eea);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-        }
-        
-        .btn-success {
-            background: linear-gradient(45deg, #28a745, #20c997);
-            border: none;
-        }
-        
-        .btn-success:hover {
-            background: linear-gradient(45deg, #20c997, #28a745);
-            transform: translateY(-2px);
-        }
-        
-        .btn-danger {
-            background: linear-gradient(45deg, #dc3545, #fd7e14);
-            border: none;
-        }
-        
-        .btn-danger:hover {
-            background: linear-gradient(45deg, #fd7e14, #dc3545);
-            transform: translateY(-2px);
-        }
-        
-        .form-control, .form-select {
-            background-color: rgba(52, 58, 64, 0.8);
-            color: #fff;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 12px 20px;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-        }
-        
-        .form-control:focus, .form-select:focus {
-            background-color: rgba(52, 58, 64, 0.9);
-            color: #fff;
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-            transform: scale(1.02);
-        }
-        
-        .form-control:disabled {
-            background-color: rgba(52, 58, 64, 0.6);
-            color: #ccc;
-            cursor: not-allowed;
-        }
-        
-        .header-dark {
-            background: linear-gradient(135deg, rgba(52, 58, 64, 0.9), rgba(102, 126, 234, 0.8));
-            color: #fff;
-            padding: 25px;
-            border-radius: 20px;
-            margin-bottom: 30px;
-            font-family: 'Roboto', sans-serif;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        
-        .header-small {
-            background: linear-gradient(135deg, rgba(52, 58, 64, 0.8), rgba(102, 126, 234, 0.6));
-            color: #fff;
-            padding: 15px 25px;
-            border-radius: 15px;
-            margin-bottom: 25px;
-            font-family: 'Roboto', sans-serif;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(10px);
-            width: fit-content;
-            max-width: 400px;
-            margin: 0 auto 25px auto;
-            text-align: center;
-        }
-        
-        .back-button {
-            margin-right: 20px;
-            font-size: 2rem;
-        }
-        
-        .back-button a {
-            color: #fff;
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            padding: 15px;
-            border-radius: 50%;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.3s ease;
-            display: inline-block;
-        }
-        
-        .back-button a:hover {
-            background: linear-gradient(45deg, #764ba2, #667eea);
-            transform: scale(1.1);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-        }
-        
-        .alert {
-            border-radius: 15px;
-            padding: 15px 20px;
-            margin-bottom: 20px;
-            border: none;
-            backdrop-filter: blur(10px);
-        }
-        
-        .alert-danger {
-            background: linear-gradient(45deg, rgba(220, 53, 69, 0.9), rgba(253, 126, 20, 0.8));
-            color: #fff;
-        }
-        
-        .alert-success {
-            background: linear-gradient(45deg, rgba(40, 167, 69, 0.9), rgba(32, 201, 151, 0.8));
-            color: #fff;
-        }
-        
-        .alert-primary {
-            background: linear-gradient(45deg, rgba(0, 123, 255, 0.9), rgba(102, 126, 234, 0.8));
-            color: #fff;
-        }
-        
-        .pagination .page-link {
-            color: #fff;
-            background: linear-gradient(45deg, rgba(52, 58, 64, 0.8), rgba(102, 126, 234, 0.6));
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            margin: 0 2px;
-            transition: all 0.3s ease;
-        }
-        
-        .pagination .page-link:hover {
-            background: linear-gradient(45deg, rgba(102, 126, 234, 0.8), rgba(52, 58, 64, 0.9));
-            transform: translateY(-2px);
-        }
-        
-        .pagination .active .page-link {
-            color: #fff;
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            border-color: #667eea;
-        }
-        
-        .required:after {
-            content: " *";
-            color: #ff6b6b;
-        }
-        
-        .form-label {
-            color: #fff;
-            font-weight: 500;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-        }
-        
-        .form-label i {
-            margin-right: 8px;
-            color: #667eea;
-        }
-        
-        .membership-section {
-            background: linear-gradient(135deg, rgba(52, 58, 64, 0.7), rgba(102, 126, 234, 0.5));
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-        }
-        
-        .membership-display {
-            background: linear-gradient(45deg, rgba(40, 167, 69, 0.8), rgba(32, 201, 151, 0.7));
-            color: #fff;
-            padding: 15px;
-            border-radius: 10px;
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
-            text-align: center;
-            letter-spacing: 2px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-        }
-        
-        .table {
-            background: rgba(52, 58, 64, 0.8);
-            border-radius: 15px;
-            overflow: hidden;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .table th {
-            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-            font-weight: 600;
-        }
-        
-        .table td {
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            vertical-align: middle;
-        }
-        
-        .form-actions {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            justify-content: center;
-            margin-top: 30px;
-        }
-        
-        .card {
-            background: rgba(52, 58, 64, 0.8);
-            border-radius: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        }
-        
-        .card-header {
-            background: linear-gradient(135deg, rgba(52, 58, 64, 0.9), rgba(102, 126, 234, 0.8));
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 15px 15px 0 0 !important;
-        }
-        
-        @media (max-width: 768px) {
-            .container {
-                padding: 10px;
-            }
-            
-            .header-dark {
-                flex-direction: column;
-                text-align: center;
-                padding: 20px;
-            }
-            
-            .back-button {
-                margin-right: 0;
-                margin-bottom: 15px;
-            }
-            
-            .form-actions {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .btn {
-                width: 100%;
-                max-width: 300px;
-            }
-        }
-    </style>
     <script>
-        function validateInput(data) {
-            const namePattern = /^[A-Za-z\s]+$/;
-            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            const phonePattern = /^\+?[0-9\s\-\(\)]+$/;
-            const addressPattern = /^[A-Za-z0-9\s,.'-]{3,}$/;
-            const notesPattern = /^[A-Za-z0-9\s,.!?'"@#$%^&*()_+\-=\[\]{};:\\|<>\/`~]{1,256}$/;
-
-            const errors = {};
-
-            if (!namePattern.test(data.name)) {
-                errors.name = 'Invalid name. Only letters and spaces are allowed.';
-            }
-
-            if (!emailPattern.test(data.email)) {
-                errors.email = 'Invalid email address.';
-            }
-
-            if (!phonePattern.test(data.phone)) {
-                errors.phone = 'Invalid phone number.';
-            }
-
-            if (!addressPattern.test(data.address)) {
-                errors.address = 'Invalid address.';
-            }
-
-            if (data.address2 && !addressPattern.test(data.address2)) {
-                errors.address2 = 'Invalid secondary address.';
-            }
-
-            if (data.notes.length > 256 || !notesPattern.test(data.notes) || /<script>|<\/script>|SELECT|INSERT|DELETE|UPDATE|DROP|ALTER|--/.test(data.notes)) {
-                errors.notes = 'Invalid notes. Ensure it does not contain script or SQL injection attempts, and is under 256 characters.';
-            }
-
-            return {
-                isValid: Object.keys(errors).length === 0,
-                errors: errors
-            };
-        }
-
         document.addEventListener('DOMContentLoaded', function () {
             const form = document.getElementById('customerForm');
-            const errorMessageDiv = document.querySelector('.alert-danger');
             const successDiv = document.getElementById('successDiv');
             const submitButton = document.getElementById('customerSubmitButton');
             const createAnotherButton = document.getElementById('createAnotherButton');
@@ -358,38 +24,6 @@
                 createAnotherButton.style.display = 'inline-block';
             }
 
-            form.addEventListener('submit', function (event) {
-                // Check if this is the generate membership form (has customerid but no other form fields)
-                const customeridInput = form.querySelector('input[name="customerid"]');
-                const nameInput = form.querySelector('input[name="name"]');
-                
-                // If this is just a generate membership request, don't validate
-                if (customeridInput && customeridInput.value && (!nameInput || !nameInput.value)) {
-                    return; // Allow the form to submit without validation
-                }
-
-                event.preventDefault();
-
-                const formData = {
-                    name: form.querySelector('input[name="name"]')?.value || '',
-                    email: form.querySelector('input[name="email"]')?.value || '',
-                    phone: form.querySelector('input[name="phone"]')?.value || '',
-                    address: form.querySelector('input[name="address"]')?.value || '',
-                    address2: form.querySelector('input[name="address2"]')?.value || '',
-                    notes: form.querySelector('input[name="notes"]')?.value || ''
-                };
-
-                const validationResult = validateInput(formData);
-
-                if (!validationResult.isValid) {
-                    errorMessageDiv.style.display = 'block';
-                    errorMessageDiv.innerHTML = Object.values(validationResult.errors).join('<br>');
-                } else {
-                    errorMessageDiv.style.display = 'none';
-                    form.submit();
-                }
-            });
-
             createAnotherButton.addEventListener('click', function () {
                 console.log('Create Another Customer button clicked');
 
@@ -398,7 +32,7 @@
                 const phoneInput = form.querySelector('input[name="phone"]');
                 const addressInput = form.querySelector('input[name="address"]');
                 const address2Input = form.querySelector('input[name="address2"]');
-                const notesInput = form.querySelector('input[name="notes"]');
+                const notesInput = form.querySelector('textarea[name="notes"]');
 
                 if (nameInput) {
                     nameInput.value = '';
@@ -440,12 +74,10 @@
                     alert('Customer ID not found.');
                 }
             };
-
-
         });
     </script>
 </head>
-<body>
+<body class="customer-page">
 <div th:insert="fragments/adminnavbar.html :: adminnavbarfragment"> </div>
 <div class="container-fluid">
     <!-- Header -->
@@ -484,56 +116,65 @@
                 <div class="row g-3">
                     <!-- Name Field -->
                     <div class="col-12 col-md-6 col-lg-4">
-                        <label class="form-label required"><i class="bi bi-person"></i>Name</label>
-                        <input type="text" class="form-control" th:field="*{name}" required>
+                        <label class="form-label"><i class="bi bi-person"></i>Name</label>
+                        <input type="text" th:field="*{name}" id="name" class="form-control edit-validation-group" placeholder="Customer Name">
+                        <span class="validation-error"></span>
                     </div>
 
                     <!-- Email Field -->
                     <div class="col-12 col-md-6 col-lg-4">
                         <label class="form-label"><i class="bi bi-envelope"></i>Email</label>
-                        <input type="email" class="form-control" th:field="*{email}">
+                        <input type="email" th:field="*{email}" id="email" class="form-control edit-validation-group email" placeholder="Email Address">
+                        <span class="validation-error"></span>
                     </div>
 
                     <!-- Phone Field -->
                     <div class="col-12 col-md-6 col-lg-4">
                         <label class="form-label"><i class="bi bi-telephone"></i>Phone</label>
-                        <input type="tel" class="form-control" th:field="*{phone}">
+                        <input type="tel" th:field="*{phone}" id="phone" class="form-control edit-validation-group phone" placeholder="Phone Number">
+                        <span class="validation-error"></span>
                     </div>
 
                     <!-- Address Field -->
                     <div class="col-12 col-md-6 col-lg-4">
                         <label class="form-label"><i class="bi bi-geo-alt"></i>Address</label>
-                        <input type="text" class="form-control" th:field="*{address}">
+                        <input type="text" th:field="*{address}" id="address" class="form-control edit-validation-group" placeholder="Address">
+                        <span class="validation-error"></span>
                     </div>
 
                     <!-- Address2 Field -->
                     <div class="col-12 col-md-6 col-lg-4">
                         <label class="form-label"><i class="bi bi-building"></i>Address 2</label>
-                        <input type="text" class="form-control" th:field="*{address2}">
+                        <input type="text" th:field="*{address2}" id="address2" class="form-control edit-validation-group" placeholder="Address 2">
+                        <span class="validation-error"></span>
                     </div>
 
                     <!-- City Field -->
                     <div class="col-12 col-md-6 col-lg-4">
                         <label class="form-label"><i class="bi bi-building"></i>City</label>
-                        <input type="text" class="form-control" th:field="*{city}">
+                        <input type="text" th:field="*{city}" id="city" class="form-control edit-validation-group" placeholder="City">
+                        <span class="validation-error"></span>
                     </div>
 
                     <!-- State Field -->
                     <div class="col-12 col-md-6 col-lg-4">
                         <label class="form-label"><i class="bi bi-geo"></i>State</label>
-                        <input type="text" class="form-control" th:field="*{state}">
+                        <input type="text" th:field="*{state}" id="state" class="form-control edit-validation-group" placeholder="State">
+                        <span class="validation-error"></span>
                     </div>
 
                     <!-- Zip Code Field -->
                     <div class="col-12 col-md-6 col-lg-4">
                         <label class="form-label"><i class="bi bi-pin-map"></i>Zip Code</label>
-                        <input type="text" class="form-control" th:field="*{zipcode}">
+                        <input type="text" th:field="*{zipcode}" id="zipcode" class="form-control edit-validation-group zipcode" placeholder="Zip Code">
+                        <span class="validation-error"></span>
                     </div>
 
                     <!-- Notes Field -->
                     <div class="col-12 col-md-6 col-lg-4">
                         <label class="form-label"><i class="bi bi-sticky"></i>Notes</label>
-                        <textarea class="form-control" th:field="*{notes}" rows="3"></textarea>
+                        <textarea th:field="*{notes}" id="notes" class="form-control edit-validation-group" rows="3" placeholder="Notes"></textarea>
+                        <span class="validation-error"></span>
                     </div>
 
                     <!-- Membership Number Section -->
@@ -580,7 +221,7 @@
                 <!-- Form Action Buttons -->
                 <div class="form-actions">
                     <!-- Submit Button (Dynamic Text) -->
-                    <button type="submit" id="customerSubmitButton" class="btn btn-primary">
+                    <button type="submit" id="customerSubmitButton" class="btn btn-secondary">
                         <i class="bi bi-check-circle me-2"></i>
                         <span th:text="${customer.customerid > 0 ? 'Update Customer' : 'Create Customer'}"></span>
                     </button>
@@ -658,5 +299,19 @@
         </ul>
     </nav>
 </div>
+
+<div th:insert="fragments/validation.html :: validationfragment"> </div>
+<script>
+    const inputFields = [
+        'name', 'email', 'phone', 'address', 'address2', 'city', 'state', 'zipcode', 'notes'
+    ];
+
+    const optionalFields = ['address2', 'notes'];
+
+    document.addEventListener("DOMContentLoaded", () => {
+        initializeValidation(inputFields, optionalFields);
+    });
+</script>
+
 </body>
 </html>
