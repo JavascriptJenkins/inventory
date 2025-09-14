@@ -164,10 +164,10 @@
     
 
 
-    <nav class="navbar navbar-expand-lg navbar-light bg-light admin-navbar" id="adminNavbar">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container"> <!-- Changed from container-fluid to container -->
             <!-- Logo & Brand -->
-            <a class="navbar-brand d-flex align-items-center" href="/dashboard/index">
+            <a th:href="${isAuthenticated} ? @{/dashboard/index} : @{/login}" class="navbar-brand d-flex align-items-center">
                 <img src="/image/images/photos/red_tulip_adhoc_1.png" class="logo-img" alt="Logo">
             </a>
 

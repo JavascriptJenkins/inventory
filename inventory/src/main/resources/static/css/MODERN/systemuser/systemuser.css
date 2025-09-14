@@ -1,0 +1,422 @@
+/* MODERN UI Mode - System User Specific Styles */
+
+/* System user page specific styles */
+.systemuser-page {
+    font-family: 'Roboto', sans-serif;
+}
+
+/* Fix admin navbar margin and size issues */
+.systemuser-page .admin-navbar {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+    max-height: 80px !important;
+}
+
+.systemuser-page .navbar {
+    margin: 0 !important;
+    padding: 0.5rem 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+    max-height: 80px !important;
+}
+
+.systemuser-page .navbar .container {
+    margin: 0 auto !important;
+    padding: 0 15px !important;
+    width: 100% !important;
+    max-width: 1200px !important;
+    height: auto !important;
+}
+
+/* Ensure navbar behaves like regular navbar */
+.systemuser-page .navbar-expand-lg {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+}
+
+.systemuser-page .navbar-light {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+}
+
+.systemuser-page .bg-light {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+}
+
+/* Remove any extra margins from body and html */
+.systemuser-page body,
+.systemuser-page html {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Ensure no extra spacing around the navbar */
+.systemuser-page > div:first-child {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+}
+
+/* Fix navbar content sizing */
+.systemuser-page .navbar-brand {
+    height: auto !important;
+    max-height: 60px !important;
+    width: auto !important;
+    max-width: 200px !important;
+}
+
+.systemuser-page .navbar-nav {
+    height: auto !important;
+    max-height: 60px !important;
+    width: auto !important;
+    max-width: 100% !important;
+}
+
+.systemuser-page .navbar-collapse {
+    height: auto !important;
+    max-height: 60px !important;
+    width: auto !important;
+    max-width: 100% !important;
+}
+
+.systemuser-page .nav-item {
+    height: auto !important;
+    max-height: 40px !important;
+}
+
+.systemuser-page .nav-link {
+    height: auto !important;
+    max-height: 40px !important;
+    padding: 0.5rem 1rem !important;
+    font-size: 1rem !important;
+    line-height: 1.2 !important;
+}
+
+/* Fix dropdown menus */
+.systemuser-page .dropdown-menu {
+    max-width: 300px !important;
+    max-height: 400px !important;
+    overflow-y: auto !important;
+}
+
+.systemuser-page .dropdown-item {
+    height: auto !important;
+    max-height: 40px !important;
+    padding: 0.5rem 1rem !important;
+    font-size: 0.9rem !important;
+    line-height: 1.2 !important;
+}
+
+.systemuser-page .container {
+    max-width: 100%;
+    margin: 0;
+    padding: 10px;
+    min-height: 100vh;
+}
+
+/* Role box styles */
+.systemuser-page .role-box {
+    display: inline-block;
+    padding: 8px 12px;
+    margin: 5px;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    background-color: #f8f9fa;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+    font-size: 14px;
+    position: relative;
+}
+
+.systemuser-page .role-box .remove-role {
+    position: absolute;
+    top: 2px;
+    right: 5px;
+    cursor: pointer;
+    color: red;
+}
+
+/* Validation styles */
+.systemuser-page .validation-error {
+    color: red;
+    font-size: 0.9em;
+}
+
+.systemuser-page .is-invalid {
+    border-color: red !important;
+    box-shadow: 0 0 5px red !important;
+}
+
+.systemuser-page .is-valid {
+    border-color: green !important;
+    box-shadow: 0 0 5px green !important;
+}
+
+/* Custom modal styles */
+.systemuser-page .custom-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1050;
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s, opacity 0.3s ease;
+}
+
+.systemuser-page .custom-modal-dialog {
+    background-color: white;
+    border-radius: 5px;
+    padding: 20px;
+    width: 500px;
+    max-width: 90%;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+
+.systemuser-page .custom-modal-header,
+.systemuser-page .custom-modal-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.systemuser-page .custom-modal-header {
+    border-bottom: 1px solid #ddd;
+}
+
+.systemuser-page .custom-modal-footer {
+    border-top: 1px solid #ddd;
+}
+
+.systemuser-page .custom-modal-title {
+    margin: 0;
+}
+
+.systemuser-page .hidden {
+    visibility: hidden;
+    opacity: 0;
+}
+
+.systemuser-page .visible {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Table responsive styles */
+.systemuser-page .table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.systemuser-page .table thead th,
+.systemuser-page .table tbody td {
+    white-space: normal;
+    word-break: break-word;
+}
+
+/* Action buttons container */
+.systemuser-page .action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* Form enhancements */
+.systemuser-page .form-check-input {
+    transform: scale(1.2);
+    margin-right: 0.5rem;
+}
+
+.systemuser-page .form-check-label {
+    margin-left: 0.5rem;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .systemuser-page .container {
+        padding: 5px;
+    }
+    
+    .systemuser-page .header-dark {
+        padding: 15px;
+        font-size: 1.5rem;
+    }
+    
+    .systemuser-page .btn {
+        padding: 10px 15px;
+        font-size: 14px;
+        margin: 5px;
+    }
+    
+    .systemuser-page .table {
+        font-size: 14px;
+    }
+    
+    .systemuser-page .table th,
+    .systemuser-page .table td {
+        padding: 8px 4px;
+    }
+    
+    .systemuser-page .custom-modal-dialog {
+        width: 95%;
+        padding: 15px;
+        margin: 10px;
+    }
+    
+    .systemuser-page .role-box {
+        padding: 6px 10px;
+        margin: 3px;
+        font-size: 12px;
+    }
+    
+    .systemuser-page .action-buttons .btn {
+        flex: 1 1 100%;
+        margin: 2px 0;
+    }
+    
+    /* Fix navbar on mobile */
+    .systemuser-page .navbar {
+        max-height: 60px !important;
+    }
+    
+    .systemuser-page .navbar-brand {
+        max-height: 50px !important;
+        max-width: 150px !important;
+    }
+    
+    .systemuser-page .nav-link {
+        max-height: 35px !important;
+        padding: 0.4rem 0.8rem !important;
+        font-size: 0.9rem !important;
+    }
+    
+    .systemuser-page .dropdown-menu {
+        max-width: 250px !important;
+        max-height: 300px !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .systemuser-page .container {
+        padding: 2px;
+    }
+    
+    .systemuser-page .header-dark {
+        padding: 10px;
+        font-size: 1.2rem;
+    }
+    
+    .systemuser-page .btn {
+        padding: 8px 12px;
+        font-size: 12px;
+        margin: 3px;
+    }
+    
+    .systemuser-page .table {
+        font-size: 12px;
+    }
+    
+    .systemuser-page .table th,
+    .systemuser-page .table td {
+        padding: 6px 2px;
+    }
+    
+    .systemuser-page .custom-modal-dialog {
+        width: 98%;
+        padding: 10px;
+        margin: 5px;
+    }
+    
+    .systemuser-page .role-box {
+        padding: 4px 8px;
+        margin: 2px;
+        font-size: 11px;
+    }
+    
+    .systemuser-page .form-control,
+    .systemuser-page .form-select {
+        padding: 8px;
+        font-size: 14px;
+    }
+    
+    .systemuser-page .form-check-input {
+        transform: scale(1.1);
+    }
+}
+
+@media (max-width: 480px) {
+    .systemuser-page .container {
+        padding: 1px;
+    }
+    
+    .systemuser-page .header-dark {
+        padding: 8px;
+        font-size: 1rem;
+    }
+    
+    .systemuser-page .btn {
+        padding: 6px 10px;
+        font-size: 11px;
+        margin: 2px;
+    }
+    
+    .systemuser-page .table {
+        font-size: 11px;
+    }
+    
+    .systemuser-page .table th,
+    .systemuser-page .table td {
+        padding: 4px 1px;
+    }
+    
+    .systemuser-page .custom-modal-dialog {
+        width: 99%;
+        padding: 8px;
+        margin: 2px;
+    }
+    
+    .systemuser-page .role-box {
+        padding: 3px 6px;
+        margin: 1px;
+        font-size: 10px;
+    }
+    
+    .systemuser-page .form-control,
+    .systemuser-page .form-select {
+        padding: 6px;
+        font-size: 12px;
+    }
+    
+    .systemuser-page .form-check-input {
+        transform: scale(1.0);
+    }
+    
+    .systemuser-page .form-check-label {
+        font-size: 12px;
+    }
+}
