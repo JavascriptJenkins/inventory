@@ -131,22 +131,35 @@
 
             <form th:if="${productPage != null && !productPage.content.isEmpty()}" action="/menu/admin/remove/product" method="post">
 
-                <input type="hidden" name="selectionproductPageInt"
-                       th:value="${pageNumber == null ? 0 : pageNumber}" />
 
                 <input type="hidden" name="menuid"
                        th:value="${menu != null ? menu.menuid : 0}" />
 
-                <input type="hidden" name="selectionproductPageInt" th:value="${selectionProductPage}"/>
+                <input type="hidden" name="selectionproductPageInt" th:value="${selectionProductPage.content.size()}"/>
                 <input type="hidden" name="selectionproductSizeInt" th:value="${selectionproductSize}"/>
 
                 <input type="hidden" name="batchid" th:value="${batchinscope}"/>
                 <input type="hidden" name="producttypeid" th:value="${producttypeinscope}"/>
 
 
-                <button type="submit" class="btn btn-danger d-flex align-items-center gap-2" style="font-size: 1.5rem; padding: 10px 20px;">
-                    <i class="bi bi-dash-circle"></i> Remove From Menu
-                </button>
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <button type="submit" class="btn btn-danger d-flex align-items-center gap-2" style="font-size: 1.5rem; padding: 10px 20px;">
+                        <i class="bi bi-dash-circle"></i> Remove From Menu
+                    </button>
+
+                    <!-- Display Records Dropdown -->
+                    <div class="record-selector">
+                        <label for="removeRecordSizeId">Display Records:</label>
+                        <select name="productSizeInt" id="removeRecordSizeId" class="form-select" onchange="submitRemoveFilterForm()">
+                            <option value="5" th:selected="${productSize == 5}">5 Records</option>
+                            <option value="10" th:selected="${productSize == 10}">10 Records</option>
+                            <option value="20" th:selected="${productSize == 20}">20 Records</option>
+                            <option value="100" th:selected="${productSize == 100}">100 Records</option>
+                            <option value="1000" th:selected="${productSize == 1000}">1000 Records</option>
+                            <option value="10000" th:selected="${productSize == 10000}">10000 Records</option>
+                        </select>
+                    </div>
+                </div>
 
                 <div class="table-responsive">
                     <table id="removeFromMenuTable" class="table table-hover table-striped table-dark">
@@ -196,6 +209,19 @@
                 <input th:if="${menu.menuid != null && menu.menuid != 0 && editmode}" type="hidden" name="menuid" th:value="${menu != null ? menu.menuid : 0}">
 
             </form>
+
+            <!-- Separate form for Display Records dropdown -->
+            <form th:action="@{/menu/admin/manage}" method="get" id="removeFilterForm" style="display: none;">
+                <!-- Preserve all current parameters -->
+                <input type="hidden" name="productPageInt" th:value="${productPage != null ? productPage.number : 0}"/>
+                <input type="hidden" name="menuid" th:value="${menu != null ? menu.menuid : '0'}"/>
+                <input type="hidden" name="selectionproductPageInt" th:value="${selectionProductPage.content.size()}"/>
+                <input type="hidden" name="selectionproductSizeInt" th:value="${selectionproductSize}"/>
+                <input type="hidden" name="batchid" th:value="${batchinscope}"/>
+                <input type="hidden" name="producttypeid" th:value="${producttypeinscope}"/>
+                <input type="hidden" name="productSizeInt" id="hiddenProductSizeInt" th:value="${productSize}"/>
+            </form>
+
             <nav th:if="${productPage != null && productPage.totalPages > 0}">
                 <ul class="pagination justify-content-center">
                     <li class="page-item" th:each="pageNumber : ${productpageNumbers}">
@@ -261,7 +287,7 @@
                 </div>
 
                 <!-- Preserve page value on submit -->
-                <input type="hidden" name="selectionproductPageInt" th:value="${selectionProductPage}"/>
+                <input type="hidden" name="selectionproductPageInt" th:value="${selectionProductPage.content.size()}"/>
 
                 <!-- Dropdown for selecting record size -->
                 <div class="record-selector">
@@ -292,7 +318,7 @@
             <input type="hidden" name="menuid"
                    th:value="${menu != null ? menu.menuid : 0}" />
 
-            <input type="hidden" name="selectionproductPageInt" th:value="${selectionProductPage}"/>
+            <input type="hidden" name="selectionproductPageInt" th:value="${selectionProductPage.content.size()}"/>
             <input type="hidden" name="selectionproductSizeInt" th:value="${selectionproductSize}"/>
 
             <input type="hidden" name="batchid" th:value="${batchinscope}"/>
@@ -437,6 +463,17 @@
     document.addEventListener("DOMContentLoaded", () => {
         initializeValidation(inputFields, optionalFields);
     });
+
+    function submitRemoveFilterForm() {
+        const dropdown = document.getElementById('removeRecordSizeId');
+        const hiddenInput = document.getElementById('hiddenProductSizeInt');
+        const form = document.getElementById('removeFilterForm');
+        
+        if (dropdown && hiddenInput && form) {
+            hiddenInput.value = dropdown.value;
+            form.submit();
+        }
+    }
 
     function expandProductList() {
         const sizeInput = document.getElementById("selectionSizeInput");

@@ -1,0 +1,431 @@
+/* Menu Admin Page - 100% Responsive with Maximum UI Space Usage */
+
+.menu-admin-page {
+    font-family: 'Roboto', sans-serif;
+}
+
+.menu-admin-page .container-fluid {
+    max-width: 100%;
+    padding: 20px;
+    margin: 0;
+}
+
+/* Use existing header patterns from header.css */
+.menu-admin-page .header-dark {
+    background-color: #343a40;
+    color: #fff;
+    padding: 15px;
+    border-radius: 5px;
+    margin-top: 20px;
+    margin-bottom: 15px;
+    font-family: 'Roboto', sans-serif;
+    border: 1px solid transparent;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+/* Tip box styling with glow effect */
+.menu-admin-page .tip-box {
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    color: #00ffff;
+    text-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff, 0 0 15px #00ffff;
+    padding: 10px;
+    border-radius: 8px;
+    background-color: rgba(0, 0, 0, 0.7);
+    margin-bottom: 15px;
+    animation: glow 1.5s infinite alternate;
+}
+
+@keyframes glow {
+    from {
+        text-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff, 0 0 15px #00ffff;
+    }
+    to {
+        text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px #00ffff;
+    }
+}
+
+/* Form styling for maximum space usage */
+.menu-admin-page .form-label {
+    font-weight: 500;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.menu-admin-page .form-control {
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 14px;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.menu-admin-page .form-control:focus {
+    border-color: #80bdff;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.menu-admin-page .form-control[readonly] {
+    background-color: #e9ecef;
+    opacity: 1;
+}
+
+/* Validation error styling */
+.menu-admin-page .validation-error {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 5px;
+    display: block;
+}
+
+.menu-admin-page .is-invalid {
+    border-color: #dc3545;
+}
+
+.menu-admin-page .is-valid {
+    border-color: #28a745;
+}
+
+/* Table styling for maximum space usage */
+.menu-admin-page .table {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.menu-admin-page .table thead th {
+    background-color: #343a40;
+    color: white;
+    border: none;
+    font-weight: 600;
+    padding: 15px 10px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.menu-admin-page .table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.menu-admin-page .table tbody td {
+    padding: 15px 10px;
+    border-top: 1px solid #dee2e6;
+    vertical-align: middle;
+    text-align: center;
+}
+
+.menu-admin-page .table tbody td:first-child {
+    text-align: center;
+}
+
+/* Responsive table wrapper */
+.menu-admin-page .table-responsive {
+    border-radius: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Button styling */
+.menu-admin-page .btn {
+    border-radius: 4px;
+    font-weight: 500;
+    transition: all 0.15s ease-in-out;
+}
+
+.menu-admin-page .btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: #fff;
+}
+
+.menu-admin-page .btn-secondary:hover {
+    background-color: #5a6268;
+    border-color: #545b62;
+}
+
+.menu-admin-page .btn-dark-custom {
+    background-color: #343a40;
+    color: #fff;
+    border: 1px solid #343a40;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.menu-admin-page .btn-dark-custom:hover {
+    background-color: #1d2124;
+    color: #f8f9fa;
+}
+
+/* Large action buttons */
+.menu-admin-page .btn[style*="font-size: 1.5rem"] {
+    font-size: 1.2rem !important;
+    padding: 8px 16px !important;
+}
+
+/* Pagination styling */
+.menu-admin-page .pagination {
+    margin-top: 20px;
+}
+
+.menu-admin-page .page-link {
+    border-radius: 4px;
+    margin: 0 2px;
+}
+
+/* Alert styling */
+.menu-admin-page .alert {
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+/* Checkbox styling */
+.menu-admin-page .form-check-input {
+    width: 1.2rem;
+    height: 1.2rem;
+}
+
+/* Extra padding for checkbox cells */
+.menu-admin-page .table tbody td:has(.form-check-input) {
+    padding: 18px 15px;
+}
+
+/* Fallback for browsers that don't support :has() */
+.menu-admin-page .table tbody td .form-check-input {
+    margin: 3px 0;
+}
+
+/* Product ID links with icons */
+.menu-admin-page .text-decoration-none {
+    text-decoration: none !important;
+}
+
+.menu-admin-page .text-decoration-none:hover {
+    text-decoration: underline !important;
+}
+
+/* Responsive design for maximum space usage */
+@media (max-width: 1200px) {
+    .menu-admin-page .container-fluid {
+        padding: 15px;
+    }
+    
+    .menu-admin-page .table thead th,
+    .menu-admin-page .table tbody td {
+        padding: 12px 8px;
+        font-size: 14px;
+    }
+    
+    .menu-admin-page .table tbody td:has(.form-check-input) {
+        padding: 15px 10px;
+    }
+    
+    .menu-admin-page .btn[style*="font-size: 1.5rem"] {
+        font-size: 1.1rem !important;
+        padding: 6px 12px !important;
+    }
+}
+
+@media (max-width: 992px) {
+    .menu-admin-page .container-fluid {
+        padding: 10px;
+    }
+    
+    .menu-admin-page .table thead th,
+    .menu-admin-page .table tbody td {
+        padding: 10px 6px;
+        font-size: 13px;
+    }
+    
+    .menu-admin-page .table tbody td:has(.form-check-input) {
+        padding: 12px 8px;
+    }
+    
+    .menu-admin-page .form-control {
+        font-size: 13px;
+        padding: 6px 10px;
+    }
+    
+    .menu-admin-page .btn[style*="font-size: 1.5rem"] {
+        font-size: 1rem !important;
+        padding: 5px 10px !important;
+    }
+    
+    .menu-admin-page .tip-box {
+        font-size: 16px;
+        padding: 8px;
+    }
+}
+
+@media (max-width: 768px) {
+    .menu-admin-page .container-fluid {
+        padding: 8px;
+    }
+    
+    .menu-admin-page .table {
+        font-size: 12px;
+    }
+    
+    .menu-admin-page .table thead th,
+    .menu-admin-page .table tbody td {
+        padding: 8px 4px;
+        font-size: 12px;
+    }
+    
+    .menu-admin-page .table tbody td:has(.form-check-input) {
+        padding: 10px 6px;
+    }
+    
+    .menu-admin-page .form-control {
+        font-size: 12px;
+        padding: 5px 8px;
+    }
+    
+    .menu-admin-page .btn-sm {
+        padding: 4px 8px;
+        font-size: 11px;
+    }
+    
+    .menu-admin-page .btn[style*="font-size: 1.5rem"] {
+        font-size: 0.9rem !important;
+        padding: 4px 8px !important;
+    }
+    
+    .menu-admin-page .header-dark {
+        padding: 10px;
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+    
+    .menu-admin-page .tip-box {
+        font-size: 14px;
+        padding: 6px;
+    }
+    
+    .menu-admin-page .form-check-input {
+        width: 1rem;
+        height: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .menu-admin-page .container-fluid {
+        padding: 5px;
+    }
+    
+    .menu-admin-page .table {
+        font-size: 11px;
+    }
+    
+    .menu-admin-page .table thead th,
+    .menu-admin-page .table tbody td {
+        padding: 6px 2px;
+        font-size: 11px;
+    }
+    
+    .menu-admin-page .table tbody td:has(.form-check-input) {
+        padding: 8px 4px;
+    }
+    
+    .menu-admin-page .form-control {
+        font-size: 11px;
+        padding: 4px 6px;
+    }
+    
+    .menu-admin-page .btn-sm {
+        padding: 3px 6px;
+        font-size: 10px;
+    }
+    
+    .menu-admin-page .btn[style*="font-size: 1.5rem"] {
+        font-size: 0.8rem !important;
+        padding: 3px 6px !important;
+    }
+    
+    .menu-admin-page .header-dark {
+        padding: 8px;
+        margin-top: 8px;
+        margin-bottom: 8px;
+    }
+    
+    .menu-admin-page .tip-box {
+        font-size: 12px;
+        padding: 5px;
+    }
+    
+    .menu-admin-page .form-check-input {
+        width: 0.9rem;
+        height: 0.9rem;
+    }
+}
+
+/* Extra small devices */
+@media (max-width: 480px) {
+    .menu-admin-page .container-fluid {
+        padding: 3px;
+    }
+    
+    .menu-admin-page .table {
+        font-size: 10px;
+    }
+    
+    .menu-admin-page .table thead th,
+    .menu-admin-page .table tbody td {
+        padding: 5px 1px;
+        font-size: 10px;
+    }
+    
+    .menu-admin-page .table tbody td:has(.form-check-input) {
+        padding: 6px 2px;
+    }
+    
+    .menu-admin-page .form-control {
+        font-size: 10px;
+        padding: 3px 5px;
+    }
+    
+    .menu-admin-page .btn-sm {
+        padding: 2px 4px;
+        font-size: 9px;
+    }
+    
+    .menu-admin-page .btn[style*="font-size: 1.5rem"] {
+        font-size: 0.7rem !important;
+        padding: 2px 4px !important;
+    }
+    
+    .menu-admin-page .tip-box {
+        font-size: 11px;
+        padding: 4px;
+    }
+    
+    .menu-admin-page .form-check-input {
+        width: 0.8rem;
+        height: 0.8rem;
+    }
+}
+
+/* Landscape orientation adjustments */
+@media (max-height: 500px) and (orientation: landscape) {
+    .menu-admin-page .container-fluid {
+        padding: 5px;
+    }
+    
+    .menu-admin-page .header-dark,
+    .menu-admin-page .tip-box {
+        padding: 5px;
+        margin: 5px 0;
+    }
+    
+    .menu-admin-page .table thead th,
+    .menu-admin-page .table tbody td {
+        padding: 4px 6px;
+    }
+}

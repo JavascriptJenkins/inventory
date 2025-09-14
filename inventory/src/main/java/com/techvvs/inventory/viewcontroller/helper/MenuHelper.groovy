@@ -1105,6 +1105,7 @@ class MenuHelper {
 
         model.addAttribute("productpageNumbers", pageNumbers);
         model.addAttribute("productPage", productPage)
+        model.addAttribute("productSize", productsize.orElse(5))
     }
 
 
