@@ -123,6 +123,26 @@
     <!-- START: Expenses Config Selection Table -->
     <div class="col-12" th:if="${expensePage != null && expensePage.content.size() > 0}">
         <div class="tip-box">Select an Expense by clicking on the Expense ID</div>
+        
+        <!-- Display Records Dropdown -->
+        <form th:action="@{/accounting/admin/expenses}" method="get" id="expenseFilterForm" class="mb-3">
+            <!-- Preserve current parameters -->
+            <input type="hidden" name="page" th:value="${page != null ? page : 0}"/>
+            <input type="hidden" name="expenseid" th:value="${expense != null ? expense.expenseid : '0'}"/>
+            
+            <div class="record-selector">
+                <label for="expenseRecordSize">Display Records:</label>
+                <select name="size" id="expenseRecordSize" class="form-select" onchange="submitExpenseFilterForm()">
+                    <option value="5" th:selected="${size == 5}">5 Records</option>
+                    <option value="10" th:selected="${size == 10}">10 Records</option>
+                    <option value="20" th:selected="${size == 20}">20 Records</option>
+                    <option value="100" th:selected="${size == 100}">100 Records</option>
+                    <option value="1000" th:selected="${size == 1000}">1000 Records</option>
+                    <option value="10000" th:selected="${size == 10000}">10000 Records</option>
+                </select>
+            </div>
+        </form>
+        
         <div class="table-responsive">
             <table id="selectMenuTable" class="table table-hover table-striped table-dark">
             <thead>
@@ -192,6 +212,13 @@
     document.addEventListener("DOMContentLoaded", () => {
         initializeValidation(inputFields, optionalFields);
     });
+
+    function submitExpenseFilterForm() {
+        const form = document.getElementById('expenseFilterForm');
+        if (form) {
+            form.submit();
+        }
+    }
 </script>
 </body>
 </html>
