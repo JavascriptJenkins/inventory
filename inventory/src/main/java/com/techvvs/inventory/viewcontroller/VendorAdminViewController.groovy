@@ -57,6 +57,9 @@ public class VendorAdminViewController {
 
         vendorService.addPaginatedData(model, page, size)
 
+        // Add size parameter to model for template
+        model.addAttribute("size", size.orElse(100))
+
         // load the values for dropdowns here
         bindStaticValues(model)
 
@@ -91,6 +94,9 @@ public class VendorAdminViewController {
 
         model.addAttribute("vendor", vendorVO)
         vendorService.addPaginatedData(model, page, size)
+        
+        // Add size parameter to model for template
+        model.addAttribute("size", size.orElse(100))
 
         return "vendor/admin.html";
     }
@@ -105,6 +111,10 @@ public class VendorAdminViewController {
         techvvsAuthService.checkuserauth(model)
         vendorService.updateVendor(vendorVO, model)
         vendorService.addPaginatedData(model, page, size)
+        
+        // Add size parameter to model for template
+        model.addAttribute("size", size.orElse(100))
+        
         return "vendor/admin.html"
     }
 
