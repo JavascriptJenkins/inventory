@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Edit Batch</title>
 
+
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 
@@ -15,8 +16,6 @@
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
     
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-kQtW33rZJAHjgefvhyyzcGF3C5TFyBQBA13V1RKPf4uH+bwyzQxZ6CmMZHmNBEfJ" crossorigin="anonymous"></script>
     <script>
         function copyToClipboard(buttonElement) {
             // Get the value from the data-barcode attribute
@@ -42,11 +41,11 @@
 <div class="container-fluid">
 
     <div class="header-dark">
-        <div class="back-button">
-            <a th:href="@{/batch/browseBatch}"><i class="bi bi-arrow-left-circle"></i></a>
+        <div class="back-button" >
+            <a th:href="@{/batch/browseBatch}" ><i class="bi bi-arrow-left-circle" ></i></a>
         </div>
         <div>
-            <h1><span th:text="${batch.name}"></span></h1>
+            <h1 ><span th:text="${batch.name}" style="margin-left: 45px;"></span></h1>
             <p> <span th:text="${batch.batch_type_id.name}"></span> | <span th:text="${batch.batchnumber}"></span></p>
         </div>
         <div class="progress">
