@@ -111,6 +111,18 @@
     border-top: 1px solid #343a40;
 }
 
+.discount-modal .form-label {
+    color: #fff !important;
+}
+
+.discount-modal .modal-body p {
+    color: #fff;
+}
+
+.discount-modal .modal-body strong {
+    color: #fff;
+}
+
 /* Discount table specific styles */
 .discount-table {
     background-color: #343a40;
@@ -158,4 +170,154 @@
 
 .discount-delete-btn:hover {
     color: #ff6b6b;
+}
+
+/* Discount page responsive styles */
+.discount-container {
+    width: 100%;
+    max-width: 100%;
+    padding: 0;
+    margin: 0;
+}
+
+.discount-container .container {
+    width: 100%;
+    max-width: 100%;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/* Discount table responsive styles */
+.discount-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+}
+
+.discount-table {
+    width: 100%;
+    min-width: 600px;
+}
+
+/* Discount form responsive styles */
+.discount-form-container {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+/* Discount button responsive styles */
+.discount-action-btn {
+    font-size: 1.2rem;
+}
+
+.discount-delete-btn {
+    font-size: 1.1rem;
+}
+
+/* Responsive breakpoints for discount page */
+@media (min-width: 1200px) {
+    .discount-container .container {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+}
+
+@media (min-width: 992px) and (max-width: 1199px) {
+    .discount-container .container {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+    .discount-container .container {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+    
+    .discount-table {
+        min-width: 500px;
+    }
+    
+    .discount-action-btn {
+        font-size: 1.1rem;
+    }
+    
+    .discount-delete-btn {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 767px) {
+    .discount-container .container {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+    
+    .discount-table {
+        min-width: 400px;
+        font-size: 14px;
+    }
+    
+    .discount-table th,
+    .discount-table td {
+        padding: 8px 4px;
+    }
+    
+    .discount-action-btn {
+        font-size: 1rem;
+    }
+    
+    .discount-delete-btn {
+        font-size: 0.9rem;
+    }
+    
+    .btn-submit-dark {
+        font-size: 1rem;
+        padding: 8px 16px;
+    }
+    
+    .sub-header {
+        font-size: 0.8rem;
+        padding: 8px;
+    }
+}
+
+@media (max-width: 576px) {
+    .discount-table {
+        min-width: 350px;
+        font-size: 12px;
+    }
+    
+    .discount-table th,
+    .discount-table td {
+        padding: 6px 2px;
+    }
+    
+    .discount-action-btn {
+        font-size: 0.9rem;
+    }
+    
+    .discount-delete-btn {
+        font-size: 0.8rem;
+    }
+    
+    .btn-submit-dark {
+        font-size: 0.9rem;
+        padding: 6px 12px;
+    }
+    
+    .sub-header {
+        font-size: 0.75rem;
+        padding: 6px;
+    }
+    
+    .header-dark {
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+    
+    .header-dark h1 {
+        font-size: 1.5rem;
+    }
 }

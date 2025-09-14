@@ -148,7 +148,8 @@
 <body>
 <div th:insert="auth/navbar.html :: navbarfragment"> </div>
 
-<div class="container">
+<div class="discount-container">
+<div class="container-fluid">
     <div class="header-dark">
         <h1>Discount Per Unit by Product</h1>
     </div>
@@ -181,7 +182,7 @@
 
 
         <!-- Table Section -->
-        <div style="overflow-x: auto;">
+        <div class="discount-table-container">
             <table class="table table-hover table-striped table-dark table-bordered discount-table">
                 <thead>
                 <tr>
@@ -255,6 +256,7 @@
     </form>
 
     <a th:href="@{/transaction?transactionid=__${transaction.transactionid}__&size=5&page=1}" class="btn btn-dark" style="margin-top:5px;float: right;">Back To Transaction</a>
+</div>
 </div>
 <script>
     function openDiscountModal(button) {
