@@ -3,124 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <title>Admin Expenses Config</title>
-
-    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
-
-
-    <!-- Bootstrap Bundle JS (Includes Popper.js) -->
-    <link rel="stylesheet" type="text/css" media="all" href="/css/table.css" th:href="@{/css/table.css}" />
-
-
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <style>
-        .glowing-valid {
-            box-shadow: 0 0 8px 2px #00ffff !important;
-        }
-        .glowing-invalid {
-            box-shadow: 0 0 8px 2px #ff0000 !important;
-        }
-    </style>
-    <style>
-        .table-hover tbody tr:hover {
-            background-color: #e0f7fa;
-        }
-        .table-striped tbody tr:nth-of-type(odd) {
-            background-color: #f1f8fa;
-        }
-        .table-dark thead {
-            background-color: #343a40;
-            color: #fff;
-        }
-        .btn-secondary {
-            color: #fff;
-            background-color: #343a40;
-            border-color: #343a40;
-        }
-        .btn-secondary:hover {
-            background-color: #23272b;
-            border-color: #1d2124;
-        }
-        .header-dark {
-            background-color: #343a40;
-            color: #fff;
-            padding: 15px;
-            border-radius: 5px;
-            text-align: center;
-            margin-bottom: 15px;
-            font-family: 'Roboto', sans-serif;
-            border: 1px solid transparent;
-            border-image: linear-gradient(to right, #c0c0c0, #ffffff);
-            border-image-slice: 1;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        .tip-box {
-            text-align: center;
-            font-size: 18px;
-            font-weight: bold;
-            color: #00ffff;
-            text-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff, 0 0 15px #00ffff;
-            padding: 10px;
-            border-radius: 8px;
-            background-color: rgba(0, 0, 0, 0.7);
-            margin-bottom: 15px;
-            animation: glow 1.5s infinite alternate;
-        }
-        .btn-dark-custom {
-            background-color: #343a40;
-            color: #fff;
-            border: 1px solid #343a40;
-            transition: background-color 0.3s ease, color 0.3s ease;
-        }
-
-        .btn-dark-custom:hover {
-            background-color: #1d2124; /* Darker shade on hover */
-            color: #f8f9fa; /* Lighter text on hover */
-        }
-        @keyframes glow {
-            from {
-                text-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff, 0 0 15px #00ffff;
-            }
-            to {
-                text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px #00ffff;
-            }
-        }
-        .record-selector {
-            margin-bottom: 15px;
-            background-color: #343a40;
-            color: #fff;
-            padding: 10px;
-            border-radius: 5px;
-            text-align: center;
-            display: inline-block;
-        }
-        .record-selector select {
-            background-color: #23272b;
-            color: #fff;
-            border: 1px solid #343a40;
-        }
-        .record-selector select:focus {
-            border-color: #1d2124;
-            box-shadow: none;
-        }
-    </style>
+    
+    <!-- UIMODE Controlled CSS -->
+    <link th:if="${UIMODE == 'MODERN'}" rel="stylesheet" th:href="@{/css/MODERN/modern.css}">
+    <link th:if="${UIMODE == 'RETRO'}" rel="stylesheet" th:href="@{/css/RETRO/retro.css}">
+    <link th:if="${UIMODE == 'VEGAS'}" rel="stylesheet" th:href="@{/css/VEGAS/vegas.css}">
+    <link th:unless="${UIMODE}" rel="stylesheet" th:href="@{/css/MODERN/modern.css}">
 
     <script th:inline="javascript">
         var editmode = /*[[${editmode}]]*/ false; // Thymeleaf will inject true/false here
         console.log("Edit Mode:", editmode); // Debug to check if it's injected correctly
     </script>
-
-
-
 </head>
-<body>
+<body class="expense-page">
 
 <div th:insert="fragments/adminnavbar.html :: adminnavbarfragment"> </div>
 
-<div class="container">
+<div class="container-fluid">
 
     <div class="header-dark">
-        <h1>Administrate Expenses</h1>
+        <h1><i class="bi bi-cash-coin me-2"></i>Administrate Expenses</h1>
     </div>
 
     <!-- New Product Edit Section -->
@@ -139,67 +41,65 @@
 
     <form th:action="@{/accounting/admin/expenses/edit}" method="post" th:object="${expense}">
         <div class="row mb-3">
-            <div class="col-md-4">
-                <label class="form-label">Expense ID </label>
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
+                <label class="form-label">Expense ID</label>
                 <input type="text" th:field="*{expenseid}" id="expenseid" class="form-control edit-validation-group" placeholder="Expense ID" readonly>
+                <span class="validation-error"></span>
             </div>
-            <div class="col-md-4">
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
                 <label class="form-label">Amount</label>
                 <input type="number" th:field="*{amount}" id="amount" class="form-control edit-validation-group" placeholder="Amount">
+                <span class="validation-error"></span>
             </div>
-            <div class="col-md-4">
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
                 <label class="form-label">Notes</label>
                 <input type="text" step="any" th:field="*{notes}" id="notes" class="form-control edit-validation-group" placeholder="Notes">
+                <span class="validation-error"></span>
             </div>
-            <div class="col-md-4">
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
                 <label class="form-label">Payment Method</label>
-                <select th:field="*{paymentmethod}" class="form-select form-control edit-validation-group">
+                <select th:field="*{paymentmethod}" class="form-select edit-validation-group">
                     <option value="" th:if="*{paymentmethod} == null">-- Select Payment Method --</option>
                     <option th:each="paymentmethod : ${paymentmethods}"
                             th:value="${paymentmethod.name()}"
                             th:text="${paymentmethod.name()}">
                     </option>
                 </select>
-
+                <span class="validation-error"></span>
             </div>
-
-            <div class="col-md-4">
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
                 <label class="form-label">Expense Type</label>
-                <select th:field="*{expensetype}" class="form-select form-control edit-validation-group">
+                <select th:field="*{expensetype}" class="form-select edit-validation-group">
                     <option value="" th:if="*{expensetype} == null">-- Select Expense Type --</option>
                     <option th:each="expensetype : ${expensetypes}"
                             th:value="${expensetype.name()}"
                             th:text="${expensetype.name()}">
                     </option>
                 </select>
-
+                <span class="validation-error"></span>
             </div>
-
-            <div class="col-md-4">
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
                 <label class="form-label">Batch</label>
-                <select th:field="*{batch}" class="form-select form-control edit-validation-group">
+                <select th:field="*{batch}" class="form-select edit-validation-group">
                     <option value="" th:if="*{batch} == null">-- Select Batch --</option>
                     <option th:each="batch : ${batches}"
                             th:value="${batch.batchid}"
                             th:text="${batch.name}">
                     </option>
                 </select>
-
+                <span class="validation-error"></span>
             </div>
-
-            <div class="col-md-4">
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
                 <label class="form-label">Vendor</label>
-                <select th:field="*{vendor}" class="form-select form-control edit-validation-group">
+                <select th:field="*{vendor}" class="form-select edit-validation-group">
                     <option value="" th:if="*{vendor} == null">-- Select Vendor --</option>
                     <option th:each="vendor : ${vendors}"
                             th:value="${vendor.vendorid}"
                             th:text="${vendor.name}">
                     </option>
                 </select>
-
+                <span class="validation-error"></span>
             </div>
-
-
         </div>
 
 
@@ -221,9 +121,10 @@
 
     
     <!-- START: Expenses Config Selection Table -->
-    <div class="col-md-12" th:if="${expensePage != null && expensePage.content.size() > 0}">
+    <div class="col-12" th:if="${expensePage != null && expensePage.content.size() > 0}">
         <div class="tip-box">Select an Expense by clicking on the Expense ID</div>
-        <table id="selectMenuTable" class="table table-hover table-striped table-dark" style="margin-top: 20px">
+        <div class="table-responsive">
+            <table id="selectMenuTable" class="table table-hover table-striped table-dark">
             <thead>
             <tr>
                 <th scope="col">Expense ID</th>
@@ -241,10 +142,10 @@
                 th:style="${iStat.odd}? 'font-weight: bold;'"
                 th:alt-title="${iStat.even}? 'even' : 'odd'">
                 <td>
-                    <a th:href="@{/rewards/admin?size=__${1}__&page=__${page == null ? 0 : page}__&expenseid=__${expense.expenseid == null ? 0 : expense.expenseid}__}"
+                    <a th:href="@{/accounting/admin/expenses?size=__${#lists.size(expensePage.content) > 5 ? #lists.size(expensePage.content) : 5}__&page=__${page == null ? 0 : page}__&expenseid=__${expense.expenseid == null ? 0 : expense.expenseid}__}"
                        th:data-expenseid="${expense.expenseid}"
                        id="expenseid-${expense.expenseid}"
-                       class="btn btn-secondary btn-sm">
+                       class="btn btn-warning btn-sm">
                         <span th:text="${expense.expenseid}"></span>
                     </a>
                 </td>
@@ -259,12 +160,13 @@
 
             </tr>
             </tbody>
-        </table>
+            </table>
+        </div>
         <nav th:if="${expensePage.totalPages > 0}">
             <ul class="pagination flex-wrap justify-content-center">
                 <li class="page-item" th:each="pageNumber : ${pageNumbers}">
                     <a class="page-link btn btn-secondary btn-sm m-1"
-                       th:href="@{/rewards/admin(size=${#lists.size(expensePage.content) > 5 ? #lists.size(expensePage.content) : 5}, page=${pageNumber}, expenseid=${expense != null ? expense.expenseid : '0'})}"
+                       th:href="@{/accounting/admin/expenses(size=${#lists.size(expensePage.content) > 5 ? #lists.size(expensePage.content) : 5}, page=${pageNumber}, expenseid=${expense != null ? expense.expenseid : '0'})}"
                        th:text="${pageNumber}"
                        th:classappend="${pageNumber==expensePage.number + 1} ? 'active'">
                     </a>
