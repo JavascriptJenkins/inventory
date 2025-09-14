@@ -22,24 +22,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
 
-    <style>
-        /* Standard Navbar Styles */
-        .admin-navbar {
-            position: relative;
-            z-index: 1000;
-        }
-        
-        /* Navbar Styles */
-        .admin-navbar {
-            transition: all 0.3s ease;
-            height: auto;
-            min-height: 60px;
-            position: relative;
-        }
-        
+    <style th:if="${UIMODE != 'RETRO'}">
         /* Center and Resize Navbar Logo */
         .logo-img {
-            width: 150px;
+            width: 150px; /* Adjust as needed */
             height: auto;
             display: block;
         }
@@ -54,36 +40,125 @@
         .navbar-collapse {
             justify-content: center;
         }
-        
+    </style>
 
-        
-        /* Ensure page loads at normal position */
-        body {
-            padding-top: 0 !important;
-            margin-top: 0 !important;
+    <!-- Retro Gameboy Styling -->
+    <style th:if="${UIMODE == 'RETRO'}">
+        :root {
+            --brand-color: #f25e5a;
+            --brand-dark: #e24a47;
+            --success-color: #28a745;
+            --success-dark: #1e7e34;
+            --warning-color: #ffc107;
+            --warning-dark: #e0a800;
+            --info-color: #17a2b8;
+            --info-dark: #138496;
+            --danger-color: #dc3545;
+            --danger-dark: #c82333;
         }
-        
-        /* Ensure page content starts at the top */
-        html, body {
-            scroll-padding-top: 0;
-            scroll-margin-top: 0;
-        }
-        
-        /* Reset any initial positioning issues */
-        .container, .container-fluid {
-            margin-top: 0;
-            padding-top: 0;
-        }
-        
-        /* Ensure navbar starts at very top */
-        .admin-navbar {
-            margin-top: 0 !important;
-            padding-top: 0 !important;
-        }
-        
-        /* Reset any Bootstrap default margins */
+
         .navbar {
-            margin-bottom: 0 !important;
+            background: linear-gradient(135deg, #2c3e50, #34495e) !important;
+            border-bottom: 3px solid #000;
+            box-shadow: 0 4px 0 #000;
+            font-family: 'Press Start 2P', cursive;
+        }
+
+        .navbar-brand {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1rem;
+            color: #fff !important;
+            text-shadow: 2px 2px 0 #000;
+            transition: all 0.2s ease;
+        }
+
+        .navbar-brand:hover {
+            color: var(--brand-color) !important;
+            transform: translateY(-1px);
+        }
+
+        .logo-img {
+            width: 120px;
+            height: auto;
+            display: block;
+            border: 2px solid #000;
+            border-radius: 8px;
+            box-shadow: 0 3px 0 #000;
+        }
+
+        .navbar-nav {
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .navbar-collapse {
+            justify-content: center;
+        }
+
+        .nav-link {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.7rem;
+            color: #fff !important;
+            text-shadow: 1px 1px 0 #000;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin: 0 5px;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            min-height: 35px;
+            touch-action: manipulation;
+        }
+
+        .nav-link:hover {
+            color: var(--brand-color) !important;
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--brand-color);
+            transform: translateY(-1px);
+            box-shadow: 0 3px 0 #000;
+        }
+
+        .nav-link.active {
+            background: var(--brand-color);
+            color: #fff !important;
+            border-color: #000;
+            box-shadow: 0 3px 0 #000;
+        }
+
+        .navbar-toggler {
+            border: 2px solid #000;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 2px 0 #000;
+            padding: 8px;
+            min-height: 35px;
+        }
+
+        .navbar-toggler:focus {
+            box-shadow: 0 2px 0 #000, 0 0 10px var(--brand-color);
+        }
+
+        .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.9%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .nav-link {
+                font-size: 0.8rem;
+                padding: 12px 16px;
+                min-height: 45px;
+            }
+            .navbar-brand {
+                font-size: 0.8rem;
+            }
+            .logo-img {
+                width: 100px;
+            }
+            .navbar-toggler {
+                padding: 12px;
+                min-height: 45px;
+            }
         }
     </style>
     
