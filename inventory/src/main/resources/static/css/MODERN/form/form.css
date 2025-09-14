@@ -102,3 +102,22 @@
 .glowing-invalid {
     box-shadow: 0 0 8px 2px #ff0000 !important;
 }
+
+/* Progress bar styles */
+.progress {
+    flex: 1;
+    margin-left: 20px;
+}
+
+.progress-bar {
+    background-color: #6c757d;
+}
+
+/* Notes bubble styles */
+.notes-bubble {
+    background-color: #f1f8fa;
+    border: 1px solid #c0c0c0;
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 15px;
+}

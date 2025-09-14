@@ -205,3 +205,77 @@
         font-size: 1rem;
     }
 }
+
+/* Batch page specific responsive styles */
+@media (max-width: 768px) {
+    .header-dark {
+        flex-direction: column;
+        text-align: center;
+        padding: 15px;
+    }
+    
+    .back-button {
+        position: relative;
+        margin-bottom: 15px;
+        transform: none;
+        left: auto;
+        top: auto;
+    }
+    
+    .progress {
+        margin-left: 0;
+        margin-top: 15px;
+        width: 100%;
+    }
+    
+    .header-dark h1 {
+        font-size: 2rem;
+    }
+    
+    .header-dark p {
+        font-size: 1rem;
+    }
+    
+    /* Make batch stats responsive */
+    .row .col-md-3 {
+        width: 100%;
+        margin-bottom: 15px;
+        text-align: center;
+    }
+    
+    /* Make filter forms stack properly */
+    .row .col-sm-2 {
+        width: 100%;
+        margin-bottom: 15px;
+    }
+    
+    /* Make table responsive */
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .table {
+        min-width: 600px;
+    }
+}
+
+@media (max-width: 576px) {
+    .header-dark h1 {
+        font-size: 1.5rem;
+    }
+    
+    .header-dark p {
+        font-size: 0.9rem;
+    }
+    
+    .btn-sm {
+        padding: 4px 8px;
+        font-size: 12px;
+    }
+    
+    .table th, .table td {
+        padding: 6px 4px;
+        font-size: 12px;
+    }
+}

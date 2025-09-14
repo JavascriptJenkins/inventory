@@ -1,102 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
     <title>Edit Batch</title>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-kQtW33rZJAHjgefvhyyzcGF3C5TFyBQBA13V1RKPf4uH+bwyzQxZ6CmMZHmNBEfJ" crossorigin="anonymous"></script>
-
-
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 
-    <style>
-        .table-hover tbody tr:hover {
-            background-color: #e0f7fa;
-        }
-        .table-striped tbody tr:nth-of-type(odd) {
-            background-color: #f1f8fa;
-        }
-        .table-dark thead {
-            background-color: #343a40; /* Dark theme header */
-            color: #fff; /* White text */
-        }
-        .btn-secondary {
-            color: #fff;
-            background-color: #343a40; /* Dark theme button */
-            border-color: #343a40;
-        }
-        .btn-secondary:hover {
-            background-color: #23272b; /* Darker shade for hover effect */
-            border-color: #1d2124;
-        }
-        .header-dark {
-            background-color: #343a40; /* Dark theme header */
-            color: #fff; /* White text */
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            font-family: 'Roboto', sans-serif; /* Professional font */
-            border: 1px solid transparent; /* Initial border */
-            border-image: linear-gradient(to right, #c0c0c0, #ffffff); /* Gradient border */
-            border-image-slice: 1;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-            display: flex;
-            align-items: center;
-        }
-        .back-button {
-            margin-right: 20px;
-            font-size: 2rem;
-        }
-        .back-button a {
-            color: #343a40; /* Match the button theme */
-            background-color: #fff;
-            padding: 10px;
-            border-radius: 50%;
-            border: 2px solid #343a40;
-        }
-        .back-button a:hover {
-            background-color: #23272b; /* Darker shade for hover effect */
-            color: #fff;
-            border-color: #23272b;
-        }
-        .btn-dark-custom {
-            background-color: #343a40;
-            color: #fff;
-            border: 1px solid #343a40;
-            transition: background-color 0.3s ease, color 0.3s ease;
-        }
+    <!-- Dynamic CSS based on UIMODE -->
+    <link th:if="${UIMODE == 'MODERN'}" rel="stylesheet" th:href="@{/css/MODERN/modern.css}">
+    <link th:if="${UIMODE == 'RETRO'}" rel="stylesheet" th:href="@{/css/RETRO/retro.css}">
+    <link th:if="${UIMODE == 'VEGAS'}" rel="stylesheet" th:href="@{/css/VEGAS/vegas.css}">
 
-        .btn-dark-custom:hover {
-            background-color: #1d2124; /* Darker shade on hover */
-            color: #f8f9fa; /* Lighter text on hover */
-        }
-        .notes-bubble {
-            background-color: #f1f8fa;
-            border: 1px solid #c0c0c0;
-            border-radius: 10px;
-            padding: 10px;
-            margin-bottom: 15px;
-        }
-        .progress {
-            flex: 1;
-            margin-left: 20px;
-        }
-        .progress-bar {
-            background-color: #6c757d; /* Dark theme progress bar */
-        }
-        .record-selector select {
-            background-color: #23272b;
-            color: #fff;
-            border: 1px solid #343a40;
-        }
-        .record-selector select:focus {
-            border-color: #1d2124;
-            box-shadow: none;
-        }
-    </style>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-kQtW33rZJAHjgefvhyyzcGF3C5TFyBQBA13V1RKPf4uH+bwyzQxZ6CmMZHmNBEfJ" crossorigin="anonymous"></script>
     <script>
         function copyToClipboard(buttonElement) {
             // Get the value from the data-barcode attribute
@@ -113,15 +33,13 @@
             // Provide feedback (optional)
             alert("Copied: " + barcodeValue);
         }
-
     </script>
-
 </head>
 <body>
 
-<div th:insert="auth/navbar.html :: navbarfragment"> </div>
+<div th:insert="auth/navbar.html :: navbarfragment"></div>
 
-<div class="container">
+<div class="container-fluid">
 
     <div class="header-dark">
         <div class="back-button">
@@ -141,15 +59,15 @@
 
 
     <div class="row mb-3">
-        <div class="col-md-3">
+        <div class="col-lg-2 col-md-4 col-sm-6 col-12 mb-3">
             <label class="form-label"><b>Units</b></label>
             <div id="quantitydivid" th:text="${quantity}"> </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-lg-2 col-md-4 col-sm-6 col-12 mb-3">
             <label class="form-label"><b>Units In Carts</b></label>
             <div id="quantityremainingincartsid" th:text="${quantityRemainingInCarts}"> </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-lg-2 col-md-4 col-sm-6 col-12 mb-3">
             <a><label class="form-label"><b>Units In Non Paid Transactions</b></label></a>
             <div id="quantityremainingintransactionsid" th:text="${quantityInTransactions}"> </div>
             <a th:href="@{/transaction/unpaid?batchid=__${batch.batchid}__}"
@@ -158,11 +76,11 @@
                 <span>View Unpaid Products in Batch</span>
             </a>
         </div>
-        <div class="col-md-3">
+        <div class="col-lg-2 col-md-4 col-sm-6 col-12 mb-3">
             <label class="form-label"><b>Units In Paid Transactions</b></label>
             <div id="quantityremaininginpaidtransactionsid" th:text="${quantityInPaidTransactions}"> </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-lg-2 col-md-4 col-sm-6 col-12 mb-3">
             <label class="form-label"><b>Units Remaining</b></label>
             <div th:text="${quantityRemaining}"> </div>
         </div>
@@ -178,7 +96,7 @@
     </div>
 
             <div class="row mb-3">
-                <div class="col-sm-2 mb-3">
+                <div class="col-lg-2 col-md-3 col-sm-6 col-12 mb-3">
 
                     <form th:action="@{/batch}" method="get" id="filterForm">
                         <input type="hidden" name="batchid" th:value="${batch.batchid}" />
@@ -208,7 +126,7 @@
 
 
                     <div class="row mb-3">
-                        <div class="col-sm-2 mb-3">
+                        <div class="col-lg-2 col-md-3 col-sm-6 col-12 mb-3">
                             <form th:action="@{/batch/filtereditform?batchid=__${batch.batchid}__&editmode=no&size=__${#lists.size(productPage.content)}__&page=1}" th:object="${searchproducttype}" method="post">
                                 <select class="form-control" th:field="${searchproducttype.producttypeid}" id="producttypeid">
                                     <option th:each="producttype : ${producttypelist}" th:value="${producttype.producttypeid}" th:text="${producttype.name}"></option>
@@ -216,13 +134,13 @@
                                 <button type="submit" class="btn btn-secondary btn-sm mt-2">Filter Products</button>
                             </form>
                         </div>
-                        <div class="col-sm-2 mb-3">
+                        <div class="col-lg-2 col-md-3 col-sm-6 col-12 mb-3">
                             <form th:action="@{/batch/likesearch?batchid=__${batch.batchid}__&editmode=no&size=__${#lists.size(productPage.content)}__&page=1}" th:object="${searchproducttype}" method="post">
                                 <input type="text" th:field="*{name}" class="form-control" placeholder="name" aria-label="name">
                                 <button type="submit" class="btn btn-secondary btn-sm mt-2">Filter By Name</button>
                             </form>
                         </div>
-                        <div class="col-sm-2 mb-3">
+                        <div class="col-lg-2 col-md-3 col-sm-6 col-12 mb-3">
                             <form th:action="@{/batch/filtereditform?batchid=__${batch.batchid}__&editmode=no&size=__${#lists.size(productPage.content)}__&page=1}" th:object="${searchproducttype}" method="post">
                                 <select class="form-control" th:field="${searchproducttype.pagesize}">
                                     <option th:each="option : ${options}" th:value="${option}" th:text="${option}"></option>
@@ -230,7 +148,7 @@
                                 <button type="submit" class="btn btn-secondary btn-sm mt-2"># Records</button>
                             </form>
                         </div>
-                        <div class="col-sm-2 mb-3">
+                        <div class="col-lg-2 col-md-3 col-sm-6 col-12 mb-3">
                             <form th:action="@{/batch/printmenu?batchid=__${batch.batchid}__&editmode=no&size=__${#lists.size(productPage.content)}__&page=1}" th:object="${searchproducttype}" method="post">
                                 <select class="form-control" th:field="${searchproducttype.priceadjustment}">
                                     <option th:each="menuoption : ${menuoptions}" th:value="${menuoption}" th:text="${menuoption}"></option>
@@ -238,7 +156,7 @@
                                 <button type="submit" class="btn btn-secondary btn-sm mt-2">Txt Xslx</button>
                             </form>
                         </div>
-                        <div class="col-sm-2 mb-3">
+                        <div class="col-lg-2 col-md-3 col-sm-6 col-12 mb-3">
                             <form th:action="@{/batch/printmediamenu?batchid=__${batch.batchid}__&editmode=no&size=__${#lists.size(productPage.content)}__&page=1}" th:object="${searchproducttype}" method="post">
                                 <select class="form-control" th:field="${searchproducttype.priceadjustment}">
                                     <option th:each="menuoption : ${menuoptions}" th:value="${menuoption}" th:text="${menuoption}"></option>
@@ -246,14 +164,15 @@
                                 <button type="submit" class="btn btn-secondary btn-sm mt-2">Txt Media Xslx</button>
                             </form>
                         </div>
-                        <div class="col-sm-2 mb-3">
+                        <div class="col-lg-2 col-md-3 col-sm-6 col-12 mb-3">
                             <a th:href="@{/viewfiles(batchid=${batch.batchid}, page=1, size=5, selected=pricesheets)}" class="btn btn-secondary btn-sm mt-2">View Files</a>
                         </div>
                     </div>
 
 
                     <div class="row mb-3">
-                        <table class="table table-hover table-striped table-dark">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-striped table-dark">
                             <thead>
                             <tr>
                                 <th scope="col">#</th>
@@ -290,7 +209,8 @@
                     <td th:text="${product.price}"></td>
                 </tr>
                 </tbody>
-            </table>
+                            </table>
+                        </div>
             <nav th:if="${productPage.totalPages > 0}">
                 <ul class="pagination flex-wrap justify-content-center">
                     <li class="page-item" th:each="pageNumber : ${pageNumbers}">
@@ -309,7 +229,8 @@
         <div class="header-dark">
             <h2>Files Previously Uploaded</h2>
         </div>
-        <table class="table table-hover table-striped table-dark">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped table-dark">
             <thead>
             <tr>
                 <th scope="col">File Name</th>
@@ -320,7 +241,8 @@
                 <td th:text="${file.filename}"></td>
             </tr>
             </tbody>
-        </table>
+            </table>
+        </div>
     </div>
 
 </div>
