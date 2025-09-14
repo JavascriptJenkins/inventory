@@ -1,0 +1,161 @@
+/* MODERN UI Mode - Discount Styles */
+
+/* Sub-header styles for discount pages */
+.sub-header {
+    background-color: #23272b;
+    color: #fff;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    font-family: 'Roboto', sans-serif;
+    border: 1px solid #343a40;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    font-size: 0.9rem; /* Smaller font size for the sub-header */
+}
+
+/* Discount-specific button styles */
+.btn-submit-dark {
+    font-size: 1.2rem;
+    background-color: #444;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    border: 2px solid #343a40;
+    display: inline-block;
+    text-align: center;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+    margin-top: 10px;
+    width: 100%;
+}
+
+.btn-submit-dark:hover {
+    background-color: #333;
+    border-color: #23272b;
+}
+
+/* Discount form controls */
+.discount-form-control, .discount-form-select {
+    background-color: #23272b; /* Darker background for input fields */
+    color: #fff;
+    border: 1px solid #343a40;
+}
+
+.discount-form-control::placeholder {
+    color: #c0c0c0; /* Placeholder text color */
+}
+
+.discount-form-control:focus, .discount-form-select:focus {
+    background-color: #23272b;
+    color: #fff;
+    border-color: #1d2124;
+    box-shadow: none;
+}
+
+/* Discount-specific alert styles */
+.discount-alert-primary {
+    background-color: #23272b;
+    color: #fff;
+    border: 1px solid #343a40;
+}
+
+.discount-alert-danger {
+    background-color: #dc3545;
+    color: #fff;
+    border: 1px solid #343a40;
+}
+
+.discount-alert-success {
+    background-color: #28a745;
+    color: #fff;
+    border: 1px solid #343a40;
+}
+
+/* Discount record selector */
+.discount-record-selector {
+    margin-bottom: 15px;
+    background-color: #343a40;
+    color: #fff;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+    display: inline-block;
+}
+
+.discount-record-selector select {
+    background-color: #23272b;
+    color: #fff;
+    border: 1px solid #343a40;
+}
+
+.discount-record-selector select:focus {
+    border-color: #1d2124;
+    box-shadow: none;
+}
+
+/* Discount modal styles */
+.discount-modal .modal-content {
+    background-color: #343a40;
+    color: #fff;
+    border: 1px solid #23272b;
+}
+
+.discount-modal .modal-header {
+    background-color: #23272b;
+    border-bottom: 1px solid #343a40;
+}
+
+.discount-modal .modal-footer {
+    background-color: #23272b;
+    border-top: 1px solid #343a40;
+}
+
+/* Discount table specific styles */
+.discount-table {
+    background-color: #343a40;
+    color: #fff;
+}
+
+.discount-table th {
+    background-color: #23272b;
+    color: #fff;
+    border: 1px solid #343a40;
+}
+
+.discount-table td {
+    background-color: #343a40;
+    color: #fff;
+    border: 1px solid #343a40;
+}
+
+.discount-table tbody tr:hover {
+    background-color: #23272b;
+}
+
+/* Discount action buttons */
+.discount-action-btn {
+    background: none;
+    border: none;
+    color: #ffc107;
+    font-size: 1.5rem;
+    padding: 0;
+    transition: color 0.3s ease;
+}
+
+.discount-action-btn:hover {
+    color: #ffed4e;
+}
+
+.discount-delete-btn {
+    background: none;
+    border: none;
+    color: #dc3545;
+    font-size: 1.3rem;
+    padding: 0;
+    transition: color 0.3s ease;
+}
+
+.discount-delete-btn:hover {
+    color: #ff6b6b;
+}

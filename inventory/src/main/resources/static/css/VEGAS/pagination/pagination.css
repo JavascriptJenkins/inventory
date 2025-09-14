@@ -1,0 +1,29 @@
+/* VEGAS UI Mode - Pagination Styles */
+
+.pagination {
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.pagination .page-item .page-link {
+    border: 2px solid transparent;
+    border-image: linear-gradient(90deg, #0f2027, #203a43, #2c5364) 1;
+    color: #00ffff;
+    text-shadow: 0px 0px 10px #00ffff;
+    background-color: transparent;
+    transition: all 0.3s ease;
+}
+
+.pagination .page-item .page-link:hover {
+    background-color: #203a43;
+    color: #ffffff;
+    box-shadow: 0px 0px 15px rgba(0, 255, 255, 0.7);
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #2c5364;
+    color: #ffffff;
+    border: 2px solid transparent;
+    border-image: linear-gradient(90deg, #0f2027, #203a43, #2c5364) 1;
+    box-shadow: 0px 0px 15px rgba(0, 255, 255, 0.7);
+}

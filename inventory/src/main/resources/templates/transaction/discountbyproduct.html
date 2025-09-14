@@ -4,118 +4,17 @@
     <meta charset="UTF-8">
     <title>Discount</title>
 
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+    <!-- CSS Theme Selection based on UIMODE -->
+    <link rel="stylesheet" type="text/css" media="all" href="/css/MODERN/modern.css" th:if="${UIMODE != 'RETRO'}" />
+    <link rel="stylesheet" type="text/css" media="all" href="/css/RETRO/retro.css" th:if="${UIMODE == 'RETRO'}" />
+    <link rel="stylesheet" type="text/css" media="all" href="/css/VEGAS/vegas.css" th:if="${UIMODE == 'VEGAS'}" />
+
+    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
-    <link rel="stylesheet" type="text/css" media="all" href="/css/table.css" th:href="@{/css/table.css}" />
-
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Bootstrap Bundle JS (Includes Popper.js) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <style>
-        body {
-            color: #fff;
-            font-family: 'Roboto', sans-serif;
-            background-color: #343a40; /* Applying dark background to body */
-        }
-        .header-dark {
-            background-color: #343a40;
-            color: #fff;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            font-family: 'Roboto', sans-serif;
-            border: 1px solid transparent;
-            border-image: linear-gradient(to right, #c0c0c0, #ffffff);
-            border-image-slice: 1;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-        }
-        .sub-header {
-            background-color: #23272b;
-            color: #fff;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            font-family: 'Roboto', sans-serif;
-            border: 1px solid #343a40;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            font-size: 0.9rem; /* Smaller font size for the sub-header */
-        }
-        .btn-submit-dark {
-            font-size: 1.2rem;
-            background-color: #444;
-            color: #fff;
-            padding: 10px 20px;
-            border-radius: 5px;
-            border: 2px solid #343a40;
-            display: inline-block;
-            text-align: center;
-            text-decoration: none;
-            transition: background-color 0.3s ease;
-            margin-top: 10px;
-            width: 100%;
-        }
-        .btn-submit-dark:hover {
-            background-color: #333;
-            border-color: #23272b;
-        }
-        .form-control, .form-select {
-            background-color: #23272b; /* Darker background for input fields */
-            color: #fff;
-            border: 1px solid #343a40;
-        }
-        .form-control::placeholder {
-            color: #c0c0c0; /* Placeholder text color */
-        }
-        .form-control:focus, .form-select:focus {
-            background-color: #23272b;
-            color: #fff;
-            border-color: #1d2124;
-            box-shadow: none;
-        }
-        .alert-primary {
-            background-color: #23272b;
-            color: #fff;
-            border: 1px solid #343a40;
-        }
-        .alert-danger {
-            background-color: #dc3545;
-            color: #fff;
-            border: 1px solid #343a40;
-        }
-        .alert-success {
-            background-color: #28a745;
-            color: #fff;
-            border: 1px solid #343a40;
-        }
-        .required:after {
-            content:" *";
-            color: red;
-        }
-        .record-selector {
-            margin-bottom: 15px;
-            background-color: #343a40;
-            color: #fff;
-            padding: 10px;
-            border-radius: 5px;
-            text-align: center;
-            display: inline-block;
-        }
-        .record-selector select {
-            background-color: #23272b;
-            color: #fff;
-            border: 1px solid #343a40;
-        }
-        .record-selector select:focus {
-            border-color: #1d2124;
-            box-shadow: none;
-        }
-    </style>
 
     <script>
         function processTableItems() {
@@ -247,6 +146,8 @@
 
 </head>
 <body>
+<div th:insert="auth/navbar.html :: navbarfragment"> </div>
+
 <div class="container">
     <div class="header-dark">
         <h1>Discount Per Unit by Product</h1>
@@ -265,9 +166,9 @@
         </p>
 
     </div>
-    <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
-    <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
-    <div class="alert alert-primary" role="alert" th:if="${primaryMessage}" th:text="${primaryMessage}">Success</div>
+    <div class="alert discount-alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
+    <div class="alert discount-alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
+    <div class="alert discount-alert-primary" role="alert" th:if="${primaryMessage}" th:text="${primaryMessage}">Success</div>
 
     <form id="appyDiscountTransactionForm" th:action="@{/transaction/discount?transactionid=__${transaction.transactionid}__&customerid=__${customer.customerid}__&producttypeid=__${producttypeid}__}" th:object="${transaction}" method="post">
 
@@ -281,7 +182,7 @@
 
         <!-- Table Section -->
         <div style="overflow-x: auto;">
-            <table class="table table-hover table-striped table-dark table-bordered">
+            <table class="table table-hover table-striped table-dark table-bordered discount-table">
                 <thead>
                 <tr>
                     <th>Item</th>
@@ -317,14 +218,13 @@
                         <td>
                             <form onsubmit="return false;">
                                 <button type="button"
-                                        class="btn btn-link p-0"
+                                        class="btn btn-link p-0 discount-action-btn"
                                         title="Add Discount"
                                         onclick="openDiscountModal(this)"
                                         th:attr="data-barcode=${item.barcode},
                  data-price=${item.price},
                  data-quantity=${item.displayquantity},
-                 data-name=${item.name}"
-                                        th:classappend="' text-warning'">
+                 data-name=${item.name}">
                                     <i class="bi bi-cash-coin" style="font-size: 1.5rem;"></i>
                                 </button>
 
@@ -338,7 +238,7 @@
                                 <input type="hidden" name="removaltype" th:value="perproductdiscount">
                                 <input type="hidden" name="transactionidtodelete" th:value="${transaction.transactionid}">
                                 <input type="hidden" name="discountidtodelete" th:value="${discountMap[item.product_id].discountid}">
-                                <button type="submit" class="btn btn-link text-danger p-0" title="Delete Discount">
+                                <button type="submit" class="btn btn-link p-0 discount-delete-btn" title="Delete Discount">
                                     <i class="bi bi-trash-fill" style="font-size: 1.3rem;"></i>
                                 </button>
                             </form>
@@ -382,7 +282,7 @@
 </script>
 
 <!-- Discount Modal -->
-<div class="modal fade" id="discountModal" tabindex="-1" aria-labelledby="discountModalLabel" aria-hidden="true">
+<div class="modal fade discount-modal" id="discountModal" tabindex="-1" aria-labelledby="discountModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <form method="post" action="/transaction/discount/product" th:object="${transaction}" class="modal-content bg-dark text-white">
             <div class="modal-header">
@@ -402,12 +302,12 @@
 
                 <div class="mb-3">
                     <label for="discountAmountInput" class="form-label">Discount Amount</label>
-                    <input type="number" step="0.01" min="0" class="form-control" id="discountAmountInput" name="discountamount" required>
+                    <input type="number" step="0.01" min="0" class="form-control discount-form-control" id="discountAmountInput" name="discountamount" required>
                 </div>
 
                 <div class="mb-3">
                     <label for="quantityInput" class="form-label">Quantity</label>
-                    <input type="number" min="1" class="form-control" id="quantityInput" name="quantity" required>
+                    <input type="number" min="1" class="form-control discount-form-control" id="quantityInput" name="quantity" required>
                 </div>
             </div>
 
