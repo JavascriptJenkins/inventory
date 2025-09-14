@@ -53,6 +53,24 @@
     box-shadow: none;
 }
 
+/* General form controls for discount pages */
+.discount-page .form-control, .discount-page .form-select {
+    background-color: #23272b;
+    color: #fff;
+    border: 1px solid #343a40;
+}
+
+.discount-page .form-control::placeholder {
+    color: #c0c0c0;
+}
+
+.discount-page .form-control:focus, .discount-page .form-select:focus {
+    background-color: #23272b;
+    color: #fff;
+    border-color: #1d2124;
+    box-shadow: none;
+}
+
 /* Discount-specific alert styles */
 .discount-alert-primary {
     background-color: #23272b;
@@ -319,5 +337,134 @@
     
     .header-dark h1 {
         font-size: 1.5rem;
+    }
+}
+
+/* Discount page specific responsive enhancements */
+.discount-page .record-selector {
+    margin-bottom: 15px;
+    background-color: #343a40;
+    color: #fff;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+    display: inline-block;
+    width: 100%;
+}
+
+.discount-page .record-selector select {
+    background-color: #23272b;
+    color: #fff;
+    border: 1px solid #343a40;
+    width: 100%;
+}
+
+.discount-page .record-selector select:focus {
+    border-color: #1d2124;
+    box-shadow: none;
+}
+
+.discount-page .record-selector label {
+    color: #fff;
+    margin-bottom: 5px;
+    display: block;
+}
+
+/* Discount form layout responsive */
+.discount-page .row {
+    margin-bottom: 15px;
+}
+
+.discount-page .col-md-4 {
+    margin-bottom: 15px;
+}
+
+.discount-page .form-label {
+    color: #fff;
+    margin-bottom: 5px;
+}
+
+.discount-page .form-label.required:after {
+    content: " *";
+    color: red;
+}
+
+/* Discount table responsive enhancements */
+.discount-page .discount-table-container {
+    margin-bottom: 20px;
+}
+
+.discount-page .discount-table th,
+.discount-page .discount-table td {
+    vertical-align: middle;
+    padding: 12px 8px;
+}
+
+/* Discount action buttons */
+.discount-page .discount-delete-btn {
+    background: none;
+    border: none;
+    color: #dc3545;
+    font-size: 1.3rem;
+    padding: 0;
+    transition: color 0.3s ease;
+}
+
+.discount-page .discount-delete-btn:hover {
+    color: #ff6b6b;
+}
+
+/* Responsive breakpoints for discount page */
+@media (max-width: 768px) {
+    .discount-page .record-selector {
+        margin-bottom: 10px;
+        padding: 8px;
+    }
+    
+    .discount-page .col-md-4 {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    
+    .discount-page .row {
+        margin-bottom: 10px;
+    }
+    
+    .discount-page .form-control,
+    .discount-page .form-select {
+        font-size: 16px; /* Prevent zoom on iOS */
+        padding: 12px;
+    }
+    
+    .discount-page .btn-submit-dark {
+        font-size: 1rem;
+        padding: 12px 20px;
+    }
+}
+
+@media (max-width: 576px) {
+    .discount-page .record-selector {
+        padding: 6px;
+    }
+    
+    .discount-page .form-control,
+    .discount-page .form-select {
+        font-size: 16px;
+        padding: 10px;
+    }
+    
+    .discount-page .btn-submit-dark {
+        font-size: 0.9rem;
+        padding: 10px 16px;
+    }
+    
+    .discount-page .discount-table th,
+    .discount-page .discount-table td {
+        padding: 8px 4px;
+        font-size: 14px;
+    }
+    
+    .discount-page .discount-delete-btn {
+        font-size: 1.1rem;
     }
 }
