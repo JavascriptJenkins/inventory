@@ -1,169 +1,106 @@
 package com.techvvs.inventory.viewcontroller
 
 import com.techvvs.inventory.constants.MessageConstants
-import com.techvvs.inventory.jparepo.LocationRepo
 import com.techvvs.inventory.jparepo.LocationTypeRepo
 import com.techvvs.inventory.model.LocationVO
 import com.techvvs.inventory.service.auth.TechvvsAuthService
-import com.techvvs.inventory.validation.ValidateLocation
-import com.techvvs.inventory.viewcontroller.helper.LocationHelper
+import com.techvvs.inventory.service.location.LocationService
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Pageable
-import org.springframework.security.core.Authentication
-import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.*
-
-import javax.servlet.http.HttpServletResponse
-import java.time.LocalDateTime
 
 @RequestMapping("/location")
 @Controller
 public class LocationViewController {
 
+    @Autowired
+    TechvvsAuthService techvvsAuthService
 
-//    @Autowired LocationRepo locationRepo
-    @Autowired LocationRepo locationRepo
-    @Autowired LocationHelper locationHelper
-    @Autowired ValidateLocation validateLocation
-    @Autowired TechvvsAuthService techvvsAuthService
-    @Autowired LocationTypeRepo locationTypeRepo
+    @Autowired
+    LocationService locationService
+
+    @Autowired
+    LocationTypeRepo locationTypeRepo
 
     //default home mapping
     @GetMapping
-    String viewNewForm(@ModelAttribute( "location" ) LocationVO locationVO,
-                       Model model,
-
-                       @RequestParam("page") Optional<Integer> page,
-                       @RequestParam("size") Optional<Integer> size
+    String viewNewForm(
+            Model model,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size,
+            @RequestParam("locationid") Optional<Integer> locationid
     ){
-        LocationVO locationVOToBind;
-        if(locationVO != null && locationVO.locationid != null){
-            locationVOToBind = locationVO;
-        } else {
-            locationVOToBind = new LocationVO();
-            locationVOToBind.locationid= 0
-        }
 
         techvvsAuthService.checkuserauth(model)
-        model.addAttribute("location", locationVOToBind);
-        model.addAttribute("locationtypes", locationTypeRepo.findAll());
-        addPaginatedData(model, page)
+
+        // attach a blank object to the model
+        if(locationid.isPresent()){
+            locationService.getLocation(locationid.get(), model)
+        } else {
+            locationService.loadBlankLocation(model)
+        }
+
+        locationService.addPaginatedData(model, page, size)
+
+        // Add size parameter to model for template
+        model.addAttribute("size", size.orElse(100))
+
+        // load the values for dropdowns here
+        bindStaticValues(model)
+
         return "admin/location.html";
     }
 
-    @PostMapping ("/editLocation")
-    String editLocation(@ModelAttribute( "location" ) LocationVO locationVO,
-                     Model model,
-                     HttpServletResponse response,
-    @RequestParam("page") Optional<Integer> page,
-    @RequestParam("size") Optional<Integer> size){
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        System.out.println("----------------------- START AUTH INFO ");
-        System.out.println("authentication.getCredentials: "+authentication.getCredentials());
-        System.out.println("authentication.getPrincipal: "+authentication.getPrincipal());
-        System.out.println("authentication.getAuthorities: "+authentication.getAuthorities());
-        System.out.println("----------------------- END AUTH INFO ");
-
-        // Validation
-        locationHelper.validateLocation(locationVO, model)
-        if (model.getAttribute(MessageConstants.ERROR_MSG) == null) {
-            // when creating a new processData entry, set the last attempt visit to now - this may change in future
-            locationVO.setUpdateTimeStamp(LocalDateTime.now());
-
-            LocationVO result = locationRepo.save(locationVO);
-
-            model.addAttribute  ("successMessage","Record Successfully Saved.");
-            model.addAttribute("package", result);
-        }
-
-        techvvsAuthService.checkuserauth(model)
-        model.addAttribute("locationtypes", locationTypeRepo.findAll());
-        addPaginatedData(model, page)
-        return "admin/location";
+    void bindStaticValues(Model model) {
+        model.addAttribute("locationtypes", locationTypeRepo.findAll())
     }
 
-    @PostMapping ("/createNewLocation")
-    String createNewLocation(@ModelAttribute( "location" ) LocationVO locationVO,
-                          Model model,
-                          HttpServletResponse response,
-                          
-                              @RequestParam("page") Optional<Integer> page,
-                              @RequestParam("size") Optional<Integer> size
+    @PostMapping("/create")
+    String createLocation(
+            @ModelAttribute( "location" ) LocationVO locationVO,
+            Model model,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size
     ){
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        System.out.println("----------------------- START AUTH INFO ");
-        System.out.println("authentication.getCredentials: "+authentication.getCredentials());
-        System.out.println("authentication.getPrincipal: "+authentication.getPrincipal());
-        System.out.println("authentication.getAuthorities: "+authentication.getAuthorities());
-        System.out.println("----------------------- END AUTH INFO ");
-
-        locationHelper.validateLocation(locationVO, model)
-        if (model.getAttribute(MessageConstants.ERROR_MSG) == null) {
-            // when creating a new processData entry, set the last attempt visit to now - this may change in future
-            locationVO.setCreateTimeStamp(LocalDateTime.now());
-            locationVO.setUpdateTimeStamp(LocalDateTime.now());
-
-            //todo: add support for package types on the ui so we can save this package object
-            LocationVO result = locationRepo.save(locationVO);
-
-            model.addAttribute("successMessage","Record Successfully Saved. ");
-            model.addAttribute("location", result);
-        } else {
-            model.addAttribute("disableupload","true"); // if there is an error submitting the new form we keep this disabled
-        }
-
-        model.addAttribute("locationtypes", locationTypeRepo.findAll());
         techvvsAuthService.checkuserauth(model)
-        addPaginatedData(model, page)
-        return "admin/location";
-    }
 
+        locationVO = locationService.validateLocation(locationVO, model)
 
-
-
-    List<LocationVO> getLocationList(){
-        locationRepo.findAll()
-    }
-
-    void addPaginatedData(Model model, Optional<Integer> page){
-
-        // https://www.baeldung.com/spring-data-jpa-pagination-sorting
-        //pagination
-        int currentPage = page.orElse(0);
-        int pageSize = 5;
-        Pageable pageable;
-        if(currentPage == 0){
-            pageable = PageRequest.of(0 , pageSize);
-        } else {
-            pageable = PageRequest.of(currentPage - 1, pageSize);
+        // only proceed if there is no error
+        if(model.getAttribute(MessageConstants.ERROR_MSG) == null){
+            // create the location
+            locationVO = locationService.createLocation(locationVO)
+            model.addAttribute("successMessage", "Location created successfully!")
         }
 
-        Page<LocationVO> pageOfLocation = locationRepo.findAll(pageable);
+        model.addAttribute("location", locationVO)
+        locationService.addPaginatedData(model, page, size)
+        
+        // Add size parameter to model for template
+        model.addAttribute("size", size.orElse(100))
+        
+        bindStaticValues(model)
 
-        int totalPages = pageOfLocation.getTotalPages();
-
-        List<Integer> pageNumbers = new ArrayList<>();
-
-        while(totalPages > 0){
-            pageNumbers.add(totalPages);
-            totalPages = totalPages - 1;
-        }
-
-        model.addAttribute("pageNumbers", pageNumbers);
-        model.addAttribute("page", currentPage);
-        model.addAttribute("size", pageOfLocation.getTotalPages());
-        model.addAttribute("locationPage", pageOfLocation);
-        if(model.getAttribute("location") == null){
-            model.addAttribute("location", new LocationVO())
-        }
+        return "admin/location.html";
     }
 
-
+    @PostMapping("/edit")
+    String editLocation(
+            @ModelAttribute( "location" ) LocationVO locationVO,
+            Model model,
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size
+    ) {
+        techvvsAuthService.checkuserauth(model)
+        locationService.updateLocation(locationVO, model)
+        locationService.addPaginatedData(model, page, size)
+        
+        // Add size parameter to model for template
+        model.addAttribute("size", size.orElse(100))
+        
+        bindStaticValues(model)
+        return "admin/location.html"
+    }
 
 }

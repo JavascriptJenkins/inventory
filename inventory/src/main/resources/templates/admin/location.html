@@ -1,190 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>New Location Data Entry</title>
 
 
-
-    <link rel="stylesheet" type="text/css" media="all" href="/css/table.css" th:href="@{/css/table.css}" />
-    <!-- Bootstrap Font Icon CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-
-    <style>
-        body {
-            color: #fff;
-            font-family: 'Roboto', sans-serif;
-        }
-        .table-hover tbody tr:hover {
-            background-color: #e0f7fa;
-        }
-        .table-striped tbody tr:nth-of-type(odd) {
-            background-color: #f1f8fa;
-        }
-        .table-dark thead {
-            background-color: #343a40;
-            color: #fff;
-        }
-        .btn-secondary, .btn-primary {
-            color: #fff;
-            background-color: #343a40;
-            border-color: #343a40;
-        }
-        .btn-secondary:hover, .btn-primary:hover {
-            background-color: #23272b;
-            border-color: #1d2124;
-        }
-        .form-control, .form-select {
-            background-color: #343a40;
-            color: #fff;
-            border: 1px solid #343a40;
-        }
-        .form-control:focus, .form-select:focus {
-            background-color: #343a40;
-            color: #fff;
-            border-color: #1d2124;
-            box-shadow: none;
-        }
-        .header-dark {
-            background-color: #343a40;
-            color: #fff;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            font-family: 'Roboto', sans-serif;
-            border: 1px solid transparent;
-            border-image: linear-gradient(to right, #c0c0c0, #ffffff);
-            border-image-slice: 1;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            display: flex;
-            align-items: center;
-        }
-        .header-small {
-            background-color: #343a40;
-            color: #fff;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            font-family: 'Roboto', sans-serif;
-            border: 1px solid transparent;
-            border-image: linear-gradient(to right, #c0c0c0, #ffffff);
-            border-image-slice: 1;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            width: fit-content;
-            max-width: 400px;
-            margin: 0 auto 15px auto;
-            text-align: center;
-        }
-        .back-button {
-            margin-right: 20px;
-            font-size: 2rem;
-        }
-        .back-button a {
-            color: #343a40;
-            background-color: #fff;
-            padding: 10px;
-            border-radius: 50%;
-            border: 2px solid #343a40;
-        }
-        .back-button a:hover {
-            background-color: #23272b;
-            color: #fff;
-            border-color: #23272b;
-        }
-        .alert {
-            background-color: #343a40;
-            color: #fff;
-            border: 1px solid #343a40;
-        }
-        .alert-danger {
-            background-color: #dc3545;
-            border-color: #dc3545;
-        }
-        .alert-success {
-            background-color: #28a745;
-            border-color: #28a745;
-        }
-        .alert-primary {
-            background-color: #007bff;
-            border-color: #007bff;
-        }
-        .pagination .page-link {
-            color: #fff;  /* Changed to white */
-            background-color: #343a40;
-            border: 1px solid #343a40;
-        }
-        .pagination .page-link:hover {
-            background-color: #23272b;
-            border-color: #1d2124;
-        }
-        .pagination .active .page-link {
-            color: #fff;
-            background-color: #007bff;
-            border-color: #007bff;
-        }
-        .required:after {
-            content: " *";
-            color: red;
-        }
-        .form-label {
-            color: #000;  /* Changed to black */
-        }
-    </style>
-    <script>
-    $(document).ready(function() {
-        // Function to validate each field
-        function validateField(field) {
-            const fieldName = $(field).attr('name');
-            const value = $(field).val();
-            let message = '';
-
-            switch (fieldName) {
-                case 'name':
-                    if (value.trim() === '') message = 'Location Name is required.';
-                    break;
-                case 'description':
-                    if (value.length > 150) message = 'Description should be less than 150 characters.';
-                    break;
-                case 'address':
-                    if (value.trim() === '') message = 'Address is required.';
-                    break;
-                case 'city':
-                    if (value.trim() === '') message = 'City is required.';
-                    break;
-                case 'state':
-                    if (value.trim() === '') message = 'State is required.';
-                    break;
-                case 'zipcode':
-                    if (!/^\d{5}$/.test(value)) message = 'Zipcode must be 5 digits.';
-                    break;
-                default:
-                    break;
-            }
-
-            $(field).siblings('.validation-message').remove();
-            if (message) {
-                $(field).after(`<span class="validation-message text-danger">${message}</span>`);
-            }
-    }
-
-        // Attach keyup event to each input field
-        $('input').on('keyup', function() {
-                validateField(this);
-            });
-        });
-
-    </script>
-
+    <!-- CSS Theme Selection based on UIMODE -->
+    <link rel="stylesheet" type="text/css" media="all" href="/css/MODERN/modern.css" th:if="${UIMODE != 'RETRO'}" />
+    <link rel="stylesheet" type="text/css" media="all" href="/css/RETRO/retro.css" th:if="${UIMODE == 'RETRO'}" />
+    <link rel="stylesheet" type="text/css" media="all" href="/css/VEGAS/vegas.css" th:if="${UIMODE == 'VEGAS'}" />
 
 </head>
-<body>
-
-
+<body class="location-page">
 
 <div th:insert="fragments/adminnavbar.html :: adminnavbarfragment"> </div>
 
-
-<div class="container">
+<div class="container-fluid">
 
     <div class="header-dark">
         <div class="back-button">
@@ -204,104 +35,152 @@
 
     <!-- if th-->
 
-    <form th:action="@{/location/createNewLocation}" th:object="${location}" method="post">
+    <form th:action="${location.locationid > 0 ? '/location/edit' : '/location/create'}" th:object="${location}" method="post">
+        <input type="hidden" th:field="*{locationid}">
+        
         <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
         <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
 
 
-        <div class="row" style="margin-bottom: 5px;">
-            <div class="col-md-4" style="margin-bottom: 5px;">
-                <label class="form-label required">Location Name</label>
-                <input type="text" th:field="*{name}" class="form-control" placeholder="name" aria-label="name">
+        <div class="row mb-3">
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Location Name</label>
+                <input type="text" th:field="*{name}" id="name" class="form-control edit-validation-group" placeholder="Location Name">
+                <span class="validation-error"></span>
             </div>
-            <div class="col-md-4" style="margin-bottom: 5px;">
+            <div class="col-md-4 mb-3">
                 <label class="form-label">Location Description</label>
-                <input type="text" th:field="*{description}" class="form-control" placeholder="description" aria-label="description">
+                <input type="text" th:field="*{description}" id="description" class="form-control edit-validation-group" placeholder="Location Description">
+                <span class="validation-error"></span>
             </div>
-            <div class="col-md-4" style="margin-bottom: 5px;">
-                <label class="form-label required">Address</label>
-                <input type="text" name="address" th:field="*{address1}" class="form-control" placeholder="address" aria-label="address">
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Address</label>
+                <input type="text" th:field="*{address1}" id="address" class="form-control edit-validation-group" placeholder="Address">
+                <span class="validation-error"></span>
             </div>
-            <div class="col-md-4" style="margin-bottom: 5px;">
-                <label class="form-label required">Address2</label>
-                <input type="text" name="address2" th:field="*{address2}" class="form-control" placeholder="address2" aria-label="address2">
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Address2</label>
+                <input type="text" th:field="*{address2}" id="address2" class="form-control edit-validation-group" placeholder="Address2">
+                <span class="validation-error"></span>
             </div>
-            <div class="col-md-4" style="margin-bottom: 5px;">
-                <label class="form-label required">City</label>
-                <input type="text" name="city" th:field="*{city}" class="form-control" placeholder="city" aria-label="city">
+            <div class="col-md-4 mb-3">
+                <label class="form-label">City</label>
+                <input type="text" th:field="*{city}" id="city" class="form-control edit-validation-group" placeholder="City">
+                <span class="validation-error"></span>
             </div>
-            <div class="col-md-4" style="margin-bottom: 5px;">
-                <label class="form-label required">State</label>
-                <input type="text" name="state" th:field="*{state}" class="form-control" placeholder="state" aria-label="state">
+            <div class="col-md-4 mb-3">
+                <label class="form-label">State</label>
+                <input type="text" th:field="*{state}" id="state" class="form-control edit-validation-group" placeholder="State">
+                <span class="validation-error"></span>
             </div>
-            <div class="col-md-4" style="margin-bottom: 5px;">
-                <label class="form-label required">Zipcode</label>
-                <input type="text" name="zipcode" th:field="*{zipcode}" class="form-control" placeholder="zipcode" aria-label="zipcode">
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Zipcode</label>
+                <input type="text" th:field="*{zipcode}" id="zipcode" class="form-control edit-validation-group zipcode" placeholder="Zipcode">
+                <span class="validation-error"></span>
             </div>
-            <div class="col-md-4" style="margin-bottom: 5px;">
-                <label class="form-label required">Location Type</label>
-                <select class="form-control" th:field="${location.locationtype}"  id="locationtypeid" readonly="">
-                    <!--                        <option value="">select operator</option>-->
-                    <!--                        <option th:each="operator : ${}" th:value="${operator.id}" th:text="${operator.operatorName}"></option>-->
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Location Type</label>
+                <select th:field="*{locationtype}" id="locationtype" class="form-select edit-validation-group">
+                    <option value="">Select Location Type</option>
                     <option th:each="locationtype : ${locationtypes}" th:value="${locationtype.locationtypeid}" th:text="${locationtype.name}"></option>
-
                 </select>
+                <span class="validation-error"></span>
             </div>
         </div>
 
-        <br>
-        <br>
-
-        <button style="margin-top:5px;" type="submit" class="btn btn-primary">Submit</button>
+        <div class="text-end">
+            <button type="submit" class="btn btn-secondary">Submit</button>
+        </div>
     </form>
-    <div class="header-small">
-        <p>Locations</p>
+
+    <div class="header-dark mt-4">
+        <h2>Locations</h2>
     </div>
+    
+    <div class="tip-box">Select a Location by clicking on the Location ID</div>
 
+    <!-- Filter Form for pagination -->
+    <form th:action="@{/location}" method="get" id="filterForm">
+        <!-- Preserve page value on submit -->
+        <input type="hidden" name="page" th:value="${page}"/>
+        <input type="hidden" name="locationid" th:value="${location != null ? location.locationid : '0'}"/>
 
-
-
-    <br>
-    <br>
-
-
-
-    <!-- Show list of locations -->
+        <!-- Dropdown for selecting record size -->
+        <div class="record-selector">
+            <label for="recordSize">Display Records:</label>
+            <select name="size" id="recordSize" class="form-select" onchange="document.getElementById('filterForm').submit()">
+                <option value="5" th:selected="${size == 5}">5 Records</option>
+                <option value="10" th:selected="${size == 10}">10 Records</option>
+                <option value="20" th:selected="${size == 20}">20 Records</option>
+                <option value="100" th:selected="${size == 100}">100 Records</option>
+                <option value="1000" th:selected="${size == 1000}">1000 Records</option>
+                <option value="10000" th:selected="${size == 10000}">10000 Records</option>
+            </select>
+        </div>
+    </form>
+    
+    <div class="table-responsive">
         <table class="table table-hover table-striped table-dark">
             <thead>
                 <tr>
+                    <th scope="col">Location ID</th>
                     <th scope="col">Name</th>
-                    <th scope="col">Desc</th>
+                    <th scope="col">Description</th>
+                    <th scope="col">Address</th>
+                    <th scope="col">City</th>
+                    <th scope="col">State</th>
+                    <th scope="col">Zipcode</th>
                 </tr>
             </thead>
             <tbody>
                 <tr th:each="location, iStat : ${locationPage.content}"
                     th:style="${iStat.odd}? 'font-weight: bold;'"
                     th:alt-title="${iStat.even}? 'even' : 'odd'">
+                    <td>
+                        <a th:href="@{/location?size=__${size}__&page=__${page == null ? 0 : page}__&locationid=__${location.locationid == null ? 0 : location.locationid}__}"
+                           th:data-locationid="${location.locationid}"
+                           id="locationid-${location.locationid}"
+                           class="btn btn-secondary btn-sm">
+                            <span th:text="${location.locationid}"></span>
+                        </a>
+                    </td>
                     <td th:text="${location.name}"></td>
                     <td th:text="${location.description}"></td>
+                    <td th:text="${location.address1}"></td>
+                    <td th:text="${location.city}"></td>
+                    <td th:text="${location.state}"></td>
+                    <td th:text="${location.zipcode}"></td>
                 </tr>
             </tbody>
         </table>
-        <div th:if="${locationPage.totalPages > 0}" class="pagination"
-             th:each="pageNumber : ${pageNumbers}">
-            <a th:href="@{/location?size=__${#lists.size(locationPage.content)}__&page=__${pageNumber}__}"
-               th:text=${pageNumber}
-               th:class="${pageNumber==locationPage.number + 1} ? active"></a>
-        </div>
-
-
-
+    </div>
+    
+    <nav th:if="${locationPage.totalPages > 0}">
+        <ul class="pagination flex-wrap justify-content-center">
+            <li class="page-item" th:each="pageNumber : ${pageNumbers}">
+                <a class="page-link btn btn-secondary btn-sm m-1"
+                   th:href="@{/location?size=__${size}__&page=__${pageNumber}__&locationid=__${location != null ? location.locationid : '0'}__}"
+                   th:text="${pageNumber}"
+                   th:classappend="${pageNumber==locationPage.number + 1} ? 'active'">
+                </a>
+            </li>
+        </ul>
+    </nav>
 
 </div>
 
+<div th:insert="fragments/validation.html :: validationfragment"> </div>
+<script>
+    const inputFields = [
+        'name', 'description', 'address', 'address2', 'city', 'state', 'zipcode', 'locationtype'
+    ];
 
+    const optionalFields = ['description', 'address2'];
 
-
-
-
-
-
+    document.addEventListener("DOMContentLoaded", () => {
+        initializeValidation(inputFields, optionalFields);
+    });
+</script>
 
 </body>
 </html>
