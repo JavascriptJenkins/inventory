@@ -279,3 +279,63 @@
         font-size: 12px;
     }
 }
+
+/* Transaction Review specific responsive styles */
+@media (max-width: 768px) {
+    .header-dark .col-md-4 {
+        width: 100%;
+        margin-bottom: 15px;
+        text-align: center;
+    }
+    
+    .popup-content {
+        width: 95%;
+        height: 95%;
+        padding: 15px;
+    }
+    
+    .popup-close {
+        right: 10px;
+        top: 10px;
+        width: 40px;
+        height: 40px;
+        font-size: 1.5rem;
+    }
+    
+    .close-popup {
+        top: 5px;
+        right: 5px;
+        font-size: 1.5rem;
+    }
+    
+    /* Make buttons stack properly */
+    .d-inline {
+        display: block !important;
+        margin-bottom: 10px;
+    }
+    
+    .d-inline .btn {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+}
+
+@media (max-width: 576px) {
+    .popup-content {
+        width: 98%;
+        height: 98%;
+        padding: 10px;
+    }
+    
+    .header-dark h1 {
+        font-size: 1.5rem;
+    }
+    
+    .header-dark h3 {
+        font-size: 1.2rem;
+    }
+    
+    .header-dark h6 {
+        font-size: 0.9rem;
+    }
+}

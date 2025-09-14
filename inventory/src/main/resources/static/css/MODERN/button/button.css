@@ -207,4 +207,9 @@
     color: white;
 }
 
+/* Header button styles */
+.headerbutton {
+    border-color: #fff;
+}
+
 /* Back button styles moved to header/header.css to avoid conflicts */
