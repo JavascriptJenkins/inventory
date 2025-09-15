@@ -1,33 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
     <title>Edit Batch</title>
-
-
-    <script
-            src="https://code.jquery.com/jquery-3.6.0.js"
-            integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="
-            crossorigin="anonymous"></script>
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    <!-- JavaScript Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-kQtW33rZJAHjgefvhyyzcGF3C5TFyBQBA13V1RKPf4uH+bwyzQxZ6CmMZHmNBEfJ" crossorigin="anonymous"></script>
-
-
-    <link rel="stylesheet" type="text/css" media="all" href="/css/table.css" th:href="@{/css/table.css}" />
-    <!-- Bootstrap Font Icon CSS -->
-
-
-    <style>
-      .required:after {
-        content:" *";
-        color: red;
-      }
-    </style>
-
+    
+    <!-- UIMODE Controlled CSS -->
+    <link th:if="${UIMODE == 'MODERN'}" rel="stylesheet" th:href="@{/css/MODERN/modern.css}">
+    <link th:if="${UIMODE == 'RETRO'}" rel="stylesheet" th:href="@{/css/RETRO/retro.css}">
+    <link th:if="${UIMODE == 'VEGAS'}" rel="stylesheet" th:href="@{/css/VEGAS/vegas.css}">
+    <link th:unless="${UIMODE}" rel="stylesheet" th:href="@{/css/MODERN/modern.css}">
 </head>
-<body>
+<body class="editbatch-page">
 
 <!--model.addAttribute("totalIndoorQuantityRemaining", totalIndoorQuantityRemaining)-->
 <!--model.addAttribute("batchValueTotal", batchValueTotal)-->
@@ -38,22 +21,39 @@
 <div th:insert="fragments/adminnavbar.html :: adminnavbarfragment"> </div>
 
 
-<div class="container">
+<div class="container-fluid">
 
 
-    <div class="alert alert-primary" role="alert" >Edit Batch Data</div>
+    <div class="header-dark">
+        <h1><i class="bi bi-box-seam me-2"></i>Edit Batch Data</h1>
+    </div>
+    <div class="alert alert-primary" role="alert">Edit Batch Data</div>
 
-    <div class="row" style="margin-bottom: 5px;">
-
-        <label class="form-label"><b>Total Indoor Units</b></label>
-        <div th:text="${quantity}"> </div>
-        <label class="form-label"><b>Total Indoor Units Remaining</b></label>
-        <div th:text="${quantityRemaining}"> </div>
-        <label class="form-label"><b>Value of Total Original Batch</b></label>
-        <div th:text="${batchValueTotal}"> </div>
-        <label class="form-label"><b>Value of Remaining Batch</b></label>
-        <div th:text="${batchValueRemainingTotal}"> </div>
-
+    <div class="row mb-3">
+        <div class="col-12 col-sm-6 col-md-3 mb-3">
+            <div class="alert alert-info">
+                <strong>Total Indoor Units:</strong><br>
+                <span th:text="${quantity}"></span>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-md-3 mb-3">
+            <div class="alert alert-info">
+                <strong>Total Indoor Units Remaining:</strong><br>
+                <span th:text="${quantityRemaining}"></span>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-md-3 mb-3">
+            <div class="alert alert-info">
+                <strong>Value of Total Original Batch:</strong><br>
+                <span th:text="${batchValueTotal}"></span>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-md-3 mb-3">
+            <div class="alert alert-info">
+                <strong>Value of Remaining Batch:</strong><br>
+                <span th:text="${batchValueRemainingTotal}"></span>
+            </div>
+        </div>
     </div>
 
 
@@ -63,86 +63,75 @@
 
         <br>
 
-        <div class="row" style="margin-bottom: 5px;">
-            <div class="col-sm-2" style="margin-bottom: 5px;">
-                <!--  -->
+        <div class="row mb-3">
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
                 <form th:action="@{/newbatch/printmenu?batchid=__${batch.batchid}__&editmode=no&size=__${#lists.size(productPage.content)}__&page=1}" th:object="${searchproducttype}" method="post">
                     <label class="form-label required">Print Menu</label>
-                    <select class="form-control" th:field="${searchproducttype.menutype}"  >
+                    <select class="form-control" th:field="${searchproducttype.menutype}">
                         <option th:each="menuoption : ${menuoptions}" th:value="${menuoption}" th:text="${menuoption}"></option>
                     </select>
-                    <button style="margin-top:5px;" type="submit" class="btn btn-primary">Print Menu</button>
+                    <button type="submit" class="btn btn-secondary mt-2">Print Menu</button>
                 </form>
             </div>
-            <div class="col-sm-2" style="margin-bottom: 5px;">
-                <!-- Make a form that sends a search term to the server -->
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
                 <form th:action="@{/newbatch/filtereditform?batchid=__${batch.batchid}__&editmode=no&size=__${#lists.size(productPage.content)}__&page=1}" th:object="${searchproducttype}" method="post">
                     <label class="form-label required">Product Type</label>
-                    <select class="form-control" th:field="${searchproducttype.producttypeid}"  id="producttypeid" >
+                    <select class="form-control" th:field="${searchproducttype.producttypeid}" id="producttypeid">
                         <option th:each="producttype : ${producttypelist}" th:value="${producttype.producttypeid}" th:text="${producttype.name}"></option>
                     </select>
-                    <button style="margin-top:5px;" type="submit" class="btn btn-primary">Filter Products</button>
+                    <button type="submit" class="btn btn-secondary mt-2">Filter Products</button>
                 </form>
-
             </div>
-            <div class="col-sm-2" style="margin-bottom: 5px;">
-                <!-- Make a form that sends a product similarity search term to the server -->
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
                 <form th:action="@{/newbatch/likesearch?batchid=__${batch.batchid}__&editmode=no&size=__${#lists.size(productPage.content)}__&page=1}" th:object="${searchproducttype}" method="post">
-
                     <label class="form-label required">Product Name Search</label>
-                        <input type="text" th:field="*{name}" class="form-control" placeholder="name" aria-label="name">
-                    <button style="margin-top:5px;" type="submit" class="btn btn-primary">Filter Products By Name</button>
+                    <input type="text" th:field="*{name}" class="form-control" placeholder="Enter product name" aria-label="name">
+                    <button type="submit" class="btn btn-secondary mt-2">Filter Products By Name</button>
                 </form>
-
             </div>
-            <div class="col-sm-2" style="margin-bottom: 5px;">
-                <!-- Make a form that sends a search term to the server -->
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
                 <form th:action="@{/newbatch/filtereditform?batchid=__${batch.batchid}__&editmode=no&size=__${#lists.size(productPage.content)}__&page=1}" th:object="${searchproducttype}" method="post">
-
                     <label class="form-label required">Record Size</label>
-                    <select class="form-control" th:field="${searchproducttype.pagesize}"  >
-                        oIjpbeyJhdXRob3JpdHkiOiJST0xFX0NMSUVOVCJ9XSwiaWF0IjoxNzIyNDg4Mjk3LCJleHAiOjE3MjI1NzQ2OTd9.eT6jNLhLXbtPrmFYsnUsx-41kV-5xXiFiY7bDLUOq4g&page=1&size=5                        <option th:each="option : ${options}" th:value="${option}" th:text="${option}"></option>
+                    <select class="form-control" th:field="${searchproducttype.pagesize}">
+                        <option th:each="option : ${options}" th:value="${option}" th:text="${option}"></option>
                     </select>
-                    <button style="margin-top:5px;" type="submit" class="btn btn-primary">Number of Records</button>
+                    <button type="submit" class="btn btn-secondary mt-2">Number of Records</button>
                 </form>
             </div>
 
-            <div class="col-sm-2" style="margin-bottom: 5px;">
-                <!--  -->
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
                 <form th:action="@{/newbatch/generatebarcodes?batchid=__${batch.batchid}__&editmode=no&size=__${#lists.size(productPage.content)}__&page=1}" th:object="${searchproducttype}" method="post">
                     <label class="form-label required">Generate Barcodes</label>
-                    <select class="form-control" th:field="${searchproducttype.menutype}"  >
+                    <select class="form-control" th:field="${searchproducttype.menutype}">
                         <option th:each="menuoption : ${menuoptionsBarcode}" th:value="${menuoption}" th:text="${menuoption}"></option>
                     </select>
-                    <button style="margin-top:5px;" type="submit" class="btn btn-primary">Generate Barcodes</button>
+                    <button type="submit" class="btn btn-secondary mt-2">Generate Barcodes</button>
                 </form>
             </div>
 
-            <div class="col-sm-2" style="margin-bottom: 5px;">
-                <!--  -->
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
                 <form th:action="@{/newbatch/generateqrcodes?batchid=__${batch.batchid}__&editmode=no&size=__${#lists.size(productPage.content)}__&page=1}" th:object="${searchproducttype}" method="post">
                     <label class="form-label required">Generate QR Codes</label>
-                    <select class="form-control" th:field="${searchproducttype.menutype}"  >
+                    <select class="form-control" th:field="${searchproducttype.menutype}">
                         <option th:each="menuoption : ${menuoptionsQrcode}" th:value="${menuoption}" th:text="${menuoption}"></option>
                     </select>
-                    <button style="margin-top:5px;" type="submit" class="btn btn-primary">Generate QR Codes</button>
+                    <button type="submit" class="btn btn-secondary mt-2">Generate QR Codes</button>
                 </form>
             </div>
 
-            <div class="col-sm-2" style="margin-bottom: 5px;">
-                <!--  -->
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
                 <form th:action="@{/newbatch/generateweightlabels?batchid=__${batch.batchid}__&editmode=no&size=__${#lists.size(productPage.content)}__&page=1}" th:object="${searchproducttype}" method="post">
-                    <label class="form-label required">Generate QR Codes</label>
-                    <select class="form-control" th:field="${searchproducttype.menutype}"  >
+                    <label class="form-label required">Generate Weight Labels</label>
+                    <select class="form-control" th:field="${searchproducttype.menutype}">
                         <option th:each="menuoption : ${menuoptionsWeightLabels}" th:value="${menuoption}" th:text="${menuoption}"></option>
                     </select>
-                    <button style="margin-top:5px;" type="submit" class="btn btn-primary">Generate QR Codes</button>
+                    <button type="submit" class="btn btn-secondary mt-2">Generate Weight Labels</button>
                 </form>
             </div>
 
 
-            <div class="col-sm-2" style="margin-bottom: 5px;">
-                <a th:href="@{/viewfiles?batchid=__${batch.batchid}__&page=0&size=5}" class="btn btn-primary" style="margin-top:5px;">View Files</a>
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
+                <a th:href="@{/viewfiles?batchid=__${batch.batchid}__&page=0&size=5}" class="btn btn-secondary mt-2">View Files</a>
             </div>
         </div>
 
@@ -156,44 +145,37 @@
                 <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
                 <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
 
-                <div class="row" style="margin-bottom: 5px;">
-                    <div class="col-sm-2" style="margin-bottom: 5px;">
+                <div class="row mb-3">
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
                         <label class="form-label"><b>Batch Number</b></label>
-                        <input type="text" th:field="*{batchnumber}" class="form-control" placeholder="batchnumber" aria-label="batchnumber" readonly>
+                        <input type="text" th:field="*{batchnumber}" class="form-control" placeholder="Batch Number" aria-label="batchnumber" readonly>
                     </div>
-
                 </div>
 
                 <div class="row" style="margin-bottom: 5px;">
 
 
                     <!-- START insert a table full of paginated child products of this batch -->
-                    <table class="table" border="1">
-                        <thead>
-                        <tr>
-                            <th scope="col">#</th>
-                            <th scope="col">Product Number</th>
-                            <th scope="col">Product Name</th>
-                            <th scope="col">Quantity Remaining</th>
-                            <th scope="col">Price</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr th:each="product, iStat : ${productPage.content}"
-                            th:style="${iStat.odd}? 'font-weight: bold;'"
-                            th:alt-title="${iStat.even}? 'even' : 'odd'">
-
-                            <td th:text="${product.product_id}"></td>
-                            <td><a th:href="@{/product/editform?product_id=__${product.product_id}__&editmode=no}" th:text="${product.product_id}"></a></td>
-                            <td th:text="${product.name}"></td>
-                            <td th:text="${product.quantityremaining}"></td>
-                            <td th:text="${product.price}"></td>
-
-                        </tr>
-
-
-                        </tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                            <tr>
+                                <th scope="col">Product Number</th>
+                                <th scope="col">Product Name</th>
+                                <th scope="col">Quantity Remaining</th>
+                                <th scope="col">Price</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="product, iStat : ${productPage.content}">
+                                <td><a th:href="@{/product/editform?product_id=__${product.product_id}__&editmode=no}" class="btn btn-warning btn-sm" th:text="${product.product_id}"></a></td>
+                                <td th:text="${product.name}"></td>
+                                <td th:text="${product.quantityremaining}"></td>
+                                <td th:text="${product.price}"></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
                     <div th:if="${productPage.totalPages > 0}" class="pagination"
                          th:each="pageNumber : ${pageNumbers}">
                         <a th:href="@{/newbatch/editform?size=__${#lists.size(productPage.content)}__&page=__${pageNumber}__&batchid=__*{batchid}__&editmode=no}"
@@ -206,40 +188,34 @@
 
                 </div>
 
-                <div class="row" style="margin-bottom: 5px;">
-                    <div class="col-md-4" style="margin-bottom: 5px;">
+                <div class="row mb-3">
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
                         <label class="form-label required">Batch Name</label>
-                        <input type="text" th:field="*{name}" class="form-control" placeholder="name" aria-label="name" readonly>
+                        <input type="text" th:field="*{name}" class="form-control" placeholder="Batch Name" aria-label="name" readonly>
                     </div>
-                    <div class="col-md-4" style="margin-bottom: 5px;">
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
                         <label class="form-label">Batch Description</label>
-                        <input type="text" th:field="*{description}" class="form-control" placeholder="description" aria-label="description" readonly>
+                        <input type="text" th:field="*{description}" class="form-control" placeholder="Batch Description" aria-label="description" readonly>
                     </div>
                 </div>
 
-                <div class="row" style="margin-bottom: 5px;">
-                    <div class="col-md-4" style="margin-bottom: 5px;">
+                <div class="row mb-3">
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
                         <label class="form-label required">Batch Type</label>
-                        <select class="form-control" th:field="${batch.batch_type_id}"  id="batchtypeid" readonly="">
-                            <!--                        <option value="">select operator</option>-->
-                            <!--                        <option th:each="operator : ${}" th:value="${operator.id}" th:text="${operator.operatorName}"></option>-->
+                        <select class="form-control" th:field="${batch.batch_type_id}" id="batchtypeid" readonly="">
                             <option th:each="batchtype : ${batchtypes}" th:value="${batchtype.batch_type_id}" th:text="${batchtype.name}"></option>
-
                         </select>
                     </div>
 
-                    <br>
-                    <br>
-                    <div class="row" style="margin-bottom: 5px;">
-                        <div class="alert alert-info" role="alert" >Notes</div>
-                        <div class="col" style="margin-bottom: 5px;">
+                    <div class="row mb-3">
+                        <div class="col-12 mb-3">
                             <label class="form-label required">Notes</label>
-                            <textarea style="width:648px;height:163px;" th:field="*{notes}" class="form-control" placeholder="notes" aria-label="notes" readonly></textarea>
+                            <textarea th:field="*{notes}" class="form-control" placeholder="Batch Notes" aria-label="notes" rows="6" readonly></textarea>
                         </div>
                     </div>
                     <div class="alert alert-warning" role="alert" ><a th:href="@{/newbatch/editform?batchid=__${batch.batchid}__&editmode=yes}">Click here to edit this form</a>
                     </div>
-                    <button style="margin-top:5px;" type="submit" class="btn btn-primary" disabled>Submit</button>
+                    <button type="submit" class="btn btn-secondary" disabled>Submit</button>
             </form>
 
     </div> <!-- end readonly view -->
@@ -251,49 +227,42 @@
             <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
             <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
 
-            <div class="row" style="margin-bottom: 5px;">
-                <div class="col-sm-2" style="margin-bottom: 5px;">
+            <div class="row mb-3">
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
                     <label class="form-label"><b>Batch Number</b></label>
-                    <input type="text" th:field="*{batchnumber}" class="form-control" placeholder="batchnumber" aria-label="batchnumber" readonly>
+                    <input type="text" th:field="*{batchnumber}" class="form-control" placeholder="Batch Number" aria-label="batchnumber" readonly>
                 </div>
-
             </div>
 
-            <div class="row" style="margin-bottom: 5px;">
-                <div class="col-md-4" style="margin-bottom: 5px;">
+            <div class="row mb-3">
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
                     <label class="form-label required">Batch Name</label>
-                    <input type="text" th:field="*{name}" class="form-control" placeholder="name" aria-label="name">
+                    <input type="text" th:field="*{name}" class="form-control" placeholder="Batch Name" aria-label="name">
                 </div>
-                <div class="col-md-4" style="margin-bottom: 5px;">
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
                     <label class="form-label">Batch Description</label>
-                    <input type="text" th:field="*{description}" class="form-control" placeholder="description" aria-label="description">
+                    <input type="text" th:field="*{description}" class="form-control" placeholder="Batch Description" aria-label="description">
                 </div>
             </div>
 
-            <div class="row" style="margin-bottom: 5px;">
-                <div class="col-md-4" style="margin-bottom: 5px;">
+            <div class="row mb-3">
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
                     <label class="form-label required">Batch Type</label>
-                    <select class="form-control" th:field="${batch.batch_type_id}"  id="batchtypeid">
-                        <!--                        <option value="">select operator</option>-->
-                        <!--                        <option th:each="operator : ${}" th:value="${operator.id}" th:text="${operator.operatorName}"></option>-->
+                    <select class="form-control" th:field="${batch.batch_type_id}" id="batchtypeid">
                         <option th:each="batchtype : ${batchtypes}" th:value="${batchtype.batch_type_id}" th:text="${batchtype.name}"></option>
-
                     </select>
                 </div>
 
-                <br>
-                <br>
-                <div class="row" style="margin-bottom: 5px;">
-                    <div class="alert alert-info" role="alert" >Notes</div>
-                    <div class="col" style="margin-bottom: 5px;">
+                <div class="row mb-3">
+                    <div class="col-12 mb-3">
                         <label class="form-label required">Notes</label>
-                        <textarea style="width:648px;height:163px;" th:field="*{notes}" class="form-control" placeholder="notes" aria-label="notes"></textarea>
+                        <textarea th:field="*{notes}" class="form-control" placeholder="Batch Notes" aria-label="notes" rows="6"></textarea>
                     </div>
                 </div>
                 <input type="hidden" th:field="*{updateTimeStamp}">
                 <input type="hidden" th:field="*{createTimeStamp}">
                 <input type="hidden" th:field="*{batchid}">
-                <button style="margin-top:5px;" type="submit" class="btn btn-primary">Submit Edit</button>
+                <button type="submit" class="btn btn-secondary">Submit Edit</button>
         </form>
 
     </div> <!-- end edit view -->
@@ -308,62 +277,50 @@
             <!-- Show list of uploaded files -->
             <div th:if="${filelist != null}">
                 <div class="alert alert-primary" role="alert" >Files Previously Uploaded</div>
-                <table class="table">
-                    <thead>
-                    <tr>
-                        <th scope="col">File Name</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="file : ${filelist}">
-                        <td th:text="${file.filename}"></td>
-                    </tr>
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                        <tr>
+                            <th scope="col">File Name</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="file : ${filelist}">
+                            <td th:text="${file.filename}"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
 
-            <div style="margin-bottom: 5px;" class="mx-auto">
-
-                <div class="alert alert-info" role="alert" >Upload a file</div>
-                <!-- pass the batch object to the upload file controller to get the correct ID to save it under -->
-                <form method="post" th:object="${batch}" th:action="@{/file/upload" enctype="multipart/form-data">
-                    <div class="form-group">
-
+            <div class="row mb-3">
+                <div class="col-12">
+                    <div class="alert alert-info" role="alert">Upload a file</div>
+                    <form method="post" th:object="${batch}" th:action="@{/file/upload}" enctype="multipart/form-data">
+                        <div class="form-group mb-3">
+                            <div th:if="${disableupload}">
+                                <input type="file" disabled="disabled" name="file" class="form-control">
+                            </div>
+                            <div th:if="${disableupload == null}">
+                                <input type="file" name="file" class="form-control">
+                            </div>
+                            <!-- pass all these hidden attributes with so the data stays on page after uploading the file -->
+                            <input type="hidden" th:field="*{batchnumber}">
+                            <input type="hidden" th:field="*{name}">
+                            <input type="hidden" th:field="*{description}">
+                            <input type="hidden" th:field="*{notes}">
+                            <input type="hidden" th:field="*{updateTimeStamp}">
+                            <input type="hidden" th:field="*{createTimeStamp}">
+                        </div>
                         <div th:if="${disableupload}">
-                            <input type="file" disabled="disabled" name="file" class="form-control-file">
+                            <button type="submit" disabled="disabled" class="btn btn-secondary">Upload File</button>
                         </div>
-
                         <div th:if="${disableupload == null}">
-                            <input type="file" name="file" class="form-control-file">
+                            <button type="submit" class="btn btn-secondary">Upload File</button>
                         </div>
-
-
-
-                        <!-- pass all these hidden attributes with so the data stays on page after uploading the file -->
-                        <input type="hidden" th:field="*{batchnumber}">
-                        <input type="hidden" th:field="*{name}">
-                        <input type="hidden" th:field="*{description}">
-                        <input type="hidden" th:field="*{notes}">
-                        <input type="hidden" th:field="*{updateTimeStamp}">
-                        <input type="hidden" th:field="*{createTimeStamp}">
-                    </div>
-                    <br>
-
-
-                    <div th:if="${disableupload}">
-
-                        <button type="submit" disabled="disabled" class="btn btn-primary">Upload File</button>
-                    </div>
-
-                    <!-- if it is first download then it is ok.  second download will throw 403 is upload is performed right after  -->
-                    <div th:if="${disableupload == null}">
-                        <button type="submit" class="btn btn-primary">Upload File</button>
-                    </div>
-
-
-<!--                    <button type="submit" class="btn btn-primary">Upload File</button>-->
-                </form>
+                    </form>
+                </div>
             </div>
 
 

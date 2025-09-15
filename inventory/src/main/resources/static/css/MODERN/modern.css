@@ -22,3 +22,5 @@
 @import url('expense/expense.css');
 @import url('accounting/sales.css');
 @import url('service/batch.css');
+@import url('batch/editbatch.css');
+@import url('batch/managebatch.css');
