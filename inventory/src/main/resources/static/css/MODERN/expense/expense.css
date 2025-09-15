@@ -1,0 +1,371 @@
+/* ========================================
+   EXPENSE ADMIN PAGE STYLES
+   ======================================== */
+
+/* Page Container */
+.expense-page {
+    font-family: 'Roboto', sans-serif;
+}
+
+.expense-page .container-fluid {
+    max-width: 100%;
+    padding: 20px;
+}
+
+/* Header Styling */
+.expense-page .header-dark {
+    background-color: #343a40;
+    color: #fff;
+    padding: 15px;
+    border-radius: 5px;
+    margin-top: 20px;
+    margin-bottom: 15px;
+    font-family: 'Roboto', sans-serif;
+    border: 1px solid transparent;
+    border-image: linear-gradient(to right, #c0c0c0, #ffffff);
+    border-image-slice: 1;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.expense-page .header-dark h1 {
+    color: #ffffff;
+    margin: 0;
+    font-size: 2.5rem;
+    font-weight: 600;
+}
+
+/* Tip Box Styling */
+.expense-page .tip-box {
+    background-color: #343a40;
+    color: #fff;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    font-family: 'Roboto', sans-serif;
+    border: 1px solid transparent;
+    border-image: linear-gradient(to right, #c0c0c0, #ffffff);
+    border-image-slice: 1;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: fit-content;
+    max-width: 400px;
+    margin: 0 auto 15px auto;
+    text-align: center;
+}
+
+/* Form Styling */
+.expense-page .form-label {
+    color: #000;
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 1rem;
+}
+
+.expense-page .form-control,
+.expense-page .form-select {
+    background-color: #fff;
+    color: #000;
+    border: 1px solid #ced4da;
+    padding: 15px;
+    font-size: 16px;
+    min-height: 50px;
+}
+
+.expense-page .form-control:focus,
+.expense-page .form-select:focus {
+    background-color: #fff;
+    color: #000;
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Button Styling */
+.expense-page .btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: #fff;
+    padding: 12px 25px;
+    border-radius: 5px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.expense-page .btn-secondary:hover {
+    background-color: #5a6268;
+    border-color: #545b62;
+    color: #fff;
+}
+
+/* Table Styling */
+.expense-page .table {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.expense-page .table thead th {
+    background-color: #343a40;
+    color: white;
+    border: none;
+    font-weight: 600;
+    padding: 15px;
+    text-align: center;
+}
+
+.expense-page .table tbody td {
+    padding: 15px;
+    border-top: 1px solid #dee2e6;
+    vertical-align: middle;
+}
+
+.expense-page .table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Yellow Expense ID Button */
+.expense-page .btn-warning {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: #000;
+    font-weight: 600;
+    padding: 8px 15px;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+.expense-page .btn-warning:hover {
+    background-color: #e0a800;
+    border-color: #d39e00;
+    color: #000;
+}
+
+/* Pagination Styling */
+.expense-page .pagination .page-link {
+    background-color: #343a40;
+    border-color: #343a40;
+    color: #fff;
+    margin: 0 2px;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+.expense-page .pagination .page-link:hover {
+    background-color: #23272b;
+    border-color: #1d2124;
+    color: #fff;
+}
+
+.expense-page .pagination .page-link.active {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: #fff;
+}
+
+/* Alert Styling */
+.expense-page .alert-success {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+    border-radius: 5px;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+}
+
+.expense-page .alert-danger {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+    border-radius: 5px;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+}
+
+/* Validation Error Styling */
+.expense-page .validation-error {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 5px;
+    display: block;
+}
+
+/* Record Selector Styling */
+.expense-page .record-selector {
+    margin-bottom: 15px;
+    background-color: #343a40;
+    color: #fff;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+    display: inline-block;
+}
+
+.expense-page .record-selector label {
+    color: #fff;
+    font-weight: 600;
+    margin: 0;
+    white-space: nowrap;
+    font-size: 1rem;
+}
+
+.expense-page .record-selector .form-select {
+    background-color: #23272b;
+    color: #fff;
+    border: 1px solid #343a40;
+    border-radius: 5px;
+    padding: 10px 15px;
+    font-size: 1rem;
+    min-width: 150px;
+}
+
+.expense-page .record-selector .form-select:focus {
+    border-color: #1d2124;
+    box-shadow: none;
+    background-color: #23272b;
+    color: #fff;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .expense-page .container-fluid {
+        padding: 15px;
+    }
+    
+    .expense-page .header-dark h1 {
+        font-size: 2rem;
+    }
+    
+    .expense-page .form-control,
+    .expense-page .form-select {
+        padding: 10px 12px;
+        font-size: 0.9rem;
+    }
+    
+    .expense-page .table thead th {
+        padding: 10px 8px;
+        font-size: 0.9rem;
+    }
+    
+    .expense-page .table tbody td {
+        padding: 10px 8px;
+        font-size: 0.9rem;
+    }
+    
+    .expense-page .btn-warning {
+        padding: 6px 12px;
+        font-size: 0.85rem;
+    }
+    
+    .expense-page .record-selector {
+        display: block;
+        text-align: left;
+    }
+    
+    .expense-page .record-selector .form-select {
+        min-width: 100%;
+        padding: 8px 12px;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .expense-page .container-fluid {
+        padding: 10px;
+    }
+    
+    .expense-page .header-dark {
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .expense-page .header-dark h1 {
+        font-size: 1.75rem;
+    }
+    
+    .expense-page .tip-box {
+        padding: 12px 15px;
+        font-size: 0.9rem;
+    }
+    
+    .expense-page .form-control,
+    .expense-page .form-select {
+        padding: 8px 10px;
+        font-size: 0.85rem;
+    }
+    
+    .expense-page .table thead th {
+        padding: 8px 6px;
+        font-size: 0.8rem;
+    }
+    
+    .expense-page .table tbody td {
+        padding: 8px 6px;
+        font-size: 0.8rem;
+    }
+    
+    .expense-page .btn-warning {
+        padding: 5px 10px;
+        font-size: 0.8rem;
+    }
+    
+    .expense-page .btn-secondary {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+    
+    .expense-page .record-selector {
+        display: block;
+        text-align: left;
+    }
+    
+    .expense-page .record-selector label {
+        font-size: 0.9rem;
+    }
+    
+    .expense-page .record-selector .form-select {
+        min-width: 100%;
+        padding: 6px 10px;
+        font-size: 0.85rem;
+    }
+}
+
+/* Large screens optimization */
+@media (min-width: 1200px) {
+    .expense-page .container-fluid {
+        padding: 30px;
+    }
+    
+    .expense-page .header-dark h1 {
+        font-size: 3rem;
+    }
+    
+    .expense-page .form-control,
+    .expense-page .form-select {
+        padding: 15px 18px;
+        font-size: 1.1rem;
+    }
+    
+    .expense-page .table thead th {
+        padding: 18px 15px;
+        font-size: 1.1rem;
+    }
+    
+    .expense-page .table tbody td {
+        padding: 15px;
+        font-size: 1rem;
+    }
+    
+    .expense-page .record-selector .form-select {
+        padding: 12px 18px;
+        font-size: 1.1rem;
+        min-width: 180px;
+    }
+    
+    .expense-page .record-selector label {
+        font-size: 1.1rem;
+    }
+}

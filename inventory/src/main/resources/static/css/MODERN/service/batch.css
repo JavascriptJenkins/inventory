@@ -1,0 +1,327 @@
+/* ========================================
+   BATCH PAGE STYLES
+   ======================================== */
+
+/* Page Container */
+.batch-page {
+    font-family: 'Roboto', sans-serif;
+}
+
+.batch-page .container-fluid {
+    max-width: 100%;
+    padding: 20px;
+}
+
+/* Header Styling */
+.batch-page .header-dark {
+    background-color: #343a40;
+    color: #fff;
+    padding: 15px;
+    border-radius: 5px;
+    text-align: center;
+    margin-bottom: 15px;
+    font-family: 'Roboto', sans-serif;
+    border: 1px solid transparent;
+    border-image: linear-gradient(to right, #c0c0c0, #ffffff);
+    border-image-slice: 1;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.batch-page .header-dark h1 {
+    color: #ffffff;
+    margin: 0;
+    font-size: 2.5rem;
+    font-weight: 600;
+}
+
+/* Form Styling */
+.batch-page .form-label {
+    color: #000;
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.batch-page .form-control {
+    background-color: #fff;
+    color: #000;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 12px 15px;
+    font-size: 1rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.batch-page .form-control:focus {
+    background-color: #fff;
+    color: #000;
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.batch-page .form-control::placeholder {
+    color: #6c757d;
+}
+
+/* Required Field Indicator */
+.batch-page .required:after {
+    content: " *";
+    color: red;
+    font-weight: bold;
+}
+
+/* Validation Error Styling */
+.batch-page .validation-error {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 5px;
+    display: block;
+}
+
+/* Button Styling */
+.batch-page .btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: #fff;
+    border-radius: 5px;
+    padding: 12px 25px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.batch-page .btn-secondary:hover {
+    background-color: #5a6268;
+    border-color: #545b62;
+    color: #fff;
+}
+
+.batch-page .btn-warning {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: #000;
+    border-radius: 5px;
+    padding: 12px 25px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.batch-page .btn-warning:hover {
+    background-color: #e0a800;
+    border-color: #d39e00;
+    color: #000;
+}
+
+.batch-page .btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: #fff;
+    border-radius: 5px;
+    padding: 12px 25px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.batch-page .btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #004085;
+    color: #fff;
+}
+
+/* Alert Styling */
+.batch-page .alert-primary {
+    background-color: #cce7ff;
+    border-color: #b3d7ff;
+    color: #004085;
+    border-radius: 5px;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+}
+
+.batch-page .alert-success {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+    border-radius: 5px;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+}
+
+.batch-page .alert-danger {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+    border-radius: 5px;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+}
+
+.batch-page .alert-info {
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
+    color: #0c5460;
+    border-radius: 5px;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+}
+
+/* Table Styling */
+.batch-page .table {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.batch-page .table thead th {
+    background-color: #343a40;
+    color: white;
+    border: none;
+    padding: 15px;
+    font-weight: 600;
+}
+
+.batch-page .table tbody td {
+    padding: 15px;
+    border-top: 1px solid #dee2e6;
+    vertical-align: middle;
+}
+
+.batch-page .table-striped tbody tr:nth-of-type(odd) {
+    background-color: #f8f9fa;
+}
+
+.batch-page .table-hover tbody tr:hover {
+    background-color: #e9ecef;
+}
+
+.batch-page .table-responsive {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .batch-page .container-fluid {
+        padding: 15px;
+    }
+    
+    .batch-page .header-dark h1 {
+        font-size: 2rem;
+    }
+    
+    .batch-page .form-label {
+        font-size: 0.9rem;
+    }
+    
+    .batch-page .form-control {
+        padding: 10px 12px;
+        font-size: 0.9rem;
+    }
+    
+    .batch-page .btn-secondary,
+    .batch-page .btn-warning,
+    .batch-page .btn-primary {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+    
+    .batch-page .alert-primary,
+    .batch-page .alert-success,
+    .batch-page .alert-danger,
+    .batch-page .alert-info {
+        padding: 12px 15px;
+        font-size: 0.9rem;
+    }
+    
+    .batch-page .table thead th,
+    .batch-page .table tbody td {
+        padding: 10px;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .batch-page .container-fluid {
+        padding: 10px;
+    }
+    
+    .batch-page .header-dark {
+        padding: 12px;
+        margin-bottom: 10px;
+    }
+    
+    .batch-page .header-dark h1 {
+        font-size: 1.75rem;
+    }
+    
+    .batch-page .form-label {
+        font-size: 0.85rem;
+    }
+    
+    .batch-page .form-control {
+        padding: 8px 10px;
+        font-size: 0.85rem;
+    }
+    
+    .batch-page .btn-secondary,
+    .batch-page .btn-warning,
+    .batch-page .btn-primary {
+        padding: 8px 15px;
+        font-size: 0.85rem;
+    }
+    
+    .batch-page .alert-primary,
+    .batch-page .alert-success,
+    .batch-page .alert-danger,
+    .batch-page .alert-info {
+        padding: 10px 12px;
+        font-size: 0.85rem;
+    }
+    
+    .batch-page .table thead th,
+    .batch-page .table tbody td {
+        padding: 8px;
+        font-size: 0.85rem;
+    }
+}
+
+/* Large screens optimization */
+@media (min-width: 1200px) {
+    .batch-page .container-fluid {
+        padding: 30px;
+    }
+    
+    .batch-page .header-dark h1 {
+        font-size: 3rem;
+    }
+    
+    .batch-page .form-label {
+        font-size: 1.1rem;
+    }
+    
+    .batch-page .form-control {
+        padding: 15px 18px;
+        font-size: 1.1rem;
+    }
+    
+    .batch-page .btn-secondary,
+    .batch-page .btn-warning,
+    .batch-page .btn-primary {
+        padding: 15px 30px;
+        font-size: 1.1rem;
+    }
+    
+    .batch-page .alert-primary,
+    .batch-page .alert-success,
+    .batch-page .alert-danger,
+    .batch-page .alert-info {
+        padding: 18px 25px;
+        font-size: 1.1rem;
+    }
+    
+    .batch-page .table thead th,
+    .batch-page .table tbody td {
+        padding: 18px;
+        font-size: 1.1rem;
+    }
+}

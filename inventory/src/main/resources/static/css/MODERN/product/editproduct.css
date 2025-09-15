@@ -1,0 +1,508 @@
+/* ========================================
+   EDIT PRODUCT PAGE STYLES
+   ======================================== */
+
+/* Page Container */
+.editproduct-page {
+    font-family: 'Roboto', sans-serif;
+    color: #fff;
+}
+
+.editproduct-page .container-fluid {
+    max-width: 100%;
+    padding: 20px;
+}
+
+/* Header Styling */
+.editproduct-page .header-dark {
+    background-color: #343a40;
+    color: #fff;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    font-family: 'Roboto', sans-serif;
+    border: 1px solid transparent;
+    border-image: linear-gradient(to right, #c0c0c0, #ffffff);
+    border-image-slice: 1;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+}
+
+.editproduct-page .header-dark h1 {
+    color: #ffffff;
+    margin: 0;
+    font-size: 2.5rem;
+    font-weight: 600;
+}
+
+.editproduct-page .header-dark p {
+    color: #ffffff;
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+/* Back Button Styling */
+.editproduct-page .back-button {
+    margin-right: 20px;
+    font-size: 2rem;
+}
+
+.editproduct-page .back-button a {
+    color: #343a40;
+    background-color: #fff;
+    padding: 10px;
+    border-radius: 50%;
+    border: 2px solid #343a40;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.editproduct-page .back-button a:hover {
+    background-color: #23272b;
+    color: #fff;
+    border-color: #23272b;
+}
+
+/* Form Styling */
+.editproduct-page .form-label {
+    color: #000;
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.editproduct-page .form-control,
+.editproduct-page .form-select {
+    background-color: #fff;
+    color: #000;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 12px 15px;
+    font-size: 1rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.editproduct-page .form-control[readonly],
+.editproduct-page .form-select[readonly] {
+    background-color: #e9ecef;
+    color: #6c757d;
+}
+
+.editproduct-page .form-control:focus,
+.editproduct-page .form-select:focus {
+    background-color: #fff;
+    color: #000;
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.editproduct-page .form-control::placeholder {
+    color: #6c757d;
+}
+
+.editproduct-page .form-control-plaintext {
+    color: #fff;
+    background-color: transparent;
+    border: none;
+    padding: 12px 0;
+    font-size: 1rem;
+}
+
+/* Required Field Indicator */
+.editproduct-page .required:after {
+    content: " *";
+    color: red;
+    font-weight: bold;
+}
+
+/* Validation Error Styling */
+.editproduct-page .validation-error {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 5px;
+    display: block;
+}
+
+/* Button Styling */
+.editproduct-page .btn-secondary,
+.editproduct-page .btn-primary {
+    background-color: #343a40;
+    border-color: #343a40;
+    color: #fff;
+    border-radius: 5px;
+    padding: 12px 25px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.editproduct-page .btn-secondary:hover,
+.editproduct-page .btn-primary:hover {
+    background-color: #23272b;
+    border-color: #1d2124;
+    color: #fff;
+}
+
+.editproduct-page .btn-warning {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: #000;
+    border-radius: 5px;
+    padding: 12px 25px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.editproduct-page .btn-warning:hover {
+    background-color: #e0a800;
+    border-color: #d39e00;
+    color: #000;
+}
+
+.editproduct-page .btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+    color: #fff;
+    border-radius: 5px;
+    padding: 12px 25px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.editproduct-page .btn-success:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+    color: #fff;
+}
+
+/* Alert Styling */
+.editproduct-page .alert {
+    background-color: #343a40;
+    color: #fff;
+    border: 1px solid #343a40;
+    border-radius: 5px;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+}
+
+.editproduct-page .alert-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: #fff;
+}
+
+.editproduct-page .alert-success {
+    background-color: #28a745;
+    border-color: #28a745;
+    color: #fff;
+}
+
+.editproduct-page .alert-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: #fff;
+}
+
+.editproduct-page .alert-warning {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: #000;
+}
+
+.editproduct-page .alert-info {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+    color: #fff;
+}
+
+/* Table Styling */
+.editproduct-page .table {
+    background: #343a40;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    color: #fff;
+}
+
+.editproduct-page .table thead th {
+    background-color: #23272b;
+    color: white;
+    border: none;
+    padding: 15px;
+    font-weight: 600;
+}
+
+.editproduct-page .table tbody td {
+    padding: 15px;
+    border-top: 1px solid #495057;
+    vertical-align: middle;
+    color: #fff;
+}
+
+.editproduct-page .table-striped tbody tr:nth-of-type(odd) {
+    background-color: #495057;
+}
+
+.editproduct-page .table-hover tbody tr:hover {
+    background-color: #6c757d;
+}
+
+.editproduct-page .table-responsive {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* Pagination Styling */
+.editproduct-page .pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.editproduct-page .pagination .page-item {
+    margin: 0 4px;
+}
+
+.editproduct-page .pagination .page-link {
+    background-color: #343a40;
+    border-color: #343a40;
+    color: #fff;
+    border-radius: 4px;
+    padding: 8px 16px;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+
+.editproduct-page .pagination .page-link:hover {
+    background-color: #23272b;
+    border-color: #1d2124;
+    color: #fff;
+}
+
+.editproduct-page .pagination .page-link.active {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: #fff;
+}
+
+/* File Upload Styling */
+.editproduct-page .file-input-hidden {
+    display: none;
+}
+
+.editproduct-page .custom-file-label {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #212529;
+    background-color: #ffc107;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: background-color 0.2s ease;
+    margin-top: 30px;
+}
+
+.editproduct-page .custom-file-label:hover {
+    background-color: #e0a800;
+}
+
+.editproduct-page .custom-file-label:active {
+    background-color: #c69500;
+}
+
+/* Attribute Badge Styling */
+.editproduct-page .badge {
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    margin: 0.25rem;
+}
+
+.editproduct-page .badge.bg-warning {
+    background-color: #ffc107 !important;
+    color: #000 !important;
+}
+
+.editproduct-page .badge.bg-secondary {
+    background-color: #6c757d !important;
+    color: #fff !important;
+}
+
+/* Form Check Styling */
+.editproduct-page .form-check-input {
+    transform: scale(1.5);
+    cursor: pointer;
+}
+
+.editproduct-page .form-check-label {
+    font-size: 1.1rem;
+    margin-left: 0.5rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .editproduct-page .container-fluid {
+        padding: 15px;
+    }
+    
+    .editproduct-page .header-dark {
+        flex-direction: column;
+        text-align: center;
+        padding: 15px;
+    }
+    
+    .editproduct-page .header-dark h1 {
+        font-size: 2rem;
+    }
+    
+    .editproduct-page .back-button {
+        margin-right: 0;
+        margin-bottom: 15px;
+    }
+    
+    .editproduct-page .form-label {
+        font-size: 0.9rem;
+    }
+    
+    .editproduct-page .form-control,
+    .editproduct-page .form-select {
+        padding: 10px 12px;
+        font-size: 0.9rem;
+    }
+    
+    .editproduct-page .btn-secondary,
+    .editproduct-page .btn-primary,
+    .editproduct-page .btn-warning,
+    .editproduct-page .btn-success {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+    
+    .editproduct-page .alert {
+        padding: 12px 15px;
+        font-size: 0.9rem;
+    }
+    
+    .editproduct-page .table thead th,
+    .editproduct-page .table tbody td {
+        padding: 10px;
+        font-size: 0.9rem;
+    }
+    
+    .editproduct-page .pagination .page-link {
+        padding: 6px 12px;
+        font-size: 0.9rem;
+    }
+    
+    .editproduct-page .custom-file-label {
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .editproduct-page .container-fluid {
+        padding: 10px;
+    }
+    
+    .editproduct-page .header-dark {
+        padding: 12px;
+        margin-bottom: 10px;
+    }
+    
+    .editproduct-page .header-dark h1 {
+        font-size: 1.75rem;
+    }
+    
+    .editproduct-page .form-label {
+        font-size: 0.85rem;
+    }
+    
+    .editproduct-page .form-control,
+    .editproduct-page .form-select {
+        padding: 8px 10px;
+        font-size: 0.85rem;
+    }
+    
+    .editproduct-page .btn-secondary,
+    .editproduct-page .btn-primary,
+    .editproduct-page .btn-warning,
+    .editproduct-page .btn-success {
+        padding: 8px 15px;
+        font-size: 0.85rem;
+    }
+    
+    .editproduct-page .alert {
+        padding: 10px 12px;
+        font-size: 0.85rem;
+    }
+    
+    .editproduct-page .table thead th,
+    .editproduct-page .table tbody td {
+        padding: 8px;
+        font-size: 0.85rem;
+    }
+    
+    .editproduct-page .pagination .page-link {
+        padding: 5px 10px;
+        font-size: 0.85rem;
+    }
+    
+    .editproduct-page .custom-file-label {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* Large screens optimization */
+@media (min-width: 1200px) {
+    .editproduct-page .container-fluid {
+        padding: 30px;
+    }
+    
+    .editproduct-page .header-dark h1 {
+        font-size: 3rem;
+    }
+    
+    .editproduct-page .form-label {
+        font-size: 1.1rem;
+    }
+    
+    .editproduct-page .form-control,
+    .editproduct-page .form-select {
+        padding: 15px 18px;
+        font-size: 1.1rem;
+    }
+    
+    .editproduct-page .btn-secondary,
+    .editproduct-page .btn-primary,
+    .editproduct-page .btn-warning,
+    .editproduct-page .btn-success {
+        padding: 15px 30px;
+        font-size: 1.1rem;
+    }
+    
+    .editproduct-page .alert {
+        padding: 18px 25px;
+        font-size: 1.1rem;
+    }
+    
+    .editproduct-page .table thead th,
+    .editproduct-page .table tbody td {
+        padding: 18px;
+        font-size: 1.1rem;
+    }
+    
+    .editproduct-page .pagination .page-link {
+        padding: 10px 20px;
+        font-size: 1.1rem;
+    }
+    
+    .editproduct-page .custom-file-label {
+        padding: 1rem 2rem;
+        font-size: 1.3rem;
+    }
+}
