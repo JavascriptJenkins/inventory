@@ -61,3 +61,6 @@ generated-sources/
 *.jar
 *.war
 *.ear
+
+# Exclude lubernetes directory
+resources/static/lubernetes/
