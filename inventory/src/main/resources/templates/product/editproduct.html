@@ -3,191 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <title>Edit Product</title>
-
-    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
-
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Bootstrap Bundle JS (Includes Popper.js) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-    <link rel="stylesheet" type="text/css" media="all" href="/css/table.css" th:href="@{/css/table.css}" />
-
-
-    <style>
-        body {
-            color: #fff;
-            font-family: 'Roboto', sans-serif;
-        }
-        .table-hover tbody tr:hover {
-            background-color: #e0f7fa;
-        }
-        .table-striped tbody tr:nth-of-type(odd) {
-            background-color: #f1f8fa;
-        }
-        .table-dark thead {
-            background-color: #343a40;
-            color: #fff;
-        }
-        .btn-secondary, .btn-primary {
-            color: #fff;
-            background-color: #343a40;
-            border-color: #343a40;
-        }
-        .btn-secondary:hover, .btn-primary:hover {
-            background-color: #23272b;
-            border-color: #1d2124;
-        }
-        .form-control, .form-select {
-        background-color: #343a40;
-        color: #fff;
-        border: 1px solid #343a40;
-        }
-        .form-control[readonly], .form-select[readonly] {
-        background-color: #343a40; /* Keep the background the same */
-        color: #808080; /* Set text color to grey */
-        }
-        .form-control:focus, .form-select:focus {
-            background-color: #343a40;
-            color: #fff;
-            border-color: #1d2124;
-            box-shadow: none;
-        }
-        .header-dark {
-            background-color: #343a40;
-            color: #fff;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            font-family: 'Roboto', sans-serif;
-            border: 1px solid transparent;
-            border-image: linear-gradient(to right, #c0c0c0, #ffffff);
-            border-image-slice: 1;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            display: flex;
-            align-items: center;
-        }
-        .header-small {
-            background-color: #343a40;
-            color: #fff;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            font-family: 'Roboto', sans-serif;
-            border: 1px solid transparent;
-            border-image: linear-gradient(to right, #c0c0c0, #ffffff);
-            border-image-slice: 1;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            width: fit-content;
-            max-width: 400px;
-            margin: 0 auto 15px auto;
-            text-align: center;
-        }
-        .back-button {
-            margin-right: 20px;
-            font-size: 2rem;
-        }
-        .back-button a {
-            color: #343a40;
-            background-color: #fff;
-            padding: 10px;
-            border-radius: 50%;
-            border: 2px solid #343a40;
-        }
-        .back-button a:hover {
-            background-color: #23272b;
-            color: #fff;
-            border-color: #23272b;
-        }
-        .alert {
-            background-color: #343a40;
-            color: #fff;
-            border: 1px solid #343a40;
-        }
-        .alert-danger {
-            background-color: #dc3545;
-            border-color: #dc3545;
-        }
-        .alert-success {
-            background-color: #28a745;
-            border-color: #28a745;
-        }
-        .alert-primary {
-            background-color: #007bff;
-            border-color: #007bff;
-        }
-        .pagination .page-link {
-            color: #fff;  /* Changed to white */
-            background-color: #343a40;
-            border: 1px solid #343a40;
-        }
-        .pagination .page-link:hover {
-            background-color: #23272b;
-            border-color: #1d2124;
-        }
-        .pagination .active .page-link {
-            color: #fff;
-            background-color: #007bff;
-            border-color: #007bff;
-        }
-        .required:after {
-            content: " *";
-            color: red;
-        }
-        .form-label {
-            color: #000;  /* Changed to black */
-        }
-    </style>
-    <style>
-        .file-input-hidden {
-          display: none;
-        }
-
-        .custom-file-label {
-          display: inline-block;
-          padding: 0.75rem 1.5rem;
-          font-size: 1.2rem;
-          font-weight: 600;
-          color: #212529;
-          background-color: #ffc107;
-          border: none;
-          border-radius: 0.5rem;
-          cursor: pointer;
-          text-align: center;
-          box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-          transition: background-color 0.2s ease;
-          margin-top: 30px;
-        }
-
-        .custom-file-label:hover {
-          background-color: #e0a800;
-        }
-
-        .custom-file-label:active {
-          background-color: #c69500;
-        }
-    </style>
-
+    
+    <!-- UIMODE Controlled CSS -->
+    <link th:if="${UIMODE == 'MODERN'}" rel="stylesheet" th:href="@{/css/MODERN/modern.css}">
+    <link th:if="${UIMODE == 'RETRO'}" rel="stylesheet" th:href="@{/css/RETRO/retro.css}">
+    <link th:if="${UIMODE == 'VEGAS'}" rel="stylesheet" th:href="@{/css/VEGAS/vegas.css}">
+    <link th:unless="${UIMODE}" rel="stylesheet" th:href="@{/css/MODERN/modern.css}">
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             var toggleButton = document.getElementById('toggleCost');
             var costInput = document.getElementById('cost');
 
-            toggleButton.addEventListener('click', function() {
-                if (costInput.style.display === 'none') {
-                    costInput.style.display = 'block';
-                } else {
-                    costInput.style.display = 'none';
-                }
-            });
+            if (toggleButton && costInput) {
+                toggleButton.addEventListener('click', function() {
+                    if (costInput.style.display === 'none') {
+                        costInput.style.display = 'block';
+                    } else {
+                        costInput.style.display = 'none';
+                    }
+                });
+            }
         });
     </script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const form = document.getElementById('uploadForm');
-            const originalAction = form.getAttribute('action');
+            if (form) {
+                const originalAction = form.getAttribute('action');
 
             const menuidInput = document.getElementById('menuid');
             const menuid = menuidInput ? menuidInput.value : null;
@@ -224,24 +70,24 @@
             checkboxes.forEach(checkbox => {
                 checkbox.addEventListener('change', updateFormAction);
             });
+            }
         });
     </script>
 
 
 
 </head>
-<body>
+<body class="editproduct-page">
 
 <div th:insert="auth/navbar.html :: navbarfragment"> </div>
 
-<div class="container">
+<div class="container-fluid">
     <div class="header-dark">
         <div class="back-button">
             <a th:href="@{/batch(batchid=${batchid}, editmode='no', page=1, size=100)}"><i class="bi bi-arrow-left-circle"></i></a>
-<!--            <a th:href="@{/admin}"><i class="bi bi-arrow-left-circle"></i></a>-->
         </div>
         <div>
-            <h1>Edit Product</h1>
+            <h1><i class="bi bi-box-seam me-2"></i>Edit Product</h1>
             <p>View or Edit Products</p>
         </div>
     </div>
@@ -268,38 +114,39 @@
             <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
             <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
 
-            <div class="row" style="margin-bottom: 5px;">
-                <div class="col-sm-2" style="margin-bottom: 5px;">
+            <div class="row mb-3">
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
                     <label class="form-label"><b>Product Number</b></label>
-                    <input type="text" th:field="*{productnumber}" class="form-control" placeholder="productnumber" aria-label="productnumber" readonly>
+                    <input type="text" th:field="*{productnumber}" class="form-control" placeholder="Product Number" aria-label="productnumber" readonly>
                 </div>
 
-                <div class="col-sm-2" style="margin-bottom: 5px;">
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
                     <label class="form-label"><b>Create Date</b></label>
-                    <span th:text="*{createTimeStamp}"></span>
+                    <span th:text="*{createTimeStamp}" class="form-control-plaintext"></span>
                 </div>
 
-                <div class="col-sm-2" style="margin-bottom: 5px;">
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
                     <label class="form-label"><b>Update Date</b></label>
-                    <span th:text="*{updateTimeStamp}"></span>
+                    <span th:text="*{updateTimeStamp}" class="form-control-plaintext"></span>
                 </div>
             </div>
 
-            <div class="row" style="margin-bottom: 5px;">
-                <div class="col-md-4" style="margin-bottom: 5px;">
+            <div class="row mb-3">
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
                     <label class="form-label"><b>Barcode</b></label>
-                    <input onkeyup="checkForInput()" id="barcodeinput1" type="text" th:field="*{barcode}" class="form-control" placeholder="barcode" aria-label="barcode" readonly>
+                    <input onkeyup="checkForInput()" id="barcodeinput1" type="text" th:field="*{barcode}" class="form-control" placeholder="Barcode" aria-label="barcode" readonly>
                 </div>
             </div>
 
-            <div class="row" style="margin-bottom: 5px;">
-                <div class="col-md-4" style="margin-bottom: 5px;">
+            <div class="row mb-3">
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
                     <label class="form-label required">Name</label>
-                    <input id="name" type="text" th:field="*{name}" class="form-control" placeholder="name" aria-label="name" readonly>
+                    <input id="name" type="text" th:field="*{name}" class="form-control edit-validation-group" placeholder="Product Name" aria-label="name" readonly>
+                    <span class="validation-error"></span>
                 </div>
-                <div class="col-md-4" style="margin-bottom: 5px;">
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
                     <label class="form-label">Description</label>
-                    <input type="text" th:field="*{description}" class="form-control" placeholder="description" aria-label="description" readonly>
+                    <input type="text" th:field="*{description}" class="form-control" placeholder="Product Description" aria-label="description" readonly>
                 </div>
             </div>
 
@@ -348,11 +195,10 @@
                 </div>
             </div>
 
-            <div class="row" style="margin-bottom: 5px;">
-                <div class="alert alert-info" role="alert">Notes</div>
-                <div class="col" style="margin-bottom: 5px;">
+            <div class="row mb-3">
+                <div class="col-12 mb-3">
                     <label class="form-label">Notes</label>
-                    <textarea style="width:648px;height:163px;" th:field="*{notes}" class="form-control" placeholder="notes" aria-label="notes" readonly></textarea>
+                    <textarea th:field="*{notes}" class="form-control" placeholder="Product Notes" aria-label="notes" rows="6" readonly></textarea>
                 </div>
             </div>
 
@@ -391,20 +237,23 @@
             </div>
 
             <div class="row" style="margin-bottom: 5px;">
-                <div class="col-md-4" style="margin-bottom: 5px;">
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
                     <label class="form-label required">Name</label>
-                    <input id="name" type="text" th:field="*{name}" class="form-control" placeholder="name" aria-label="name">
+                    <input id="name" type="text" th:field="*{name}" class="form-control edit-validation-group" placeholder="Product Name" aria-label="name">
+                    <span class="validation-error"></span>
                 </div>
-                <div class="col-md-4" style="margin-bottom: 5px;">
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
                     <label class="form-label">Description</label>
-                    <input type="text" th:field="*{description}" class="form-control" placeholder="description" aria-label="description">
+                    <input type="text" th:field="*{description}" id="description" class="form-control" placeholder="Product Description" aria-label="description">
+                    <span class="validation-error"></span>
                 </div>
             </div>
 
             <div class="row" style="margin-bottom: 5px;">
-                <div class="col-md-4" style="margin-bottom: 5px;">
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
                     <label class="form-label">Price</label>
-                    <input th:field="*{price}" class="form-control" placeholder="price" aria-label="price">
+                    <input th:field="*{price}" id="price" class="form-control" placeholder="Price" aria-label="price">
+                    <span class="validation-error"></span>
                 </div>
                 <div class="col-md-4" style="margin-bottom: 5px;">
                     <label class="form-label">Cost</label>
@@ -413,22 +262,26 @@
             </div>
 
             <div class="row" style="margin-bottom: 5px;">
-                <div class="col-md-4" style="margin-bottom: 5px;">
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
                     <label class="form-label required">Quantity</label>
-                    <input type="number" th:field="*{quantity}" class="form-control" placeholder="quantity" aria-label="quantity">
+                    <input type="number" th:field="*{quantity}" id="quantity" class="form-control edit-validation-group" placeholder="Quantity" aria-label="quantity">
+                    <span class="validation-error"></span>
                 </div>
-                <div class="col-md-4" style="margin-bottom: 5px;">
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
                     <label class="form-label required">Quantity Remaining</label>
-                    <input type="number" th:field="*{quantityremaining}" class="form-control" placeholder="remaining" aria-label="remaining">
+                    <input type="number" th:field="*{quantityremaining}" id="quantityremaining" class="form-control edit-validation-group" placeholder="Quantity Remaining" aria-label="remaining">
+                    <span class="validation-error"></span>
                 </div>
             </div>
 
             <div class="row" style="margin-bottom: 5px;">
-                <div class="col-md-4" style="margin-bottom: 5px;">
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
                     <label class="form-label required">Product Type</label>
-                    <select class="form-control" th:field="${product.producttypeid}" id="producttypeid">
+                    <select class="form-control edit-validation-group" th:field="${product.producttypeid}" id="producttypeid">
+                        <option value="">Select Product Type</option>
                         <option th:each="producttype : ${producttypes}" th:value="${producttype.producttypeid}" th:text="${producttype.name}"></option>
                     </select>
+                    <span class="validation-error"></span>
                 </div>
             </div>
 
@@ -467,9 +320,10 @@
 
             <div class="row" style="margin-bottom: 5px;">
                 <div class="alert alert-info" role="alert">Notes</div>
-                <div class="col" style="margin-bottom: 5px;">
+                <div class="col-12 mb-3">
                     <label class="form-label">Notes</label>
-                    <textarea style="width:648px;height:163px;" th:field="*{notes}" class="form-control" placeholder="notes" aria-label="notes"></textarea>
+                    <textarea th:field="*{notes}" class="form-control" placeholder="Product Notes" aria-label="notes" rows="6"></textarea>
+                    <span class="validation-error"></span>
                 </div>
             </div>
 
@@ -637,8 +491,33 @@
 
             </form>
 
+    <!-- Validation Fragment -->
+    <div th:insert="fragments/validation.html :: validationfragment"></div>
+
     </div>
 </div>
+
+<script>
+    const inputFields = [
+        'name',
+        'producttypeid',
+        'quantity',
+        'quantityremaining',
+        'barcodeinput1',
+        'productnumber',
+        'price',
+        'description',
+        'cost',
+        'notes',
+        'barcodeinput2'
+    ];
+    
+    const optionalFields = ['description', 'notes', 'cost'];
+    
+    document.addEventListener("DOMContentLoaded", () => {
+        initializeValidation(inputFields, optionalFields);
+    });
+</script>
 
 <script type="text/javascript">
     $(document).ready(function () {
