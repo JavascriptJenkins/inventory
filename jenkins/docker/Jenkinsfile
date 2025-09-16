@@ -504,25 +504,14 @@ CMD ["java", "-jar", "app.jar"]
 
 
 
-echo "HERE IS THE FQDN"
-def fqdn = "${params.TENANT_NAME}.${DO_DOMAIN}"
-echo fqdn
-
-env.CERT_ID = sh(
-  script: '''
-    set -euo pipefail
-    FQDN="${params_TENANT_NAME}.${DO_DOMAIN}"
-    curl -s -H "Authorization: Bearer $DO_API_TOKEN" \
-      https://api.digitalocean.com/v2/certificates \
-    | jq -r --arg fqdn "$FQDN" \
-        '.certificates[]
-         | select(.dns_names[]? == $fqdn)
-         | .id' \
-    | head -n1
-  ''',
-  returnStdout: true
-).trim()
-
+                    echo "HERE IS THE FQDN"
+                    echo "${params.TENANT_NAME}.${DO_DOMAIN}"
+                    echo "curl -s -H 'Authorization: Bearer $DO_API_TOKEN' https://api.digitalocean.com/v2/certificates | jq -r '.certificates[] | select(.dns_names[] == \"${fqdn}\") | .id'"
+                    def fqdn = "${params.TENANT_NAME}.${DO_DOMAIN}"
+                    env.CERT_ID = sh(
+                        script: "curl -s -H 'Authorization: Bearer $DO_API_TOKEN' https://api.digitalocean.com/v2/certificates | jq -r '.certificates[] | select(.dns_names[] == \"${fqdn}\") | .id'",
+                        returnStdout: true
+                    ).trim()
                     if (!env.CERT_ID) { error "No certificate found for ${fqdn}" }
                     echo "Using certificate ID: ${env.CERT_ID}"
 
