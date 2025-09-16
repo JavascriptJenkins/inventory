@@ -504,6 +504,9 @@ CMD ["java", "-jar", "app.jar"]
 
 
 
+                    echo "HERE IS THE FQDN"
+                    echo "${params.TENANT_NAME}.${DO_DOMAIN}"
+                    echo "curl -s -H 'Authorization: Bearer $DO_API_TOKEN' https://api.digitalocean.com/v2/certificates | jq -r '.certificates[] | select(.dns_names[] == \"${fqdn}\") | .id'"
                     def fqdn = "${params.TENANT_NAME}.${DO_DOMAIN}"
                     env.CERT_ID = sh(
                         script: "curl -s -H 'Authorization: Bearer $DO_API_TOKEN' https://api.digitalocean.com/v2/certificates | jq -r '.certificates[] | select(.dns_names[] == \"${fqdn}\") | .id'",
