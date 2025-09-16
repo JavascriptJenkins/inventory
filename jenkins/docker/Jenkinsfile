@@ -585,8 +585,6 @@ metadata:
     tenant: ${params.TENANT_NAME}
   annotations:
     service.beta.kubernetes.io/do-loadbalancer-tls-passthrough: "false"
-    service.beta.kubernetes.io/do-loadbalancer-redirect-http-to-https: "true"
-    service.beta.kubernetes.io/do-loadbalancer-certificate-id: "${env.CERT_ID}"
     service.beta.kubernetes.io/do-loadbalancer-tls-ports: "443"
     service.beta.kubernetes.io/do-loadbalancer-healthcheck-protocol: "http"
     service.beta.kubernetes.io/do-loadbalancer-healthcheck-port: "8080"
