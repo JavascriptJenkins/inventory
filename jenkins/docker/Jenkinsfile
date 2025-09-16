@@ -732,6 +732,47 @@ spec:
             }
         }
 
+                stage('DNS: Ensure domain exists') {
+            steps {
+                withCredentials([ string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN') ]) {
+                    script {
+                        echo "Checking if domain ${params.DO_DOMAIN} exists in DigitalOcean..."
+                        
+                        // Check if domain exists
+                        def domainExists = sh(
+                            script: 'curl -sS -H "Authorization: Bearer $DO_API_TOKEN" "https://api.digitalocean.com/v2/domains/' + params.DO_DOMAIN + '" | jq -r ".domain.name // empty"',
+                            returnStdout: true
+                        ).trim()
+                        
+                        if (domainExists == params.DO_DOMAIN) {
+                            echo "Domain ${params.DO_DOMAIN} already exists in DigitalOcean"
+                        } else {
+                            echo "Domain ${params.DO_DOMAIN} not found, creating it..."
+                            
+                            def createResult = sh(
+                                script: 'curl -sS -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $DO_API_TOKEN" -d \'{"name":"' + params.DO_DOMAIN + '"}\' "https://api.digitalocean.com/v2/domains"',
+                                returnStdout: true
+                            ).trim()
+                            
+                            // Check if creation was successful
+                            def createdDomain = sh(
+                                script: 'echo \'' + createResult + '\' | jq -r ".domain.name // empty"',
+                                returnStdout: true
+                            ).trim()
+                            
+                            if (createdDomain == params.DO_DOMAIN) {
+                                echo "Successfully created domain ${params.DO_DOMAIN} in DigitalOcean"
+                                echo "Default DNS records created for the domain"
+                            } else {
+                                echo "Domain creation response: ${createResult}"
+                                error "Failed to create domain ${params.DO_DOMAIN} in DigitalOcean"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
        stage('DNS: Ensure A record') {
             steps {
                 withCredentials([ string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN') ]) {
