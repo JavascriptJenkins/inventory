@@ -741,7 +741,7 @@ spec:
                             "DO_DOMAIN=${params.DO_DOMAIN}",
                             "IP=${env.EXTERNAL_IP}"
                         ]) {
-                            sh '''
+                            sh '''#!/bin/bash
                                 set -euo pipefail
                                 AUTH="Authorization: Bearer $DO_API_TOKEN"
                                 NAME="$TENANT"
@@ -787,7 +787,7 @@ spec:
                         "FQDN=${params.TENANT_NAME}.${params.DO_DOMAIN}",
                         "IP=${env.EXTERNAL_IP}"
                     ]) {
-                        sh '''
+                        sh '''#!/bin/bash
                             set -euo pipefail
                             FQDN="$FQDN"
                             IP="$IP"
@@ -830,7 +830,7 @@ spec:
                             "DO_DOMAIN=${params.DO_DOMAIN}"
                         ]) {
                             env.CERT_ID = sh(
-                                script: '''
+                                script: '''#!/bin/bash
                                     set -euo pipefail
                                     AUTH="Authorization: Bearer $DO_API_TOKEN"
                                     api() { curl -sS -H "$AUTH" "$@"; }
