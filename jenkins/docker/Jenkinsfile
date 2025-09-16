@@ -513,23 +513,17 @@ withEnv(["FQDN=${fqdn}"]) {
     script: '''
       set -eu
 
-      # Fetch certificates JSON (don’t fail the whole step on HTTP error)
-      CERTS_JSON="$(curl -sS -H "Authorization: Bearer ${DO_API_TOKEN}" https://api.digitalocean.com/v2/certificates || true)"
+      api() { curl -sS -H "Authorization: Bearer ${DO_API_TOKEN}" "$@"; }
 
-      # If curl returned nothing, bail out cleanly
-      if [ -z "$CERTS_JSON" ]; then
-        printf "%s" ""
-        exit 0
-      fi
-
-      # Try exact FQDN first
+      # 1) Try to find an existing certificate (exact FQDN)
+      CERTS_JSON="$(api https://api.digitalocean.com/v2/certificates || true)"
       CERT_ID="$(printf "%s" "$CERTS_JSON" | jq -r --arg fqdn "$FQDN" '
         (.certificates // [])
         | map(select((.dns_names // []) | index($fqdn)))
         | (.[0].id // empty)
       ')"
 
-      # Fallback to wildcard SAN (*.domain)
+      # 1b) Fallback to wildcard (*.domain)
       if [ -z "$CERT_ID" ]; then
         WILDCARD="*.${DO_DOMAIN}"
         CERT_ID="$(printf "%s" "$CERTS_JSON" | jq -r --arg wc "$WILDCARD" '
@@ -539,7 +533,51 @@ withEnv(["FQDN=${fqdn}"]) {
         ')"
       fi
 
-      # Output the ID (or empty)
+      # 2) If not found, create a managed Let's Encrypt cert for the exact FQDN
+      if [ -z "$CERT_ID" ]; then
+        CREATE_PAYLOAD="$(jq -n --arg name "$FQDN" --arg fqdn "$FQDN" '{
+          name: $name,
+          type: "lets_encrypt",
+          dns_names: [$fqdn]
+        }')"
+
+        CREATE_JSON="$(api -X POST -H "Content-Type: application/json" \
+          -d "$CREATE_PAYLOAD" \
+          https://api.digitalocean.com/v2/certificates || true)"
+
+        # Create returns {"certificate": {...}}
+        CERT_ID="$(printf "%s" "$CREATE_JSON" | jq -r '
+          (.certificate.id // .id // empty)
+        ')"
+      fi
+
+      # If still empty → exit cleanly; Groovy will handle the error messaging.
+      if [ -z "$CERT_ID" ]; then
+        printf "%s" ""
+        exit 0
+      fi
+
+      # 3) Wait until certificate is issued (poll up to ~5 minutes)
+      i=0
+      while :; do
+        STATE="$(api https://api.digitalocean.com/v2/certificates/"$CERT_ID" \
+          | jq -r '(.certificate.state // .state // "unknown")')"
+        if [ "$STATE" = "issued" ]; then
+          break
+        fi
+        if [ "$STATE" = "failed" ]; then
+          printf "%s" ""
+          exit 0
+        fi
+        i=$((i+1))
+        if [ $i -ge 30 ]; then
+          # timeout
+          printf "%s" ""
+          exit 0
+        fi
+        sleep 10
+      done
+
       printf "%s" "$CERT_ID"
     ''',
     returnStdout: true
@@ -547,10 +585,11 @@ withEnv(["FQDN=${fqdn}"]) {
 }
 
 if (!env.CERT_ID) {
-  // Keep the message generic (don’t interpolate secrets)
-  error('No matching DigitalOcean certificate found for the tenant FQDN.')
+  // Keep generic; don’t leak secrets/domains in logs
+  error('Could not find or issue a DigitalOcean certificate for the tenant FQDN.')
 }
 echo "Using certificate ID: ${env.CERT_ID}"
+
 
 
 
