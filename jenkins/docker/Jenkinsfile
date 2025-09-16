@@ -10,6 +10,7 @@ pipeline {
         string(name: 'BRANCH', defaultValue: 'test1', description: 'Branch to build from')
         string(name: 'TENANT_NAME', defaultValue: '', description: 'Tenant name for deployment')
         string(name: 'APP_NAME', defaultValue: 'inventory', description: 'Application name')
+        string(name: 'DO_DOMAIN', defaultValue: 'something.something', description: 'the domain')
         string(name: 'SUBSCRIPTION_TIER', defaultValue: 'BASIC', description: 'Subscription tier')
         string(name: 'BILLING_EMAIL', defaultValue: '', description: 'Billing email address')
         string(name: 'K8S_NAMESPACE', defaultValue: '', description: 'Kubernetes namespace (auto-generated if empty)')
@@ -172,7 +173,6 @@ pipeline {
                         
                         // Digital Ocean credentials
                         string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN'),
-                        string(credentialsId: 'DO_DOMAIN', variable: 'DO_DOMAIN'),
                         string(credentialsId: 'DO_LB_IP', variable: 'DO_LB_IP'),
                         string(credentialsId: 'SANDBOX_POSTGRESQL_PUBLIC_USER', variable: 'SANDBOX_POSTGRESQL_PUBLIC_USER'),
                         string(credentialsId: 'SANDBOX_POSTGRESQL_PUBLIC_URI', variable: 'SANDBOX_POSTGRESQL_PUBLIC_URI'),
@@ -498,7 +498,6 @@ CMD ["java", "-jar", "app.jar"]
                     def k8sNamespace = (params.K8S_NAMESPACE && params.K8S_NAMESPACE.trim() != '') ? params.K8S_NAMESPACE : "tenant-${params.TENANT_NAME.toLowerCase().replaceAll('[^a-z0-9-]', '-')}"
 
                     withCredentials([
-                        string(credentialsId: 'DO_DOMAIN', variable: 'DO_DOMAIN'),
                         string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN')
                     ]) {
 
@@ -716,8 +715,7 @@ spec:
                     
                     // Apply the deployment using kubectl with file credential
                     withCredentials([
-                        file(credentialsId: 'KUBECONFIG_PATH', variable: 'KCFG'),
-                        string(credentialsId: 'DO_DOMAIN', variable: 'DO_DOMAIN')
+                        file(credentialsId: 'KUBECONFIG_PATH', variable: 'KCFG')
                     ]) {
                         sh """
                             export KUBECONFIG="\$KCFG"
@@ -798,7 +796,6 @@ spec:
                 script {
                     withCredentials([
                         string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN'),
-                        string(credentialsId: 'DO_DOMAIN', variable: 'DO_DOMAIN'),
                         file(credentialsId: 'KUBECONFIG_PATH', variable: 'KCFG')
                     ]) {
                         sh """
@@ -863,7 +860,6 @@ spec:
         stage('LB: Discover IDs') {
             steps {
                 withCredentials([
-                    string(credentialsId: 'DO_DOMAIN', variable: 'DO_DOMAIN'),
                     file(credentialsId: 'KUBECONFIG_PATH', variable: 'KCFG')
                 ]) {
                     script {
@@ -908,8 +904,7 @@ spec:
         stage('DNS: Create A Record') {
             steps {
                 withCredentials([
-                    string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN'),
-                    string(credentialsId: 'DO_DOMAIN', variable: 'DO_DOMAIN')
+                    string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN')
                 ]) {
                     sh """
                         set -e
