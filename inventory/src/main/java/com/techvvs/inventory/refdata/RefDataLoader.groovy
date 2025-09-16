@@ -30,10 +30,11 @@ class RefDataLoader {
         
         try {
             // Load common reference data files
-            executeSqlFile("01_batch_types.sql")
-            executeSqlFile("02_package_types.sql")
-            executeSqlFile("04_location_types.sql")
-            executeSqlFile("04_product_types.sql")
+            // todo: fix syntax errors in these files
+//            executeSqlFile("01_batch_types.sql")
+//            executeSqlFile("02_package_types.sql")
+//            executeSqlFile("04_location_types.sql")
+//            executeSqlFile("04_product_types.sql")
 
             // todo: this is how we can make tenant specific sql files to deploy
             // Load tenant-specific product types
