@@ -732,49 +732,43 @@ spec:
             }
         }
 
-        stage('DNS: Ensure A record') {
+       stage('DNS: Ensure A record') {
             steps {
                 withCredentials([ string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN') ]) {
                     script {
-                        withEnv([
-                            "TENANT=${params.TENANT_NAME}",
-                            "DO_DOMAIN=${params.DO_DOMAIN}",
-                            "IP=${env.EXTERNAL_IP}"
-                        ]) {
-                            sh '''#!/bin/bash
-                                set -euo pipefail
-                                AUTH="Authorization: Bearer $DO_API_TOKEN"
-                                NAME="$TENANT"
-                                DOMAIN="$DO_DOMAIN"
-                                TARGET="$IP"
-
-                                LIST="$(curl -sS -H "$AUTH" "https://api.digitalocean.com/v2/domains/$DOMAIN/records")"
-                                REC_ID="$(printf "%s" "$LIST" | jq -r --arg name "$NAME" '
-                                    (.domain_records // [])
-                                    | map(select(.type=="A" and .name==$name))
-                                    | (.[0].id // empty)
-                                ')"
-
-                                if [ -n "$REC_ID" ]; then
-                                    CUR_IP="$(printf "%s" "$LIST" | jq -r --arg id "$REC_ID" '
-                                        (.domain_records // [])
-                                        | map(select((.id|tostring)==$id))
-                                        | (.[0].data // "")
-                                    ')"
-                                    if [ "$CUR_IP" != "$TARGET" ]; then
-                                        curl -sS -X PUT \
-                                            -H "Content-Type: application/json" -H "$AUTH" \
-                                            -d "$(jq -n --arg data "$TARGET" '{data:$data}')" \
-                                            "https://api.digitalocean.com/v2/domains/$DOMAIN/records/$REC_ID" >/dev/null
-                                    fi
-                                else
-                                    curl -sS -X POST \
-                                        -H "Content-Type: application/json" -H "$AUTH" \
-                                        -d "$(jq -n --arg name "$NAME" --arg data "$TARGET" '{type:"A",name:$name,data:$data,ttl:60}')" \
-                                        "https://api.digitalocean.com/v2/domains/$DOMAIN/records" >/dev/null
-                                fi
-                            '''
+                        // Get existing DNS records
+                        def listRecords = sh(
+                            script: 'curl -sS -H "Authorization: Bearer $DO_API_TOKEN" "https://api.digitalocean.com/v2/domains/' + params.DO_DOMAIN + '/records"',
+                            returnStdout: true
+                        ).trim()
+                        
+                        // Check if A record already exists for this tenant
+                        def existingRecordId = sh(
+                            script: 'echo \'' + listRecords + '\' | jq -r --arg name "' + params.TENANT_NAME + '" \'(.domain_records // []) | map(select(.type=="A" and .name==$name)) | (.[0].id // empty)\'',
+                            returnStdout: true
+                        ).trim()
+                        
+                        if (existingRecordId && existingRecordId != '' && existingRecordId != 'null') {
+                            echo "Found existing A record with ID: ${existingRecordId}"
+                            
+                            // Get current IP of existing record
+                            def currentIp = sh(
+                                script: 'echo \'' + listRecords + '\' | jq -r --arg id "' + existingRecordId + '" \'(.domain_records // []) | map(select((.id|tostring)==$id)) | (.[0].data // "")\'',
+                                returnStdout: true
+                            ).trim()
+                            
+                            if (currentIp != env.EXTERNAL_IP) {
+                                echo "Updating A record from ${currentIp} to ${env.EXTERNAL_IP}"
+                                sh 'curl -sS -X PUT -H "Content-Type: application/json" -H "Authorization: Bearer $DO_API_TOKEN" -d \'{"data":"' + env.EXTERNAL_IP + '"}\' "https://api.digitalocean.com/v2/domains/' + params.DO_DOMAIN + '/records/' + existingRecordId + '"'
+                            } else {
+                                echo "A record already points to correct IP: ${env.EXTERNAL_IP}"
+                            }
+                        } else {
+                            echo "Creating new A record for ${params.TENANT_NAME}.${params.DO_DOMAIN} -> ${env.EXTERNAL_IP}"
+                            sh 'curl -sS -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $DO_API_TOKEN" -d \'{"type":"A","name":"' + params.TENANT_NAME + '","data":"' + env.EXTERNAL_IP + '","ttl":60}\' "https://api.digitalocean.com/v2/domains/' + params.DO_DOMAIN + '/records"'
                         }
+                        
+                        echo "DNS A record operation completed"
                     }
                 }
             }
