@@ -215,7 +215,6 @@ pipeline {
                         
                         echo "🌐 DIGITALOCEAN CREDENTIALS:"
                         echo "  DO_API_TOKEN: [CREDENTIAL ID: DO_API_TOKEN]"
-                        echo "  DO_DOMAIN: [CREDENTIAL ID: DO_DOMAIN]"
                         echo "  DO_LB_IP: [CREDENTIAL ID: DO_LB_IP]"
                         echo ""
                         
@@ -504,7 +503,7 @@ CMD ["java", "-jar", "app.jar"]
 
 
 echo "HERE IS THE FQDN"
-def fqdn = "${params.TENANT_NAME}.${DO_DOMAIN}"
+def fqdn = "${params.TENANT_NAME}.${params.DO_DOMAIN}"
 echo fqdn
 
 withEnv(["FQDN=${fqdn}"]) {

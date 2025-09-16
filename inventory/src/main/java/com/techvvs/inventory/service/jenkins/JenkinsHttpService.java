@@ -70,8 +70,10 @@ public class JenkinsHttpService {
             params.add("SUBSCRIPTION_TIER", subscriptionTier);
             params.add("BILLING_EMAIL", billingEmail);
             params.add("APP_NAME", tenantName+"App");
+            params.add("DO_DOMAIN", tenantName);
             params.add("K8S_NAMESPACE", "tenant-" + tenantName);
             params.add("BRANCH", "test1"); // todo: change this
+
             
             HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
             
@@ -91,7 +93,7 @@ public class JenkinsHttpService {
         }
     }
     
-    public void triggerGenericTenantBuild(String tenantName, String subscriptionTier, String billingEmail) {
+    public void triggerGenericTenantBuild(String tenantName, String subscriptionTier, String billingEmail, String domain) {
         try {
             // Deploy comprehensive tenant infrastructure (DNS, SSL certificate, PostgreSQL schema)
             System.out.println("Deploying comprehensive infrastructure for tenant: " + tenantName);
@@ -146,6 +148,7 @@ public class JenkinsHttpService {
             params.add("SUBSCRIPTION_TIER", subscriptionTier);
             params.add("BILLING_EMAIL", billingEmail);
             params.add("APP_NAME", tenantName+"App");
+            params.add("DO_DOMAIN", domain);
             params.add("K8S_NAMESPACE", "tenant-" + tenantName);
             params.add("BRANCH", "test1"); // todo: change this
             

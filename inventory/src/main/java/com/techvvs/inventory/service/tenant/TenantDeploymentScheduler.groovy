@@ -88,7 +88,7 @@ class TenantDeploymentScheduler {
         try {
 
 
-            jenkinsHttpService.triggerGenericTenantBuild(tenant.tenantName, tenant.subscriptionTier, tenant.billingEmail)
+            jenkinsHttpService.triggerGenericTenantBuild(tenant.tenantName, tenant.subscriptionTier, tenant.billingEmail, tenant.domainName)
             //jenkinsHttpService.triggerTenantProvisioning(tenant.tenantName, tenant.subscriptionTier, tenant.billingEmail)
 
 
