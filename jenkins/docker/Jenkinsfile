@@ -584,8 +584,7 @@ metadata:
     app: inventory
     tenant: ${params.TENANT_NAME}
   annotations:
-    service.beta.kubernetes.io/do-loadbalancer-tls-passthrough: "false"
-    service.beta.kubernetes.io/do-loadbalancer-tls-ports: "443"
+    service.beta.kubernetes.io/do-loadbalancer-tls-passthrough: "true"
     service.beta.kubernetes.io/do-loadbalancer-healthcheck-protocol: "http"
     service.beta.kubernetes.io/do-loadbalancer-healthcheck-port: "8080"
     service.beta.kubernetes.io/do-loadbalancer-healthcheck-check-interval-seconds: "10"
