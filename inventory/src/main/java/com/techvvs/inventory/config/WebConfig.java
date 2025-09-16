@@ -42,6 +42,7 @@ public class WebConfig implements WebMvcConfigurer {
                     "/css/**",         // Exclude CSS files
                     "/js/**",          // Exclude JavaScript files
                     "/images/**",      // Exclude image files
+                    "/image/images/**",      // Exclude image files
                     "/favicon.ico",    // Exclude favicon
                     "/actuator/**"     // Exclude actuator endpoints
                 );
