@@ -624,63 +624,65 @@ spec:
                             # Verify kubectl can connect to the cluster
                             kubectl config get-contexts
 
-                            # Check if LoadBalancer service already exists
+                            # Force delete and recreate service to remove stale LoadBalancer annotations
+                            echo "Force deleting any existing service with stale LoadBalancer annotations..."
+
+                            # Force delete the existing service completely
+                            echo "Deleting existing service: inventory-${params.TENANT_NAME}-service"
+                            kubectl delete service inventory-${params.TENANT_NAME}-service -n ${k8sNamespace} --ignore-not-found=true
+
+                            # Wait for complete deletion
+                            echo "Waiting for service deletion to complete..."
+                            sleep 10
+
+                            # Verify service is gone
                             if kubectl get service inventory-${params.TENANT_NAME}-service -n ${k8sNamespace} >/dev/null 2>&1; then
-                                echo "LoadBalancer service already exists for tenant ${params.TENANT_NAME} in namespace ${k8sNamespace}"
-                                
-                                # Check if it has a LoadBalancer ID (meaning it's provisioned)
-                                EXISTING_LB_ID=\$(kubectl get service inventory-${params.TENANT_NAME}-service -n ${k8sNamespace} -o jsonpath='{.metadata.annotations.kubernetes\\.digitalocean\\.com/load-balancer-id}' 2>/dev/null || echo "")
-                                
-                                if [ -n "\$EXISTING_LB_ID" ]; then
-                                    echo "Existing LoadBalancer ID found: \$EXISTING_LB_ID"
-                                    echo "Skipping LoadBalancer creation, will only update deployment and pod"
-                                    
-                                    # Apply only the PVC and Deployment parts (skip service)
-                                    kubectl apply -f <(grep -A 20 "kind: PersistentVolumeClaim" k8s-deployment.yaml)
-                                    kubectl apply -f <(grep -A 50 "kind: Deployment" k8s-deployment.yaml)
-                                    
-                                else
-                                    echo "Service exists but no LoadBalancer ID found, will recreate service"
-                                    kubectl delete service inventory-${params.TENANT_NAME}-service -n ${k8sNamespace}
-                                    sleep 10
-                                    kubectl apply -f k8s-deployment.yaml
-                                fi
-                            else
-                                echo "No existing LoadBalancer service found, creating new one"
-                                
-                                # Check if the service account exists in the namespace
-                                echo "DEBUG: k8sNamespace variable = ${k8sNamespace}"
-                                echo "Checking for service account ${params.TENANT_NAME}-admin in namespace ${k8sNamespace}"
-                                kubectl get serviceaccount ${params.TENANT_NAME}-admin -n ${k8sNamespace} || {
-                                    echo "ERROR: Service account ${params.TENANT_NAME}-admin not found in namespace ${k8sNamespace}"
-                                    echo "Available service accounts in namespace ${k8sNamespace}:"
-                                    kubectl get serviceaccounts -n ${k8sNamespace}
-                                    exit 1
-                                }
-                                
-                                # Apply the full deployment
-                                kubectl apply -f k8s-deployment.yaml
+                                echo "Service still exists, waiting longer..."
+                                sleep 20
+
+                                # Try force delete again if still exists
+                                kubectl delete service inventory-${params.TENANT_NAME}-service -n ${k8sNamespace} --force --grace-period=0 || true
+                                sleep 5
                             fi
-                            
-                            # Wait for deployment rollout regardless of service creation
+
+                            echo "Service cleanup completed, ready to create fresh service"
+                            kubectl cluster-info
+
+                            # Check if the service account exists in the namespace
+                            echo "DEBUG: k8sNamespace variable = ${k8sNamespace}"
+                            echo "Checking for service account ${params.TENANT_NAME}-admin in namespace ${k8sNamespace}"
+                            kubectl get serviceaccount ${params.TENANT_NAME}-admin -n ${k8sNamespace} || {
+                                echo "ERROR: Service account ${params.TENANT_NAME}-admin not found in namespace ${k8sNamespace}"
+                                echo "Available service accounts in namespace ${k8sNamespace}:"
+                                kubectl get serviceaccounts -n ${k8sNamespace}
+                                exit 1
+                            }
+
+                            # Apply the deployment
+                            kubectl apply -f k8s-deployment.yaml
                             kubectl rollout status deployment/inventory-${params.TENANT_NAME} -n ${k8sNamespace} --timeout=300s
-                            
-                            echo "Deployment completed"
-                            
+
+                            # LoadBalancer will be created by Jenkins job - no need to wait for external IP
+                            echo "LoadBalancer service created successfully"
+                            echo "DNS record will be created after LoadBalancer is provisioned"
+                            # Verify the annotation details
+                            echo "=== Verify the annotation details ==="
+                            kubectl get svc inventory-${params.TENANT_NAME}-service -n ${k8sNamespace} -o yaml | grep -A4 annotations
+
                             # Debug: Check service configuration and load balancer details
                             echo "=== Service Configuration ==="
                             kubectl get service inventory-${params.TENANT_NAME}-service -n ${k8sNamespace} -o yaml
-                            
+
                             echo "=== Load Balancer ID ==="
                             LB_ID=\$(kubectl get service inventory-${params.TENANT_NAME}-service -n ${k8sNamespace} -o jsonpath='{.metadata.annotations.kubernetes\\.digitalocean\\.com/load-balancer-id}')
                             echo "Load Balancer ID: \$LB_ID"
-                            
+
                             echo "=== Node Information ==="
                             kubectl get nodes -o wide
-                            
+
                             echo "=== Pod Status ==="
                             kubectl get pods -n ${k8sNamespace} -o wide
-                            
+
                         """
                     }
                 }
@@ -702,25 +704,25 @@ spec:
                         echo "Waiting for LoadBalancer external IP to be assigned..."
                         def maxAttempts = 60  // 10 minutes max wait
                         def attempt = 0
-                        
+
                         while (attempt < maxAttempts) {
                             env.EXTERNAL_IP = sh(
                                 script: "export KUBECONFIG='${KCFG}'; kubectl get svc inventory-${params.TENANT_NAME}-service -n ${env.K8S_NAMESPACE} -o jsonpath='{.status.loadBalancer.ingress[0].ip}'",
                                 returnStdout: true
                             ).trim()
-                            
+
                             if (env.EXTERNAL_IP && env.EXTERNAL_IP != 'null' && env.EXTERNAL_IP != '') {
                                 echo "External IP assigned: ${env.EXTERNAL_IP}"
                                 break
                             }
-                            
+
                             attempt++
                             echo "Attempt ${attempt}/${maxAttempts}: External IP not ready yet, waiting 10 seconds..."
                             sleep(10)
                         }
-                        
-                        if (!env.EXTERNAL_IP || env.EXTERNAL_IP == 'null' || env.EXTERNAL_IP == '') { 
-                            error "External IP not assigned after ${maxAttempts} attempts (${maxAttempts * 10} seconds)" 
+
+                        if (!env.EXTERNAL_IP || env.EXTERNAL_IP == 'null' || env.EXTERNAL_IP == '') {
+                            error "External IP not assigned after ${maxAttempts} attempts (${maxAttempts * 10} seconds)"
                         }
 
                         echo "Found LB_ID: ${env.LB_ID}"
@@ -730,34 +732,34 @@ spec:
             }
         }
 
-        stage('DNS: Ensure domain exists') {
+                stage('DNS: Ensure domain exists') {
             steps {
                 withCredentials([ string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN') ]) {
                     script {
                         echo "Checking if domain ${params.DO_DOMAIN} exists in DigitalOcean..."
-                        
+
                         // Check if domain exists
                         def domainExists = sh(
                             script: 'curl -sS -H "Authorization: Bearer $DO_API_TOKEN" "https://api.digitalocean.com/v2/domains/' + params.DO_DOMAIN + '" | jq -r ".domain.name // empty"',
                             returnStdout: true
                         ).trim()
-                        
+
                         if (domainExists == params.DO_DOMAIN) {
                             echo "Domain ${params.DO_DOMAIN} already exists in DigitalOcean"
                         } else {
                             echo "Domain ${params.DO_DOMAIN} not found, creating it..."
-                            
+
                             def createResult = sh(
                                 script: 'curl -sS -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $DO_API_TOKEN" -d \'{"name":"' + params.DO_DOMAIN + '"}\' "https://api.digitalocean.com/v2/domains"',
                                 returnStdout: true
                             ).trim()
-                            
+
                             // Check if creation was successful
                             def createdDomain = sh(
                                 script: 'echo \'' + createResult + '\' | jq -r ".domain.name // empty"',
                                 returnStdout: true
                             ).trim()
-                            
+
                             if (createdDomain == params.DO_DOMAIN) {
                                 echo "Successfully created domain ${params.DO_DOMAIN} in DigitalOcean"
                                 echo "Default DNS records created for the domain"
@@ -771,53 +773,43 @@ spec:
             }
         }
 
-        stage('DNS: Ensure A record') {
+       stage('DNS: Ensure A record') {
             steps {
                 withCredentials([ string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN') ]) {
                     script {
-                        echo "Creating/updating A record for ${params.TENANT_NAME}.${params.DO_DOMAIN} -> ${env.EXTERNAL_IP}"
-                        
                         // Get existing DNS records
                         def listRecords = sh(
                             script: 'curl -sS -H "Authorization: Bearer $DO_API_TOKEN" "https://api.digitalocean.com/v2/domains/' + params.DO_DOMAIN + '/records"',
                             returnStdout: true
                         ).trim()
-                        
+
                         // Check if A record already exists for this tenant
                         def existingRecordId = sh(
                             script: 'echo \'' + listRecords + '\' | jq -r --arg name "' + params.TENANT_NAME + '" \'(.domain_records // []) | map(select(.type=="A" and .name==$name)) | (.[0].id // empty)\'',
                             returnStdout: true
                         ).trim()
-                        
+
                         if (existingRecordId && existingRecordId != '' && existingRecordId != 'null') {
                             echo "Found existing A record with ID: ${existingRecordId}"
-                            
+
                             // Get current IP of existing record
                             def currentIp = sh(
                                 script: 'echo \'' + listRecords + '\' | jq -r --arg id "' + existingRecordId + '" \'(.domain_records // []) | map(select((.id|tostring)==$id)) | (.[0].data // "")\'',
                                 returnStdout: true
                             ).trim()
-                            
+
                             if (currentIp != env.EXTERNAL_IP) {
                                 echo "Updating A record from ${currentIp} to ${env.EXTERNAL_IP}"
-                                def updateResult = sh(
-                                    script: 'curl -sS -X PUT -H "Content-Type: application/json" -H "Authorization: Bearer $DO_API_TOKEN" -d \'{"data":"' + env.EXTERNAL_IP + '"}\' "https://api.digitalocean.com/v2/domains/' + params.DO_DOMAIN + '/records/' + existingRecordId + '"',
-                                    returnStdout: true
-                                ).trim()
-                                echo "A record update result: ${updateResult}"
+                                sh 'curl -sS -X PUT -H "Content-Type: application/json" -H "Authorization: Bearer $DO_API_TOKEN" -d \'{"data":"' + env.EXTERNAL_IP + '"}\' "https://api.digitalocean.com/v2/domains/' + params.DO_DOMAIN + '/records/' + existingRecordId + '"'
                             } else {
                                 echo "A record already points to correct IP: ${env.EXTERNAL_IP}"
                             }
                         } else {
                             echo "Creating new A record for ${params.TENANT_NAME}.${params.DO_DOMAIN} -> ${env.EXTERNAL_IP}"
-                            def createResult = sh(
-                                script: 'curl -sS -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $DO_API_TOKEN" -d \'{"type":"A","name":"' + params.TENANT_NAME + '","data":"' + env.EXTERNAL_IP + '","ttl":60}\' "https://api.digitalocean.com/v2/domains/' + params.DO_DOMAIN + '/records"',
-                                returnStdout: true
-                            ).trim()
-                            echo "A record creation result: ${createResult}"
+                            sh 'curl -sS -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $DO_API_TOKEN" -d \'{"type":"A","name":"' + params.TENANT_NAME + '","data":"' + env.EXTERNAL_IP + '","ttl":60}\' "https://api.digitalocean.com/v2/domains/' + params.DO_DOMAIN + '/records"'
                         }
-                        
-                        echo "DNS A record operation completed successfully"
+
+                        echo "DNS A record operation completed"
                     }
                 }
             }
@@ -861,7 +853,7 @@ spec:
             }
         }
 
-        stage('Cert: Ensure managed cert') {
+       stage('Cert: Ensure managed cert') {
             steps {
                 withCredentials([ string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN') ]) {
                     script {
@@ -894,7 +886,7 @@ spec:
                             env.CERT_ID = existingCertId
                         } else {
                             echo "No existing certificate found, creating new Let's Encrypt certificate for ${fqdn}"
-                            
+
                             // Create new certificate
                             def createResult = sh(
                                 script: 'curl -sS -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $DO_API_TOKEN" -d \'{"name":"' + fqdn + '","type":"lets_encrypt","dns_names":["' + fqdn + '"]}\' "https://api.digitalocean.com/v2/certificates"',
@@ -909,28 +901,28 @@ spec:
 
                             if (newCertId && newCertId != '' && newCertId != 'null') {
                                 echo "Certificate creation initiated with ID: ${newCertId}"
-                                
+
                                 // Wait for certificate to be issued (max 6 minutes)
                                 def maxAttempts = 36
                                 def attempt = 0
                                 def certState = 'unknown'
-                                
+
                                 while (attempt < maxAttempts) {
                                     sleep(10)
                                     attempt++
-                                    
+
                                     def stateResult = sh(
                                         script: 'curl -sS -H "Authorization: Bearer $DO_API_TOKEN" "https://api.digitalocean.com/v2/certificates/' + newCertId + '"',
                                         returnStdout: true
                                     ).trim()
-                                    
+
                                     certState = sh(
                                         script: 'echo \'' + stateResult + '\' | jq -r \'.certificate.state // .state // "unknown"\'',
                                         returnStdout: true
                                     ).trim()
-                                    
+
                                     echo "Certificate state check ${attempt}/${maxAttempts}: ${certState}"
-                                    
+
                                     if (certState == 'verified') {
                                         echo "Certificate successfully issued!"
                                         env.CERT_ID = newCertId
@@ -940,7 +932,7 @@ spec:
                                         break
                                     }
                                 }
-                                
+
                                 if (certState != 'verified') {
                                     error "Certificate failed to be issued after ${maxAttempts} attempts (6 minutes). State: ${certState}"
                                 }
@@ -953,14 +945,14 @@ spec:
                         if (!env.CERT_ID) {
                             error "Could not find or issue a DigitalOcean certificate for ${fqdn}"
                         }
-                        
+
                         echo "Using certificate ID: ${env.CERT_ID}"
                     }
                 }
             }
         }
 
-        stage('Service: Attach cert & redirect') {
+       stage('Service: Attach cert & redirect') {
             steps {
                 withCredentials([ file(credentialsId: 'KUBECONFIG_PATH', variable: 'KCFG') ]) {
                     script {
@@ -970,36 +962,24 @@ spec:
                         ]) {
                             sh '''
                                 export KUBECONFIG="$KCFG"
-                                
-                                # First, disable TLS passthrough
-                                echo "Disabling TLS passthrough..."
-                                kubectl annotate svc inventory-"$TENANT"-service \
-                                    -n "$KNS" \
-                                    service.beta.kubernetes.io/do-loadbalancer-tls-passthrough="false" \
-                                    --overwrite
-                                
-                                # Wait a moment for the change to process
-                                sleep 5
-                                
-                                # Now attach the certificate
-                                echo "Attaching certificate..."
                                 kubectl annotate svc inventory-"$TENANT"-service \
                                     -n "$KNS" \
                                     service.beta.kubernetes.io/do-loadbalancer-certificate-id="${CERT_ID}" \
                                     --overwrite
 
-                                # Configure TLS ports
-                                echo "Configuring TLS ports..."
-                                kubectl annotate svc inventory-"$TENANT"-service \
-                                    -n "$KNS" \
-                                    service.beta.kubernetes.io/do-loadbalancer-tls-ports="443" \
-                                    --overwrite
-
-                                # Finally, enable HTTPS redirect
-                                echo "Enabling HTTPS redirect..."
                                 kubectl annotate svc inventory-"$TENANT"-service \
                                     -n "$KNS" \
                                     service.beta.kubernetes.io/do-loadbalancer-redirect-http-to-https="true" \
+                                    --overwrite
+
+                                kubectl annotate svc inventory-"$TENANT"-service \
+                                    -n "$KNS" \
+                                    service.beta.kubernetes.io/do-loadbalancer-tls-passthrough="false" \
+                                    --overwrite
+
+                                kubectl annotate svc inventory-"$TENANT"-service \
+                                    -n "$KNS" \
+                                    service.beta.kubernetes.io/do-loadbalancer-tls-ports="443" \
                                     --overwrite
                             '''
                         }
