@@ -616,7 +616,6 @@ spec:
 
                     // Write deployment manifest to file
                     writeFile file: 'k8s-deployment.yaml', text: deploymentYaml
-                    }
 
                     // Apply the deployment using kubectl with file credential
                     withCredentials([
