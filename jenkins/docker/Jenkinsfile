@@ -742,7 +742,7 @@ spec:
                             "IP=${env.EXTERNAL_IP}"
                         ]) {
                             sh '''
-                                bash -euo pipefail <<'BASH'
+                                set -euo pipefail
                                 AUTH="Authorization: Bearer $DO_API_TOKEN"
                                 NAME="$TENANT"
                                 DOMAIN="$DO_DOMAIN"
@@ -773,7 +773,6 @@ spec:
                                         -d "$(jq -n --arg name "$NAME" --arg data "$TARGET" '{type:"A",name:$name,data:$data,ttl:60}')" \
                                         "https://api.digitalocean.com/v2/domains/$DOMAIN/records" >/dev/null
                                 fi
-                                BASH
                             '''
                         }
                     }
@@ -789,7 +788,7 @@ spec:
                         "IP=${env.EXTERNAL_IP}"
                     ]) {
                         sh '''
-                            bash -euo pipefail <<'BASH'
+                            set -euo pipefail
                             FQDN="$FQDN"
                             IP="$IP"
 
@@ -813,7 +812,6 @@ spec:
 
                             echo "DNS not pointing yet to $IP for $FQDN"
                             exit 1
-                            BASH
                         '''
                     }
                 }
@@ -833,7 +831,7 @@ spec:
                         ]) {
                             env.CERT_ID = sh(
                                 script: '''
-                                    bash -euo pipefail <<'BASH'
+                                    set -euo pipefail
                                     AUTH="Authorization: Bearer $DO_API_TOKEN"
                                     api() { curl -sS -H "$AUTH" "$@"; }
 
@@ -885,7 +883,6 @@ spec:
                                     fi
 
                                     printf "%s" "$CERT_ID"
-                                    BASH
                                 ''',
                                 returnStdout: true
                             ).trim()
@@ -908,7 +905,7 @@ spec:
                         "KNS=${env.K8S_NAMESPACE}"
                     ]) {
                         sh '''
-                            bash -euo pipefail <<'BASH'
+                            export KUBECONFIG="$KCFG"
                             kubectl annotate svc inventory-"$TENANT"-service \
                                 -n "$KNS" \
                                 service.beta.kubernetes.io/do-loadbalancer-certificate-id="${CERT_ID}" \
@@ -918,7 +915,16 @@ spec:
                                 -n "$KNS" \
                                 service.beta.kubernetes.io/do-loadbalancer-redirect-http-to-https="true" \
                                 --overwrite
-                            BASH
+
+                            kubectl annotate svc inventory-"$TENANT"-service \
+                                -n "$KNS" \
+                                service.beta.kubernetes.io/do-loadbalancer-tls-passthrough="false" \
+                                --overwrite
+
+                            kubectl annotate svc inventory-"$TENANT"-service \
+                                -n "$KNS" \
+                                service.beta.kubernetes.io/do-loadbalancer-tls-ports="443" \
+                                --overwrite
                         '''
                     }
                     echo "Certificate attached and HTTPS redirect enabled."
