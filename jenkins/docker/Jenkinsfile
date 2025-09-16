@@ -79,7 +79,7 @@ pipeline {
                     echo "JENKINS BUILD PARAMETERS LOG"
                     echo "=========================================="
                     echo ""
-
+                    
                     echo "📋 BUILD PARAMETERS:"
                     echo "  BRANCH: ${params.BRANCH}"
                     echo "  TENANT_NAME: ${params.TENANT_NAME}"
@@ -87,15 +87,15 @@ pipeline {
                     echo "  SUBSCRIPTION_TIER: ${params.SUBSCRIPTION_TIER}"
                     echo "  BILLING_EMAIL: ${params.BILLING_EMAIL}"
                     echo "  K8S_NAMESPACE: ${params.K8S_NAMESPACE}"
-
+                    
                     echo "🌐 DIGITALOCEAN PARAMETERS:"
                     echo "  DO_LOADBALANCER_ID: ${params.DO_LOADBALANCER_ID}"
                     echo ""
-
+                    
                     echo "🐳 DOCKER PARAMETERS:"
                     echo "  DOCKER_USER: ${params.DOCKER_USER}"
                     echo ""
-
+                    
                     echo "⚙️ APPLICATION CONFIGURATION:"
                     echo "  ENVIRONMENT_NAME: ${params.ENVIRONMENT_NAME}"
                     echo "  LOAD_REF_DATA: ${params.LOAD_REF_DATA}"
@@ -103,7 +103,7 @@ pipeline {
                     echo "  MAX_FILE_SIZE: ${params.MAX_FILE_SIZE}"
                     echo "  MAX_REQ_SIZE: ${params.MAX_REQ_SIZE}"
                     echo ""
-
+                    
                     echo "🗄️ DATABASE CONFIGURATION:"
                     echo "  DB_DRIVER_CLASS_NAME: ${params.DB_DRIVER_CLASS_NAME}"
                     echo "  DB_JPA_DATABASE_PLATFORM: ${params.DB_JPA_DATABASE_PLATFORM}"
@@ -115,12 +115,12 @@ pipeline {
                     echo "  DB_H2_CONSOLE_ENABLED: ${params.DB_H2_CONSOLE_ENABLED}"
                     echo "  DB_H2_WEB_ALLOWOTHERS: ${params.DB_H2_WEB_ALLOWOTHERS}"
                     echo ""
-
+                    
                     echo "💳 PAYPAL CONFIGURATION:"
                     echo "  PAYPAL_ENVIRONMENT: ${params.PAYPAL_ENVIRONMENT}"
                     echo "  PAYPAL_BRAND_NAME: ${params.PAYPAL_BRAND_NAME}"
                     echo ""
-
+                    
                     echo "💛 WALLET CONFIGURATION:"
                     echo "  WALLET_BRAND: ${params.WALLET_BRAND}"
                     echo "  WALLET_BRAND_PROGRAM: ${params.WALLET_BRAND_PROGRAM}"
@@ -128,11 +128,11 @@ pipeline {
                     echo "  WALLET_GOOGLE_ISSUER_ID: ${params.WALLET_GOOGLE_ISSUER_ID}"
                     echo "  WALLET_GOOGLE_CLASS_ID: ${params.WALLET_GOOGLE_CLASS_ID}"
                     echo ""
-
+                    
                     echo "🌿 METRC CONFIGURATION:"
                     echo "  METRC_MCP_FILE_PATH: ${params.METRC_MCP_FILE_PATH}"
                     echo ""
-
+                    
                     echo "📊 REQUEST LOGGING CONFIGURATION:"
                     echo "  REQUEST_LOGGING_ENABLED: ${params.REQUEST_LOGGING_ENABLED}"
                     echo "  REQUEST_LOGGING_HEADERS: ${params.REQUEST_LOGGING_HEADERS}"
@@ -140,7 +140,7 @@ pipeline {
                     echo "  REQUEST_LOGGING_SESSION_INFO: ${params.REQUEST_LOGGING_SESSION_INFO}"
                     echo "  REQUEST_LOGGING_SECURITY_INFO: ${params.REQUEST_LOGGING_SECURITY_INFO}"
                     echo ""
-
+                    
                     echo "=========================================="
                     echo "END OF BUILD PARAMETERS LOG"
                     echo "=========================================="
@@ -162,20 +162,20 @@ pipeline {
                         string(credentialsId: 'PAYPAL_CLIENT_ID', variable: 'PAYPAL_CLIENT_ID'),
                         string(credentialsId: 'PAYPAL_CLIENT_SECRET', variable: 'PAYPAL_CLIENT_SECRET'),
                         string(credentialsId: 'ANTHROPIC_API_KEY', variable: 'ANTHROPIC_API_KEY'),
-
+                        
                         // Database credentials
                         string(credentialsId: 'DB_PASSWORD', variable: 'DB_PASSWORD'),
                         string(credentialsId: 'POSTGRE_TEST_DB_PASSWORD', variable: 'POSTGRE_TEST_DB_PASSWORD'),
                         string(credentialsId: 'POSTGRE_PROD_DB_PASSWORD', variable: 'POSTGRE_PROD_DB_PASSWORD'),
                         string(credentialsId: 'POSTGRE_ALPHA_DB_PASSWORD', variable: 'POSTGRE_ALPHA_DB_PASSWORD'),
-
+                        
                         // Digital Ocean credentials
                         string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN'),
                         string(credentialsId: 'DO_LB_IP', variable: 'DO_LB_IP'),
                         string(credentialsId: 'SANDBOX_POSTGRESQL_PUBLIC_USER', variable: 'SANDBOX_POSTGRESQL_PUBLIC_USER'),
                         string(credentialsId: 'SANDBOX_POSTGRESQL_PUBLIC_URI', variable: 'SANDBOX_POSTGRESQL_PUBLIC_URI'),
                         string(credentialsId: 'SANDBOX_POSTGRESQL_PASSWORD', variable: 'SANDBOX_POSTGRESQL_PASSWORD'),
-
+                        
                         // Jenkins credentials
                         string(credentialsId: 'JENKINS_USERNAME', variable: 'JENKINS_USERNAME'),
                         string(credentialsId: 'JENKINS_API_TOKEN', variable: 'JENKINS_API_TOKEN'),
@@ -188,7 +188,7 @@ pipeline {
                         echo "CREDENTIALS BEING USED (IDs only for security)"
                         echo "=========================================="
                         echo ""
-
+                        
                         echo "🔐 API KEYS AND SECRETS:"
                         echo "  TWILIO_API_USER: [CREDENTIAL ID: TWILIO_API_USER]"
                         echo "  TWILIO_API_PASSWORD: [CREDENTIAL ID: TWILIO_API_PASSWORD]"
@@ -200,7 +200,7 @@ pipeline {
                         echo "  PAYPAL_CLIENT_SECRET: [CREDENTIAL ID: PAYPAL_CLIENT_SECRET]"
                         echo "  ANTHROPIC_API_KEY: [CREDENTIAL ID: ANTHROPIC_API_KEY]"
                         echo ""
-
+                        
                         echo "🗄️ DATABASE CREDENTIALS:"
                         echo "  DB_PASSWORD: [CREDENTIAL ID: DB_PASSWORD]"
                         echo "  POSTGRE_TEST_DB_PASSWORD: [CREDENTIAL ID: POSTGRE_TEST_DB_PASSWORD]"
@@ -210,25 +210,25 @@ pipeline {
                         echo "  SANDBOX_POSTGRESQL_PUBLIC_URI: [CREDENTIAL ID: SANDBOX_POSTGRESQL_PUBLIC_URI]"
                         echo "  SANDBOX_POSTGRESQL_PASSWORD: [CREDENTIAL ID: SANDBOX_POSTGRESQL_PASSWORD]"
                         echo ""
-
+                        
                         echo "🌐 DIGITALOCEAN CREDENTIALS:"
                         echo "  DO_API_TOKEN: [CREDENTIAL ID: DO_API_TOKEN]"
                         echo "  DO_LB_IP: [CREDENTIAL ID: DO_LB_IP]"
                         echo ""
-
+                        
                         echo "🔧 JENKINS CREDENTIALS:"
                         echo "  JENKINS_USERNAME: [CREDENTIAL ID: JENKINS_USERNAME]"
                         echo "  JENKINS_API_TOKEN: [CREDENTIAL ID: JENKINS_API_TOKEN]"
                         echo ""
-
+                        
                         echo "☸️ KUBERNETES CONFIGURATION:"
                         echo "  KUBECONFIG_PATH: [CREDENTIAL ID: KUBECONFIG_PATH]"
                         echo ""
-
+                        
                         echo "=========================================="
                         echo "END OF CREDENTIALS LOG"
                         echo "=========================================="
-
+                        
                         dir('inventory') {
                             // Copy kubeconfig to a writable location and update the path in application.properties
                             // Create kubeconfig from string content
@@ -239,11 +239,11 @@ pipeline {
                              // Construct BASE_QR_DOMAIN from tenant name and DO domain
                              def baseQrDomain = "https://${params.TENANT_NAME}.${params.DO_DOMAIN}"
                              echo "Constructed BASE_QR_DOMAIN: ${baseQrDomain}"
-
+                             
                              // Construct Kubernetes namespace from tenant name (same logic as Java code)
                              def k8sNamespace = params.K8S_NAMESPACE ?: "tenant-${params.TENANT_NAME.toLowerCase().replaceAll('[^a-z0-9-]', '-')}"
                              echo "Using Kubernetes namespace: ${k8sNamespace}"
-
+                             
                              // Log all dynamic values being used
                              echo "=========================================="
                              echo "DYNAMIC VALUES CALCULATED DURING BUILD"
@@ -259,7 +259,7 @@ pipeline {
                              echo "=========================================="
                              echo "END OF DYNAMIC VALUES LOG"
                              echo "=========================================="
-
+                             
                              // Update application.properties with all parameters
                              // Basic application settings
                              if (params.ENVIRONMENT_NAME) {
@@ -278,7 +278,7 @@ pipeline {
                              if (params.MAX_REQ_SIZE) {
                                  sh "sed -i 's/^spring\\.servlet\\.multipart\\.max-request-size=.*/spring.servlet.multipart.max-request-size=${params.MAX_REQ_SIZE}/' src/main/resources/application.properties"
                              }
-
+                             
                              // Database settings
                              sh "sed -i 's|^spring\\.datasource\\.url=.*|spring.datasource.url=${params.DB_URI}/defaultdb?currentSchema=tenant_${params.TENANT_NAME}&sslmode=require|' src/main/resources/application.properties"
                              sh "echo 'Updated DB_URI: ${params.DB_URI}/defaultdb?currentSchema=tenant_${params.TENANT_NAME}&sslmode=require'"
@@ -304,7 +304,7 @@ pipeline {
                              if (params.DB_H2_WEB_ALLOWOTHERS) {
                                  sh "sed -i 's/^spring\\.h2\\.console\\.settings\\.web-allow-others=.*/spring.h2.console.settings.web-allow-others=${params.DB_H2_WEB_ALLOWOTHERS}/' src/main/resources/application.properties"
                              }
-
+                             
                              // API Keys and Secrets
                              sh "sed -i 's|^twilio\\.api\\.username=.*|twilio.api.username=${TWILIO_API_USER}|' src/main/resources/application.properties"
                              sh "sed -i 's|^twilio\\.api\\.password=.*|twilio.api.password=${TWILIO_API_PASSWORD}|' src/main/resources/application.properties"
@@ -315,7 +315,7 @@ pipeline {
                              sh "sed -i 's|^paypal\\.client-id=.*|paypal.client-id=${PAYPAL_CLIENT_ID}|' src/main/resources/application.properties"
                              sh "sed -i 's|^paypal\\.client-secret=.*|paypal.client-secret=${PAYPAL_CLIENT_SECRET}|' src/main/resources/application.properties"
                              sh "sed -i 's|^anthropic\\.apiKey=.*|anthropic.apiKey=${ANTHROPIC_API_KEY}|' src/main/resources/application.properties"
-
+                             
                              // PayPal configuration
                              if (params.PAYPAL_ENVIRONMENT) {
                                  sh "sed -i 's/^paypal\\.environment=.*/paypal.environment=${params.PAYPAL_ENVIRONMENT}/' src/main/resources/application.properties"
@@ -323,7 +323,7 @@ pipeline {
                              if (params.PAYPAL_BRAND_NAME) {
                                  sh "sed -i 's/^paypal\\.brand-name=.*/paypal.brand-name=${params.PAYPAL_BRAND_NAME}/' src/main/resources/application.properties"
                              }
-
+                             
                              // Wallet configuration
                              if (params.WALLET_BRAND) {
                                  sh "sed -i 's/^wallet\\.brand\\.organizationName=.*/wallet.brand.organizationName=${params.WALLET_BRAND}/' src/main/resources/application.properties"
@@ -340,13 +340,13 @@ pipeline {
                              if (params.WALLET_GOOGLE_CLASS_ID) {
                                  sh "sed -i 's/^wallet\\.google\\.classId=.*/wallet.google.classId=${params.WALLET_GOOGLE_CLASS_ID}/' src/main/resources/application.properties"
                              }
-
+                             
                              // METRC configuration
                              if (params.METRC_MCP_FILE_PATH) {
                                  sh "sed -i 's|^metrc\\.mcp\\.dxtPath=.*|metrc.mcp.dxtPath=${params.METRC_MCP_FILE_PATH}|' src/main/resources/application.properties"
                              }
                              sh "sed -i 's|^metrc\\.mcp\\.url=.*|metrc.mcp.url=${baseQrDomain}/api/mcp|' src/main/resources/application.properties"
-
+                             
                              // Digital Ocean configuration
                              sh "sed -i 's|^digitalocean\\.api\\.token=.*|digitalocean.api.token=${DO_API_TOKEN}|' src/main/resources/application.properties"
                              sh "sed -i 's|^digitalocean\\.domain=.*|digitalocean.domain=${params.DO_DOMAIN}|' src/main/resources/application.properties"
@@ -354,16 +354,16 @@ pipeline {
                              sh "sed -i 's|^digitalocean\\.postgresql\\.username=.*|digitalocean.postgresql.username=${SANDBOX_POSTGRESQL_PUBLIC_USER}|' src/main/resources/application.properties"
                              sh "sed -i 's|^digitalocean\\.postgresql\\.password=.*|digitalocean.postgresql.password=${SANDBOX_POSTGRESQL_PASSWORD}|' src/main/resources/application.properties"
                              sh "sed -i 's|^digitalocean\\.postgresql\\.uri=.*|digitalocean.postgresql.uri=${SANDBOX_POSTGRESQL_PUBLIC_URI}|' src/main/resources/application.properties"
-
+                             
                              // Jenkins configuration
                              sh "sed -i 's|^jenkins\\.username=.*|jenkins.username=${JENKINS_USERNAME}|' src/main/resources/application.properties"
                              sh "sed -i 's|^jenkins\\.token=.*|jenkins.token=${JENKINS_API_TOKEN}|' src/main/resources/application.properties"
-
+                             
                              // Update kubeconfig path to point to the copied file
                             echo "Updating kubernetes.kubeconfig.path to: file:/app/kubeconfig/tulip-sandbox-kubeconfig.yaml"
 
                              sh "sed -i 's|^kubernetes\\.kubeconfig\\.path=.*|kubernetes.kubeconfig.path=file:/app/kubeconfig/tulip-sandbox-kubeconfig.yaml|' src/main/resources/application.properties"
-
+                             
                              // Verify the kubeconfig file exists
                              sh """
                                  if [ -f "kubeconfig/tulip-sandbox-kubeconfig.yaml" ]; then
@@ -401,7 +401,7 @@ pipeline {
                 script {
                     def imageName = "${params.DOCKER_USER}/inventory-${params.TENANT_NAME}-${params.APP_NAME}:${UUID.randomUUID().toString()}".toLowerCase()
                     def jarFile = "inventory/target/inventory-0.0.1-SNAPSHOT.jar"
-
+                    
                     // Log Docker build information
                     echo "=========================================="
                     echo "DOCKER BUILD INFORMATION"
@@ -417,7 +417,7 @@ pipeline {
                     echo "=========================================="
                     echo "END OF DOCKER BUILD INFORMATION"
                     echo "=========================================="
-
+                    
                     // Create Dockerfile with kubeconfig path
                     sh """
                         # Check if kubeconfig was created successfully
@@ -431,7 +431,7 @@ pipeline {
                             exit 1
                         fi
                     """
-
+                    
                     // Create Dockerfile
                     writeFile file: 'Dockerfile', text: """
 FROM openjdk:17-jdk-slim
@@ -461,10 +461,10 @@ ENV SERVER_PORT=8080
 # Run the application
 CMD ["java", "-jar", "app.jar"]
 """
-
+                    
                     // Build Docker image
                     docker.build(imageName)
-
+                    
                     // Store image name for later use
                     env.DOCKER_IMAGE = imageName
                 }
@@ -610,35 +610,35 @@ spec:
     protocol: TCP
 """
 
-
+                    
                     // Write deployment manifest to file
                     writeFile file: 'k8s-deployment.yaml', text: deploymentYaml
-
+                    
                     // Apply the deployment using kubectl with file credential
                     withCredentials([
                         file(credentialsId: 'KUBECONFIG_PATH', variable: 'KCFG')
                     ]) {
                         sh """
                             export KUBECONFIG="\$KCFG"
-
+                            
                             # Verify kubectl can connect to the cluster
                             kubectl config get-contexts
 
                             # Check if LoadBalancer service already exists
                             if kubectl get service inventory-${params.TENANT_NAME}-service -n ${k8sNamespace} >/dev/null 2>&1; then
                                 echo "LoadBalancer service already exists for tenant ${params.TENANT_NAME} in namespace ${k8sNamespace}"
-
+                                
                                 # Check if it has a LoadBalancer ID (meaning it's provisioned)
                                 EXISTING_LB_ID=\$(kubectl get service inventory-${params.TENANT_NAME}-service -n ${k8sNamespace} -o jsonpath='{.metadata.annotations.kubernetes\\.digitalocean\\.com/load-balancer-id}' 2>/dev/null || echo "")
-
+                                
                                 if [ -n "\$EXISTING_LB_ID" ]; then
                                     echo "Existing LoadBalancer ID found: \$EXISTING_LB_ID"
                                     echo "Skipping LoadBalancer creation, will only update deployment and pod"
-
+                                    
                                     # Apply only the PVC and Deployment parts (skip service)
                                     kubectl apply -f <(grep -A 20 "kind: PersistentVolumeClaim" k8s-deployment.yaml)
                                     kubectl apply -f <(grep -A 50 "kind: Deployment" k8s-deployment.yaml)
-
+                                    
                                 else
                                     echo "Service exists but no LoadBalancer ID found, will recreate service"
                                     kubectl delete service inventory-${params.TENANT_NAME}-service -n ${k8sNamespace}
@@ -647,7 +647,7 @@ spec:
                                 fi
                             else
                                 echo "No existing LoadBalancer service found, creating new one"
-
+                                
                                 # Check if the service account exists in the namespace
                                 echo "DEBUG: k8sNamespace variable = ${k8sNamespace}"
                                 echo "Checking for service account ${params.TENANT_NAME}-admin in namespace ${k8sNamespace}"
@@ -657,30 +657,30 @@ spec:
                                     kubectl get serviceaccounts -n ${k8sNamespace}
                                     exit 1
                                 }
-
+                                
                                 # Apply the full deployment
                                 kubectl apply -f k8s-deployment.yaml
                             fi
-
+                            
                             # Wait for deployment rollout regardless of service creation
                             kubectl rollout status deployment/inventory-${params.TENANT_NAME} -n ${k8sNamespace} --timeout=300s
-
+                            
                             echo "Deployment completed"
-
+                            
                             # Debug: Check service configuration and load balancer details
                             echo "=== Service Configuration ==="
                             kubectl get service inventory-${params.TENANT_NAME}-service -n ${k8sNamespace} -o yaml
-
+                            
                             echo "=== Load Balancer ID ==="
                             LB_ID=\$(kubectl get service inventory-${params.TENANT_NAME}-service -n ${k8sNamespace} -o jsonpath='{.metadata.annotations.kubernetes\\.digitalocean\\.com/load-balancer-id}')
                             echo "Load Balancer ID: \$LB_ID"
-
+                            
                             echo "=== Node Information ==="
                             kubectl get nodes -o wide
-
+                            
                             echo "=== Pod Status ==="
                             kubectl get pods -n ${k8sNamespace} -o wide
-
+                            
                         """
                     }
                 }
@@ -702,25 +702,25 @@ spec:
                         echo "Waiting for LoadBalancer external IP to be assigned..."
                         def maxAttempts = 60  // 10 minutes max wait
                         def attempt = 0
-
+                        
                         while (attempt < maxAttempts) {
                             env.EXTERNAL_IP = sh(
                                 script: "export KUBECONFIG='${KCFG}'; kubectl get svc inventory-${params.TENANT_NAME}-service -n ${env.K8S_NAMESPACE} -o jsonpath='{.status.loadBalancer.ingress[0].ip}'",
                                 returnStdout: true
                             ).trim()
-
+                            
                             if (env.EXTERNAL_IP && env.EXTERNAL_IP != 'null' && env.EXTERNAL_IP != '') {
                                 echo "External IP assigned: ${env.EXTERNAL_IP}"
                                 break
                             }
-
+                            
                             attempt++
                             echo "Attempt ${attempt}/${maxAttempts}: External IP not ready yet, waiting 10 seconds..."
                             sleep(10)
                         }
-
-                        if (!env.EXTERNAL_IP || env.EXTERNAL_IP == 'null' || env.EXTERNAL_IP == '') {
-                            error "External IP not assigned after ${maxAttempts} attempts (${maxAttempts * 10} seconds)"
+                        
+                        if (!env.EXTERNAL_IP || env.EXTERNAL_IP == 'null' || env.EXTERNAL_IP == '') { 
+                            error "External IP not assigned after ${maxAttempts} attempts (${maxAttempts * 10} seconds)" 
                         }
 
                         echo "Found LB_ID: ${env.LB_ID}"
