@@ -853,80 +853,100 @@ spec:
             }
         }
 
-        stage('Cert: Ensure managed cert') {
+       stage('Cert: Ensure managed cert') {
             steps {
                 withCredentials([ string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN') ]) {
                     script {
                         def fqdn = "${params.TENANT_NAME}.${params.DO_DOMAIN}"
                         echo "Ensuring DO managed cert for: ${fqdn}"
 
-                        withEnv([
-                            "FQDN=${fqdn}",
-                            "DO_DOMAIN=${params.DO_DOMAIN}"
-                        ]) {
-                            env.CERT_ID = sh(
-                                script: '''#!/bin/bash
-                                    set -euo pipefail
-                                    AUTH="Authorization: Bearer $DO_API_TOKEN"
-                                    api() { curl -sS -H "$AUTH" "$@"; }
+                        // Get existing certificates
+                        def certsJson = sh(
+                            script: 'curl -sS -H "Authorization: Bearer $DO_API_TOKEN" "https://api.digitalocean.com/v2/certificates"',
+                            returnStdout: true
+                        ).trim()
 
-                                    CERTS_JSON="$(api https://api.digitalocean.com/v2/certificates || true)"
-                                    CERT_ID="$(printf "%s" "$CERTS_JSON" | jq -r --arg fq "$FQDN" '
-                                        (.certificates // [])
-                                        | map(select((.dns_names // []) | index($fq)))
-                                        | (.[0].id // empty)
-                                    ')"
+                        // Check for existing certificate for this FQDN
+                        def existingCertId = sh(
+                            script: 'echo \'' + certsJson + '\' | jq -r --arg fq "' + fqdn + '" \'(.certificates // []) | map(select((.dns_names // []) | index($fq))) | (.[0].id // empty)\'',
+                            returnStdout: true
+                        ).trim()
 
-                                    if [ -z "$CERT_ID" ]; then
-                                        WILDCARD="*.$DO_DOMAIN"
-                                        CERT_ID="$(printf "%s" "$CERTS_JSON" | jq -r --arg wc "$WILDCARD" '
-                                            (.certificates // [])
-                                            | map(select((.dns_names // []) | index($wc)))
-                                            | (.[0].id // empty)
-                                        ')"
-                                    fi
+                        if (!existingCertId || existingCertId == '' || existingCertId == 'null') {
+                            // Check for wildcard certificate
+                            def wildcardDomain = "*." + params.DO_DOMAIN
+                            existingCertId = sh(
+                                script: 'echo \'' + certsJson + '\' | jq -r --arg wc "' + wildcardDomain + '" \'(.certificates // []) | map(select((.dns_names // []) | index($wc))) | (.[0].id // empty)\'',
+                                returnStdout: true
+                            ).trim()
+                        }
 
-                                    if [ -z "$CERT_ID" ]; then
-                                        PAYLOAD="$(jq -n --arg name "$FQDN" --arg fq "$FQDN" '{
-                                            name: $name,
-                                            type: "lets_encrypt",
-                                            dns_names: [$fq]
-                                        }')"
-
-                                        CREATED="$(curl -sS -X POST \
-                                            -H "Content-Type: application/json" \
-                                            -H "$AUTH" \
-                                            -d "$PAYLOAD" \
-                                            https://api.digitalocean.com/v2/certificates || true)"
-
-                                        CERT_ID="$(printf "%s" "$CREATED" | jq -r '(.certificate.id // .id // empty)')"
-                                    fi
-
-                                    if [ -n "$CERT_ID" ]; then
-                                        for i in $(seq 1 36); do
-                                            STATE="$(api https://api.digitalocean.com/v2/certificates/"$CERT_ID" \
-                                                | jq -r '(.certificate.state // .state // "unknown")')"
-                                            if [ "$STATE" = "issued" ]; then
-                                                break
-                                            fi
-                                            if [ "$STATE" = "failed" ]; then
-                                                CERT_ID=""
-                                                break
-                                            fi
-                                            sleep 10
-                                        done
-                                    fi
-
-                                    printf "%s" "$CERT_ID"
-                                ''',
+                        if (existingCertId && existingCertId != '' && existingCertId != 'null') {
+                            echo "Found existing certificate with ID: ${existingCertId}"
+                            env.CERT_ID = existingCertId
+                        } else {
+                            echo "No existing certificate found, creating new Let's Encrypt certificate for ${fqdn}"
+                            
+                            // Create new certificate
+                            def createResult = sh(
+                                script: 'curl -sS -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $DO_API_TOKEN" -d \'{"name":"' + fqdn + '","type":"lets_encrypt","dns_names":["' + fqdn + '"]}\' "https://api.digitalocean.com/v2/certificates"',
                                 returnStdout: true
                             ).trim()
 
-                            if (!env.CERT_ID) {
-                                error('Could not find or issue a DigitalOcean certificate for the tenant FQDN (check DNS & LB reachability on port 80).')
+                            // Extract certificate ID from creation response
+                            def newCertId = sh(
+                                script: 'echo \'' + createResult + '\' | jq -r \'.certificate.id // .id // empty\'',
+                                returnStdout: true
+                            ).trim()
+
+                            if (newCertId && newCertId != '' && newCertId != 'null') {
+                                echo "Certificate creation initiated with ID: ${newCertId}"
+                                
+                                // Wait for certificate to be issued (max 6 minutes)
+                                def maxAttempts = 36
+                                def attempt = 0
+                                def certState = 'unknown'
+                                
+                                while (attempt < maxAttempts) {
+                                    sleep(10)
+                                    attempt++
+                                    
+                                    def stateResult = sh(
+                                        script: 'curl -sS -H "Authorization: Bearer $DO_API_TOKEN" "https://api.digitalocean.com/v2/certificates/' + newCertId + '"',
+                                        returnStdout: true
+                                    ).trim()
+                                    
+                                    certState = sh(
+                                        script: 'echo \'' + stateResult + '\' | jq -r \'.certificate.state // .state // "unknown"\'',
+                                        returnStdout: true
+                                    ).trim()
+                                    
+                                    echo "Certificate state check ${attempt}/${maxAttempts}: ${certState}"
+                                    
+                                    if (certState == 'verified') {
+                                        echo "Certificate successfully issued!"
+                                        env.CERT_ID = newCertId
+                                        break
+                                    } else if (certState == 'error') {
+                                        echo "Certificate issuance failed"
+                                        break
+                                    }
+                                }
+                                
+                                if (certState != 'verified') {
+                                    error "Certificate failed to be issued after ${maxAttempts} attempts (6 minutes). State: ${certState}"
+                                }
+                            } else {
+                                echo "Certificate creation response: ${createResult}"
+                                error "Failed to create certificate for ${fqdn}"
                             }
-                            echo "Using certificate ID: ${env.CERT_ID}"
                         }
+
+                        if (!env.CERT_ID) {
+                            error "Could not find or issue a DigitalOcean certificate for ${fqdn}"
+                        }
+                        
+                        echo "Using certificate ID: ${env.CERT_ID}"
                     }
                 }
             }
