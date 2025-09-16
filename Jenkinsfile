@@ -313,33 +313,33 @@ stage('Replace URLs') {
             }
         }
 
-stage('Validate Directory Structure and make sure all dirs are created') {
-    steps {
-        script {
-            sshagent(credentials: ['inventory-root-sshkey']) {
-                // Create base directories first
-                sh """
-                    ssh -o StrictHostKeyChecking=no ${params.SSHUSER}@${params.HOSTNAME} "mkdir -p ~/deployments/inventory"
-                """
-
-                // Create main subdirectories
-                sh """
-                    ssh -o StrictHostKeyChecking=no ${params.SSHUSER}@${params.HOSTNAME} "mkdir -p ~/deployments/inventory/backup ~/deployments/inventory/data ~/deployments/inventory/logs ~/deployments/inventory/topdir ~/deployments/inventory/uploads"
-                """
-
-                // Create uploads subdirectories
-                sh """
-                    ssh -o StrictHostKeyChecking=no ${params.SSHUSER}@${params.HOSTNAME} "mkdir -p ~/deployments/inventory/uploads/coa ~/deployments/inventory/uploads/font ~/deployments/inventory/uploads/xlsx ~/deployments/inventory/uploads/globaluserfiles ~/deployments/inventory/uploads/media ~/deployments/inventory/uploads/mcp ~/deployments/inventory/uploads/applecert ~/deployments/inventory/uploads/metrcdocs"
-                """
-
-                // Verify directories were created
-                sh """
-                    ssh -o StrictHostKeyChecking=no ${params.SSHUSER}@${params.HOSTNAME} "ls -la ~/deployments/inventory/"
-                """
-            }
-        }
-    }
-}
+// stage('Validate Directory Structure and make sure all dirs are created') {
+//     steps {
+//         script {
+//             sshagent(credentials: ['inventory-root-sshkey']) {
+//                 // Create base directories first
+//                 sh """
+//                     ssh -o StrictHostKeyChecking=no ${params.SSHUSER}@${params.HOSTNAME} "mkdir -p ~/deployments/inventory"
+//                 """
+//
+//                 // Create main subdirectories
+//                 sh """
+//                     ssh -o StrictHostKeyChecking=no ${params.SSHUSER}@${params.HOSTNAME} "mkdir -p ~/deployments/inventory/backup ~/deployments/inventory/data ~/deployments/inventory/logs ~/deployments/inventory/topdir ~/deployments/inventory/uploads"
+//                 """
+//
+//                 // Create uploads subdirectories
+//                 sh """
+//                     ssh -o StrictHostKeyChecking=no ${params.SSHUSER}@${params.HOSTNAME} "mkdir -p ~/deployments/inventory/uploads/coa ~/deployments/inventory/uploads/font ~/deployments/inventory/uploads/xlsx ~/deployments/inventory/uploads/globaluserfiles ~/deployments/inventory/uploads/media ~/deployments/inventory/uploads/mcp ~/deployments/inventory/uploads/applecert ~/deployments/inventory/uploads/metrcdocs"
+//                 """
+//
+//                 // Verify directories were created
+//                 sh """
+//                     ssh -o StrictHostKeyChecking=no ${params.SSHUSER}@${params.HOSTNAME} "ls -la ~/deployments/inventory/"
+//                 """
+//             }
+//         }
+//     }
+// }
 
 
        stage('Deploy') {
