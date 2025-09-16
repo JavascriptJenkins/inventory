@@ -61,12 +61,33 @@ class RefDataLoader {
             
             String sqlContent = new String(Files.readAllBytes(resource.getFile().toPath()), StandardCharsets.UTF_8)
             
-            // Split SQL content by semicolon and execute each statement
-            String[] statements = sqlContent.split(";")
-            for (String statement : statements) {
-                String trimmedStatement = statement.trim()
-                if (!trimmedStatement.isEmpty()) {
-                    jdbcTemplate.execute(trimmedStatement)
+            // Remove comments and split by semicolon
+            String[] lines = sqlContent.split("\n")
+            StringBuilder currentStatement = new StringBuilder()
+            
+            for (String line : lines) {
+                String trimmedLine = line.trim()
+                
+                // Skip empty lines and comment lines
+                if (trimmedLine.isEmpty() || trimmedLine.startsWith("--")) {
+                    continue
+                }
+                
+                currentStatement.append(line).append("\n")
+                
+                // If line ends with semicolon, execute the statement
+                if (trimmedLine.endsWith(";")) {
+                    String statement = currentStatement.toString().trim()
+                    if (!statement.isEmpty()) {
+                        try {
+                            jdbcTemplate.execute(statement)
+                        } catch (Exception e) {
+                            System.err.println("Error executing statement in ${fileName}: ${statement}")
+                            System.err.println("Error: ${e.getMessage()}")
+                            throw e
+                        }
+                    }
+                    currentStatement = new StringBuilder()
                 }
             }
             
