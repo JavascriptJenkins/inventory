@@ -159,6 +159,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         .antMatchers("/webjars/**")//
         .antMatchers("/public")
         
+        // Allow static resources to be accessed without authentication
+        .antMatchers("/css/**")
+        .antMatchers("/js/**")
+        .antMatchers("/favicon.ico")
+        
         // Un-secure H2 Database (for testing purposes, H2 console shouldn't be unprotected in production)
         .and()
         .ignoring()

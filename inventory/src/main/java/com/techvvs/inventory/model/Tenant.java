@@ -52,6 +52,14 @@ public class Tenant {
     @JsonProperty
     private Integer deployflag;
 
+    @Column(name = "reference_data_flag")
+    @JsonProperty
+    private Integer referenceDataFlag;
+
+    @Column(name = "reference_data_key", length = 50)
+    @JsonProperty
+    private String referenceDataKey;
+
     // One-to-many relationship with SystemUserDAO
     @OneToMany(mappedBy = "tenantEntity", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonProperty
@@ -76,8 +84,10 @@ public class Tenant {
         // Don't set ID in constructor - let JPA handle it
         this.createdAt = LocalDateTime.now();
         this.createTimeStamp = LocalDateTime.now();
-        this.updateTimeStamp = LocalDateTime.now();        this.deployflag = 0; // Default deploy flag to 0 (not deployed)
-        // lastDeployed remains null by default
+        this.updateTimeStamp = LocalDateTime.now();
+        this.deployflag = 0; // Default deploy flag to 0 (not deployed)
+        this.referenceDataFlag = 0; // Default reference data flag to 0
+        // lastDeployed and referenceDataKey remain null by default
     }
 
     public Tenant(String tenantName, String domainName, String subscriptionTier, String billingEmail) {
@@ -160,6 +170,22 @@ public class Tenant {
 
     public void setDeployflag(Integer deployflag) {
         this.deployflag = deployflag;
+    }
+
+    public Integer getReferenceDataFlag() {
+        return referenceDataFlag;
+    }
+
+    public void setReferenceDataFlag(Integer referenceDataFlag) {
+        this.referenceDataFlag = referenceDataFlag;
+    }
+
+    public String getReferenceDataKey() {
+        return referenceDataKey;
+    }
+
+    public void setReferenceDataKey(String referenceDataKey) {
+        this.referenceDataKey = referenceDataKey;
     }
 
     public List<SystemUserDAO> getSystemUsers() {
@@ -268,6 +294,8 @@ public class Tenant {
                 ", subscriptionTier='" + subscriptionTier + '\'' +
                 ", status='" + status + '\'' +
                 ", billingEmail='" + billingEmail + '\'' +
+                ", referenceDataFlag=" + referenceDataFlag +
+                ", referenceDataKey='" + referenceDataKey + '\'' +
                 '}';
     }
 }

@@ -12,6 +12,7 @@ import org.springframework.web.client.RestTemplate;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
+//todo: add a parameter that we send to jenkins to set the "load.ref.data" param from the ui?
 @Service
 public class JenkinsHttpService {
     
