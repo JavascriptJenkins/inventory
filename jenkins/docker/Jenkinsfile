@@ -806,99 +806,31 @@ spec:
             }
         }
 
-        stage('Create DNS Record') {
-            when {
-                expression { params.TENANT_NAME != '' }
-            }
-            steps {
-                script {
-                    withCredentials([
-                        string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN'),
-                        file(credentialsId: 'KUBECONFIG_PATH', variable: 'KCFG')
-                    ]) {
-                        sh """
-                            export KUBECONFIG="\$KCFG"
-                            
-                            # Get LoadBalancer external IP and create DNS record
-                            echo "Getting LoadBalancer external IP for DNS record creation..."
-                            
-                            # Wait for LoadBalancer to get external IP
-                            timeout=300  # 5 minutes timeout
-                            while [ \$timeout -gt 0 ]; do
-                                EXTERNAL_IP=\$(kubectl get service inventory-${params.TENANT_NAME}-service -n tenant-${params.TENANT_NAME} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-                                if [ -n "\$EXTERNAL_IP" ] && [ "\$EXTERNAL_IP" != "null" ]; then
-                                    echo "LoadBalancer external IP: \$EXTERNAL_IP"
-                                    break
-                                fi
-                                echo "Waiting for external IP... (\$timeout seconds remaining)"
-                                sleep 10
-                                timeout=\$((timeout - 10))
-                            done
-                            
-                            if [ -n "\$EXTERNAL_IP" ] && [ "\$EXTERNAL_IP" != "null" ]; then
-                                echo "Creating DNS record for ${params.TENANT_NAME}.${params.DO_DOMAIN} -> \$EXTERNAL_IP"
-                                curl -X POST "https://api.digitalocean.com/v2/domains/${params.DO_DOMAIN}/records" \\
-                                    -H "Content-Type: application/json" \\
-                                    -H "Authorization: Bearer \$DO_API_TOKEN" \\
-                                    -d '{
-                                        "type": "A",
-                                        "name": "${params.TENANT_NAME}",
-                                        "data": "\$EXTERNAL_IP",
-                                        "ttl": 60
-                                    }'
-                                
-                                echo "DNS record creation completed"
-                            else
-                                echo "ERROR: LoadBalancer did not get external IP within timeout"
-                                exit 1
-                            fi
 
+stage('LB: Discover IDs') {
+  steps {
+    withCredentials([ file(credentialsId: 'KUBECONFIG_PATH', variable: 'KCFG') ]) {
+      script {
+        // use env.K8S_NAMESPACE you set earlier
+        env.LB_ID = sh(
+          script: "export KUBECONFIG=\"$KCFG\"; kubectl get svc inventory-${params.TENANT_NAME}-service -n ${env.K8S_NAMESPACE} -o jsonpath='{.metadata.annotations.kubernetes\\.digitalocean\\.com/load-balancer-id}'",
+          returnStdout: true
+        ).trim()
+        if (!env.LB_ID) { error "LB_ID not found on service annotation" }
 
-                                    # Check application health
-                                    echo "=== Checking application health ==="
-                                    POD_NAME=\$(kubectl get pods -n tenant-${params.TENANT_NAME} -l app=inventory -o jsonpath='{.items[0].metadata.name}')
-                                    if [ -n "\$POD_NAME" ]; then
-                                        echo "Testing /login endpoint (LoadBalancer health check path)..."
-                                        kubectl exec -n tenant-${params.TENANT_NAME} \$POD_NAME -- curl -f http://localhost:8080/login || echo "Login endpoint check failed - app may still be starting"
-                                        
-                                        echo "Testing /actuator/health endpoint..."
-                                        kubectl exec -n tenant-${params.TENANT_NAME} \$POD_NAME -- curl -f http://localhost:8080/actuator/health || echo "Actuator health check failed - may require authentication"
-                                    fi
-                                    
-                                    echo "Note: It may take 1-2 minutes for the node to show as 'Up' after health checks pass"
-                                else
-                                    echo "Warning: Load Balancer ID not found in service annotations"
-                                fi
-                        """
-                    }
-                }
-            }
-        }
+        env.EXTERNAL_IP = sh(
+          script: "export KUBECONFIG=\"$KCFG\"; kubectl get svc inventory-${params.TENANT_NAME}-service -n ${env.K8S_NAMESPACE} -o jsonpath='{.status.loadBalancer.ingress[0].ip}'",
+          returnStdout: true
+        ).trim()
+        if (!env.EXTERNAL_IP || env.EXTERNAL_IP == 'null') { error "External IP not found yet" }
 
-        stage('LB: Discover IDs') {
-            steps {
-                withCredentials([
-                    file(credentialsId: 'KUBECONFIG_PATH', variable: 'KCFG')
-                ]) {
-                    script {
-                        env.LB_ID = sh(
-                            script: "export KUBECONFIG=\"$KCFG\"; kubectl get svc inventory-${params.TENANT_NAME}-service -n tenant-${params.TENANT_NAME} -o jsonpath='{.metadata.annotations.kubernetes\\.digitalocean\\.com/load-balancer-id}'",
-                            returnStdout: true
-                        ).trim()
-                        if (!env.LB_ID) { error "LB_ID not found on service annotation" }
+        echo "Found LB_ID: ${env.LB_ID}"
+        echo "Service IP : ${env.EXTERNAL_IP}"
+      }
+    }
+  }
+}
 
-                        env.EXTERNAL_IP = sh(
-                            script: "export KUBECONFIG=\"$KCFG\"; kubectl get svc inventory-${params.TENANT_NAME}-service -n tenant-${params.TENANT_NAME} -o jsonpath='{.status.loadBalancer.ingress[0].ip}'",
-                            returnStdout: true
-                        ).trim()
-                        if (!env.EXTERNAL_IP || env.EXTERNAL_IP == 'null') { error "External IP not found yet" }
-
-                        echo "Found LB_ID: ${env.LB_ID}"
-                        echo "Service IP : ${env.EXTERNAL_IP}"
-                    }
-                }
-            }
-        }
 stage('DNS: Ensure A record') {
   steps {
     withCredentials([ string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN') ]) {
@@ -948,7 +880,6 @@ stage('DNS: Ensure A record') {
   }
 }
 
-
 stage('DNS: Wait for resolution') {
   steps {
     script {
@@ -963,10 +894,8 @@ stage('DNS: Wait for resolution') {
 
           resolve() {
             if command -v dig >/dev/null 2>&1; then
-              # dig returns just the IPs on +short
               dig +short A "$FQDN" | sed '/^$/d' | sort -u
             else
-              # getent returns "IP flags hostname" lines; take the IP
               getent ahostsv4 "$FQDN" 2>/dev/null | awk '{print $1}' | sort -u
             fi
           }
@@ -990,9 +919,6 @@ stage('DNS: Wait for resolution') {
   }
 }
 
-
-
-
 stage('Cert: Ensure managed cert') {
   steps {
     withCredentials([ string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN') ]) {
@@ -1008,10 +934,8 @@ stage('Cert: Ensure managed cert') {
             script: '''
               bash -euo pipefail <<'BASH'
               AUTH="Authorization: Bearer $DO_API_TOKEN"
-
               api() { curl -sS -H "$AUTH" "$@"; }
 
-              # Lookup existing (exact FQDN)
               CERTS_JSON="$(api https://api.digitalocean.com/v2/certificates || true)"
               CERT_ID="$(printf "%s" "$CERTS_JSON" | jq -r --arg fq "$FQDN" '
                 (.certificates // [])
@@ -1019,7 +943,6 @@ stage('Cert: Ensure managed cert') {
                 | (.[0].id // empty)
               ')"
 
-              # Fallback: wildcard (*.domain)
               if [ -z "$CERT_ID" ]; then
                 WILDCARD="*.$DO_DOMAIN"
                 CERT_ID="$(printf "%s" "$CERTS_JSON" | jq -r --arg wc "$WILDCARD" '
@@ -1029,7 +952,6 @@ stage('Cert: Ensure managed cert') {
                 ')"
               fi
 
-              # Create a managed Let's Encrypt cert if none found (exact FQDN)
               if [ -z "$CERT_ID" ]; then
                 PAYLOAD="$(jq -n --arg name "$FQDN" --arg fq "$FQDN" '{
                   name: $name,
@@ -1046,10 +968,8 @@ stage('Cert: Ensure managed cert') {
                 CERT_ID="$(printf "%s" "$CREATED" | jq -r '(.certificate.id // .id // empty)')"
               fi
 
-              # Wait for issuance
               if [ -n "$CERT_ID" ]; then
-                i=0
-                while :; do
+                for i in $(seq 1 36); do
                   STATE="$(api https://api.digitalocean.com/v2/certificates/"$CERT_ID" \
                     | jq -r '(.certificate.state // .state // "unknown")')"
                   if [ "$STATE" = "issued" ]; then
@@ -1059,8 +979,6 @@ stage('Cert: Ensure managed cert') {
                     CERT_ID=""
                     break
                   fi
-                  i=$((i+1))
-                  [ $i -ge 36 ] && { CERT_ID=""; break; } # ~6 minutes
                   sleep 10
                 done
               fi
@@ -1081,21 +999,22 @@ stage('Cert: Ensure managed cert') {
   }
 }
 
-
 stage('Service: Attach cert & redirect') {
   steps {
     script {
-      // Patch the Service to inject CERT_ID and ensure redirect is ON
-      withEnv(["KNS=${env.K8S_NAMESPACE}"]) {
+      withEnv([
+        "TENANT=${params.TENANT_NAME}",
+        "KNS=${env.K8S_NAMESPACE}"
+      ]) {
         sh '''
           bash -euo pipefail <<'BASH'
-          kubectl annotate svc inventory-'${params.TENANT_NAME}'-service \
-            -n '$KNS' \
+          kubectl annotate svc inventory-"$TENANT"-service \
+            -n "$KNS" \
             service.beta.kubernetes.io/do-loadbalancer-certificate-id="${CERT_ID}" \
             --overwrite
 
-          kubectl annotate svc inventory-'${params.TENANT_NAME}'-service \
-            -n '$KNS' \
+          kubectl annotate svc inventory-"$TENANT"-service \
+            -n "$KNS" \
             service.beta.kubernetes.io/do-loadbalancer-redirect-http-to-https="true" \
             --overwrite
           BASH
@@ -1106,53 +1025,6 @@ stage('Service: Attach cert & redirect') {
   }
 }
 
-
-} // ending brace
-
-
-
-//         stage('LB: Read Config') {
-//             steps {
-//                 withCredentials([string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN')]) {
-//                     script {
-//                         def base = "curl -s -H 'Authorization: Bearer $DO_API_TOKEN' https://api.digitalocean.com/v2/load_balancers/${env.LB_ID}"
-//                         env.LB_NAME = sh(script: "${base} | jq -r '.load_balancer.name'", returnStdout: true).trim()
-//                         env.LB_ALGORITHM = sh(script: "${base} | jq -r '.load_balancer.algorithm'", returnStdout: true).trim()
-//                         env.LB_REGION = sh(script: "${base} | jq -r '.load_balancer.region.slug'", returnStdout: true).trim()
-//                         env.LB_SIZE = sh(script: "${base} | jq -r '.load_balancer.size'", returnStdout: true).trim()
-//                         env.LB_SIZE_UNIT = sh(script: "${base} | jq -r '.load_balancer.size_unit'", returnStdout: true).trim()
-//                         echo "LB => name=${env.LB_NAME}, region=${env.LB_REGION}, algo=${env.LB_ALGORITHM}, size=${env.LB_SIZE}/${env.LB_SIZE_UNIT}"
-//                     }
-//                 }
-//             }
-//         }
-//
-//
-//
-//         stage('DNS: Create A Record') {
-//             steps {
-//                 withCredentials([
-//                     string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN')
-//                 ]) {
-//                     sh """
-//                         set -e
-//                         FQDN="${params.TENANT_NAME}.\${params.DO_DOMAIN}"
-//                         echo "Creating/ensuring A record: \$FQDN -> ${env.EXTERNAL_IP}"
-//                         # Create (will error if exists) – safe to ignore 422; or upsert by deleting existing first.
-//                         curl -sS -X POST "https://api.digitalocean.com/v2/domains/\${params.DO_DOMAIN}/records" \\
-//                           -H "Content-Type: application/json" \\
-//                           -H "Authorization: Bearer \$DO_API_TOKEN" \\
-//                           -d '{
-//                                 "type":"A",
-//                                 "name":"${params.TENANT_NAME}",
-//                                 "data":"${env.EXTERNAL_IP}",
-//                                 "ttl":60
-//                               }' || true
-//                         echo "✅ DNS step done"
-//                     """
-//                 }
-//             }
-//         }
 
 
 
@@ -1174,4 +1046,4 @@ stage('Service: Attach cert & redirect') {
         }
     }
 
-
+}
