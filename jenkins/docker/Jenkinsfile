@@ -952,7 +952,7 @@ spec:
             }
         }
 
-       stage('Service: Attach cert & redirect') {
+        stage('Service: Attach cert & redirect') {
             steps {
                 withCredentials([ file(credentialsId: 'KUBECONFIG_PATH', variable: 'KCFG') ]) {
                     script {
@@ -962,24 +962,36 @@ spec:
                         ]) {
                             sh '''
                                 export KUBECONFIG="$KCFG"
-                                kubectl annotate svc inventory-"$TENANT"-service \
-                                    -n "$KNS" \
-                                    service.beta.kubernetes.io/do-loadbalancer-certificate-id="${CERT_ID}" \
-                                    --overwrite
 
-                                kubectl annotate svc inventory-"$TENANT"-service \
-                                    -n "$KNS" \
-                                    service.beta.kubernetes.io/do-loadbalancer-redirect-http-to-https="true" \
-                                    --overwrite
-
+                                # First, disable TLS passthrough
+                                echo "Disabling TLS passthrough..."
                                 kubectl annotate svc inventory-"$TENANT"-service \
                                     -n "$KNS" \
                                     service.beta.kubernetes.io/do-loadbalancer-tls-passthrough="false" \
                                     --overwrite
 
+                                # Wait a moment for the change to process
+                                sleep 5
+
+                                # Now attach the certificate
+                                echo "Attaching certificate..."
+                                kubectl annotate svc inventory-"$TENANT"-service \
+                                    -n "$KNS" \
+                                    service.beta.kubernetes.io/do-loadbalancer-certificate-id="${CERT_ID}" \
+                                    --overwrite
+
+                                # Configure TLS ports
+                                echo "Configuring TLS ports..."
                                 kubectl annotate svc inventory-"$TENANT"-service \
                                     -n "$KNS" \
                                     service.beta.kubernetes.io/do-loadbalancer-tls-ports="443" \
+                                    --overwrite
+
+                                # Finally, enable HTTPS redirect
+                                echo "Enabling HTTPS redirect..."
+                                kubectl annotate svc inventory-"$TENANT"-service \
+                                    -n "$KNS" \
+                                    service.beta.kubernetes.io/do-loadbalancer-redirect-http-to-https="true" \
                                     --overwrite
                             '''
                         }
