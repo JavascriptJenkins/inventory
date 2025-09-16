@@ -87,6 +87,9 @@ pipeline {
                             if (params.DB_USERNAME) {
                                 sh "sed -i 's/^spring\\.datasource\\.username=.*/spring.datasource.username=${params.DB_USERNAME}/' src/main/resources/application.properties"
                             }
+                            if (params.DB_USERNAME) {
+                                sh "sed -i 's/^spring\\.datasource\\.username=.*/spring.datasource.username=${params.DB_USERNAME}/' src/main/resources/application.properties"
+                            }
                             // Replace spring.jpa.hibernate.ddl-auto if provided
                             if (params.SPRING_DATABASE_ACTION) {
                                 sh "sed -i 's/^spring\\.jpa\\.hibernate\\.ddl-auto=.*/spring.jpa.hibernate.ddl-auto=${params.SPRING_DATABASE_ACTION}/' src/main/resources/application.properties"
@@ -187,6 +190,8 @@ pipeline {
 
                             // Replace Anthropic API key
                             sh "sed -i 's|^anthropic\\.apiKey=.*|anthropic.apiKey=${ANTHROPIC_API_KEY}|' src/main/resources/application.properties"
+
+                            sh "sed -i 's/^spring\\.datasource\\.password=.*/spring.datasource.password=${DB_PASSWORD}/' src/main/resources/application.properties"
 
 
                             sh "sed -i 's|^metrc\\.mcp\\.url=.*|metrc.mcp.url=${METRC_MCP_URI}|' src/main/resources/application.properties"
