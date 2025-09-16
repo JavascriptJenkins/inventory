@@ -511,36 +511,43 @@ echo fqdn
 withEnv(["FQDN=${fqdn}"]) {
   env.CERT_ID = sh(
     script: '''
-      bash -c "
-        set -euo pipefail
+      set -eu
 
-        CERTS_JSON=\$(curl -sS -H \\"Authorization: Bearer \$DO_API_TOKEN\\" https://api.digitalocean.com/v2/certificates)
+      # Fetch certificates JSON (don’t fail the whole step on HTTP error)
+      CERTS_JSON="$(curl -sS -H "Authorization: Bearer ${DO_API_TOKEN}" https://api.digitalocean.com/v2/certificates || true)"
 
-        CERT_ID=\$(printf \\"%s\\" \\"$CERTS_JSON\\" \
-          | jq -r --arg fqdn \\"$FQDN\\" '
-              .certificates[]
-              | select(.dns_names[]? == $fqdn)
-              | .id
-            ' | head -n1)
+      # If curl returned nothing, bail out cleanly
+      if [ -z "$CERTS_JSON" ]; then
+        printf "%s" ""
+        exit 0
+      fi
 
-        if [ -z \\"$CERT_ID\\" ]; then
-          WILDCARD=\\"*.$DO_DOMAIN\\"
-          CERT_ID=\$(printf \\"%s\\" \\"$CERTS_JSON\\" \
-            | jq -r --arg wc \\"$WILDCARD\\" '
-                .certificates[]
-                | select(.dns_names[]? == $wc)
-                | .id
-              ' | head -n1)
-        fi
+      # Try exact FQDN first
+      CERT_ID="$(printf "%s" "$CERTS_JSON" | jq -r --arg fqdn "$FQDN" '
+        (.certificates // [])
+        | map(select((.dns_names // []) | index($fqdn)))
+        | (.[0].id // empty)
+      ')"
 
-        [ -n \\"$CERT_ID\\" ] && echo \\"$CERT_ID\\"
-      "
+      # Fallback to wildcard SAN (*.domain)
+      if [ -z "$CERT_ID" ]; then
+        WILDCARD="*.${DO_DOMAIN}"
+        CERT_ID="$(printf "%s" "$CERTS_JSON" | jq -r --arg wc "$WILDCARD" '
+          (.certificates // [])
+          | map(select((.dns_names // []) | index($wc)))
+          | (.[0].id // empty)
+        ')"
+      fi
+
+      # Output the ID (or empty)
+      printf "%s" "$CERT_ID"
     ''',
     returnStdout: true
   ).trim()
 }
 
 if (!env.CERT_ID) {
+  // Keep the message generic (don’t interpolate secrets)
   error('No matching DigitalOcean certificate found for the tenant FQDN.')
 }
 echo "Using certificate ID: ${env.CERT_ID}"
