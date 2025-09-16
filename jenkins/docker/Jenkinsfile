@@ -511,31 +511,30 @@ echo fqdn
 withEnv(["FQDN=${fqdn}"]) {
   env.CERT_ID = sh(
     script: '''
-      set -euo pipefail
+      bash -c "
+        set -euo pipefail
 
-      # Fetch certs once
-      CERTS_JSON="$(curl -sS -H "Authorization: Bearer $DO_API_TOKEN" https://api.digitalocean.com/v2/certificates)"
+        CERTS_JSON=\$(curl -sS -H \\"Authorization: Bearer \$DO_API_TOKEN\\" https://api.digitalocean.com/v2/certificates)
 
-      # Try exact FQDN first
-      CERT_ID="$(printf "%s" "$CERTS_JSON" \
-        | jq -r --arg fqdn "$FQDN" '
-            .certificates[]
-            | select(.dns_names[]? == $fqdn)
-            | .id
-          ' | head -n1)"
-
-      # Fallback to wildcard SAN (*.domain)
-      if [ -z "$CERT_ID" ]; then
-        WILDCARD="*.$DO_DOMAIN"
-        CERT_ID="$(printf "%s" "$CERTS_JSON" \
-          | jq -r --arg wc "$WILDCARD" '
+        CERT_ID=\$(printf \\"%s\\" \\"$CERTS_JSON\\" \
+          | jq -r --arg fqdn \\"$FQDN\\" '
               .certificates[]
-              | select(.dns_names[]? == $wc)
+              | select(.dns_names[]? == $fqdn)
               | .id
-            ' | head -n1)"
-      fi
+            ' | head -n1)
 
-      [ -n "$CERT_ID" ] && echo "$CERT_ID"
+        if [ -z \\"$CERT_ID\\" ]; then
+          WILDCARD=\\"*.$DO_DOMAIN\\"
+          CERT_ID=\$(printf \\"%s\\" \\"$CERTS_JSON\\" \
+            | jq -r --arg wc \\"$WILDCARD\\" '
+                .certificates[]
+                | select(.dns_names[]? == $wc)
+                | .id
+              ' | head -n1)
+        fi
+
+        [ -n \\"$CERT_ID\\" ] && echo \\"$CERT_ID\\"
+      "
     ''',
     returnStdout: true
   ).trim()
