@@ -33,11 +33,12 @@ class RefDataLoader {
             executeSqlFile("01_batch_types.sql")
             executeSqlFile("02_package_types.sql")
             executeSqlFile("04_location_types.sql")
-            executeSqlFile("05_lockers.sql")
-            
+            executeSqlFile("04_product_types.sql")
+
+            // todo: this is how we can make tenant specific sql files to deploy
             // Load tenant-specific product types
-            String productTypesFile = "03_product_types_${tenant}.sql"
-            executeSqlFile(productTypesFile)
+//            String productTypesFile = "03_product_types_${tenant}.sql"
+//            executeSqlFile(productTypesFile)
             
             System.out.println("Reference data loaded successfully for tenant: " + tenant)
         } catch (Exception e) {
