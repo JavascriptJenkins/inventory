@@ -10,7 +10,7 @@ pipeline {
         string(name: 'BRANCH', defaultValue: 'test1', description: 'Branch to build from')
         string(name: 'TENANT_NAME', defaultValue: '', description: 'Tenant name for deployment')
         string(name: 'APP_NAME', defaultValue: 'inventory', description: 'Application name')
-        string(name: 'DO_DOMAIN', defaultValue: 'something.something', description: 'the domain')
+        string(name: 'DO_DOMAIN', defaultValue: '', description: 'the domain')
         string(name: 'SUBSCRIPTION_TIER', defaultValue: 'BASIC', description: 'Subscription tier')
         string(name: 'BILLING_EMAIL', defaultValue: '', description: 'Billing email address')
         string(name: 'K8S_NAMESPACE', defaultValue: '', description: 'Kubernetes namespace (auto-generated if empty)')
