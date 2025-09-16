@@ -496,56 +496,109 @@ CMD ["java", "-jar", "app.jar"]
                     // Create Kubernetes deployment manifest with persistent volume
                     def k8sNamespace = (params.K8S_NAMESPACE && params.K8S_NAMESPACE.trim() != '') ? params.K8S_NAMESPACE : "tenant-${params.TENANT_NAME.toLowerCase().replaceAll('[^a-z0-9-]', '-')}"
 
-                    withCredentials([
-                        string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN')
-                    ]) {
-
-
-
 echo "HERE IS THE FQDN"
 def fqdn = "${params.TENANT_NAME}.${params.DO_DOMAIN}"
 echo fqdn
 
-withEnv(["FQDN=${fqdn}"]) {
-  env.CERT_ID = sh(
-    script: """
-      bash -euo pipefail <<'BASH'
-      FQDN="${FQDN}"
-      DO_DOMAIN="${params.DO_DOMAIN}"
-      AUTH="Authorization: Bearer ${DO_API_TOKEN}"
+withCredentials([ string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN') ]) {
+  withEnv([
+    "FQDN=${fqdn}",
+    "DO_DOMAIN=${params.DO_DOMAIN}"
+  ]) {
+    env.CERT_ID = sh(
+      // Single-quoted Groovy string + 'BASH' heredoc keeps Groovy
+      // from interpolating $vars used by jq/curl.
+      script: '''
+        bash -euo pipefail <<'BASH'
+        FQDN="$FQDN"
+        DO_DOMAIN="$DO_DOMAIN"
+        AUTH="Authorization: Bearer $DO_API_TOKEN"
 
-      # Fetch certs
-      CERTS_JSON=\$(curl -sS -H "\$AUTH" https://api.digitalocean.com/v2/certificates || true)
+        api() { curl -sS -H "$AUTH" "$@"; }
 
-      # Exact FQDN
-      CERT_ID=\$(printf "%s" "\$CERTS_JSON" | jq -r --arg fqdn "\$FQDN" '
-        (.certificates // [])
-        | map(select((.dns_names // []) | index($fqdn)))
-        | (.[0].id // empty)
-      ')
+        # 1) List certs and try to find an existing one
+        CERTS_JSON="$(api https://api.digitalocean.com/v2/certificates || true)"
 
-      # Fallback: wildcard SAN (*.domain)
-      if [ -z "\$CERT_ID" ]; then
-        WILDCARD="*.\$DO_DOMAIN"
-        CERT_ID=\$(printf "%s" "\$CERTS_JSON" | jq -r --arg wc "\$WILDCARD" '
+        CERT_ID="$(printf "%s" "$CERTS_JSON" | jq -r --arg fqdn "$FQDN" '
           (.certificates // [])
-          | map(select((.dns_names // []) | index($wc)))
+          | map(select((.dns_names // []) | index($fqdn)))
           | (.[0].id // empty)
-        ')
-      fi
+        ')"
 
-      printf "%s" "\$CERT_ID"
-      BASH
-    """,
-    returnStdout: true
-  ).trim()
+        # Fallback: wildcard SAN (*.domain)
+        if [ -z "$CERT_ID" ]; then
+          WILDCARD="*.$DO_DOMAIN"
+          CERT_ID="$(printf "%s" "$CERTS_JSON" | jq -r --arg wc "$WILDCARD" '
+            (.certificates // [])
+            | map(select((.dns_names // []) | index($wc)))
+            | (.[0].id // empty)
+          ')"
+        fi
+
+        # 2) If not found, create a managed Let's Encrypt cert for the exact FQDN
+        if [ -z "$CERT_ID" ]; then
+          CREATE_PAYLOAD="$(jq -n --arg name "$FQDN" --arg fq "$FQDN" '{
+            name: $name,
+            type: "lets_encrypt",
+            dns_names: [$fq]
+          }')"
+
+          CREATE_JSON="$(curl -sS -X POST \
+            -H "Content-Type: application/json" \
+            -H "$AUTH" \
+            -d "$CREATE_PAYLOAD" \
+            https://api.digitalocean.com/v2/certificates || true)"
+
+          # Extract new CERT_ID (works with either {certificate:{...}} or flat)
+          CERT_ID="$(printf "%s" "$CREATE_JSON" | jq -r '
+            (.certificate.id // .id // empty)
+          ')"
+        fi
+
+        # If still empty, stop here and let Groovy handle the error
+        if [ -z "$CERT_ID" ]; then
+          printf "%s" ""
+          exit 0
+        fi
+
+        # 3) Wait for issuance (poll until state == issued, timeout ~6min)
+        i=0
+        while :; do
+          STATE="$(api https://api.digitalocean.com/v2/certificates/"$CERT_ID" \
+            | jq -r '(.certificate.state // .state // "unknown")')"
+
+          if [ "$STATE" = "issued" ]; then
+            break
+          fi
+          if [ "$STATE" = "failed" ]; then
+            # Let Groovy handle as error later
+            printf "%s" ""
+            exit 0
+          fi
+
+          i=$((i+1))
+          if [ $i -ge 36 ]; then
+            # ~6 minutes (36 * 10s)
+            printf "%s" ""
+            exit 0
+          fi
+          sleep 10
+        done
+
+        printf "%s" "$CERT_ID"
+        BASH
+      ''',
+      returnStdout: true
+    ).trim()
+  }
 }
 
 if (!env.CERT_ID) {
-  // Keep this generic to avoid leaking domain details
-  error('No matching DigitalOcean certificate found for the tenant FQDN.')
+  // Generic to avoid leaking domains/tokens
+  error('Could not find or issue a DigitalOcean certificate for the tenant FQDN.')
 }
 echo "Using certificate ID: ${env.CERT_ID}"
+
 
 
 
