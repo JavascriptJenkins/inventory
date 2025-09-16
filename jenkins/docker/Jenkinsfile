@@ -493,111 +493,118 @@ CMD ["java", "-jar", "app.jar"]
             }
             steps {
                 script {
-                    // Create Kubernetes deployment manifest with persistent volume
-                    def k8sNamespace = (params.K8S_NAMESPACE && params.K8S_NAMESPACE.trim() != '') ? params.K8S_NAMESPACE : "tenant-${params.TENANT_NAME.toLowerCase().replaceAll('[^a-z0-9-]', '-')}"
+//                     // Create Kubernetes deployment manifest with persistent volume
+//                     def k8sNamespace = (params.K8S_NAMESPACE && params.K8S_NAMESPACE.trim() != '') ? params.K8S_NAMESPACE : "tenant-${params.TENANT_NAME.toLowerCase().replaceAll('[^a-z0-9-]', '-')}"
+    def k8sNamespace = (params.K8S_NAMESPACE && params.K8S_NAMESPACE.trim() != '') ?
+        params.K8S_NAMESPACE :
+        "tenant-${params.TENANT_NAME.toLowerCase().replaceAll('[^a-z0-9-]', '-')}"
 
-echo "HERE IS THE FQDN"
-def fqdn = "${params.TENANT_NAME}.${params.DO_DOMAIN}"
-echo fqdn
+    // Bind into an env var so subsequent sh{} or steps can use it
+    env.K8S_NAMESPACE = k8sNamespace
+    echo "Namespace set to: ${env.K8S_NAMESPACE}"
 
-withCredentials([ string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN') ]) {
-  withEnv([
-    "FQDN=${fqdn}",
-    "DO_DOMAIN=${params.DO_DOMAIN}"
-  ]) {
-    env.CERT_ID = sh(
-      // Single-quoted Groovy string + 'BASH' heredoc keeps Groovy
-      // from interpolating $vars used by jq/curl.
-      script: '''
-        bash -euo pipefail <<'BASH'
-        FQDN="$FQDN"
-        DO_DOMAIN="$DO_DOMAIN"
-        AUTH="Authorization: Bearer $DO_API_TOKEN"
+// echo "HERE IS THE FQDN"
+// def fqdn = "${params.TENANT_NAME}.${params.DO_DOMAIN}"
+// echo fqdn
+//
+// withCredentials([ string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN') ]) {
+//   withEnv([
+//     "FQDN=${fqdn}",
+//     "DO_DOMAIN=${params.DO_DOMAIN}"
+//   ]) {
+//     env.CERT_ID = sh(
+//       // Single-quoted Groovy string + 'BASH' heredoc keeps Groovy
+//       // from interpolating $vars used by jq/curl.
+//       script: '''
+//         bash -euo pipefail <<'BASH'
+//         FQDN="$FQDN"
+//         DO_DOMAIN="$DO_DOMAIN"
+//         AUTH="Authorization: Bearer $DO_API_TOKEN"
+//
+//         api() { curl -sS -H "$AUTH" "$@"; }
+//
+//         # 1) List certs and try to find an existing one
+//         CERTS_JSON="$(api https://api.digitalocean.com/v2/certificates || true)"
+//
+//         CERT_ID="$(printf "%s" "$CERTS_JSON" | jq -r --arg fqdn "$FQDN" '
+//           (.certificates // [])
+//           | map(select((.dns_names // []) | index($fqdn)))
+//           | (.[0].id // empty)
+//         ')"
+//
+//         # Fallback: wildcard SAN (*.domain)
+//         if [ -z "$CERT_ID" ]; then
+//           WILDCARD="*.$DO_DOMAIN"
+//           CERT_ID="$(printf "%s" "$CERTS_JSON" | jq -r --arg wc "$WILDCARD" '
+//             (.certificates // [])
+//             | map(select((.dns_names // []) | index($wc)))
+//             | (.[0].id // empty)
+//           ')"
+//         fi
+//
+//         # 2) If not found, create a managed Let's Encrypt cert for the exact FQDN
+//         if [ -z "$CERT_ID" ]; then
+//           CREATE_PAYLOAD="$(jq -n --arg name "$FQDN" --arg fq "$FQDN" '{
+//             name: $name,
+//             type: "lets_encrypt",
+//             dns_names: [$fq]
+//           }')"
+//
+//           CREATE_JSON="$(curl -sS -X POST \
+//             -H "Content-Type: application/json" \
+//             -H "$AUTH" \
+//             -d "$CREATE_PAYLOAD" \
+//             https://api.digitalocean.com/v2/certificates || true)"
+//
+//           # Extract new CERT_ID (works with either {certificate:{...}} or flat)
+//           CERT_ID="$(printf "%s" "$CREATE_JSON" | jq -r '
+//             (.certificate.id // .id // empty)
+//           ')"
+//         fi
+//
+//         # If still empty, stop here and let Groovy handle the error
+//         if [ -z "$CERT_ID" ]; then
+//           printf "%s" ""
+//           exit 0
+//         fi
+//
+//         # 3) Wait for issuance (poll until state == issued, timeout ~6min)
+//         i=0
+//         while :; do
+//           STATE="$(api https://api.digitalocean.com/v2/certificates/"$CERT_ID" \
+//             | jq -r '(.certificate.state // .state // "unknown")')"
+//
+//           if [ "$STATE" = "issued" ]; then
+//             break
+//           fi
+//           if [ "$STATE" = "failed" ]; then
+//             # Let Groovy handle as error later
+//             printf "%s" ""
+//             exit 0
+//           fi
+//
+//           i=$((i+1))
+//           if [ $i -ge 36 ]; then
+//             # ~6 minutes (36 * 10s)
+//             printf "%s" ""
+//             exit 0
+//           fi
+//           sleep 10
+//         done
+//
+//         printf "%s" "$CERT_ID"
+//         BASH
+//       ''',
+//       returnStdout: true
+//     ).trim()
+//   }
 
-        api() { curl -sS -H "$AUTH" "$@"; }
 
-        # 1) List certs and try to find an existing one
-        CERTS_JSON="$(api https://api.digitalocean.com/v2/certificates || true)"
-
-        CERT_ID="$(printf "%s" "$CERTS_JSON" | jq -r --arg fqdn "$FQDN" '
-          (.certificates // [])
-          | map(select((.dns_names // []) | index($fqdn)))
-          | (.[0].id // empty)
-        ')"
-
-        # Fallback: wildcard SAN (*.domain)
-        if [ -z "$CERT_ID" ]; then
-          WILDCARD="*.$DO_DOMAIN"
-          CERT_ID="$(printf "%s" "$CERTS_JSON" | jq -r --arg wc "$WILDCARD" '
-            (.certificates // [])
-            | map(select((.dns_names // []) | index($wc)))
-            | (.[0].id // empty)
-          ')"
-        fi
-
-        # 2) If not found, create a managed Let's Encrypt cert for the exact FQDN
-        if [ -z "$CERT_ID" ]; then
-          CREATE_PAYLOAD="$(jq -n --arg name "$FQDN" --arg fq "$FQDN" '{
-            name: $name,
-            type: "lets_encrypt",
-            dns_names: [$fq]
-          }')"
-
-          CREATE_JSON="$(curl -sS -X POST \
-            -H "Content-Type: application/json" \
-            -H "$AUTH" \
-            -d "$CREATE_PAYLOAD" \
-            https://api.digitalocean.com/v2/certificates || true)"
-
-          # Extract new CERT_ID (works with either {certificate:{...}} or flat)
-          CERT_ID="$(printf "%s" "$CREATE_JSON" | jq -r '
-            (.certificate.id // .id // empty)
-          ')"
-        fi
-
-        # If still empty, stop here and let Groovy handle the error
-        if [ -z "$CERT_ID" ]; then
-          printf "%s" ""
-          exit 0
-        fi
-
-        # 3) Wait for issuance (poll until state == issued, timeout ~6min)
-        i=0
-        while :; do
-          STATE="$(api https://api.digitalocean.com/v2/certificates/"$CERT_ID" \
-            | jq -r '(.certificate.state // .state // "unknown")')"
-
-          if [ "$STATE" = "issued" ]; then
-            break
-          fi
-          if [ "$STATE" = "failed" ]; then
-            # Let Groovy handle as error later
-            printf "%s" ""
-            exit 0
-          fi
-
-          i=$((i+1))
-          if [ $i -ge 36 ]; then
-            # ~6 minutes (36 * 10s)
-            printf "%s" ""
-            exit 0
-          fi
-          sleep 10
-        done
-
-        printf "%s" "$CERT_ID"
-        BASH
-      ''',
-      returnStdout: true
-    ).trim()
-  }
-
-
-if (!env.CERT_ID) {
-  // Generic to avoid leaking domains/tokens
-  error('Could not find or issue a DigitalOcean certificate for the tenant FQDN.')
-}
-echo "Using certificate ID: ${env.CERT_ID}"
+// if (!env.CERT_ID) {
+//   // Generic to avoid leaking domains/tokens
+//   error('Could not find or issue a DigitalOcean certificate for the tenant FQDN.')
+// }
+// echo "Using certificate ID: ${env.CERT_ID}"
 
 
 
@@ -892,51 +899,257 @@ spec:
                 }
             }
         }
+stage('DNS: Ensure A record') {
+  steps {
+    withCredentials([ string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN') ]) {
+      script {
+        withEnv([
+          "TENANT=${params.TENANT_NAME}",
+          "DO_DOMAIN=${params.DO_DOMAIN}",
+          "IP=${env.EXTERNAL_IP}"
+        ]) {
+          sh '''
+            bash -euo pipefail <<'BASH'
+            AUTH="Authorization: Bearer $DO_API_TOKEN"
+            NAME="$TENANT"
+            DOMAIN="$DO_DOMAIN"
+            TARGET="$IP"
 
+            LIST="$(curl -sS -H "$AUTH" "https://api.digitalocean.com/v2/domains/$DOMAIN/records")"
+            REC_ID="$(printf "%s" "$LIST" | jq -r --arg name "$NAME" '
+              (.domain_records // [])
+              | map(select(.type=="A" and .name==$name))
+              | (.[0].id // empty)
+            ')"
 
-        stage('LB: Read Config') {
-            steps {
-                withCredentials([string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN')]) {
-                    script {
-                        def base = "curl -s -H 'Authorization: Bearer $DO_API_TOKEN' https://api.digitalocean.com/v2/load_balancers/${env.LB_ID}"
-                        env.LB_NAME = sh(script: "${base} | jq -r '.load_balancer.name'", returnStdout: true).trim()
-                        env.LB_ALGORITHM = sh(script: "${base} | jq -r '.load_balancer.algorithm'", returnStdout: true).trim()
-                        env.LB_REGION = sh(script: "${base} | jq -r '.load_balancer.region.slug'", returnStdout: true).trim()
-                        env.LB_SIZE = sh(script: "${base} | jq -r '.load_balancer.size'", returnStdout: true).trim()
-                        env.LB_SIZE_UNIT = sh(script: "${base} | jq -r '.load_balancer.size_unit'", returnStdout: true).trim()
-                        echo "LB => name=${env.LB_NAME}, region=${env.LB_REGION}, algo=${env.LB_ALGORITHM}, size=${env.LB_SIZE}/${env.LB_SIZE_UNIT}"
-                    }
-                }
-            }
+            if [ -n "$REC_ID" ]; then
+              CUR_IP="$(printf "%s" "$LIST" | jq -r --arg id "$REC_ID" '
+                (.domain_records // [])
+                | map(select((.id|tostring)==$id))
+                | (.[0].data // "")
+              ')"
+              if [ "$CUR_IP" != "$TARGET" ]; then
+                curl -sS -X PUT \
+                  -H "Content-Type: application/json" -H "$AUTH" \
+                  -d "$(jq -n --arg data "$TARGET" '{data:$data}')" \
+                  "https://api.digitalocean.com/v2/domains/$DOMAIN/records/$REC_ID" >/dev/null
+              fi
+            else
+              curl -sS -X POST \
+                -H "Content-Type: application/json" -H "$AUTH" \
+                -d "$(jq -n --arg name "$NAME" --arg data "$TARGET" '{type:"A",name:$name,data:$data,ttl:60}')" \
+                "https://api.digitalocean.com/v2/domains/$DOMAIN/records" >/dev/null
+            fi
+            BASH
+          '''
         }
-
-
-
-        stage('DNS: Create A Record') {
-            steps {
-                withCredentials([
-                    string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN')
-                ]) {
-                    sh """
-                        set -e
-                        FQDN="${params.TENANT_NAME}.\${params.DO_DOMAIN}"
-                        echo "Creating/ensuring A record: \$FQDN -> ${env.EXTERNAL_IP}"
-                        # Create (will error if exists) – safe to ignore 422; or upsert by deleting existing first.
-                        curl -sS -X POST "https://api.digitalocean.com/v2/domains/\${params.DO_DOMAIN}/records" \\
-                          -H "Content-Type: application/json" \\
-                          -H "Authorization: Bearer \$DO_API_TOKEN" \\
-                          -d '{
-                                "type":"A",
-                                "name":"${params.TENANT_NAME}",
-                                "data":"${env.EXTERNAL_IP}",
-                                "ttl":60
-                              }' || true
-                        echo "✅ DNS step done"
-                    """
-                }
-            }
-        }
+      }
     }
+  }
+}
+
+
+stage('DNS: Wait for resolution') {
+  steps {
+    script {
+      withEnv([
+        "FQDN=${params.TENANT_NAME}.${params.DO_DOMAIN}",
+        "IP=${env.EXTERNAL_IP}"
+      ]) {
+        sh '''
+          bash -euo pipefail <<'BASH'
+          FQDN="$FQDN"
+          IP="$IP"
+
+          # Prefer dig if installed, else fall back to getent
+          cmd_resolve() {
+            if command -v dig >/dev/null 2>&1; then
+              dig +short "$FQDN" | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' | sort -u
+            else
+              getent ahostsv4 "$FQDN" 2>/dev/null | awk "{print \$1}" | sort -u
+            fi
+          }
+
+          i=0
+          while [ $i -lt 60 ]; do
+            RES="$(cmd_resolve || true)"
+            if echo "$RES" | grep -qx "$IP"; then
+              echo "DNS OK: $FQDN -> $IP"
+              exit 0
+            fi
+            sleep 5
+            i=$((i+1))
+          done
+          echo "DNS not pointing yet to $IP for $FQDN"
+          exit 1
+          BASH
+        '''
+      }
+    }
+  }
+}
+
+
+
+stage('Cert: Ensure managed cert') {
+  steps {
+    withCredentials([ string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN') ]) {
+      script {
+        def fqdn = "${params.TENANT_NAME}.${params.DO_DOMAIN}"
+        echo "Ensuring DO managed cert for: ${fqdn}"
+
+        withEnv([
+          "FQDN=${fqdn}",
+          "DO_DOMAIN=${params.DO_DOMAIN}"
+        ]) {
+          env.CERT_ID = sh(
+            script: '''
+              bash -euo pipefail <<'BASH'
+              AUTH="Authorization: Bearer $DO_API_TOKEN"
+
+              api() { curl -sS -H "$AUTH" "$@"; }
+
+              # Lookup existing (exact FQDN)
+              CERTS_JSON="$(api https://api.digitalocean.com/v2/certificates || true)"
+              CERT_ID="$(printf "%s" "$CERTS_JSON" | jq -r --arg fq "$FQDN" '
+                (.certificates // [])
+                | map(select((.dns_names // []) | index($fq)))
+                | (.[0].id // empty)
+              ')"
+
+              # Fallback: wildcard (*.domain)
+              if [ -z "$CERT_ID" ]; then
+                WILDCARD="*.$DO_DOMAIN"
+                CERT_ID="$(printf "%s" "$CERTS_JSON" | jq -r --arg wc "$WILDCARD" '
+                  (.certificates // [])
+                  | map(select((.dns_names // []) | index($wc)))
+                  | (.[0].id // empty)
+                ')"
+              fi
+
+              # Create a managed Let's Encrypt cert if none found (exact FQDN)
+              if [ -z "$CERT_ID" ]; then
+                PAYLOAD="$(jq -n --arg name "$FQDN" --arg fq "$FQDN" '{
+                  name: $name,
+                  type: "lets_encrypt",
+                  dns_names: [$fq]
+                }')"
+
+                CREATED="$(curl -sS -X POST \
+                  -H "Content-Type: application/json" \
+                  -H "$AUTH" \
+                  -d "$PAYLOAD" \
+                  https://api.digitalocean.com/v2/certificates || true)"
+
+                CERT_ID="$(printf "%s" "$CREATED" | jq -r '(.certificate.id // .id // empty)')"
+              fi
+
+              # Wait for issuance
+              if [ -n "$CERT_ID" ]; then
+                i=0
+                while :; do
+                  STATE="$(api https://api.digitalocean.com/v2/certificates/"$CERT_ID" \
+                    | jq -r '(.certificate.state // .state // "unknown")')"
+                  if [ "$STATE" = "issued" ]; then
+                    break
+                  fi
+                  if [ "$STATE" = "failed" ]; then
+                    CERT_ID=""
+                    break
+                  fi
+                  i=$((i+1))
+                  [ $i -ge 36 ] && { CERT_ID=""; break; } # ~6 minutes
+                  sleep 10
+                done
+              fi
+
+              printf "%s" "$CERT_ID"
+              BASH
+            ''',
+            returnStdout: true
+          ).trim()
+
+          if (!env.CERT_ID) {
+            error('Could not find or issue a DigitalOcean certificate for the tenant FQDN (check DNS & LB reachability on port 80).')
+          }
+          echo "Using certificate ID: ${env.CERT_ID}"
+        }
+      }
+    }
+  }
+}
+
+
+stage('Service: Attach cert & redirect') {
+  steps {
+    script {
+      // Patch the Service to inject CERT_ID and ensure redirect is ON
+      withEnv(["KNS=${env.K8S_NAMESPACE}"]) {
+        sh '''
+          bash -euo pipefail <<'BASH'
+          kubectl annotate svc inventory-'${params.TENANT_NAME}'-service \
+            -n '$KNS' \
+            service.beta.kubernetes.io/do-loadbalancer-certificate-id="${CERT_ID}" \
+            --overwrite
+
+          kubectl annotate svc inventory-'${params.TENANT_NAME}'-service \
+            -n '$KNS' \
+            service.beta.kubernetes.io/do-loadbalancer-redirect-http-to-https="true" \
+            --overwrite
+          BASH
+        '''
+      }
+      echo "Certificate attached and HTTPS redirect enabled."
+    }
+  }
+}
+
+
+
+
+//         stage('LB: Read Config') {
+//             steps {
+//                 withCredentials([string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN')]) {
+//                     script {
+//                         def base = "curl -s -H 'Authorization: Bearer $DO_API_TOKEN' https://api.digitalocean.com/v2/load_balancers/${env.LB_ID}"
+//                         env.LB_NAME = sh(script: "${base} | jq -r '.load_balancer.name'", returnStdout: true).trim()
+//                         env.LB_ALGORITHM = sh(script: "${base} | jq -r '.load_balancer.algorithm'", returnStdout: true).trim()
+//                         env.LB_REGION = sh(script: "${base} | jq -r '.load_balancer.region.slug'", returnStdout: true).trim()
+//                         env.LB_SIZE = sh(script: "${base} | jq -r '.load_balancer.size'", returnStdout: true).trim()
+//                         env.LB_SIZE_UNIT = sh(script: "${base} | jq -r '.load_balancer.size_unit'", returnStdout: true).trim()
+//                         echo "LB => name=${env.LB_NAME}, region=${env.LB_REGION}, algo=${env.LB_ALGORITHM}, size=${env.LB_SIZE}/${env.LB_SIZE_UNIT}"
+//                     }
+//                 }
+//             }
+//         }
+//
+//
+//
+//         stage('DNS: Create A Record') {
+//             steps {
+//                 withCredentials([
+//                     string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN')
+//                 ]) {
+//                     sh """
+//                         set -e
+//                         FQDN="${params.TENANT_NAME}.\${params.DO_DOMAIN}"
+//                         echo "Creating/ensuring A record: \$FQDN -> ${env.EXTERNAL_IP}"
+//                         # Create (will error if exists) – safe to ignore 422; or upsert by deleting existing first.
+//                         curl -sS -X POST "https://api.digitalocean.com/v2/domains/\${params.DO_DOMAIN}/records" \\
+//                           -H "Content-Type: application/json" \\
+//                           -H "Authorization: Bearer \$DO_API_TOKEN" \\
+//                           -d '{
+//                                 "type":"A",
+//                                 "name":"${params.TENANT_NAME}",
+//                                 "data":"${env.EXTERNAL_IP}",
+//                                 "ttl":60
+//                               }' || true
+//                         echo "✅ DNS step done"
+//                     """
+//                 }
+//             }
+//         }
+//     }
 
 
     post {
