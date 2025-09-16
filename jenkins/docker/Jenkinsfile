@@ -624,48 +624,50 @@ spec:
                             # Verify kubectl can connect to the cluster
                             kubectl config get-contexts
 
-                            # Check if LoadBalancer service already exists
+                            # Force delete and recreate service to remove stale LoadBalancer annotations
+                            echo "Force deleting any existing service with stale LoadBalancer annotations..."
+
+                            # Force delete the existing service completely
+                            echo "Deleting existing service: inventory-${params.TENANT_NAME}-service"
+                            kubectl delete service inventory-${params.TENANT_NAME}-service -n ${k8sNamespace} --ignore-not-found=true
+
+                            # Wait for complete deletion
+                            echo "Waiting for service deletion to complete..."
+                            sleep 10
+                            
+                            # Verify service is gone
                             if kubectl get service inventory-${params.TENANT_NAME}-service -n ${k8sNamespace} >/dev/null 2>&1; then
-                                echo "LoadBalancer service already exists for tenant ${params.TENANT_NAME} in namespace ${k8sNamespace}"
+                                echo "Service still exists, waiting longer..."
+                                sleep 20
                                 
-                                # Check if it has a LoadBalancer ID (meaning it's provisioned)
-                                EXISTING_LB_ID=\$(kubectl get service inventory-${params.TENANT_NAME}-service -n ${k8sNamespace} -o jsonpath='{.metadata.annotations.kubernetes\\.digitalocean\\.com/load-balancer-id}' 2>/dev/null || echo "")
-                                
-                                if [ -n "\$EXISTING_LB_ID" ]; then
-                                    echo "Existing LoadBalancer ID found: \$EXISTING_LB_ID"
-                                    echo "Skipping LoadBalancer creation, will only update deployment and pod"
-                                    
-                                    # Apply only the PVC and Deployment parts (skip service)
-                                    kubectl apply -f <(grep -A 20 "kind: PersistentVolumeClaim" k8s-deployment.yaml)
-                                    kubectl apply -f <(grep -A 50 "kind: Deployment" k8s-deployment.yaml)
-                                    
-                                else
-                                    echo "Service exists but no LoadBalancer ID found, will recreate service"
-                                    kubectl delete service inventory-${params.TENANT_NAME}-service -n ${k8sNamespace}
-                                    sleep 10
-                                    kubectl apply -f k8s-deployment.yaml
-                                fi
-                            else
-                                echo "No existing LoadBalancer service found, creating new one"
-                                
-                                # Check if the service account exists in the namespace
-                                echo "DEBUG: k8sNamespace variable = ${k8sNamespace}"
-                                echo "Checking for service account ${params.TENANT_NAME}-admin in namespace ${k8sNamespace}"
-                                kubectl get serviceaccount ${params.TENANT_NAME}-admin -n ${k8sNamespace} || {
-                                    echo "ERROR: Service account ${params.TENANT_NAME}-admin not found in namespace ${k8sNamespace}"
-                                    echo "Available service accounts in namespace ${k8sNamespace}:"
-                                    kubectl get serviceaccounts -n ${k8sNamespace}
-                                    exit 1
-                                }
-                                
-                                # Apply the full deployment
-                                kubectl apply -f k8s-deployment.yaml
+                                # Try force delete again if still exists
+                                kubectl delete service inventory-${params.TENANT_NAME}-service -n ${k8sNamespace} --force --grace-period=0 || true
+                                sleep 5
                             fi
                             
-                            # Wait for deployment rollout regardless of service creation
+                            echo "Service cleanup completed, ready to create fresh service"
+                            kubectl cluster-info
+                            
+                            # Check if the service account exists in the namespace
+                            echo "DEBUG: k8sNamespace variable = ${k8sNamespace}"
+                            echo "Checking for service account ${params.TENANT_NAME}-admin in namespace ${k8sNamespace}"
+                            kubectl get serviceaccount ${params.TENANT_NAME}-admin -n ${k8sNamespace} || {
+                                echo "ERROR: Service account ${params.TENANT_NAME}-admin not found in namespace ${k8sNamespace}"
+                                echo "Available service accounts in namespace ${k8sNamespace}:"
+                                kubectl get serviceaccounts -n ${k8sNamespace}
+                                exit 1
+                            }
+                            
+                            # Apply the deployment
+                            kubectl apply -f k8s-deployment.yaml
                             kubectl rollout status deployment/inventory-${params.TENANT_NAME} -n ${k8sNamespace} --timeout=300s
                             
-                            echo "Deployment completed"
+                            # LoadBalancer will be created by Jenkins job - no need to wait for external IP
+                            echo "LoadBalancer service created successfully"
+                            echo "DNS record will be created after LoadBalancer is provisioned"
+                            # Verify the annotation details
+                            echo "=== Verify the annotation details ==="
+                            kubectl get svc inventory-${params.TENANT_NAME}-service -n ${k8sNamespace} -o yaml | grep -A4 annotations
                             
                             # Debug: Check service configuration and load balancer details
                             echo "=== Service Configuration ==="
