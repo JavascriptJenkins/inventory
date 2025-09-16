@@ -1107,6 +1107,8 @@ stage('Service: Attach cert & redirect') {
 }
 
 
+} // this is the ending stages main brace
+
 
 
 //         stage('LB: Read Config') {
@@ -1151,7 +1153,7 @@ stage('Service: Attach cert & redirect') {
 //                 }
 //             }
 //         }
-//     }
+
 
 
     post {
