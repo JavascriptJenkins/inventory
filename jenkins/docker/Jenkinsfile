@@ -240,7 +240,7 @@ pipeline {
 
 
                              // Construct BASE_QR_DOMAIN from tenant name and DO domain
-                             def baseQrDomain = "https://${params.TENANT_NAME}.${DO_DOMAIN}"
+                             def baseQrDomain = "https://${params.TENANT_NAME}.${params.DO_DOMAIN}"
                              echo "Constructed BASE_QR_DOMAIN: ${baseQrDomain}"
                              
                              // Construct Kubernetes namespace from tenant name (same logic as Java code)
@@ -352,7 +352,7 @@ pipeline {
                              
                              // Digital Ocean configuration
                              sh "sed -i 's|^digitalocean\\.api\\.token=.*|digitalocean.api.token=${DO_API_TOKEN}|' src/main/resources/application.properties"
-                             sh "sed -i 's|^digitalocean\\.domain=.*|digitalocean.domain=${DO_DOMAIN}|' src/main/resources/application.properties"
+                             sh "sed -i 's|^digitalocean\\.domain=.*|digitalocean.domain=${params.DO_DOMAIN}|' src/main/resources/application.properties"
                              sh "sed -i 's|^digitalocean\\.target\\.loadbalancer=.*|digitalocean.target.loadbalancer=${DO_LB_IP}|' src/main/resources/application.properties"
                              sh "sed -i 's|^digitalocean\\.postgresql\\.username=.*|digitalocean.postgresql.username=${SANDBOX_POSTGRESQL_PUBLIC_USER}|' src/main/resources/application.properties"
                              sh "sed -i 's|^digitalocean\\.postgresql\\.password=.*|digitalocean.postgresql.password=${SANDBOX_POSTGRESQL_PASSWORD}|' src/main/resources/application.properties"
@@ -523,7 +523,7 @@ withEnv(["FQDN=${fqdn}"]) {
 
       # 1b) Fallback to wildcard (*.domain)
       if [ -z "$CERT_ID" ]; then
-        WILDCARD="*.${DO_DOMAIN}"
+        WILDCARD="*.${params.DO_DOMAIN}"
         CERT_ID="$(printf "%s" "$CERTS_JSON" | jq -r --arg wc "$WILDCARD" '
           (.certificates // [])
           | map(select((.dns_names // []) | index($wc)))
@@ -817,8 +817,8 @@ spec:
                             done
                             
                             if [ -n "\$EXTERNAL_IP" ] && [ "\$EXTERNAL_IP" != "null" ]; then
-                                echo "Creating DNS record for ${params.TENANT_NAME}.${DO_DOMAIN} -> \$EXTERNAL_IP"
-                                curl -X POST "https://api.digitalocean.com/v2/domains/${DO_DOMAIN}/records" \\
+                                echo "Creating DNS record for ${params.TENANT_NAME}.${params.DO_DOMAIN} -> \$EXTERNAL_IP"
+                                curl -X POST "https://api.digitalocean.com/v2/domains/${params.DO_DOMAIN}/records" \\
                                     -H "Content-Type: application/json" \\
                                     -H "Authorization: Bearer \$DO_API_TOKEN" \\
                                     -d '{
@@ -907,10 +907,10 @@ spec:
                 ]) {
                     sh """
                         set -e
-                        FQDN="${params.TENANT_NAME}.\${DO_DOMAIN}"
+                        FQDN="${params.TENANT_NAME}.\${params.DO_DOMAIN}"
                         echo "Creating/ensuring A record: \$FQDN -> ${env.EXTERNAL_IP}"
                         # Create (will error if exists) – safe to ignore 422; or upsert by deleting existing first.
-                        curl -sS -X POST "https://api.digitalocean.com/v2/domains/\${DO_DOMAIN}/records" \\
+                        curl -sS -X POST "https://api.digitalocean.com/v2/domains/\${params.DO_DOMAIN}/records" \\
                           -H "Content-Type: application/json" \\
                           -H "Authorization: Bearer \$DO_API_TOKEN" \\
                           -d '{
