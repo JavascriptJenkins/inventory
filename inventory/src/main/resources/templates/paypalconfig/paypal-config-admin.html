@@ -161,15 +161,17 @@
                     <div class="col-md-4">
                         <div class="mb-3">
                             <label for="sandboxReturnUrl" class="form-label">Return URL</label>
-                            <input type="url" class="form-control" id="sandboxReturnUrl" name="returnUrl" 
+                            <input type="text" class="form-control" id="sandboxReturnUrl" name="returnUrl" 
                                    th:value="${sandboxConfig?.returnUrl}" placeholder="/payment/paypal/return">
+                            <div class="form-text">Enter relative path (e.g., /payment/paypal/return) or full URL</div>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="mb-3">
                             <label for="sandboxCancelUrl" class="form-label">Cancel URL</label>
-                            <input type="url" class="form-control" id="sandboxCancelUrl" name="cancelUrl" 
+                            <input type="text" class="form-control" id="sandboxCancelUrl" name="cancelUrl" 
                                    th:value="${sandboxConfig?.cancelUrl}" placeholder="/payment/paypal/cancel">
+                            <div class="form-text">Enter relative path (e.g., /payment/paypal/cancel) or full URL</div>
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -234,15 +236,17 @@
                     <div class="col-md-4">
                         <div class="mb-3">
                             <label for="prodReturnUrl" class="form-label">Return URL</label>
-                            <input type="url" class="form-control" id="prodReturnUrl" name="returnUrl" 
+                            <input type="text" class="form-control" id="prodReturnUrl" name="returnUrl" 
                                    th:value="${prodConfig?.returnUrl}" placeholder="/payment/paypal/return">
+                            <div class="form-text">Enter relative path (e.g., /payment/paypal/return) or full URL</div>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="mb-3">
                             <label for="prodCancelUrl" class="form-label">Cancel URL</label>
-                            <input type="url" class="form-control" id="prodCancelUrl" name="cancelUrl" 
+                            <input type="text" class="form-control" id="prodCancelUrl" name="cancelUrl" 
                                    th:value="${prodConfig?.cancelUrl}" placeholder="/payment/paypal/cancel">
+                            <div class="form-text">Enter relative path (e.g., /payment/paypal/cancel) or full URL</div>
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -320,10 +324,20 @@
                 }
             });
             
-            // Real-time validation for URLs
+            // Real-time validation for URLs and URL paths
             $('input[type="url"]').on('blur', function() {
                 const url = $(this).val();
                 if (url && !isValidUrl(url)) {
+                    $(this).addClass('is-invalid');
+                } else {
+                    $(this).removeClass('is-invalid');
+                }
+            });
+            
+            // Real-time validation for Return/Cancel URL fields (more flexible)
+            $('#sandboxReturnUrl, #sandboxCancelUrl, #prodReturnUrl, #prodCancelUrl').on('blur', function() {
+                const url = $(this).val();
+                if (url && !isValidUrlOrPath(url)) {
                     $(this).addClass('is-invalid');
                 } else {
                     $(this).removeClass('is-invalid');
@@ -357,6 +371,28 @@
             } catch (_) {
                 return false;
             }
+        }
+        
+        function isValidUrlOrPath(string) {
+            // Allow empty strings
+            if (!string || string.trim() === '') {
+                return true;
+            }
+            
+            // Check if it's a valid full URL
+            if (isValidUrl(string)) {
+                return true;
+            }
+            
+            // Check if it's a valid relative path (starts with /)
+            if (string.startsWith('/')) {
+                // Basic path validation - should not contain invalid characters
+                const invalidChars = /[<>:"|?*\x00-\x1f]/;
+                return !invalidChars.test(string);
+            }
+            
+            // If it doesn't start with / and isn't a valid URL, it's invalid
+            return false;
         }
     </script>
 </body>
