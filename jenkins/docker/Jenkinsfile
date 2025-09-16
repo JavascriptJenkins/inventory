@@ -693,18 +693,37 @@ spec:
             steps {
                 withCredentials([ file(credentialsId: 'KUBECONFIG_PATH', variable: 'KCFG') ]) {
                     script {
-                        // use env.K8S_NAMESPACE you set earlier
+                        // Get LoadBalancer ID
                         env.LB_ID = sh(
-                            script: "export KUBECONFIG=\"$KCFG\"; kubectl get svc inventory-${params.TENANT_NAME}-service -n ${env.K8S_NAMESPACE} -o jsonpath='{.metadata.annotations.kubernetes\\.digitalocean\\.com/load-balancer-id}'",
+                            script: "export KUBECONFIG='${KCFG}'; kubectl get svc inventory-${params.TENANT_NAME}-service -n ${env.K8S_NAMESPACE} -o jsonpath='{.metadata.annotations.kubernetes\\.digitalocean\\.com/load-balancer-id}'",
                             returnStdout: true
                         ).trim()
                         if (!env.LB_ID) { error "LB_ID not found on service annotation" }
 
-                        env.EXTERNAL_IP = sh(
-                            script: "export KUBECONFIG=\"$KCFG\"; kubectl get svc inventory-${params.TENANT_NAME}-service -n ${env.K8S_NAMESPACE} -o jsonpath='{.status.loadBalancer.ingress[0].ip}'",
-                            returnStdout: true
-                        ).trim()
-                        if (!env.EXTERNAL_IP || env.EXTERNAL_IP == 'null') { error "External IP not found yet" }
+                        // Wait for external IP to be assigned (with timeout)
+                        echo "Waiting for LoadBalancer external IP to be assigned..."
+                        def maxAttempts = 60  // 10 minutes max wait
+                        def attempt = 0
+
+                        while (attempt < maxAttempts) {
+                            env.EXTERNAL_IP = sh(
+                                script: "export KUBECONFIG='${KCFG}'; kubectl get svc inventory-${params.TENANT_NAME}-service -n ${env.K8S_NAMESPACE} -o jsonpath='{.status.loadBalancer.ingress[0].ip}'",
+                                returnStdout: true
+                            ).trim()
+
+                            if (env.EXTERNAL_IP && env.EXTERNAL_IP != 'null' && env.EXTERNAL_IP != '') {
+                                echo "External IP assigned: ${env.EXTERNAL_IP}"
+                                break
+                            }
+
+                            attempt++
+                            echo "Attempt ${attempt}/${maxAttempts}: External IP not ready yet, waiting 10 seconds..."
+                            sleep(10)
+                        }
+
+                        if (!env.EXTERNAL_IP || env.EXTERNAL_IP == 'null' || env.EXTERNAL_IP == '') {
+                            error "External IP not assigned after ${maxAttempts} attempts (${maxAttempts * 10} seconds)"
+                        }
 
                         echo "Found LB_ID: ${env.LB_ID}"
                         echo "Service IP : ${env.EXTERNAL_IP}"
