@@ -961,25 +961,26 @@ stage('DNS: Wait for resolution') {
           FQDN="$FQDN"
           IP="$IP"
 
-          # Prefer dig if installed, else fall back to getent
-          cmd_resolve() {
+          resolve() {
             if command -v dig >/dev/null 2>&1; then
-              dig +short "$FQDN" | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' | sort -u
+              # dig returns just the IPs on +short
+              dig +short A "$FQDN" | sed '/^$/d' | sort -u
             else
-              getent ahostsv4 "$FQDN" 2>/dev/null | awk "{print \$1}" | sort -u
+              # getent returns "IP flags hostname" lines; take the IP
+              getent ahostsv4 "$FQDN" 2>/dev/null | awk '{print $1}' | sort -u
             fi
           }
 
-          i=0
-          while [ $i -lt 60 ]; do
-            RES="$(cmd_resolve || true)"
-            if echo "$RES" | grep -qx "$IP"; then
+          for i in $(seq 1 60); do
+            RES="$(resolve || true)"
+            echo "Resolved for $FQDN: $RES"
+            if printf '%s\n' "$RES" | grep -Fx "$IP" >/dev/null; then
               echo "DNS OK: $FQDN -> $IP"
               exit 0
             fi
             sleep 5
-            i=$((i+1))
           done
+
           echo "DNS not pointing yet to $IP for $FQDN"
           exit 1
           BASH
@@ -988,6 +989,7 @@ stage('DNS: Wait for resolution') {
     }
   }
 }
+
 
 
 
