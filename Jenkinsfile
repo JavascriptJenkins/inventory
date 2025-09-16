@@ -317,37 +317,24 @@ stage('Validate Directory Structure and make sure all dirs are created') {
     steps {
         script {
             sshagent(credentials: ['inventory-root-sshkey']) {
+                // Create base directories first
                 sh """
-                    ssh -o StrictHostKeyChecking=no ${params.SSHUSER}@${params.HOSTNAME} '
-                        #!/bin/bash
+                    ssh -o StrictHostKeyChecking=no ${params.SSHUSER}@${params.HOSTNAME} "mkdir -p ~/deployments/inventory"
+                """
 
-                        # Check and create the deployments directory if it does not exist
-                        if [ ! -d ~/deployments ]; then
-                            mkdir ~/deployments
-                        fi
+                // Create main subdirectories
+                sh """
+                    ssh -o StrictHostKeyChecking=no ${params.SSHUSER}@${params.HOSTNAME} "mkdir -p ~/deployments/inventory/backup ~/deployments/inventory/data ~/deployments/inventory/logs ~/deployments/inventory/topdir ~/deployments/inventory/uploads"
+                """
 
-                        # Check and create the inventory directory inside deployments if it does not exist
-                        if [ ! -d ~/deployments/inventory ]; then
-                            mkdir ~/deployments/inventory
-                        fi
+                // Create uploads subdirectories
+                sh """
+                    ssh -o StrictHostKeyChecking=no ${params.SSHUSER}@${params.HOSTNAME} "mkdir -p ~/deployments/inventory/uploads/coa ~/deployments/inventory/uploads/font ~/deployments/inventory/uploads/xlsx ~/deployments/inventory/uploads/globaluserfiles ~/deployments/inventory/uploads/media ~/deployments/inventory/uploads/mcp ~/deployments/inventory/uploads/applecert ~/deployments/inventory/uploads/metrcdocs"
+                """
 
-                        # Check and create the required directories inside inventory
-                        for dir in backup data logs topdir uploads; do
-                            if [ ! -d ~/deployments/inventory/\$dir ]; then
-                                mkdir ~/deployments/inventory/\$dir
-                            fi
-                        done
-
-                        # Check and create the subdirectories inside uploads
-                        for subdir in coa font xlsx globaluserfiles media mcp applecert metrcdocs; do
-                            if [ ! -d ~/deployments/inventory/uploads/\$subdir ]; then
-                                mkdir ~/deployments/inventory/uploads/\$subdir
-                            fi
-                        done
-
-                        # Print success message
-                        echo "Directories created successfully if they did not already exist."
-                    '
+                // Verify directories were created
+                sh """
+                    ssh -o StrictHostKeyChecking=no ${params.SSHUSER}@${params.HOSTNAME} "ls -la ~/deployments/inventory/"
                 """
             }
         }
