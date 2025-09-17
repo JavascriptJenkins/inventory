@@ -484,7 +484,7 @@ CMD ["java", "-jar", "app.jar"]
             }
         }
 
-        stage('Deploy to Kubernetes') {
+stage('Setup Kubernetes Namespace') {
             when {
                 expression { params.TENANT_NAME != '' }
             }
@@ -494,23 +494,32 @@ CMD ["java", "-jar", "app.jar"]
                         params.K8S_NAMESPACE :
                         "tenant-${params.TENANT_NAME.toLowerCase().replaceAll('[^a-z0-9-]', '-')}"
 
-                    // Bind into an env var so subsequent sh{} or steps can use it
+                    // Bind into an env var so subsequent stages can use it
                     env.K8S_NAMESPACE = k8sNamespace
-                    echo "Namespace set to: ${env.K8S_NAMESPACE}"
 
+                    echo "Namespace set to: ${env.K8S_NAMESPACE}"
                     echo "Constructed Kubernetes namespace: ${k8sNamespace}"
                     echo "TENANT_NAME parameter: ${params.TENANT_NAME}"
                     echo "K8S_NAMESPACE parameter: '${params.K8S_NAMESPACE}'"
                     echo "K8S_NAMESPACE parameter length: ${params.K8S_NAMESPACE?.length() ?: 'null'}"
                     echo "Workspace directory: ${WORKSPACE}"
                     echo "LoadBalancer name (workspace root): ${WORKSPACE.split('/').last()}"
-                    echo "env.CERT_ID before deployment yaml: ${env.CERT_ID}"
+                }
+            }
+        }
+
+        stage('Create Deployment Manifest') {
+            when {
+                expression { params.TENANT_NAME != '' }
+            }
+            steps {
+                script {
                     def deploymentYaml = """
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: inventory-${params.TENANT_NAME}-uploads-pvc
-  namespace: ${k8sNamespace}
+  namespace: ${env.K8S_NAMESPACE}
   labels:
     app: inventory
     tenant: ${params.TENANT_NAME}
@@ -525,7 +534,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: inventory-${params.TENANT_NAME}
-  namespace: ${k8sNamespace}
+  namespace: ${env.K8S_NAMESPACE}
   labels:
     app: inventory
     tenant: ${params.TENANT_NAME}
@@ -579,7 +588,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: inventory-${params.TENANT_NAME}-service
-  namespace: ${k8sNamespace}
+  namespace: ${env.K8S_NAMESPACE}
   labels:
     app: inventory
     tenant: ${params.TENANT_NAME}
@@ -592,7 +601,6 @@ metadata:
     service.beta.kubernetes.io/do-loadbalancer-healthcheck-healthy-threshold: "3"
     service.beta.kubernetes.io/do-loadbalancer-healthcheck-unhealthy-threshold: "3"
     service.beta.kubernetes.io/do-loadbalancer-type: "REGIONAL"
-
 spec:
   type: LoadBalancer
   externalTrafficPolicy: Local
@@ -610,17 +618,23 @@ spec:
     protocol: TCP
 """
 
-                    
                     // Write deployment manifest to file
                     writeFile file: 'k8s-deployment.yaml', text: deploymentYaml
-                    
-                    // Apply the deployment using kubectl with file credential
-                    withCredentials([
-                        file(credentialsId: 'KUBECONFIG_PATH', variable: 'KCFG')
-                    ]) {
+                    echo "Kubernetes deployment manifest created"
+                }
+            }
+        }
+
+        stage('Cleanup Existing Services') {
+            when {
+                expression { params.TENANT_NAME != '' }
+            }
+            steps {
+                script {
+                    withCredentials([file(credentialsId: 'KUBECONFIG_PATH', variable: 'KCFG')]) {
                         sh """
                             export KUBECONFIG="\$KCFG"
-                            
+
                             # Verify kubectl can connect to the cluster
                             kubectl config get-contexts
 
@@ -629,54 +643,97 @@ spec:
 
                             # Force delete the existing service completely
                             echo "Deleting existing service: inventory-${params.TENANT_NAME}-service"
-                            kubectl delete service inventory-${params.TENANT_NAME}-service -n ${k8sNamespace} --ignore-not-found=true
+                            kubectl delete service inventory-${params.TENANT_NAME}-service -n ${env.K8S_NAMESPACE} --ignore-not-found=true
 
                             # Wait for complete deletion
                             echo "Waiting for service deletion to complete..."
                             sleep 10
 
                             # Verify service is gone
-                            if kubectl get service inventory-${params.TENANT_NAME}-service -n ${k8sNamespace} >/dev/null 2>&1; then
+                            if kubectl get service inventory-${params.TENANT_NAME}-service -n ${env.K8S_NAMESPACE} >/dev/null 2>&1; then
                                 echo "Service still exists, waiting longer..."
                                 sleep 20
 
                                 # Try force delete again if still exists
-                                kubectl delete service inventory-${params.TENANT_NAME}-service -n ${k8sNamespace} --force --grace-period=0 || true
+                                kubectl delete service inventory-${params.TENANT_NAME}-service -n ${env.K8S_NAMESPACE} --force --grace-period=0 || true
                                 sleep 5
                             fi
 
                             echo "Service cleanup completed, ready to create fresh service"
                             kubectl cluster-info
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Verify Service Account') {
+            when {
+                expression { params.TENANT_NAME != '' }
+            }
+            steps {
+                script {
+                    withCredentials([file(credentialsId: 'KUBECONFIG_PATH', variable: 'KCFG')]) {
+                        sh """
+                            export KUBECONFIG="\$KCFG"
 
                             # Check if the service account exists in the namespace
-                            echo "DEBUG: k8sNamespace variable = ${k8sNamespace}"
-                            echo "Checking for service account ${params.TENANT_NAME}-admin in namespace ${k8sNamespace}"
-                            kubectl get serviceaccount ${params.TENANT_NAME}-admin -n ${k8sNamespace} || {
-                                echo "ERROR: Service account ${params.TENANT_NAME}-admin not found in namespace ${k8sNamespace}"
-                                echo "Available service accounts in namespace ${k8sNamespace}:"
-                                kubectl get serviceaccounts -n ${k8sNamespace}
+                            echo "DEBUG: K8S_NAMESPACE variable = ${env.K8S_NAMESPACE}"
+                            echo "Checking for service account ${params.TENANT_NAME}-admin in namespace ${env.K8S_NAMESPACE}"
+                            kubectl get serviceaccount ${params.TENANT_NAME}-admin -n ${env.K8S_NAMESPACE} || {
+                                echo "ERROR: Service account ${params.TENANT_NAME}-admin not found in namespace ${env.K8S_NAMESPACE}"
+                                echo "Available service accounts in namespace ${env.K8S_NAMESPACE}:"
+                                kubectl get serviceaccounts -n ${env.K8S_NAMESPACE}
                                 exit 1
                             }
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Apply Kubernetes Deployment') {
+            when {
+                expression { params.TENANT_NAME != '' }
+            }
+            steps {
+                script {
+                    withCredentials([file(credentialsId: 'KUBECONFIG_PATH', variable: 'KCFG')]) {
+                        sh """
+                            export KUBECONFIG="\$KCFG"
 
                             # Apply the deployment
                             kubectl apply -f k8s-deployment.yaml
-                            kubectl rollout status deployment/inventory-${params.TENANT_NAME} -n ${k8sNamespace} --timeout=300s
+                            kubectl rollout status deployment/inventory-${params.TENANT_NAME} -n ${env.K8S_NAMESPACE} --timeout=300s
+                        """
+                    }
+                }
+            }
+        }
 
+        stage('Verify Deployment Status') {
+            when {
+                expression { params.TENANT_NAME != '' }
+            }
+            steps {
+                script {
+                    withCredentials([file(credentialsId: 'KUBECONFIG_PATH', variable: 'KCFG')]) {
+                        sh """
+                            export KUBECONFIG="\$KCFG"
 
                             # Debug: Check service configuration and load balancer details
                             echo "=== Service Configuration ==="
-                            kubectl get service inventory-${params.TENANT_NAME}-service -n ${k8sNamespace} -o yaml
+                            kubectl get service inventory-${params.TENANT_NAME}-service -n ${env.K8S_NAMESPACE} -o yaml
 
                             echo "=== Load Balancer ID ==="
-                            LB_ID=\$(kubectl get service inventory-${params.TENANT_NAME}-service -n ${k8sNamespace} -o jsonpath='{.metadata.annotations.kubernetes\\.digitalocean\\.com/load-balancer-id}')
+                            LB_ID=\$(kubectl get service inventory-${params.TENANT_NAME}-service -n ${env.K8S_NAMESPACE} -o jsonpath='{.metadata.annotations.kubernetes\\.digitalocean\\.com/load-balancer-id}')
                             echo "Load Balancer ID: \$LB_ID"
 
                             echo "=== Node Information ==="
                             kubectl get nodes -o wide
 
                             echo "=== Pod Status ==="
-                            kubectl get pods -n ${k8sNamespace} -o wide
-
+                            kubectl get pods -n ${env.K8S_NAMESPACE} -o wide
                         """
                     }
                 }
