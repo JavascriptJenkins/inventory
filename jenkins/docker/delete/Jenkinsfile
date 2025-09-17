@@ -32,8 +32,17 @@ pipeline {
                     if (!params.DO_DOMAIN || params.DO_DOMAIN.trim() == '') {
                         error "DO_DOMAIN is required for deletion"
                     }
-                    if (!params.CONFIRM_DELETION) {
-                        error "CONFIRM_DELETION must be checked to proceed with deletion"
+
+                    // Handle CONFIRM_DELETION as both boolean and string
+                    def confirmDeletion = false
+                    if (params.CONFIRM_DELETION instanceof Boolean) {
+                        confirmDeletion = params.CONFIRM_DELETION
+                    } else if (params.CONFIRM_DELETION instanceof String) {
+                        confirmDeletion = params.CONFIRM_DELETION.toLowerCase() in ['true', '1', 'yes', 'on']
+                    }
+
+                    if (!confirmDeletion) {
+                        error "CONFIRM_DELETION must be set to 'true' to proceed with deletion. Current value: ${params.CONFIRM_DELETION}"
                     }
 
                     echo "=========================================="

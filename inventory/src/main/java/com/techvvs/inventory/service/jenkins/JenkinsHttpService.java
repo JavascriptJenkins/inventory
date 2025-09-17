@@ -248,7 +248,8 @@ public class JenkinsHttpService {
             params.add("DO_DOMAIN", domain);
             params.add("K8S_NAMESPACE", "tenant-" + tenantName);
             params.add("BRANCH", "test1");
-            
+            params.add("CONFIRM_DELETION", "true");
+
             HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
             
             ResponseEntity<String> response = restTemplate.postForEntity(jobUrl, request, String.class);
