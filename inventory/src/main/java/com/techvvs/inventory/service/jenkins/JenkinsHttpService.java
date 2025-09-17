@@ -112,7 +112,7 @@ public class JenkinsHttpService {
                 System.out.println("Successfully deployed all infrastructure for tenant: " + tenantName);
             }
             
-            String jobUrl = jenkinsUrl + "/job/docker/buildWithParameters";
+            String jobUrl = jenkinsUrl + "/job/docker_daisychain/buildWithParameters";
             
             // Create authentication headers
             HttpHeaders headers = new HttpHeaders();
