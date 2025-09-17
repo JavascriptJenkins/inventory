@@ -480,6 +480,35 @@ BUILD_TIMESTAMP=${new Date().format('yyyy-MM-dd HH:mm:ss')}
         }
     }
 
+
+    stage('Trigger Deployment') {
+            when {
+                expression { params.TENANT_NAME != '' && params.DO_DOMAIN != '' }
+            }
+            steps {
+                script {
+                    echo "Triggering deployment pipeline for tenant: ${params.TENANT_NAME}"
+
+                    // Trigger the deployment pipeline
+                    build job: 'inventory-deploy',
+                          parameters: [
+                              string(name: 'BUILD_JOB_NAME', value: env.JOB_NAME),
+                              string(name: 'BUILD_NUMBER', value: env.BUILD_NUMBER),
+                              string(name: 'TENANT_NAME', value: params.TENANT_NAME),
+                              string(name: 'APP_NAME', value: params.APP_NAME),
+                              string(name: 'DO_DOMAIN', value: params.DO_DOMAIN),
+                              string(name: 'ENVIRONMENT_NAME', value: params.ENVIRONMENT_NAME),
+                              string(name: 'K8S_NAMESPACE', value: params.K8S_NAMESPACE ?: ''),
+                              string(name: 'DO_LOADBALANCER_ID', value: params.DO_LOADBALANCER_ID ?: '')
+                          ],
+                          wait: true
+
+                    echo "Deployment pipeline completed successfully"
+                }
+            }
+        }
+    }
+
     post {
         success {
             echo "Build completed successfully for tenant: ${params.TENANT_NAME}"
