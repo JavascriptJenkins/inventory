@@ -20,7 +20,7 @@ public class Tenant {
     @JsonProperty
     private UUID id;
 
-    @Column(name = "tenant_name", unique = true, length = 50)
+    @Column(name = "tenant_name", length = 50)
     @JsonProperty
     private String tenantName;
 

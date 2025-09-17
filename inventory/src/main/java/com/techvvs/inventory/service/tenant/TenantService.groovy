@@ -51,23 +51,51 @@ class TenantService {
         objectValidator.validateAndAttachErrors(tenant, model)
 
         // third - do any business logic / page specific validation below
-        if (tenant.tenantName != null && !tenant.tenantName.isEmpty()) {
-            // Check for duplicate tenant names
-            Optional<Tenant> existingTenant = tenantRepo.findByTenantName(tenant.tenantName)
-            if (existingTenant.isPresent() && !existingTenant.get().id.equals(tenant.id)) {
-                model.addAttribute(MessageConstants.ERROR_MSG, "Tenant name already exists")
+        
+        // Domain format validation - must contain a period with at least 1 character on each side
+        if (tenant.domainName != null && !tenant.domainName.isEmpty()) {
+            if (!isValidDomainFormat(tenant.domainName)) {
+                model.addAttribute(MessageConstants.ERROR_MSG, "Domain must be in format 'something.something' (e.g., example.com)")
             }
         }
-
-        if (tenant.domainName != null && !tenant.domainName.isEmpty()) {
-            // Check for duplicate domain names
-            Optional<Tenant> existingTenant = tenantRepo.findByDomainName(tenant.domainName)
+        
+        // Check for duplicate tenant name AND domain combination
+        if (tenant.tenantName != null && !tenant.tenantName.isEmpty() && 
+            tenant.domainName != null && !tenant.domainName.isEmpty()) {
+            
+            Optional<Tenant> existingTenant = tenantRepo.findByTenantNameAndDomainName(tenant.tenantName, tenant.domainName)
             if (existingTenant.isPresent() && !existingTenant.get().id.equals(tenant.id)) {
-                model.addAttribute(MessageConstants.ERROR_MSG, "Domain name already exists")
+                model.addAttribute(MessageConstants.ERROR_MSG, "A tenant with this name and domain combination already exists")
             }
         }
 
         return tenant
+    }
+    
+    /**
+     * Validates domain format - must contain a period with at least 1 character on each side
+     * Examples: "example.com", "test.org", "a.b" are valid
+     * Examples: "example", ".com", "example.", "a.", ".b" are invalid
+     */
+    private boolean isValidDomainFormat(String domain) {
+        if (domain == null || domain.trim().isEmpty()) {
+            return true // Allow empty domains
+        }
+        
+        // Check if domain contains exactly one period
+        int periodCount = domain.length() - domain.replace(".", "").length()
+        if (periodCount != 1) {
+            return false
+        }
+        
+        // Split by period and check each part
+        String[] parts = domain.split("\\.")
+        if (parts.length != 2) {
+            return false
+        }
+        
+        // Each part must have at least 1 character
+        return parts[0].length() >= 1 && parts[1].length() >= 1
     }
 
     void getTenant(UUID tenantId, Model model) {

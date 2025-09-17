@@ -56,6 +56,22 @@
     <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">Error</div>
     <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}">Success</div>
 
+    <!-- Batch Action Buttons -->
+    <div class="row mb-3">
+        <div class="col-lg-3 col-md-4 col-sm-6 col-12 mb-3">
+            <button type="button" class="btn btn-primary" onclick="downloadBatchFile()">
+                <i class="bi bi-download"></i> Download Batch File
+            </button>
+        </div>
+        <div class="col-lg-3 col-md-4 col-sm-6 col-12 mb-3">
+            <button type="button" class="btn btn-success" onclick="generateLabels()" id="generateLabelsBtn">
+                <i class="bi bi-printer"></i> Generate Labels
+            </button>
+            <div id="generateLabelsSpinner" class="spinner-border spinner-border-sm d-none" role="status">
+                <span class="visually-hidden">Generating...</span>
+            </div>
+        </div>
+    </div>
 
     <div class="row mb-3">
         <div class="col-lg-2 col-md-4 col-sm-6 col-12 mb-3">
@@ -275,6 +291,94 @@
         $("#progress-bar").css("width", percentage + "%").attr("aria-valuenow", percentage);
         $("#progress-bar").text(percentage.toFixed(2) + "%");
     });
+
+    // Function to download batch file from dymno28mmx89mm directory
+    function downloadBatchFile() {
+        // Get batch ID from the URL parameters or from a hidden input
+        const urlParams = new URLSearchParams(window.location.search);
+        const batchId = urlParams.get('batchid') || /*[[${batch.batchid}]]*/ 0;
+        const downloadUrl = `/batch/download-file?batchid=${batchId}&directory=/dymno28mmx89mm/`;
+        
+        console.log('Downloading file for batch ID:', batchId);
+        console.log('Download URL:', downloadUrl);
+        
+        // Create a temporary link element to trigger download
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = 'batch-file';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    // Function to generate labels with AJAX
+    function generateLabels() {
+        // Get batch ID from the URL parameters or from a hidden input
+        const urlParams = new URLSearchParams(window.location.search);
+        const batchId = urlParams.get('batchid') || /*[[${batch.batchid}]]*/ 0;
+        const generateUrl = `/batch/generate-labels`;
+        
+        console.log('Generating labels for batch ID:', batchId);
+        
+        // Show spinner and disable button
+        const btn = document.getElementById('generateLabelsBtn');
+        const spinner = document.getElementById('generateLabelsSpinner');
+        
+        btn.disabled = true;
+        btn.innerHTML = '<i class="bi bi-printer"></i> Generating...';
+        spinner.classList.remove('d-none');
+        
+        // Make AJAX request
+        fetch(generateUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `batchid=${batchId}`
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.text();
+            }
+            throw new Error('Network response was not ok');
+        })
+        .then(data => {
+            // Show success message
+            showMessage('Labels generated successfully!', 'success');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showMessage('Error generating labels: ' + error.message, 'error');
+        })
+        .finally(() => {
+            // Hide spinner and re-enable button
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-printer"></i> Generate Labels';
+            spinner.classList.add('d-none');
+        });
+    }
+
+    // Function to show messages
+    function showMessage(message, type) {
+        // Remove existing alerts
+        const existingAlerts = document.querySelectorAll('.alert');
+        existingAlerts.forEach(alert => alert.remove());
+        
+        // Create new alert
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type === 'success' ? 'success' : 'danger'}`;
+        alertDiv.setAttribute('role', 'alert');
+        alertDiv.textContent = message;
+        
+        // Insert after header
+        const header = document.querySelector('.header-dark');
+        header.insertAdjacentElement('afterend', alertDiv);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            alertDiv.remove();
+        }, 5000);
+    }
 </script>
 
 </body>

@@ -45,4 +45,8 @@ public interface TenantRepo extends JpaRepository<Tenant, UUID> {
     // Find tenants marked for deletion
     @Query("SELECT t FROM Tenant t WHERE t.deleteFlag = :deleteFlag")
     List<Tenant> findByDeleteFlag(@Param("deleteFlag") Integer deleteFlag);
+
+    // Find tenant by both tenant name and domain name combination
+    @Query("SELECT t FROM Tenant t WHERE t.tenantName = :tenantName AND t.domainName = :domainName")
+    Optional<Tenant> findByTenantNameAndDomainName(@Param("tenantName") String tenantName, @Param("domainName") String domainName);
 }

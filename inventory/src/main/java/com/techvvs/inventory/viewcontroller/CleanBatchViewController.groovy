@@ -27,6 +27,7 @@ import com.techvvs.inventory.validation.ValidateBatch
 import com.techvvs.inventory.viewcontroller.constants.ControllerConstants
 import com.techvvs.inventory.viewcontroller.helper.BatchControllerHelper
 import com.techvvs.inventory.viewcontroller.helper.ProductHelper
+import com.techvvs.inventory.labels.service.LabelPrintingService
 import org.hibernate.engine.jdbc.batch.spi.Batch
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
@@ -44,7 +45,11 @@ import org.springframework.web.bind.annotation.*
 import javax.servlet.http.Cookie
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
+import java.io.File
+import java.io.FileInputStream
+import java.io.OutputStream
 import java.time.LocalDateTime
+import java.util.Arrays
 
 
 /*refactoring the dirty batch controller into this one*/
@@ -110,6 +115,9 @@ public class CleanBatchViewController {
     @Autowired
     RbacEnforcer rbacEnforcer
 
+    @Autowired
+    LabelPrintingService labelPrintingService
+
 
 
     @GetMapping
@@ -126,6 +134,169 @@ public class CleanBatchViewController {
 
         model = batchControllerHelper.processModel(model,  batchid, editmode, page, null, false , false, vendorid);
         return "batch/batch.html";
+    }
+
+    @GetMapping("/download-file")
+    void downloadBatchFile(
+            @RequestParam("batchid") String batchid,
+            @RequestParam("directory") String directory,
+            HttpServletResponse response
+    ) {
+        try {
+            System.out.println("=== DOWNLOAD FILE DEBUG START ===")
+            System.out.println("Received batchid: " + batchid)
+            System.out.println("Received directory: " + directory)
+            
+            // Get batch information
+            BatchVO batch = batchRepo.findById(Integer.valueOf(batchid)).orElse(null);
+            if (batch == null) {
+                System.out.println("ERROR: Batch not found for batchid: " + batchid)
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                return;
+            }
+            
+            System.out.println("Found batch: " + batch.batchnumber)
+            System.out.println("Batch name: " + batch.name)
+
+            // Construct file path - use the specific dymno28mmx89mm directory
+            String baseDir = appConstants.PARENT_LEVEL_DIR + String.valueOf(batch.batchnumber) + appConstants.BARCODES_DYMNO_28mmx89mm_DIR
+            String fullPath = baseDir
+            
+            System.out.println("PARENT_LEVEL_DIR: " + appConstants.PARENT_LEVEL_DIR)
+            System.out.println("BARCODES_DYMNO_28mmx89mm_DIR: " + appConstants.BARCODES_DYMNO_28mmx89mm_DIR)
+            System.out.println("Batch number: " + batch.batchnumber)
+            System.out.println("Constructed baseDir: " + baseDir)
+            System.out.println("Full path: " + fullPath)
+            
+            // Check if directory exists
+            File dir = new File(fullPath)
+            System.out.println("Directory exists: " + dir.exists())
+            if (dir.exists()) {
+                System.out.println("Directory is readable: " + dir.canRead())
+                String[] filesInDir = dir.list()
+                System.out.println("Files in directory: " + (filesInDir != null ? Arrays.toString(filesInDir) : "null"))
+            }
+            
+            // Get files from the specified directory
+            System.out.println("Calling techvvsFileHelper.getFilesByFileNumber with batchnumber: " + batch.batchnumber + " and path: " + fullPath)
+            List<FileVO> files = techvvsFileHelper.getFilesByFileNumber(Integer.valueOf(batch.batchnumber), fullPath)
+            
+            System.out.println("Number of files found: " + files.size())
+            for (int i = 0; i < files.size(); i++) {
+                FileVO file = files.get(i)
+                System.out.println("File " + i + ": " + file.getFilename() + " at directory: " + file.getDirectory())
+            }
+            
+            if (files.isEmpty()) {
+                System.out.println("ERROR: No files found in directory")
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                return;
+            }
+
+            // Get the first file (assuming there's only one file in dymno28mmx89mm directory)
+            FileVO fileToDownload = files.get(0)
+            
+            // Construct the full file path by combining directory and filename
+            String fullFilePath = fileToDownload.getDirectory() + File.separator + fileToDownload.getFilename()
+            File file = new File(fullFilePath)
+            
+            System.out.println("Attempting to download file: " + fileToDownload.getFilename())
+            System.out.println("File directory: " + fileToDownload.getDirectory())
+            System.out.println("File filename: " + fileToDownload.getFilename())
+            System.out.println("Constructed full path: " + fullFilePath)
+            System.out.println("File exists: " + file.exists())
+            System.out.println("File is readable: " + file.canRead())
+            System.out.println("File size: " + file.length())
+            
+            if (!file.exists()) {
+                System.out.println("ERROR: File does not exist at path: " + fullFilePath)
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                return;
+            }
+
+            // Set response headers for file download
+            response.setContentType("application/octet-stream")
+            response.setHeader("Content-Disposition", "attachment; filename=\"" + fileToDownload.getFilename() + "\"")
+            response.setContentLength((int) file.length())
+            
+            System.out.println("Setting response headers:")
+            System.out.println("Content-Type: application/octet-stream")
+            System.out.println("Content-Disposition: attachment; filename=\"" + fileToDownload.getFilename() + "\"")
+            System.out.println("Content-Length: " + file.length())
+
+            // Stream the file to response
+            FileInputStream fis = null
+            OutputStream os = null
+            try {
+                fis = new FileInputStream(file)
+                os = response.getOutputStream()
+                
+                byte[] buffer = new byte[4096]
+                int bytesRead
+                int totalBytesRead = 0
+                while ((bytesRead = fis.read(buffer)) != -1) {
+                    os.write(buffer, 0, bytesRead)
+                    totalBytesRead += bytesRead
+                }
+                os.flush()
+                System.out.println("Successfully streamed " + totalBytesRead + " bytes to response")
+            } finally {
+                if (fis != null) {
+                    fis.close()
+                }
+                if (os != null) {
+                    os.close()
+                }
+            }
+            
+            System.out.println("=== DOWNLOAD FILE DEBUG END - SUCCESS ===")
+
+        } catch (Exception e) {
+            System.out.println("=== DOWNLOAD FILE DEBUG END - ERROR ===")
+            System.out.println("Error downloading batch file: " + e.getMessage())
+            e.printStackTrace()
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
+        }
+    }
+
+    @PostMapping("/generate-labels")
+    @ResponseBody
+    String generateLabels(
+            @RequestParam("batchid") String batchid,
+            HttpServletResponse response
+    ) {
+        try {
+            // Get batch information
+            BatchVO batch = batchRepo.findById(Integer.valueOf(batchid)).orElse(null);
+            if (batch == null) {
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                return "Batch not found";
+            }
+
+            // Generate labels using the same logic as the existing Generate Labels button
+            System.out.println("Generating labels for batch: " + batch.batchnumber)
+            
+            // Call the same label generation services as the existing button
+//            labelPrintingService.createEpsonC6000AuLabel4by6point5(batch)
+            labelPrintingService.createDyno550TurboLabel28mmx89mm(batch)
+            
+            // Generate barcode manifest and all barcodes for the batch
+//            batchControllerHelper.generateBarcodeManifestForBatch(String.valueOf(batch.batchnumber))
+//            batchControllerHelper.generateAllBarcodesForBatch(String.valueOf(batch.batchnumber))
+            
+            // Generate default menu from batch
+//            menuGenerator.generateDefaultMenuFromBatch(batch)
+            
+            System.out.println("Labels generated successfully for batch: " + batch.batchnumber)
+            
+            response.setStatus(HttpServletResponse.SC_OK);
+            return "Labels generated successfully";
+
+        } catch (Exception e) {
+            System.out.println("Error generating labels: " + e.getMessage())
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            return "Error generating labels: " + e.getMessage();
+        }
     }
 
     // uploadxlsx
