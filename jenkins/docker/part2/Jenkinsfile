@@ -160,7 +160,7 @@ spec:
         - name: data
           mountPath: /app/data
         - name: uploads
-          mountPath: /app/uploads
+          mountPath: /uploads
       volumes:
       - name: logs
         emptyDir: {}
