@@ -201,7 +201,12 @@ class TenantDeploymentScheduler {
             // Call Jenkins service to trigger tenant deletion
             jenkinsHttpService.triggerTenantDeletion(tenant.tenantName, tenant.billingEmail, tenant.domainName)
             
-            logger.info("Successfully triggered deletion for tenant: ${tenant.tenantName}")
+            // Reset deleteFlag to 0 after successfully triggering deletion
+            tenant.deleteFlag = 0
+            tenant.updateTimeStamp = LocalDateTime.now()
+            tenantRepo.save(tenant)
+            
+            logger.info("Successfully triggered deletion for tenant: ${tenant.tenantName} and reset deleteFlag to 0")
             
         } catch (Exception ex) {
             logger.error("Deletion trigger failed for tenant ${tenant.tenantName}: ${ex.message}", ex)
