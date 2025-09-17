@@ -39,10 +39,28 @@ public class PayPalApiConfigController {
     @PostMapping("/save-sandbox")
     public String saveSandboxConfig(@ModelAttribute PayPalApiConfigVO config, RedirectAttributes redirectAttributes) {
         try {
+            // Debug logging
+            System.out.println("SANDBOX Config received:");
+            System.out.println("Client ID: " + config.getClientId());
+            System.out.println("Client Secret: " + (config.getClientSecret() != null ? "[PROVIDED]" : "[NULL]"));
+            System.out.println("Sandbox Base URL: " + config.getSandboxBaseUrl());
+            System.out.println("Prod Base URL: " + config.getProdBaseUrl());
+            System.out.println("Return URL: " + config.getReturnUrl());
+            System.out.println("Cancel URL: " + config.getCancelUrl());
+            System.out.println("Brand Name: " + config.getBrandName());
+            
             config.setEnvironment("SANDBOX");
-            paypalApiConfigService.saveConfiguration(config);
+            PayPalApiConfigVO savedConfig = paypalApiConfigService.saveConfiguration(config);
+            
+            // Debug logging after save
+            System.out.println("SANDBOX Config saved:");
+            System.out.println("Saved Client ID: " + savedConfig.getClientId());
+            System.out.println("Saved Client Secret: " + (savedConfig.getClientSecret() != null ? "[PROVIDED]" : "[NULL]"));
+            
             redirectAttributes.addFlashAttribute("success", "SANDBOX PayPal API configuration saved successfully!");
         } catch (Exception e) {
+            System.err.println("Error saving SANDBOX configuration: " + e.getMessage());
+            e.printStackTrace();
             redirectAttributes.addFlashAttribute("error", "Error saving SANDBOX configuration: " + e.getMessage());
         }
         return "redirect:/paypal-config/admin";
@@ -54,10 +72,28 @@ public class PayPalApiConfigController {
     @PostMapping("/save-prod")
     public String saveProdConfig(@ModelAttribute PayPalApiConfigVO config, RedirectAttributes redirectAttributes) {
         try {
+            // Debug logging
+            System.out.println("PROD Config received:");
+            System.out.println("Client ID: " + config.getClientId());
+            System.out.println("Client Secret: " + (config.getClientSecret() != null ? "[PROVIDED]" : "[NULL]"));
+            System.out.println("Sandbox Base URL: " + config.getSandboxBaseUrl());
+            System.out.println("Prod Base URL: " + config.getProdBaseUrl());
+            System.out.println("Return URL: " + config.getReturnUrl());
+            System.out.println("Cancel URL: " + config.getCancelUrl());
+            System.out.println("Brand Name: " + config.getBrandName());
+            
             config.setEnvironment("PROD");
-            paypalApiConfigService.saveConfiguration(config);
+            PayPalApiConfigVO savedConfig = paypalApiConfigService.saveConfiguration(config);
+            
+            // Debug logging after save
+            System.out.println("PROD Config saved:");
+            System.out.println("Saved Client ID: " + savedConfig.getClientId());
+            System.out.println("Saved Client Secret: " + (savedConfig.getClientSecret() != null ? "[PROVIDED]" : "[NULL]"));
+            
             redirectAttributes.addFlashAttribute("success", "PROD PayPal API configuration saved successfully!");
         } catch (Exception e) {
+            System.err.println("Error saving PROD configuration: " + e.getMessage());
+            e.printStackTrace();
             redirectAttributes.addFlashAttribute("error", "Error saving PROD configuration: " + e.getMessage());
         }
         return "redirect:/paypal-config/admin";

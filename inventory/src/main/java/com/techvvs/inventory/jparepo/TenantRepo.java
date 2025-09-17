@@ -41,4 +41,8 @@ public interface TenantRepo extends JpaRepository<Tenant, UUID> {
     // Find tenants that need deployment but exclude those already in progress (deployflag = 2)
     @Query("SELECT t FROM Tenant t WHERE (t.deployflag = 0 OR t.lastDeployed IS NULL) AND t.deployflag != 2")
     List<Tenant> findTenantsNeedingDeploymentOrNeverDeployed();
+
+    // Find tenants marked for deletion
+    @Query("SELECT t FROM Tenant t WHERE t.deleteFlag = :deleteFlag")
+    List<Tenant> findByDeleteFlag(@Param("deleteFlag") Integer deleteFlag);
 }

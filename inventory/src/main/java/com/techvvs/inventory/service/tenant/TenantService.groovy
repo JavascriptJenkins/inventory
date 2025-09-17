@@ -182,8 +182,11 @@ class TenantService {
         try {
             Optional<Tenant> tenant = tenantRepo.findById(tenantId)
             if (tenant.isPresent()) {
-                tenantRepo.delete(tenant.get())
-                model.addAttribute(MessageConstants.SUCCESS_MSG, "Tenant deleted successfully!")
+                // Set deleteFlag to 1 instead of actually deleting
+                tenant.get().deleteFlag = 1
+                tenant.get().updateTimeStamp = LocalDateTime.now()
+                tenantRepo.save(tenant.get())
+                model.addAttribute(MessageConstants.SUCCESS_MSG, "Tenant marked for deletion! The deletion process will be handled by the system.")
             } else {
                 model.addAttribute(MessageConstants.ERROR_MSG, "Tenant not found")
             }

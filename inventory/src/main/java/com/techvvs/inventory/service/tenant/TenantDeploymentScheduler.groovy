@@ -156,6 +156,60 @@ class TenantDeploymentScheduler {
     }
 
     /**
+     * Scheduled task that runs every 60 seconds to check for tenants that need deletion
+     * Checks for tenants with deleteFlag = 1
+     */
+    @Scheduled(fixedRate = 60000) // 60 seconds
+    void scanForTenantDeleteFlag() {
+        try {
+            logger.debug("Scanning for tenants marked for deletion...")
+            
+            // Find tenants that need deletion (deleteFlag = 1)
+            List<Tenant> tenantsToDelete = tenantRepo.findByDeleteFlag(1)
+            
+            if (tenantsToDelete.isEmpty()) {
+                logger.debug("No tenants found marked for deletion")
+                return
+            }
+            
+            logger.info("Found ${tenantsToDelete.size()} tenant(s) marked for deletion")
+            
+            for (Tenant tenant : tenantsToDelete) {
+                try {
+                    logger.info("Processing tenant for deletion: ${tenant.tenantName} (ID: ${tenant.id})")
+                    
+                    // Trigger deletion process
+                    triggerTenantDeletion(tenant)
+                    
+                } catch (Exception ex) {
+                    logger.error("Failed to process deletion for tenant ${tenant.tenantName}: ${ex.message}", ex)
+                }
+            }
+            
+        } catch (Exception ex) {
+            logger.error("Error in tenant deletion scheduler: ${ex.message}", ex)
+        }
+    }
+
+    /**
+     * Triggers the deletion process for a specific tenant
+     */
+    private void triggerTenantDeletion(Tenant tenant) {
+        logger.info("Triggering deletion for tenant: ${tenant.tenantName}")
+        
+        try {
+            // Call Jenkins service to trigger tenant deletion
+            jenkinsHttpService.triggerTenantDeletion(tenant.tenantName, tenant.billingEmail, tenant.domainName)
+            
+            logger.info("Successfully triggered deletion for tenant: ${tenant.tenantName}")
+            
+        } catch (Exception ex) {
+            logger.error("Deletion trigger failed for tenant ${tenant.tenantName}: ${ex.message}", ex)
+            throw ex
+        }
+    }
+
+    /**
      * Get deployment status for all tenants
      * Useful for monitoring and debugging
      */
@@ -170,6 +224,7 @@ class TenantDeploymentScheduler {
             status.deployedTenants = allTenants.findAll { it.deployflag == 1 }.size()
             status.failedDeployments = allTenants.findAll { it.deployflag == 3 }.size()
             status.inProgressDeployments = allTenants.findAll { it.deployflag == 2 }.size()
+            status.tenantsMarkedForDeletion = allTenants.findAll { it.deleteFlag == 1 }.size()
             
             return status
         } catch (Exception ex) {

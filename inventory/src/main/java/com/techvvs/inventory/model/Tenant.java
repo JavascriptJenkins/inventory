@@ -52,6 +52,10 @@ public class Tenant {
     @JsonProperty
     private Integer deployflag;
 
+    @Column(name = "delete_flag")
+    @JsonProperty
+    private Integer deleteFlag;
+
     // One-to-many relationship with SystemUserDAO
     @OneToMany(mappedBy = "tenantEntity", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonProperty
@@ -76,7 +80,9 @@ public class Tenant {
         // Don't set ID in constructor - let JPA handle it
         this.createdAt = LocalDateTime.now();
         this.createTimeStamp = LocalDateTime.now();
-        this.updateTimeStamp = LocalDateTime.now();        this.deployflag = 0; // Default deploy flag to 0 (not deployed)
+        this.updateTimeStamp = LocalDateTime.now();
+        this.deployflag = 0; // Default deploy flag to 0 (not deployed)
+        this.deleteFlag = 0; // Default delete flag to 0 (not deleted)
         // lastDeployed remains null by default
     }
 
@@ -160,6 +166,14 @@ public class Tenant {
 
     public void setDeployflag(Integer deployflag) {
         this.deployflag = deployflag;
+    }
+
+    public Integer getDeleteFlag() {
+        return deleteFlag;
+    }
+
+    public void setDeleteFlag(Integer deleteFlag) {
+        this.deleteFlag = deleteFlag;
     }
 
     public List<SystemUserDAO> getSystemUsers() {
@@ -268,6 +282,8 @@ public class Tenant {
                 ", subscriptionTier='" + subscriptionTier + '\'' +
                 ", status='" + status + '\'' +
                 ", billingEmail='" + billingEmail + '\'' +
+                ", deployflag=" + deployflag +
+                ", deleteFlag=" + deleteFlag +
                 '}';
     }
 }

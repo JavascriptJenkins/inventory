@@ -207,4 +207,63 @@ public class JenkinsHttpService {
             return null;
         }
     }
+
+    /**
+     * Triggers tenant deletion Jenkins job
+     */
+    public void triggerTenantDeletion(String tenantName, String billingEmail, String domain) {
+        try {
+            System.out.println("Triggering tenant deletion for: " + tenantName);
+            
+            String jobUrl = jenkinsUrl + "/job/deleteTenant/buildWithParameters";
+            
+            // Create authentication headers
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+            
+            String auth = jenkinsUsername + ":" + jenkinsToken;
+            String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
+            headers.set("Authorization", "Basic " + encodedAuth);
+            
+            // Add Jenkins CSRF protection
+            String crumbUrl = jenkinsUrl + "/crumbIssuer/api/xml?xpath=concat(//crumbRequestField,\":\",//crumb)";
+            try {
+                HttpEntity<String> crumbRequest = new HttpEntity<>(headers);
+                ResponseEntity<String> crumbResponse = restTemplate.exchange(crumbUrl, HttpMethod.GET, crumbRequest, String.class);
+                
+                if (crumbResponse.getStatusCode().is2xxSuccessful()) {
+                    String[] crumbData = crumbResponse.getBody().split(":");
+                    if (crumbData.length == 2) {
+                        headers.set(crumbData[0], crumbData[1]);
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println("Could not retrieve Jenkins crumb, proceeding without it: " + e);
+            }
+            
+            // Create job parameters for tenant deletion
+            MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+            params.add("TENANT_NAME", tenantName);
+            params.add("BILLING_EMAIL", billingEmail);
+            params.add("DO_DOMAIN", domain);
+            params.add("K8S_NAMESPACE", "tenant-" + tenantName);
+            params.add("BRANCH", "test1");
+            
+            HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
+            
+            ResponseEntity<String> response = restTemplate.postForEntity(jobUrl, request, String.class);
+            
+            if (response.getStatusCode().is2xxSuccessful()) {
+                System.out.println("Successfully triggered tenant deletion Jenkins job for tenant: " + tenantName);
+            } else {
+                System.out.println("Failed to trigger tenant deletion Jenkins job. Status: " + 
+                    response.getStatusCode() + ", Body: " + response.getBody());
+                throw new RuntimeException("Tenant deletion Jenkins job trigger failed");
+            }
+            
+        } catch (Exception e) {
+            System.out.println("Error triggering tenant deletion Jenkins job for tenant: " + tenantName + " - " + e);
+            throw new RuntimeException("Failed to trigger tenant deletion", e);
+        }
+    }
 }

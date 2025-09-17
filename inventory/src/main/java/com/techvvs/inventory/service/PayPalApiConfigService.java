@@ -129,20 +129,54 @@ public class PayPalApiConfigService {
             config.setEnvironment(SANDBOX_ENV);
         }
         
+        logger.info("Saving PayPal config for environment: {}", config.getEnvironment());
+        logger.info("Config received - Client ID: {}, Client Secret: {}", 
+                   config.getClientId(), 
+                   config.getClientSecret() != null ? "[PROVIDED]" : "[NULL]");
+        
         // Find existing config for this environment
         Optional<PayPalApiConfigVO> existingConfig = paypalApiConfigRepository.findByEnvironment(config.getEnvironment());
         if (existingConfig.isPresent()) {
             PayPalApiConfigVO existing = existingConfig.get();
-            existing.setClientId(config.getClientId());
-            existing.setClientSecret(config.getClientSecret());
-            existing.setSandboxBaseUrl(config.getSandboxBaseUrl());
-            existing.setProdBaseUrl(config.getProdBaseUrl());
-            existing.setReturnUrl(config.getReturnUrl());
-            existing.setCancelUrl(config.getCancelUrl());
-            existing.setBrandName(config.getBrandName());
-            return paypalApiConfigRepository.save(existing);
+            logger.info("Found existing config with ID: {}", existing.getId());
+            
+            // Only update fields that are not null or empty
+            if (config.getClientId() != null && !config.getClientId().trim().isEmpty()) {
+                existing.setClientId(config.getClientId());
+                logger.info("Updated Client ID to: {}", config.getClientId());
+            }
+            if (config.getClientSecret() != null && !config.getClientSecret().trim().isEmpty()) {
+                existing.setClientSecret(config.getClientSecret());
+                logger.info("Updated Client Secret");
+            }
+            if (config.getSandboxBaseUrl() != null && !config.getSandboxBaseUrl().trim().isEmpty()) {
+                existing.setSandboxBaseUrl(config.getSandboxBaseUrl());
+            }
+            if (config.getProdBaseUrl() != null && !config.getProdBaseUrl().trim().isEmpty()) {
+                existing.setProdBaseUrl(config.getProdBaseUrl());
+            }
+            if (config.getReturnUrl() != null && !config.getReturnUrl().trim().isEmpty()) {
+                existing.setReturnUrl(config.getReturnUrl());
+            }
+            if (config.getCancelUrl() != null && !config.getCancelUrl().trim().isEmpty()) {
+                existing.setCancelUrl(config.getCancelUrl());
+            }
+            if (config.getBrandName() != null && !config.getBrandName().trim().isEmpty()) {
+                existing.setBrandName(config.getBrandName());
+            }
+            
+            PayPalApiConfigVO saved = paypalApiConfigRepository.save(existing);
+            logger.info("Saved config - Client ID: {}, Client Secret: {}", 
+                       saved.getClientId(), 
+                       saved.getClientSecret() != null ? "[PROVIDED]" : "[NULL]");
+            return saved;
         } else {
-            return paypalApiConfigRepository.save(config);
+            logger.info("No existing config found, creating new one");
+            PayPalApiConfigVO saved = paypalApiConfigRepository.save(config);
+            logger.info("Created new config - Client ID: {}, Client Secret: {}", 
+                       saved.getClientId(), 
+                       saved.getClientSecret() != null ? "[PROVIDED]" : "[NULL]");
+            return saved;
         }
     }
     

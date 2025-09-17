@@ -1,0 +1,500 @@
+pipeline {
+    agent any
+
+    parameters {
+        // Build parameters
+        string(name: 'TENANT_NAME', defaultValue: '', description: 'Tenant name to delete (REQUIRED)')
+        string(name: 'DO_DOMAIN', defaultValue: '', description: 'The domain where DNS records exist (REQUIRED)')
+        string(name: 'K8S_NAMESPACE', defaultValue: '', description: 'Kubernetes namespace (auto-generated if empty)')
+
+        // Docker parameters
+        string(name: 'DOCKER_USER', defaultValue: 'techvvsadmin', description: 'Docker Hub username')
+
+        // Database configuration
+        string(name: 'DB_USERNAME', defaultValue: 'doadmin', description: 'Database username')
+        string(name: 'SANDBOX_POSTGRESQL_URI', defaultValue: 'jdbc:postgresql://private-sandbox-cluster-do-user-1326368-0.e.db.ondigitalocean.com:25060', description: 'Database uri')
+
+        // Confirmation parameters
+        booleanParam(name: 'CONFIRM_DELETION', defaultValue: false, description: 'Check this box to confirm you want to DELETE all resources for this tenant')
+        booleanParam(name: 'DELETE_DOCKER_IMAGES', defaultValue: true, description: 'Delete Docker images for this tenant')
+        booleanParam(name: 'DELETE_DATABASE_SCHEMA', defaultValue: true, description: 'Delete database schema for this tenant')
+        booleanParam(name: 'DELETE_DNS_RECORDS', defaultValue: true, description: 'Delete DNS records for this tenant')
+        booleanParam(name: 'DELETE_CERTIFICATES', defaultValue: true, description: 'Delete SSL certificates for this tenant')
+    }
+
+    stages {
+        stage('Validate Parameters') {
+            steps {
+                script {
+                    if (!params.TENANT_NAME || params.TENANT_NAME.trim() == '') {
+                        error "TENANT_NAME is required for deletion"
+                    }
+                    if (!params.DO_DOMAIN || params.DO_DOMAIN.trim() == '') {
+                        error "DO_DOMAIN is required for deletion"
+                    }
+                    if (!params.CONFIRM_DELETION) {
+                        error "CONFIRM_DELETION must be checked to proceed with deletion"
+                    }
+
+                    echo "=========================================="
+                    echo "TENANT DELETION CONFIRMATION"
+                    echo "=========================================="
+                    echo ""
+                    echo "⚠️  WARNING: THIS WILL DELETE ALL RESOURCES FOR:"
+                    echo "  TENANT_NAME: ${params.TENANT_NAME}"
+                    echo "  DO_DOMAIN: ${params.DO_DOMAIN}"
+                    echo "  K8S_NAMESPACE: ${params.K8S_NAMESPACE}"
+                    echo ""
+                    echo "🗑️  DELETION SCOPE:"
+                    echo "  DELETE_DOCKER_IMAGES: ${params.DELETE_DOCKER_IMAGES}"
+                    echo "  DELETE_DATABASE_SCHEMA: ${params.DELETE_DATABASE_SCHEMA}"
+                    echo "  DELETE_DNS_RECORDS: ${params.DELETE_DNS_RECORDS}"
+                    echo "  DELETE_CERTIFICATES: ${params.DELETE_CERTIFICATES}"
+                    echo ""
+                    echo "=========================================="
+                    echo "PROCEEDING WITH DELETION IN 10 SECONDS..."
+                    echo "=========================================="
+
+                    sleep(10)
+                }
+            }
+        }
+
+        stage('Log Deletion Parameters') {
+            steps {
+                script {
+                    echo "=========================================="
+                    echo "JENKINS DELETION PARAMETERS LOG"
+                    echo "=========================================="
+                    echo ""
+
+                    echo "🗑️  DELETION PARAMETERS:"
+                    echo "  TENANT_NAME: ${params.TENANT_NAME}"
+                    echo "  DO_DOMAIN: ${params.DO_DOMAIN}"
+                    echo "  K8S_NAMESPACE: ${params.K8S_NAMESPACE}"
+                    echo "  CONFIRM_DELETION: ${params.CONFIRM_DELETION}"
+                    echo ""
+
+                    echo "🐳 DOCKER PARAMETERS:"
+                    echo "  DOCKER_USER: ${params.DOCKER_USER}"
+                    echo "  DELETE_DOCKER_IMAGES: ${params.DELETE_DOCKER_IMAGES}"
+                    echo ""
+
+                    echo "🗄️ DATABASE CONFIGURATION:"
+                    echo "  DB_USERNAME: ${params.DB_USERNAME}"
+                    echo "  SANDBOX_POSTGRESQL_URI: ${params.SANDBOX_POSTGRESQL_URI}"
+                    echo "  DELETE_DATABASE_SCHEMA: ${params.DELETE_DATABASE_SCHEMA}"
+                    echo ""
+
+                    echo "🌐 DNS AND CERTIFICATE CONFIGURATION:"
+                    echo "  DELETE_DNS_RECORDS: ${params.DELETE_DNS_RECORDS}"
+                    echo "  DELETE_CERTIFICATES: ${params.DELETE_CERTIFICATES}"
+                    echo ""
+
+                    echo "=========================================="
+                    echo "END OF DELETION PARAMETERS LOG"
+                    echo "=========================================="
+                }
+            }
+        }
+
+        stage('Delete Kubernetes Resources') {
+            steps {
+                script {
+                    def k8sNamespace = (params.K8S_NAMESPACE && params.K8S_NAMESPACE.trim() != '') ?
+                        params.K8S_NAMESPACE :
+                        "tenant-${params.TENANT_NAME.toLowerCase().replaceAll('[^a-z0-9-]', '-')}"
+
+                    env.K8S_NAMESPACE = k8sNamespace
+                    echo "Deleting Kubernetes resources in namespace: ${k8sNamespace}"
+
+                    withCredentials([
+                        file(credentialsId: 'KUBECONFIG_PATH', variable: 'KUBECONFIG_FILE')
+                    ]) {
+                        sh """
+                            export KUBECONFIG="\$KUBECONFIG_FILE"
+
+                            echo "=========================================="
+                            echo "DELETING KUBERNETES RESOURCES"
+                            echo "=========================================="
+
+                            # Verify kubectl can connect to the cluster
+                            kubectl config get-contexts
+
+                            # Check if namespace exists
+                            if kubectl get namespace ${k8sNamespace} >/dev/null 2>&1; then
+                                echo "Namespace ${k8sNamespace} exists, proceeding with deletion..."
+
+                                # List all resources before deletion
+                                echo "=== Resources to be deleted ==="
+                                kubectl get all -n ${k8sNamespace} || echo "No standard resources found"
+                                kubectl get pvc -n ${k8sNamespace} || echo "No PVCs found"
+                                kubectl get secrets -n ${k8sNamespace} || echo "No secrets found"
+                                kubectl get configmaps -n ${k8sNamespace} || echo "No configmaps found"
+                                kubectl get serviceaccounts -n ${k8sNamespace} || echo "No service accounts found"
+
+                                # Delete specific tenant resources first
+                                echo "=== Deleting tenant-specific resources ==="
+
+                                # Delete deployment
+                                kubectl delete deployment inventory-${params.TENANT_NAME} -n ${k8sNamespace} --ignore-not-found=true
+                                echo "Deleted deployment: inventory-${params.TENANT_NAME}"
+
+                                # Delete service (this will also delete the LoadBalancer)
+                                kubectl delete service inventory-${params.TENANT_NAME}-service -n ${k8sNamespace} --ignore-not-found=true
+                                echo "Deleted service: inventory-${params.TENANT_NAME}-service"
+
+                                # Delete PVC
+                                kubectl delete pvc inventory-${params.TENANT_NAME}-uploads-pvc -n ${k8sNamespace} --ignore-not-found=true
+                                echo "Deleted PVC: inventory-${params.TENANT_NAME}-uploads-pvc"
+
+                                # Delete service account
+                                kubectl delete serviceaccount ${params.TENANT_NAME}-admin -n ${k8sNamespace} --ignore-not-found=true
+                                echo "Deleted service account: ${params.TENANT_NAME}-admin"
+
+                                # Wait for LoadBalancer to be fully deleted
+                                echo "Waiting for LoadBalancer deletion to complete..."
+                                sleep 30
+
+                                # Check if namespace has any remaining resources
+                                REMAINING_RESOURCES=\$(kubectl get all -n ${k8sNamespace} 2>/dev/null | wc -l)
+                                if [ "\$REMAINING_RESOURCES" -le 1 ]; then
+                                    echo "=== Deleting namespace ==="
+                                    kubectl delete namespace ${k8sNamespace} --ignore-not-found=true
+                                    echo "Deleted namespace: ${k8sNamespace}"
+                                else
+                                    echo "=== Warning: Namespace ${k8sNamespace} still has resources, not deleting namespace ==="
+                                    kubectl get all -n ${k8sNamespace}
+                                fi
+                            else
+                                echo "Namespace ${k8sNamespace} does not exist, skipping Kubernetes deletion"
+                            fi
+
+                            echo "=========================================="
+                            echo "KUBERNETES DELETION COMPLETED"
+                            echo "=========================================="
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Delete Database Schema') {
+            when {
+                expression { params.DELETE_DATABASE_SCHEMA }
+            }
+            steps {
+                script {
+                    withCredentials([
+                        string(credentialsId: 'SANDBOX_POSTGRESQL_PUBLIC_USER', variable: 'SANDBOX_POSTGRESQL_PUBLIC_USER'),
+                        string(credentialsId: 'SANDBOX_POSTGRESQL_PASSWORD', variable: 'SANDBOX_POSTGRESQL_PASSWORD')
+                    ]) {
+                        echo "=========================================="
+                        echo "DELETING DATABASE SCHEMA"
+                        echo "=========================================="
+
+                        // Extract host and port from URI
+                        def dbUri = params.SANDBOX_POSTGRESQL_URI.replace('jdbc:postgresql://', '')
+                        def hostPort = dbUri.split('/')[0]
+                        def host = hostPort.split(':')[0]
+                        def port = hostPort.split(':')[1]
+
+                        echo "Database connection details:"
+                        echo "  Host: ${host}"
+                        echo "  Port: ${port}"
+                        echo "  Username: ${SANDBOX_POSTGRESQL_PUBLIC_USER}"
+                        echo "  Schema to delete: ${params.TENANT_NAME}"
+
+                        sh """
+                            # Install PostgreSQL client if not available
+                            if ! command -v psql >/dev/null 2>&1; then
+                                echo "Installing PostgreSQL client..."
+                                apt-get update && apt-get install -y postgresql-client
+                            fi
+
+                            # Set PGPASSWORD for authentication
+                            export PGPASSWORD="${SANDBOX_POSTGRESQL_PASSWORD}"
+
+                            echo "Connecting to database to delete schema: ${params.TENANT_NAME}"
+
+                            # Check if schema exists
+                            SCHEMA_EXISTS=\$(psql -h ${host} -p ${port} -U ${SANDBOX_POSTGRESQL_PUBLIC_USER} -d defaultdb -t -c "SELECT COUNT(*) FROM information_schema.schemata WHERE schema_name = '${params.TENANT_NAME}';" | tr -d ' ')
+
+                            if [ "\$SCHEMA_EXISTS" = "1" ]; then
+                                echo "Schema ${params.TENANT_NAME} exists, proceeding with deletion..."
+
+                                # List tables in the schema before deletion
+                                echo "=== Tables in schema ${params.TENANT_NAME} ==="
+                                psql -h ${host} -p ${port} -U ${SANDBOX_POSTGRESQL_PUBLIC_USER} -d defaultdb -c "SELECT table_name FROM information_schema.tables WHERE table_schema = '${params.TENANT_NAME}';" || echo "No tables found or error listing tables"
+
+                                # Drop the schema and all its contents
+                                echo "=== Dropping schema ${params.TENANT_NAME} ==="
+                                psql -h ${host} -p ${port} -U ${SANDBOX_POSTGRESQL_PUBLIC_USER} -d defaultdb -c "DROP SCHEMA IF EXISTS ${params.TENANT_NAME} CASCADE;"
+
+                                # Verify deletion
+                                SCHEMA_EXISTS_AFTER=\$(psql -h ${host} -p ${port} -U ${SANDBOX_POSTGRESQL_PUBLIC_USER} -d defaultdb -t -c "SELECT COUNT(*) FROM information_schema.schemata WHERE schema_name = '${params.TENANT_NAME}';" | tr -d ' ')
+
+                                if [ "\$SCHEMA_EXISTS_AFTER" = "0" ]; then
+                                    echo "✅ Schema ${params.TENANT_NAME} successfully deleted"
+                                else
+                                    echo "❌ Failed to delete schema ${params.TENANT_NAME}"
+                                    exit 1
+                                fi
+                            else
+                                echo "Schema ${params.TENANT_NAME} does not exist, skipping database deletion"
+                            fi
+                        """
+
+                        echo "=========================================="
+                        echo "DATABASE SCHEMA DELETION COMPLETED"
+                        echo "=========================================="
+                    }
+                }
+            }
+        }
+
+        stage('Delete DNS Records') {
+            when {
+                expression { params.DELETE_DNS_RECORDS }
+            }
+            steps {
+                withCredentials([
+                    string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN')
+                ]) {
+                    script {
+                        echo "=========================================="
+                        echo "DELETING DNS RECORDS"
+                        echo "=========================================="
+
+                        def fqdn = "${params.TENANT_NAME}.${params.DO_DOMAIN}"
+                        echo "Looking for DNS records for: ${fqdn}"
+
+                        sh """
+                            # Get all DNS records for the domain
+                            RECORDS=\$(curl -sS -H "Authorization: Bearer \$DO_API_TOKEN" "https://api.digitalocean.com/v2/domains/${params.DO_DOMAIN}/records")
+
+                            # Find A record for this tenant
+                            RECORD_ID=\$(echo "\$RECORDS" | jq -r --arg name "${params.TENANT_NAME}" '(.domain_records // []) | map(select(.type=="A" and .name==\$name)) | (.[0].id // empty)')
+
+                            if [ -n "\$RECORD_ID" ] && [ "\$RECORD_ID" != "null" ] && [ "\$RECORD_ID" != "" ]; then
+                                echo "Found A record with ID: \$RECORD_ID for ${params.TENANT_NAME}.${params.DO_DOMAIN}"
+
+                                # Get record details before deletion
+                                RECORD_DETAILS=\$(echo "\$RECORDS" | jq -r --arg id "\$RECORD_ID" '(.domain_records // []) | map(select((.id|tostring)==\$id)) | .[0]')
+                                echo "Record details: \$RECORD_DETAILS"
+
+                                # Delete the A record
+                                DELETE_RESULT=\$(curl -sS -X DELETE -H "Authorization: Bearer \$DO_API_TOKEN" "https://api.digitalocean.com/v2/domains/${params.DO_DOMAIN}/records/\$RECORD_ID")
+
+                                echo "✅ Deleted A record for ${params.TENANT_NAME}.${params.DO_DOMAIN}"
+                            else
+                                echo "No A record found for ${params.TENANT_NAME}.${params.DO_DOMAIN}, skipping DNS deletion"
+                            fi
+
+                            # Also check for any CNAME records
+                            CNAME_RECORD_ID=\$(echo "\$RECORDS" | jq -r --arg name "${params.TENANT_NAME}" '(.domain_records // []) | map(select(.type=="CNAME" and .name==\$name)) | (.[0].id // empty)')
+
+                            if [ -n "\$CNAME_RECORD_ID" ] && [ "\$CNAME_RECORD_ID" != "null" ] && [ "\$CNAME_RECORD_ID" != "" ]; then
+                                echo "Found CNAME record with ID: \$CNAME_RECORD_ID for ${params.TENANT_NAME}.${params.DO_DOMAIN}"
+                                curl -sS -X DELETE -H "Authorization: Bearer \$DO_API_TOKEN" "https://api.digitalocean.com/v2/domains/${params.DO_DOMAIN}/records/\$CNAME_RECORD_ID"
+                                echo "✅ Deleted CNAME record for ${params.TENANT_NAME}.${params.DO_DOMAIN}"
+                            fi
+                        """
+
+                        echo "=========================================="
+                        echo "DNS RECORDS DELETION COMPLETED"
+                        echo "=========================================="
+                    }
+                }
+            }
+        }
+
+        stage('Delete SSL Certificates') {
+            when {
+                expression { params.DELETE_CERTIFICATES }
+            }
+            steps {
+                withCredentials([
+                    string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN')
+                ]) {
+                    script {
+                        echo "=========================================="
+                        echo "DELETING SSL CERTIFICATES"
+                        echo "=========================================="
+
+                        def fqdn = "${params.TENANT_NAME}.${params.DO_DOMAIN}"
+                        echo "Looking for SSL certificates for: ${fqdn}"
+
+                        sh """
+                            # Get all certificates
+                            CERTS=\$(curl -sS -H "Authorization: Bearer \$DO_API_TOKEN" "https://api.digitalocean.com/v2/certificates")
+
+                            # Find certificate for this FQDN
+                            CERT_ID=\$(echo "\$CERTS" | jq -r --arg fq "${fqdn}" '(.certificates // []) | map(select((.dns_names // []) | index(\$fq))) | (.[0].id // empty)')
+
+                            if [ -n "\$CERT_ID" ] && [ "\$CERT_ID" != "null" ] && [ "\$CERT_ID" != "" ]; then
+                                echo "Found certificate with ID: \$CERT_ID for ${fqdn}"
+
+                                # Get certificate details before deletion
+                                CERT_DETAILS=\$(echo "\$CERTS" | jq -r --arg id "\$CERT_ID" '(.certificates // []) | map(select(.id==\$id)) | .[0]')
+                                echo "Certificate details: \$CERT_DETAILS"
+
+                                # Check if certificate is in use
+                                CERT_NAME=\$(echo "\$CERT_DETAILS" | jq -r '.name // "unknown"')
+                                echo "Certificate name: \$CERT_NAME"
+
+                                # Delete the certificate
+                                DELETE_RESULT=\$(curl -sS -X DELETE -H "Authorization: Bearer \$DO_API_TOKEN" "https://api.digitalocean.com/v2/certificates/\$CERT_ID")
+
+                                echo "✅ Deleted SSL certificate for ${fqdn} (ID: \$CERT_ID)"
+                            else
+                                echo "No SSL certificate found for ${fqdn}, skipping certificate deletion"
+                            fi
+                        """
+
+                        echo "=========================================="
+                        echo "SSL CERTIFICATES DELETION COMPLETED"
+                        echo "=========================================="
+                    }
+                }
+            }
+        }
+
+        stage('Delete Docker Images') {
+            when {
+                expression { params.DELETE_DOCKER_IMAGES }
+            }
+            steps {
+                script {
+                    withCredentials([
+                        string(credentialsId: 'DOCKER_TOKEN', variable: 'DOCKER_TOKEN')
+                    ]) {
+                        echo "=========================================="
+                        echo "DELETING DOCKER IMAGES"
+                        echo "=========================================="
+
+                        sh """
+                            echo "Logging into Docker Hub..."
+                            echo "\$DOCKER_TOKEN" | docker login -u ${params.DOCKER_USER} --password-stdin
+
+                            # Search for images matching the tenant pattern
+                            IMAGE_PATTERN="${params.DOCKER_USER}/inventory-${params.TENANT_NAME}-"
+                            echo "Searching for Docker images with pattern: \$IMAGE_PATTERN*"
+
+                            # Get list of repositories for the user
+                            REPOS=\$(curl -sS "https://hub.docker.com/v2/repositories/${params.DOCKER_USER}/?page_size=100" | jq -r '.results[] | select(.name | startswith("inventory-${params.TENANT_NAME}-")) | .name')
+
+                            if [ -n "\$REPOS" ]; then
+                                echo "Found repositories to delete:"
+                                echo "\$REPOS"
+
+                                # Note: Docker Hub API v2 doesn't support repository deletion via API
+                                # We can only list and document what should be deleted
+                                echo ""
+                                echo "⚠️  MANUAL ACTION REQUIRED:"
+                                echo "The following Docker repositories should be manually deleted from Docker Hub:"
+                                for repo in \$REPOS; do
+                                    echo "  - ${params.DOCKER_USER}/\$repo"
+                                done
+                                echo ""
+                                echo "To delete these repositories:"
+                                echo "1. Go to https://hub.docker.com/u/${params.DOCKER_USER}"
+                                echo "2. Find each repository listed above"
+                                echo "3. Click on the repository"
+                                echo "4. Go to Settings -> General"
+                                echo "5. Click 'Delete Repository'"
+                            else
+                                echo "No Docker repositories found for tenant: ${params.TENANT_NAME}"
+                            fi
+
+                            # Clean up any local images
+                            echo "Cleaning up local Docker images..."
+                            docker images --format "table {{.Repository}}:{{.Tag}}\t{{.ID}}" | grep "${params.DOCKER_USER}/inventory-${params.TENANT_NAME}-" | awk '{print \$2}' | xargs -r docker rmi --force || echo "No local images to remove"
+                        """
+
+                        echo "=========================================="
+                        echo "DOCKER IMAGES CLEANUP COMPLETED"
+                        echo "=========================================="
+                    }
+                }
+            }
+        }
+
+        stage('Verification') {
+            steps {
+                script {
+                    echo "=========================================="
+                    echo "DELETION VERIFICATION"
+                    echo "=========================================="
+
+                    // Verify Kubernetes deletion
+                    withCredentials([
+                        file(credentialsId: 'KUBECONFIG_PATH', variable: 'KUBECONFIG_FILE')
+                    ]) {
+                        def k8sNamespace = env.K8S_NAMESPACE
+                        sh """
+                            export KUBECONFIG="\$KUBECONFIG_FILE"
+
+                            echo "=== Kubernetes Verification ==="
+                            if kubectl get namespace ${k8sNamespace} >/dev/null 2>&1; then
+                                echo "⚠️  Namespace ${k8sNamespace} still exists"
+                                kubectl get all -n ${k8sNamespace} || echo "No resources in namespace"
+                            else
+                                echo "✅ Namespace ${k8sNamespace} successfully deleted"
+                            fi
+                        """
+                    }
+
+                    // Verify DNS deletion
+                    if (params.DELETE_DNS_RECORDS) {
+                        withCredentials([
+                            string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN')
+                        ]) {
+                            sh """
+                                echo "=== DNS Verification ==="
+                                RECORDS=\$(curl -sS -H "Authorization: Bearer \$DO_API_TOKEN" "https://api.digitalocean.com/v2/domains/${params.DO_DOMAIN}/records")
+                                REMAINING_RECORDS=\$(echo "\$RECORDS" | jq -r --arg name "${params.TENANT_NAME}" '(.domain_records // []) | map(select(.name==\$name)) | length')
+
+                                if [ "\$REMAINING_RECORDS" = "0" ]; then
+                                    echo "✅ All DNS records for ${params.TENANT_NAME}.${params.DO_DOMAIN} successfully deleted"
+                                else
+                                    echo "⚠️  \$REMAINING_RECORDS DNS records still exist for ${params.TENANT_NAME}.${params.DO_DOMAIN}"
+                                fi
+                            """
+                        }
+                    }
+
+                    echo ""
+                    echo "=========================================="
+                    echo "TENANT DELETION SUMMARY"
+                    echo "=========================================="
+                    echo "✅ Tenant '${params.TENANT_NAME}' deletion process completed"
+                    echo ""
+                    echo "Deleted resources:"
+                    echo "  - Kubernetes namespace: ${env.K8S_NAMESPACE}"
+                    echo "  - Database schema: ${params.TENANT_NAME}"
+                    echo "  - DNS records: ${params.TENANT_NAME}.${params.DO_DOMAIN}"
+                    echo "  - SSL certificates for: ${params.TENANT_NAME}.${params.DO_DOMAIN}"
+                    echo "  - Docker images: ${params.DOCKER_USER}/inventory-${params.TENANT_NAME}-*"
+                    echo ""
+                    echo "🔍 Please verify manually that all resources have been properly removed"
+                    echo "=========================================="
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "🎉 Tenant deletion completed successfully for: ${params.TENANT_NAME}"
+            echo "All specified resources have been removed from the sandbox environment"
+        }
+        failure {
+            echo "❌ Tenant deletion failed for: ${params.TENANT_NAME}"
+            echo "Some resources may not have been fully deleted - manual cleanup may be required"
+        }
+        always {
+            echo "Tenant deletion process finished for: ${params.TENANT_NAME}"
+        }
+    }
+}
