@@ -27,31 +27,37 @@ pipeline {
                 script {
                     echo "Loading build artifacts from job: ${params.BUILD_JOB_NAME}, build: ${params.BUILD_NUMBER}"
 
-                    // Copy artifacts from the build job
-                    copyArtifacts(
-                        projectName: params.BUILD_JOB_NAME,
-                        selector: params.BUILD_NUMBER,
-                        filter: 'build-artifacts.properties'
-                    )
+                    // Copy artifacts from the build job using lastSuccessfulBuild selector
+                    try {
+                        copyArtifacts(
+                            projectName: params.BUILD_JOB_NAME,
+                            selector: lastSuccessfulBuild(),
+                            filter: 'build-artifacts.properties'
+                        )
 
-                    // Load the properties
-                    def props = readProperties file: 'build-artifacts.properties'
+                        // Load the properties
+                        def props = readProperties file: 'build-artifacts.properties'
 
-                    // Set environment variables from build artifacts
-                    env.DOCKER_IMAGE = props.DOCKER_IMAGE
-                    env.TENANT_NAME = props.TENANT_NAME ?: params.TENANT_NAME
-                    env.APP_NAME = props.APP_NAME ?: params.APP_NAME
-                    env.DO_DOMAIN = props.DO_DOMAIN ?: params.DO_DOMAIN
-                    env.ENVIRONMENT_NAME = props.ENVIRONMENT_NAME ?: params.ENVIRONMENT_NAME
-                    env.BASE_QR_DOMAIN = props.BASE_QR_DOMAIN
+                        // Set environment variables from build artifacts
+                        env.DOCKER_IMAGE = props.DOCKER_IMAGE
+                        env.TENANT_NAME = props.TENANT_NAME ?: params.TENANT_NAME
+                        env.APP_NAME = props.APP_NAME ?: params.APP_NAME
+                        env.DO_DOMAIN = props.DO_DOMAIN ?: params.DO_DOMAIN
+                        env.ENVIRONMENT_NAME = props.ENVIRONMENT_NAME ?: params.ENVIRONMENT_NAME
+                        env.BASE_QR_DOMAIN = props.BASE_QR_DOMAIN
 
-                    echo "Loaded build artifacts:"
-                    echo "  DOCKER_IMAGE: ${env.DOCKER_IMAGE}"
-                    echo "  TENANT_NAME: ${env.TENANT_NAME}"
-                    echo "  APP_NAME: ${env.APP_NAME}"
-                    echo "  DO_DOMAIN: ${env.DO_DOMAIN}"
-                    echo "  ENVIRONMENT_NAME: ${env.ENVIRONMENT_NAME}"
-                    echo "  BASE_QR_DOMAIN: ${env.BASE_QR_DOMAIN}"
+                        echo "Loaded build artifacts:"
+                        echo "  DOCKER_IMAGE: ${env.DOCKER_IMAGE}"
+                        echo "  TENANT_NAME: ${env.TENANT_NAME}"
+                        echo "  APP_NAME: ${env.APP_NAME}"
+                        echo "  DO_DOMAIN: ${env.DO_DOMAIN}"
+                        echo "  ENVIRONMENT_NAME: ${env.ENVIRONMENT_NAME}"
+                        echo "  BASE_QR_DOMAIN: ${env.BASE_QR_DOMAIN}"
+                    } catch (Exception e) {
+                        echo "Failed to copy artifacts: ${e.getMessage()}"
+                        echo "Will use parameters directly instead"
+                        // Continue without artifacts - will use parameters in next stage
+                    }
                 }
             }
         }
