@@ -688,7 +688,6 @@ spec:
                 }
             }
         }
-
 stage('Copy Static Files to PVC') {
             when {
                 expression { params.TENANT_NAME != '' }
@@ -740,8 +739,24 @@ spec:
 
                                 echo "Temporary pod is ready, copying files..."
                             """
+                        }
+                    }
+                }
+            }
+        }
 
-                            // Copy font files if they exist
+        stage('Copy Font Files') {
+            when {
+                expression { params.TENANT_NAME != '' }
+            }
+            steps {
+                script {
+                    def k8sNamespace = (params.K8S_NAMESPACE && params.K8S_NAMESPACE.trim() != '') ?
+                        params.K8S_NAMESPACE :
+                        "tenant-${params.TENANT_NAME.toLowerCase().replaceAll('[^a-z0-9-]', '-')}"
+
+                    withCredentials([file(credentialsId: 'KUBECONFIG_PATH', variable: 'KCFG')]) {
+                        dir('inventory') {
                             sh """
                                 export KUBECONFIG="\$KCFG"
 
@@ -754,8 +769,24 @@ spec:
                                     echo "No font directory found, skipping font files"
                                 fi
                             """
+                        }
+                    }
+                }
+            }
+        }
 
-                            // Copy photo files if they exist
+        stage('Copy Photo Files') {
+            when {
+                expression { params.TENANT_NAME != '' }
+            }
+            steps {
+                script {
+                    def k8sNamespace = (params.K8S_NAMESPACE && params.K8S_NAMESPACE.trim() != '') ?
+                        params.K8S_NAMESPACE :
+                        "tenant-${params.TENANT_NAME.toLowerCase().replaceAll('[^a-z0-9-]', '-')}"
+
+                    withCredentials([file(credentialsId: 'KUBECONFIG_PATH', variable: 'KCFG')]) {
+                        dir('inventory') {
                             sh """
                                 export KUBECONFIG="\$KCFG"
 
@@ -768,8 +799,24 @@ spec:
                                     echo "No photos directory found, skipping photo files"
                                 fi
                             """
+                        }
+                    }
+                }
+            }
+        }
 
-                            // Copy global user files if they exist
+        stage('Copy Global User Files') {
+            when {
+                expression { params.TENANT_NAME != '' }
+            }
+            steps {
+                script {
+                    def k8sNamespace = (params.K8S_NAMESPACE && params.K8S_NAMESPACE.trim() != '') ?
+                        params.K8S_NAMESPACE :
+                        "tenant-${params.TENANT_NAME.toLowerCase().replaceAll('[^a-z0-9-]', '-')}"
+
+                    withCredentials([file(credentialsId: 'KUBECONFIG_PATH', variable: 'KCFG')]) {
+                        dir('inventory') {
                             sh """
                                 export KUBECONFIG="\$KCFG"
 
@@ -782,8 +829,24 @@ spec:
                                     echo "No globaluserfiles directory found, skipping global user files"
                                 fi
                             """
+                        }
+                    }
+                }
+            }
+        }
 
-                            // Verify files were copied and clean up
+        stage('Cleanup File Copy Pod') {
+            when {
+                expression { params.TENANT_NAME != '' }
+            }
+            steps {
+                script {
+                    def k8sNamespace = (params.K8S_NAMESPACE && params.K8S_NAMESPACE.trim() != '') ?
+                        params.K8S_NAMESPACE :
+                        "tenant-${params.TENANT_NAME.toLowerCase().replaceAll('[^a-z0-9-]', '-')}"
+
+                    withCredentials([file(credentialsId: 'KUBECONFIG_PATH', variable: 'KCFG')]) {
+                        dir('inventory') {
                             sh """
                                 export KUBECONFIG="\$KCFG"
 
@@ -807,7 +870,6 @@ spec:
                 }
             }
         }
-
 
         stage('LB: Discover IDs') {
             steps {
