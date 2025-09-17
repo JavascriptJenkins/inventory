@@ -949,7 +949,7 @@ spec:
             }
         }
 
-                stage('DNS: Ensure domain exists') {
+        stage('DNS: Ensure domain exists') {
             steps {
                 withCredentials([ string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN') ]) {
                     script {

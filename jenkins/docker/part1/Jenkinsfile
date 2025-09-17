@@ -1,0 +1,497 @@
+pipeline {
+    agent any
+
+    tools {
+        maven 'maven3'
+    }
+
+    parameters {
+        // Build parameters
+        string(name: 'BRANCH', defaultValue: 'test1', description: 'Branch to build from')
+        string(name: 'TENANT_NAME', defaultValue: '', description: 'Tenant name for deployment')
+        string(name: 'APP_NAME', defaultValue: 'inventory', description: 'Application name')
+        string(name: 'DO_DOMAIN', defaultValue: '', description: 'the domain')
+        string(name: 'SUBSCRIPTION_TIER', defaultValue: 'BASIC', description: 'Subscription tier')
+        string(name: 'BILLING_EMAIL', defaultValue: '', description: 'Billing email address')
+
+        // Docker parameters
+        string(name: 'DOCKER_USER', defaultValue: 'techvvsadmin', description: 'Docker Hub username')
+
+        // Application configuration parameters
+        string(name: 'ENVIRONMENT_NAME', defaultValue: 'prod', description: 'Environment name (prod, dev1)')
+        string(name: 'LOAD_REF_DATA', defaultValue: 'no', description: 'Load reference data (yes/no)')
+        string(name: 'TAX_PERCENTAGE', defaultValue: '0', description: 'Tax percentage')
+        string(name: 'MAX_FILE_SIZE', defaultValue: '500MB', description: 'Maximum file size')
+        string(name: 'MAX_REQ_SIZE', defaultValue: '500MB', description: 'Maximum request size')
+
+        // Database configuration
+        string(name: 'DB_DRIVER_CLASS_NAME', defaultValue: 'org.postgresql.Driver', description: 'Database driver class')
+        string(name: 'DB_JPA_DATABASE_PLATFORM', defaultValue: 'org.hibernate.dialect.PostgreSQLDialect', description: 'JPA database platform')
+        string(name: 'DB_JPA_HIBERNATE_DIALECT', defaultValue: 'org.hibernate.dialect.PostgreSQLDialect', description: 'Hibernate dialect')
+        string(name: 'DB_USERNAME', defaultValue: 'doadmin', description: 'Database username')
+        string(name: 'SANDBOX_POSTGRESQL_URI', defaultValue: 'jdbc:postgresql://private-sandbox-cluster-do-user-1326368-0.e.db.ondigitalocean.com:25060', description: 'Database uri')
+        string(name: 'DB_URI', defaultValue: 'jdbc:postgresql://private-sandbox-cluster-do-user-1326368-0.e.db.ondigitalocean.com:25060', description: 'Database uri')
+        string(name: 'SPRING_DATABASE_ACTION', defaultValue: 'update', description: 'Database action (update, create-drop)')
+        string(name: 'DB_H2_CONSOLE_ENABLED', defaultValue: 'false', description: 'Enable H2 console')
+        string(name: 'DB_H2_WEB_ALLOWOTHERS', defaultValue: 'false', description: 'Allow others to access H2 console')
+
+        // PayPal configuration
+        string(name: 'PAYPAL_ENVIRONMENT', defaultValue: 'SANDBOX', description: 'PayPal environment (SANDBOX/PRODUCTION)')
+        string(name: 'PAYPAL_BRAND_NAME', defaultValue: 'techvvs_clothing_app_1', description: 'PayPal brand name')
+
+        // Wallet configuration
+        string(name: 'WALLET_BRAND', defaultValue: 'Tulip', description: 'Wallet brand organization name')
+        string(name: 'WALLET_BRAND_PROGRAM', defaultValue: 'Tulip Membership', description: 'Wallet brand program name')
+        string(name: 'WALLET_GOOGLE_SERVICE_ACC_KEY_PATH', defaultValue: 'classpath:/uploads/applecert/', description: 'Google service account key path')
+        string(name: 'WALLET_GOOGLE_ISSUER_ID', defaultValue: '', description: 'Google wallet issuer ID')
+        string(name: 'WALLET_GOOGLE_CLASS_ID', defaultValue: '', description: 'Google wallet class ID')
+
+        // METRC configuration
+        string(name: 'METRC_MCP_FILE_PATH', defaultValue: 'classpath:/uploads/mcp/metrc-mcp-connector.dxt', description: 'METRC MCP file path')
+
+        // Request logging configuration
+        string(name: 'REQUEST_LOGGING_ENABLED', defaultValue: 'true', description: 'Enable request logging')
+        string(name: 'REQUEST_LOGGING_HEADERS', defaultValue: 'true', description: 'Log request headers')
+        string(name: 'REQUEST_LOGGING_DEVICE_INFO', defaultValue: 'true', description: 'Log device info')
+        string(name: 'REQUEST_LOGGING_SESSION_INFO', defaultValue: 'true', description: 'Log session info')
+        string(name: 'REQUEST_LOGGING_SECURITY_INFO', defaultValue: 'false', description: 'Log security info')
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: "*/${params.BRANCH}"]],
+                    userRemoteConfigs: [[url: 'https://github.com/javascriptjenkins/inventory.git', credentialsId: 'githubcreds']]
+                ])
+            }
+        }
+
+        stage('Log Build Parameters') {
+            steps {
+                script {
+                    echo "=========================================="
+                    echo "JENKINS BUILD PARAMETERS LOG"
+                    echo "=========================================="
+                    echo ""
+
+                    echo "📋 BUILD PARAMETERS:"
+                    echo "  BRANCH: ${params.BRANCH}"
+                    echo "  TENANT_NAME: ${params.TENANT_NAME}"
+                    echo "  APP_NAME: ${params.APP_NAME}"
+                    echo "  SUBSCRIPTION_TIER: ${params.SUBSCRIPTION_TIER}"
+                    echo "  BILLING_EMAIL: ${params.BILLING_EMAIL}"
+
+                    echo "🐳 DOCKER PARAMETERS:"
+                    echo "  DOCKER_USER: ${params.DOCKER_USER}"
+                    echo ""
+
+                    echo "⚙️ APPLICATION CONFIGURATION:"
+                    echo "  ENVIRONMENT_NAME: ${params.ENVIRONMENT_NAME}"
+                    echo "  LOAD_REF_DATA: ${params.LOAD_REF_DATA}"
+                    echo "  TAX_PERCENTAGE: ${params.TAX_PERCENTAGE}"
+                    echo "  MAX_FILE_SIZE: ${params.MAX_FILE_SIZE}"
+                    echo "  MAX_REQ_SIZE: ${params.MAX_REQ_SIZE}"
+                    echo ""
+
+                    echo "🗄️ DATABASE CONFIGURATION:"
+                    echo "  DB_DRIVER_CLASS_NAME: ${params.DB_DRIVER_CLASS_NAME}"
+                    echo "  DB_JPA_DATABASE_PLATFORM: ${params.DB_JPA_DATABASE_PLATFORM}"
+                    echo "  DB_JPA_HIBERNATE_DIALECT: ${params.DB_JPA_HIBERNATE_DIALECT}"
+                    echo "  DB_USERNAME: ${params.DB_USERNAME}"
+                    echo "  SANDBOX_POSTGRESQL_URI: ${params.SANDBOX_POSTGRESQL_URI}"
+                    echo "  env.DB_URI: ${env.DB_URI}"
+                    echo "  SPRING_DATABASE_ACTION: ${params.SPRING_DATABASE_ACTION}"
+                    echo "  DB_H2_CONSOLE_ENABLED: ${params.DB_H2_CONSOLE_ENABLED}"
+                    echo "  DB_H2_WEB_ALLOWOTHERS: ${params.DB_H2_WEB_ALLOWOTHERS}"
+                    echo ""
+
+                    echo "💳 PAYPAL CONFIGURATION:"
+                    echo "  PAYPAL_ENVIRONMENT: ${params.PAYPAL_ENVIRONMENT}"
+                    echo "  PAYPAL_BRAND_NAME: ${params.PAYPAL_BRAND_NAME}"
+                    echo ""
+
+                    echo "💛 WALLET CONFIGURATION:"
+                    echo "  WALLET_BRAND: ${params.WALLET_BRAND}"
+                    echo "  WALLET_BRAND_PROGRAM: ${params.WALLET_BRAND_PROGRAM}"
+                    echo "  WALLET_GOOGLE_SERVICE_ACC_KEY_PATH: ${params.WALLET_GOOGLE_SERVICE_ACC_KEY_PATH}"
+                    echo "  WALLET_GOOGLE_ISSUER_ID: ${params.WALLET_GOOGLE_ISSUER_ID}"
+                    echo "  WALLET_GOOGLE_CLASS_ID: ${params.WALLET_GOOGLE_CLASS_ID}"
+                    echo ""
+
+                    echo "🌿 METRC CONFIGURATION:"
+                    echo "  METRC_MCP_FILE_PATH: ${params.METRC_MCP_FILE_PATH}"
+                    echo ""
+
+                    echo "📊 REQUEST LOGGING CONFIGURATION:"
+                    echo "  REQUEST_LOGGING_ENABLED: ${params.REQUEST_LOGGING_ENABLED}"
+                    echo "  REQUEST_LOGGING_HEADERS: ${params.REQUEST_LOGGING_HEADERS}"
+                    echo "  REQUEST_LOGGING_DEVICE_INFO: ${params.REQUEST_LOGGING_DEVICE_INFO}"
+                    echo "  REQUEST_LOGGING_SESSION_INFO: ${params.REQUEST_LOGGING_SESSION_INFO}"
+                    echo "  REQUEST_LOGGING_SECURITY_INFO: ${params.REQUEST_LOGGING_SECURITY_INFO}"
+                    echo ""
+
+                    echo "=========================================="
+                    echo "END OF BUILD PARAMETERS LOG"
+                    echo "=========================================="
+                }
+            }
+        }
+
+        stage('Setup Environment Variables') {
+            steps {
+                script {
+                    // Calculate dynamic values
+                    def baseQrDomain = "https://${params.TENANT_NAME}.${params.DO_DOMAIN}"
+
+                    // Store in environment variables for reuse
+                    env.BASE_QR_DOMAIN = baseQrDomain
+
+                    echo "=========================================="
+                    echo "DYNAMIC VALUES CALCULATED DURING BUILD"
+                    echo "=========================================="
+                    echo "BASE_QR_DOMAIN: ${baseQrDomain}"
+                    echo "METRC_MCP_URI: ${baseQrDomain}/api/mcp"
+                    echo "=========================================="
+                }
+            }
+        }
+
+        stage('Setup Kubeconfig') {
+            steps {
+                script {
+                    withCredentials([file(credentialsId: 'KUBECONFIG_PATH', variable: 'KUBECONFIG_FILE')]) {
+                        dir('inventory') {
+                            sh "mkdir -p kubeconfig"
+                            sh "cp ${KUBECONFIG_FILE} kubeconfig/tulip-sandbox-kubeconfig.yaml"
+                            sh "chmod 600 kubeconfig/tulip-sandbox-kubeconfig.yaml"
+
+                            sh """
+                                if [ -f "kubeconfig/tulip-sandbox-kubeconfig.yaml" ]; then
+                                    echo "Kubeconfig file verified: kubeconfig/tulip-sandbox-kubeconfig.yaml"
+                                else
+                                    echo "ERROR: Kubeconfig file not found at expected location"
+                                    exit 1
+                                fi
+                            """
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Update Basic App Properties') {
+            steps {
+                script {
+                    dir('inventory') {
+                        // Basic application settings
+                        if (params.ENVIRONMENT_NAME) {
+                            sh "sed -i 's/^spring\\.profiles\\.active=.*/spring.profiles.active=${params.ENVIRONMENT_NAME}/' src/main/resources/application.properties"
+                        }
+                        if (params.LOAD_REF_DATA) {
+                            sh "sed -i 's/^load\\.ref\\.data=.*/load.ref.data=${params.LOAD_REF_DATA}/' src/main/resources/application.properties"
+                        }
+                        if (params.TAX_PERCENTAGE) {
+                            sh "sed -i 's/^tax\\.percentage=.*/tax.percentage=${params.TAX_PERCENTAGE}/' src/main/resources/application.properties"
+                        }
+                        sh "sed -i 's|^base\\.qr\\.domain=.*|base.qr.domain=${env.BASE_QR_DOMAIN}|' src/main/resources/application.properties"
+                        if (params.MAX_FILE_SIZE) {
+                            sh "sed -i 's/^spring\\.servlet\\.multipart\\.max-file-size=.*/spring.servlet.multipart.max-file-size=${params.MAX_FILE_SIZE}/' src/main/resources/application.properties"
+                        }
+                        if (params.MAX_REQ_SIZE) {
+                            sh "sed -i 's/^spring\\.servlet\\.multipart\\.max-request-size=.*/spring.servlet.multipart.max-request-size=${params.MAX_REQ_SIZE}/' src/main/resources/application.properties"
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Update Database Properties') {
+            steps {
+                script {
+                    withCredentials([
+                        string(credentialsId: 'SANDBOX_POSTGRESQL_PUBLIC_USER', variable: 'SANDBOX_POSTGRESQL_PUBLIC_USER'),
+                        string(credentialsId: 'SANDBOX_POSTGRESQL_PASSWORD', variable: 'SANDBOX_POSTGRESQL_PASSWORD')
+                    ]) {
+                        dir('inventory') {
+                            sh "sed -i 's|^spring\\.datasource\\.url=.*|spring.datasource.url=${params.DB_URI}/defaultdb?currentSchema=tenant_${params.TENANT_NAME}&sslmode=require|' src/main/resources/application.properties"
+                            if (params.DB_DRIVER_CLASS_NAME) {
+                                sh "sed -i 's/^spring\\.datasource\\.driver-class-name=.*/spring.datasource.driver-class-name=${params.DB_DRIVER_CLASS_NAME}/' src/main/resources/application.properties"
+                            }
+                            if (params.DB_JPA_DATABASE_PLATFORM) {
+                                sh "sed -i 's/^spring\\.jpa\\.database-platform=.*/spring.jpa.database-platform=${params.DB_JPA_DATABASE_PLATFORM}/' src/main/resources/application.properties"
+                            }
+                            if (params.DB_JPA_HIBERNATE_DIALECT) {
+                                sh "sed -i 's/^spring\\.jpa\\.properties\\.hibernate\\.dialect=.*/spring.jpa.properties.hibernate.dialect=${params.DB_JPA_HIBERNATE_DIALECT}/' src/main/resources/application.properties"
+                            }
+                            sh "sed -i 's/^spring\\.datasource\\.username=.*/spring.datasource.username=${SANDBOX_POSTGRESQL_PUBLIC_USER}/' src/main/resources/application.properties"
+                            sh "sed -i 's/^spring\\.datasource\\.password=.*/spring.datasource.password=${SANDBOX_POSTGRESQL_PASSWORD}/' src/main/resources/application.properties"
+                            sh "sed -i 's/^spring\\.jpa\\.properties\\.hibernate\\.default_schema=.*/spring.jpa.properties.hibernate.default_schema=${params.TENANT_NAME}/' src/main/resources/application.properties"
+
+                            if (params.SPRING_DATABASE_ACTION) {
+                                sh "sed -i 's/^spring\\.jpa\\.hibernate\\.ddl-auto=.*/spring.jpa.hibernate.ddl-auto=${params.SPRING_DATABASE_ACTION}/' src/main/resources/application.properties"
+                            }
+                            if (params.DB_H2_CONSOLE_ENABLED) {
+                                sh "sed -i 's/^spring\\.h2\\.console\\.enabled=.*/spring.h2.console.enabled=${params.DB_H2_CONSOLE_ENABLED}/' src/main/resources/application.properties"
+                            }
+                            if (params.DB_H2_WEB_ALLOWOTHERS) {
+                                sh "sed -i 's/^spring\\.h2\\.console\\.settings\\.web-allow-others=.*/spring.h2.console.settings.web-allow-others=${params.DB_H2_WEB_ALLOWOTHERS}/' src/main/resources/application.properties"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Update API Keys') {
+            steps {
+                script {
+                    withCredentials([
+                        string(credentialsId: 'TWILIO_API_USER', variable: 'TWILIO_API_USER'),
+                        string(credentialsId: 'TWILIO_API_PASSWORD', variable: 'TWILIO_API_PASSWORD'),
+                        string(credentialsId: 'SENDGRID_API_KEY', variable: 'SENDGRID_API_KEY'),
+                        string(credentialsId: 'JWT_SECRET_KEY', variable: 'JWT_SECRET_KEY'),
+                        string(credentialsId: 'ANTHROPIC_API_KEY', variable: 'ANTHROPIC_API_KEY')
+                    ]) {
+                        dir('inventory') {
+                            sh "sed -i 's|^twilio\\.api\\.username=.*|twilio.api.username=${TWILIO_API_USER}|' src/main/resources/application.properties"
+                            sh "sed -i 's|^twilio\\.api\\.password=.*|twilio.api.password=${TWILIO_API_PASSWORD}|' src/main/resources/application.properties"
+                            sh "sed -i 's|^sendgrid\\.api\\.key=.*|sendgrid.api.key=${SENDGRID_API_KEY}|' src/main/resources/application.properties"
+                            sh "sed -i 's|^security\\.jwt\\.token\\.secret-key=.*|security.jwt.token.secret-key=${JWT_SECRET_KEY}|' src/main/resources/application.properties"
+                            sh "sed -i 's|^anthropic\\.apiKey=.*|anthropic.apiKey=${ANTHROPIC_API_KEY}|' src/main/resources/application.properties"
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Update Payment & METRC Properties') {
+            steps {
+                script {
+                    withCredentials([
+                        string(credentialsId: 'METRC_API_KEY_USERNAME', variable: 'METRC_API_KEY_USERNAME'),
+                        string(credentialsId: 'METRC_API_KEY_PASSWORD', variable: 'METRC_API_KEY_PASSWORD'),
+                        string(credentialsId: 'PAYPAL_CLIENT_ID', variable: 'PAYPAL_CLIENT_ID'),
+                        string(credentialsId: 'PAYPAL_CLIENT_SECRET', variable: 'PAYPAL_CLIENT_SECRET')
+                    ]) {
+                        dir('inventory') {
+                            sh "sed -i 's|^metrc\\.api-key-username=.*|metrc.api-key-username=${METRC_API_KEY_USERNAME}|' src/main/resources/application.properties"
+                            sh "sed -i 's|^metrc\\.api-key-password=.*|metrc.api-key-password=${METRC_API_KEY_PASSWORD}|' src/main/resources/application.properties"
+                            sh "sed -i 's|^paypal\\.client-id=.*|paypal.client-id=${PAYPAL_CLIENT_ID}|' src/main/resources/application.properties"
+                            sh "sed -i 's|^paypal\\.client-secret=.*|paypal.client-secret=${PAYPAL_CLIENT_SECRET}|' src/main/resources/application.properties"
+
+                            if (params.PAYPAL_ENVIRONMENT) {
+                                sh "sed -i 's/^paypal\\.environment=.*/paypal.environment=${params.PAYPAL_ENVIRONMENT}/' src/main/resources/application.properties"
+                            }
+                            if (params.PAYPAL_BRAND_NAME) {
+                                sh "sed -i 's/^paypal\\.brand-name=.*/paypal.brand-name=${params.PAYPAL_BRAND_NAME}/' src/main/resources/application.properties"
+                            }
+
+                            if (params.METRC_MCP_FILE_PATH) {
+                                sh "sed -i 's|^metrc\\.mcp\\.dxtPath=.*|metrc.mcp.dxtPath=${params.METRC_MCP_FILE_PATH}|' src/main/resources/application.properties"
+                            }
+                            sh "sed -i 's|^metrc\\.mcp\\.url=.*|metrc.mcp.url=${env.BASE_QR_DOMAIN}/api/mcp|' src/main/resources/application.properties"
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Update Wallet Configuration') {
+            steps {
+                script {
+                    dir('inventory') {
+                        if (params.WALLET_BRAND) {
+                            sh "sed -i 's/^wallet\\.brand\\.organizationName=.*/wallet.brand.organizationName=${params.WALLET_BRAND}/' src/main/resources/application.properties"
+                        }
+                        if (params.WALLET_BRAND_PROGRAM) {
+                            sh "sed -i 's/^wallet\\.brand\\.programName=.*/wallet.brand.programName=${params.WALLET_BRAND_PROGRAM}/' src/main/resources/application.properties"
+                        }
+                        if (params.WALLET_GOOGLE_SERVICE_ACC_KEY_PATH) {
+                            sh "sed -i 's|^wallet\\.google\\.serviceAccountKeyPath=.*|wallet.google.serviceAccountKeyPath=${params.WALLET_GOOGLE_SERVICE_ACC_KEY_PATH}|' src/main/resources/application.properties"
+                        }
+                        if (params.WALLET_GOOGLE_ISSUER_ID) {
+                            sh "sed -i 's/^wallet\\.google\\.issuerId=.*/wallet.google.issuerId=${params.WALLET_GOOGLE_ISSUER_ID}/' src/main/resources/application.properties"
+                        }
+                        if (params.WALLET_GOOGLE_CLASS_ID) {
+                            sh "sed -i 's/^wallet\\.google\\.classId=.*/wallet.google.classId=${params.WALLET_GOOGLE_CLASS_ID}/' src/main/resources/application.properties"
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Update Infrastructure Properties') {
+            steps {
+                script {
+                    withCredentials([
+                        string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN'),
+                        string(credentialsId: 'DO_LB_IP', variable: 'DO_LB_IP'),
+                        string(credentialsId: 'SANDBOX_POSTGRESQL_PUBLIC_USER', variable: 'SANDBOX_POSTGRESQL_PUBLIC_USER'),
+                        string(credentialsId: 'SANDBOX_POSTGRESQL_PUBLIC_URI', variable: 'SANDBOX_POSTGRESQL_PUBLIC_URI'),
+                        string(credentialsId: 'SANDBOX_POSTGRESQL_PASSWORD', variable: 'SANDBOX_POSTGRESQL_PASSWORD'),
+                        string(credentialsId: 'JENKINS_USERNAME', variable: 'JENKINS_USERNAME'),
+                        string(credentialsId: 'JENKINS_API_TOKEN', variable: 'JENKINS_API_TOKEN')
+                    ]) {
+                        dir('inventory') {
+                            // Digital Ocean configuration
+                            sh "sed -i 's|^digitalocean\\.api\\.token=.*|digitalocean.api.token=${DO_API_TOKEN}|' src/main/resources/application.properties"
+                            sh "sed -i 's|^digitalocean\\.domain=.*|digitalocean.domain=${params.DO_DOMAIN}|' src/main/resources/application.properties"
+                            sh "sed -i 's|^digitalocean\\.target\\.loadbalancer=.*|digitalocean.target.loadbalancer=${DO_LB_IP}|' src/main/resources/application.properties"
+                            sh "sed -i 's|^digitalocean\\.postgresql\\.username=.*|digitalocean.postgresql.username=${SANDBOX_POSTGRESQL_PUBLIC_USER}|' src/main/resources/application.properties"
+                            sh "sed -i 's|^digitalocean\\.postgresql\\.password=.*|digitalocean.postgresql.password=${SANDBOX_POSTGRESQL_PASSWORD}|' src/main/resources/application.properties"
+                            sh "sed -i 's|^digitalocean\\.postgresql\\.uri=.*|digitalocean.postgresql.uri=${SANDBOX_POSTGRESQL_PUBLIC_URI}|' src/main/resources/application.properties"
+
+                            // Jenkins configuration
+                            sh "sed -i 's|^jenkins\\.username=.*|jenkins.username=${JENKINS_USERNAME}|' src/main/resources/application.properties"
+                            sh "sed -i 's|^jenkins\\.token=.*|jenkins.token=${JENKINS_API_TOKEN}|' src/main/resources/application.properties"
+
+                            // Update kubeconfig path
+                            sh "sed -i 's|^kubernetes\\.kubeconfig\\.path=.*|kubernetes.kubeconfig.path=file:/app/kubeconfig/tulip-sandbox-kubeconfig.yaml|' src/main/resources/application.properties"
+
+                            sh """
+                                echo "=== SCHEMA CONFIGURATION VERIFICATION ==="
+                                grep "default_schema" src/main/resources/application.properties || echo "ERROR: default_schema not found!"
+                            """
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Build Application') {
+            steps {
+                dir('inventory') {
+                    sh 'mvn clean package -DskipTests'
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    def imageName = "${params.DOCKER_USER}/inventory-${params.TENANT_NAME}-${params.APP_NAME}:${UUID.randomUUID().toString()}".toLowerCase()
+                    def jarFile = "inventory/target/inventory-0.0.1-SNAPSHOT.jar"
+
+                    // Log Docker build information
+                    echo "=========================================="
+                    echo "DOCKER BUILD INFORMATION"
+                    echo "=========================================="
+                    echo ""
+                    echo "🐳 DOCKER CONFIGURATION:"
+                    echo "  DOCKER_USER: ${params.DOCKER_USER}"
+                    echo "  TENANT_NAME: ${params.TENANT_NAME}"
+                    echo "  APP_NAME: ${params.APP_NAME}"
+                    echo "  IMAGE_NAME: ${imageName}"
+                    echo "  JAR_FILE: ${jarFile}"
+                    echo ""
+                    echo "=========================================="
+                    echo "END OF DOCKER BUILD INFORMATION"
+                    echo "=========================================="
+
+                    // Create Dockerfile with kubeconfig path
+                    sh """
+                        # Check if kubeconfig was created successfully
+                        if [ -f inventory/kubeconfig/tulip-sandbox-kubeconfig.yaml ]; then
+                            echo "Kubeconfig file found at: inventory/kubeconfig/tulip-sandbox-kubeconfig.yaml"
+                            ls -la inventory/kubeconfig/
+                        else
+                            echo "ERROR: Kubeconfig file not found at expected location"
+                            echo "Checking inventory directory:"
+                            ls -la inventory/ || echo "Inventory directory does not exist"
+                            exit 1
+                        fi
+                    """
+
+                    // Create Dockerfile
+                    writeFile file: 'Dockerfile', text: """
+FROM openjdk:17-jdk-slim
+
+# Install curl for debugging and health checks
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Copy the JAR file
+COPY ${jarFile} app.jar
+
+# Copy the kubeconfig file
+COPY inventory/kubeconfig/tulip-sandbox-kubeconfig.yaml /app/kubeconfig/tulip-sandbox-kubeconfig.yaml
+
+# Create necessary directories
+RUN mkdir -p /app/logs /app/data /app/uploads /app/kubeconfig
+
+# Expose port
+EXPOSE 8080
+
+# Set environment variables
+ENV SPRING_PROFILES_ACTIVE=${params.ENVIRONMENT_NAME}
+ENV SERVER_PORT=8080
+
+# Run the application
+CMD ["java", "-jar", "app.jar"]
+"""
+
+                    // Build Docker image
+                    docker.build(imageName)
+
+                    // Store image name for later use
+                    env.DOCKER_IMAGE = imageName
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    withCredentials([string(credentialsId: 'DOCKER_TOKEN', variable: 'DOCKER_TOKEN')]) {
+                        sh """
+                            echo "$DOCKER_TOKEN" | docker login -u ${params.DOCKER_USER} --password-stdin
+                            docker push ${env.DOCKER_IMAGE}
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Store Build Artifacts') {
+            steps {
+                script {
+                    // Create a file with the Docker image name and other build info for the deploy pipeline
+                    writeFile file: 'build-artifacts.properties', text: """
+DOCKER_IMAGE=${env.DOCKER_IMAGE}
+TENANT_NAME=${params.TENANT_NAME}
+APP_NAME=${params.APP_NAME}
+DO_DOMAIN=${params.DO_DOMAIN}
+ENVIRONMENT_NAME=${params.ENVIRONMENT_NAME}
+BASE_QR_DOMAIN=${env.BASE_QR_DOMAIN}
+BUILD_NUMBER=${BUILD_NUMBER}
+BUILD_TIMESTAMP=${new Date().format('yyyy-MM-dd HH:mm:ss')}
+"""
+
+                    // Archive the build artifacts file
+                    archiveArtifacts artifacts: 'build-artifacts.properties', fingerprint: true
+
+                    echo "Build artifacts stored. Docker image: ${env.DOCKER_IMAGE}"
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Build completed successfully for tenant: ${params.TENANT_NAME}"
+            echo "Docker image: ${env.DOCKER_IMAGE}"
+            echo "Build artifacts stored for deployment pipeline"
+        }
+        failure {
+            echo "Build failed for tenant: ${params.TENANT_NAME}"
+        }
+        always {
+            // Clean up temporary files
+            sh 'rm -f Dockerfile'
+        }
+    }
+}
