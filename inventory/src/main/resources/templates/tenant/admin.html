@@ -2,125 +2,50 @@
 <html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Tenant Page</title>
-
-    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
-    <link rel="stylesheet" type="text/css" media="all" href="/css/table.css" th:href="@{/css/table.css}" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Bootstrap Bundle JS (Includes Popper.js) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <style>
-        .glowing-valid {
-            box-shadow: 0 0 8px 2px #00ffff !important;
+    
+    <!-- MODERN CSS -->
+    <link rel="stylesheet" th:href="@{/css/MODERN/modern.css}" th:if="${UIMODE == 'MODERN'}">
+    
+    <style th:if="${UIMODE == 'MODERN'}">
+        /* Ensure everything fits within viewport */
+        .container-fluid {
+            max-width: 100vw;
+            overflow-x: hidden;
         }
-        .glowing-invalid {
-            box-shadow: 0 0 8px 2px #ff0000 !important;
+        
+        /* Table responsive behavior */
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
-    </style>
-    <style>
-        .table-hover tbody tr:hover {
-            background-color: #e0f7fa;
+        
+        /* Ensure table cells don't overflow */
+        .table td, .table th {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
-        .table-striped tbody tr:nth-of-type(odd) {
-            background-color: #f1f8fa;
+        
+        /* Allow text wrapping for specific columns */
+        .table td[style*="word-wrap"], .table th[style*="word-wrap"] {
+            white-space: normal;
+            word-wrap: break-word;
         }
-        .table-dark thead {
-            background-color: #343a40;
-            color: #fff;
-        }
-        .btn-secondary {
-            color: #fff;
-            background-color: #343a40;
-            border-color: #343a40;
-        }
-        .btn-secondary:hover {
-            background-color: #23272b;
-            border-color: #1d2124;
-        }
-        .header-dark {
-            background-color: #343a40;
-            color: #fff;
-            padding: 15px;
-            border-radius: 5px;
-            text-align: center;
-            margin-bottom: 15px;
-            font-family: 'Roboto', sans-serif;
-            border: 1px solid transparent;
-            border-image: linear-gradient(to right, #c0c0c0, #ffffff);
-            border-image-slice: 1;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        .tip-box {
-            text-align: center;
-            font-size: 18px;
-            font-weight: bold;
-            color: #00ffff;
-            text-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff, 0 0 15px #00ffff;
-            padding: 10px;
-            border-radius: 8px;
-            background-color: rgba(0, 0, 0, 0.7);
-            margin-bottom: 15px;
-            animation: glow 1.5s infinite alternate;
-        }
-        .btn-dark-custom {
-            background-color: #343a40;
-            color: #fff;
-            border: 1px solid #343a40;
-            transition: background-color 0.3s ease, color 0.3s ease;
-        }
-
-        .btn-dark-custom:hover {
-            background-color: #1d2124; /* Darker shade on hover */
-            color: #f8f9fa; /* Lighter text on hover */
-        }
-        @keyframes glow {
-            from {
-                text-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff, 0 0 15px #00ffff;
-            }
-            to {
-                text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px #00ffff;
-            }
-        }
-        .record-selector {
-            margin-bottom: 15px;
-            background-color: #343a40;
-            color: #fff;
-            padding: 10px;
-            border-radius: 5px;
-            text-align: center;
-            display: inline-block;
-        }
-        .record-selector select {
-            background-color: #23272b;
-            color: #fff;
-            border: 1px solid #343a40;
-        }
-        .record-selector select:focus {
-            border-color: #1d2124;
-            box-shadow: none;
-        }
-        .config-section {
-            margin-top: 30px;
-            padding: 20px;
-            border: 1px solid #dee2e6;
-            border-radius: 5px;
-            background-color: #f8f9fa;
+        
+        /* Navbar responsive */
+        .navbar {
+            max-width: 100%;
         }
     </style>
 
 </head>
 <body>
 
-<div th:insert="~{fragments/adminnavbar.html :: adminnavbarfragment}"> </div>
-
-<div class="container">
+<div class="container-fluid" th:if="${UIMODE == 'MODERN'}">
+    
+    <div th:insert="~{fragments/adminnavbar.html :: adminnavbarfragment}"> </div>
 
     <div class="header-dark">
         <h1>Administrate Tenants</h1>
@@ -139,42 +64,42 @@
     <!-- Tenant Form -->
     <form th:action="@{/tenant/admin/edit}" method="post" th:object="${tenant}">
         <div class="row mb-3">
-            <div class="col-md-4">
+            <div class="col-md-4 col-sm-6 col-12">
                 <label class="form-label">Tenant ID</label>
                 <input type="text" th:field="*{id}" id="tenantId" class="form-control edit-validation-group" placeholder="Tenant ID" readonly>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-4 col-sm-6 col-12">
                 <label class="form-label">Tenant Name *</label>
                 <input type="text" th:field="*{tenantName}" id="tenantName" class="form-control edit-validation-group" placeholder="Tenant Name" required>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-4 col-sm-6 col-12">
                 <label class="form-label">Domain Name</label>
                 <input type="text" th:field="*{domainName}" id="domainName" class="form-control edit-validation-group" placeholder="Domain Name">
             </div>
-            <div class="col-md-4">
+            <div class="col-md-4 col-sm-6 col-12">
                 <label class="form-label">Subscription Tier</label>
                 <select th:field="*{subscriptionTier}" id="subscriptionTier" class="form-control edit-validation-group">
                     <option value="">Select Tier</option>
                     <option th:each="tier : ${subscriptionTiers}" th:value="${tier}" th:text="${tier}"></option>
                 </select>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-4 col-sm-6 col-12">
                 <label class="form-label">Status</label>
                 <select th:field="*{status}" id="status" class="form-control edit-validation-group">
                     <option value="">Select Status</option>
                     <option th:each="status : ${tenantStatuses}" th:value="${status}" th:text="${status}"></option>
                 </select>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-4 col-sm-6 col-12">
                 <label class="form-label">Billing Email</label>
                 <input type="email" th:field="*{billingEmail}" id="billingEmail" class="form-control edit-validation-group email" placeholder="Billing Email">
             </div>
-            <div class="col-md-4">
+            <div class="col-md-4 col-sm-6 col-12">
                 <label class="form-label">Last Deployed</label>
                 <input type="datetime-local" th:field="*{lastDeployed}" id="lastDeployed" class="form-control" readonly>
                 <small class="form-text text-muted">Automatically set when tenant is deployed</small>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-4 col-sm-6 col-12">
                 <label class="form-label">Deploy Flag</label>
                 <select th:field="*{deployflag}" id="deployflag" class="form-control">
                     <option value="0">Not Deployed</option>
@@ -192,39 +117,44 @@
         <input th:if="${tenant.id != null && tenant.id != ''}" type="hidden" th:field="*{createTimeStamp}">
         <input th:if="${tenant.id != null && tenant.id != ''}" type="hidden" th:field="*{createdAt}">
 
-        <div class="text-end" th:if="${successMessage == null}">
-            <button type="submit" class="btn btn-secondary">Submit</button>
+        <div class="row mb-3" th:if="${successMessage == null}">
+            <div class="col-md-8 col-sm-6 col-12"></div>
+            <div class="col-md-4 col-sm-6 col-12 text-end">
+                <button type="submit" class="btn btn-secondary">Submit</button>
+            </div>
         </div>
     </form>
 
-    <br>
-
     <!-- Tenant Configuration Section -->
-    <div class="config-section" th:if="${tenant.id != null && tenant.id != ''}">
-        <h3>Tenant Configurations</h3>
-        
-        <!-- Add New Configuration Form -->
-        <form th:action="@{/tenant/admin/config/create}" method="post">
-            <input type="hidden" name="tenantid" th:value="${tenant.id}">
-            <div class="row mb-3">
-                <div class="col-md-4">
-                    <label class="form-label">Config Key</label>
-                    <input type="text" name="configKey" class="form-control" placeholder="Config Key" required>
+    <div class="row mb-3" th:if="${tenant.id != null && tenant.id != ''}">
+        <div class="col-12">
+            <h3>Tenant Configurations</h3>
+            
+            <!-- Add New Configuration Form -->
+            <form th:action="@{/tenant/admin/config/create}" method="post">
+                <input type="hidden" name="tenantid" th:value="${tenant.id}">
+                <div class="row mb-3">
+                    <div class="col-md-4 col-sm-6 col-12">
+                        <label class="form-label">Config Key</label>
+                        <input type="text" name="configKey" class="form-control" placeholder="Config Key" required>
+                    </div>
+                    <div class="col-md-6 col-sm-6 col-12">
+                        <label class="form-label">Config Value (JSON format)</label>
+                        <input type="text" name="configValue" class="form-control" placeholder='{"key": "value"}' required>
+                        <small class="form-text text-muted">Enter JSON format for complex configurations</small>
+                    </div>
+                    <div class="col-md-2 col-sm-12 col-12">
+                        <label class="form-label">&nbsp;</label>
+                        <button type="submit" class="btn btn-secondary w-100">Add Config</button>
+                    </div>
                 </div>
-                <div class="col-md-6">
-                    <label class="form-label">Config Value (JSON format)</label>
-                    <input type="text" name="configValue" class="form-control" placeholder='{"key": "value"}' required>
-                    <small class="form-text text-muted">Enter JSON format for complex configurations</small>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">&nbsp;</label>
-                    <button type="submit" class="btn btn-primary form-control">Add Config</button>
-                </div>
-            </div>
-        </form>
+            </form>
+        </div>
+    </div>
 
-        <!-- Existing Configurations Table -->
-        <div th:if="${tenantConfigs != null && tenantConfigs.size() > 0}">
+    <!-- Existing Configurations Table -->
+    <div class="row mb-3" th:if="${tenantConfigs != null && tenantConfigs.size() > 0}">
+        <div class="col-12">
             <h4>Existing Configurations</h4>
             <table class="table table-hover table-striped table-dark">
                 <thead>
@@ -266,44 +196,48 @@
     </div>
 
     <!-- System Users Section -->
-    <div class="system-users-section" th:if="${tenant.id != null && tenant.id != ''}">
-        <h3>System Users</h3>
-        
-        <!-- Add New System User Form -->
-        <div class="row mb-3">
-            <div class="col-md-12">
-                <button type="button" class="btn btn-success" id="addUserBtn">
-                    <i class="fas fa-plus"></i> Add New User
-                </button>
+    <div class="row mb-3" th:if="${tenant.id != null && tenant.id != ''}">
+        <div class="col-12">
+            <h3>System Users</h3>
+            
+            <!-- Add New System User Form -->
+            <div class="row mb-3">
+                <div class="col-12">
+                    <button type="button" class="btn btn-secondary" id="addUserBtn">
+                        <i class="fas fa-plus"></i> Add New User
+                    </button>
+                </div>
             </div>
-        </div>
-        
-        <!-- New User Form (initially hidden) -->
-        <div id="newUserForm" style="display: none;" class="mb-3">
-            <form th:action="@{/tenant/admin/systemuser/create}" method="post">
-                <input type="hidden" name="tenantid" th:value="${tenant.id}">
-                <div class="row">
-                    <div class="col-md-4">
-                        <label class="form-label">Email Address *</label>
-                        <input type="email" name="email" class="form-control" placeholder="user@example.com" required>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Name *</label>
-                        <input type="text" name="name" class="form-control" placeholder="Full Name" required>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">&nbsp;</label>
-                        <div>
-                            <button type="submit" class="btn btn-primary">Create User</button>
-                            <button type="button" class="btn btn-secondary" id="cancelUserBtn">Cancel</button>
+            
+            <!-- New User Form (initially hidden) -->
+            <div id="newUserForm" style="display: none;" class="mb-3">
+                <form th:action="@{/tenant/admin/systemuser/create}" method="post">
+                    <input type="hidden" name="tenantid" th:value="${tenant.id}">
+                    <div class="row mb-3">
+                        <div class="col-md-4 col-sm-6 col-12">
+                            <label class="form-label">Email Address *</label>
+                            <input type="email" name="email" class="form-control" placeholder="user@example.com" required>
+                        </div>
+                        <div class="col-md-4 col-sm-6 col-12">
+                            <label class="form-label">Name *</label>
+                            <input type="text" name="name" class="form-control" placeholder="Full Name" required>
+                        </div>
+                        <div class="col-md-4 col-sm-12 col-12">
+                            <label class="form-label">&nbsp;</label>
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-secondary">Create User</button>
+                                <button type="button" class="btn btn-secondary" id="cancelUserBtn">Cancel</button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
+    </div>
 
-        <!-- Existing System Users Table -->
-        <div th:if="${systemUsers != null && systemUsers.size() > 0}">
+    <!-- Existing System Users Table -->
+    <div class="row mb-3" th:if="${systemUsers != null && systemUsers.size() > 0}">
+        <div class="col-12">
             <h4>Existing Users</h4>
             <table class="table table-hover table-striped table-dark">
                 <thead>
@@ -359,40 +293,42 @@
     </div>
 
     <!-- Deployment Status Section -->
-    <div class="col-md-12" th:if="${tenantsNeedingDeployment != null && tenantsNeedingDeployment.size() > 0}">
-        <div class="alert alert-warning">
-            <h4>Deployment Queue</h4>
-            <p><strong th:text="${tenantsNeedingDeploymentCount}"></strong> tenant(s) waiting for deployment:</p>
-            <ul>
-                <li th:each="tenant : ${tenantsNeedingDeployment}" th:text="${tenant.tenantName} + ' (' + ${tenant.id} + ')'"></li>
-            </ul>
-            <p><small>The scheduler will process these deployments within 30 seconds.</small></p>
+    <div class="row mb-3" th:if="${tenantsNeedingDeployment != null && tenantsNeedingDeployment.size() > 0}">
+        <div class="col-12">
+            <div class="alert alert-warning">
+                <h4>Deployment Queue</h4>
+                <p><strong th:text="${tenantsNeedingDeploymentCount}"></strong> tenant(s) waiting for deployment:</p>
+                <ul>
+                    <li th:each="tenant : ${tenantsNeedingDeployment}" th:text="${tenant.tenantName} + ' (' + ${tenant.id} + ')'"></li>
+                </ul>
+                <p><small>The scheduler will process these deployments within 30 seconds.</small></p>
+            </div>
         </div>
     </div>
 
     <!-- Tenant Selection Table -->
-    <div class="col-md-12" th:if="${tenantPage != null && tenantPage.content.size() > 0}">
-        <div class="tip-box">Select a Tenant by clicking on the Tenant ID</div>
-        <table id="selectTenantTable" class="table table-hover table-striped table-dark" style="margin-top: 20px">
+    <div class="row mb-3" th:if="${tenantPage != null && tenantPage.content.size() > 0}">
+        <div class="col-12">
+            <div class="tip-box">Select a Tenant by clicking on the Tenant ID</div>
+            <table id="selectTenantTable" class="table table-hover table-striped table-dark table-responsive">
             <thead>
             <tr>
-                <th scope="col">Tenant ID</th>
-                <th scope="col">Tenant Name</th>
-                <th scope="col">Domain Name</th>
-                <th scope="col">Subscription Tier</th>
-                <th scope="col">Status</th>
-                <th scope="col">Billing Email</th>
-                <th scope="col">Deploy Flag</th>
-                <th scope="col">Last Deployed</th>
-                <th scope="col">Created</th>
-                <th scope="col">Actions</th>
+                <th scope="col" style="width: 15%; min-width: 120px;">Tenant ID</th>
+                <th scope="col" style="width: 15%;">Tenant Name</th>
+                <th scope="col" style="width: 15%;">Domain Name</th>
+                <th scope="col" style="width: 10%;">Tier</th>
+                <th scope="col" style="width: 8%;">Status</th>
+                <th scope="col" style="width: 15%;">Billing Email</th>
+                <th scope="col" style="width: 8%;">Deploy</th>
+                <th scope="col" style="width: 10%;">Last Deployed</th>
+                <th scope="col" style="width: 14%;">Actions</th>
             </tr>
             </thead>
             <tbody>
             <tr th:each="tenant, iStat : ${tenantPage.content}"
                 th:style="${iStat.odd}? 'font-weight: bold;'"
                 th:alt-title="${iStat.even}? 'even' : 'odd'">
-                <td>
+                <td style="width: 15%; min-width: 120px; word-wrap: break-word;">
                     <a th:href="@{/tenant/admin?size=__${1}__&page=__${page == null ? 0 : page}__&tenantid=__${tenant.id}__}"
                        th:data-tenantid="${tenant.id}"
                        id="tenantid-${tenant.id}"
@@ -400,37 +336,39 @@
                         <span th:text="${tenant.id}"></span>
                     </a>
                 </td>
-                <td th:text="${tenant.tenantName}"></td>
-                <td th:text="${tenant.domainName}"></td>
-                <td th:text="${tenant.subscriptionTier}"></td>
-                <td th:text="${tenant.status}"></td>
-                <td th:text="${tenant.billingEmail}"></td>
-                <td>
+                <td style="width: 15%; word-wrap: break-word;" th:text="${tenant.tenantName}"></td>
+                <td style="width: 15%; word-wrap: break-word;" th:text="${tenant.domainName}"></td>
+                <td style="width: 10%;" th:text="${tenant.subscriptionTier}"></td>
+                <td style="width: 8%;" th:text="${tenant.status}"></td>
+                <td style="width: 15%; word-wrap: break-word;" th:text="${tenant.billingEmail}"></td>
+                <td style="width: 8%;">
                     <span th:if="${tenant.deployflag == 0}" class="badge badge-secondary">Not Deployed</span>
                     <span th:if="${tenant.deployflag == 1}" class="badge badge-success">Deployed</span>
                     <span th:if="${tenant.deployflag == 2}" class="badge badge-warning">In Progress</span>
                     <span th:if="${tenant.deployflag == 3}" class="badge badge-danger">Failed</span>
                 </td>
-                <td th:text="${tenant.lastDeployed}"></td>
-                <td th:text="${tenant.createdAt}"></td>
-                <td>
-                    <form th:action="@{/tenant/admin/deploy}" method="post" style="display: inline;">
-                        <input type="hidden" name="tenantid" th:value="${tenant.id}">
-                        <button type="submit" class="btn btn-info btn-sm" 
-                                th:onclick="'return confirm(\'' + (${tenant.deployflag} == 1 ? 'Are you sure you want to refresh deployment for this tenant?' : 'Are you sure you want to trigger deployment for this tenant?') + '\')'">
-                            <i th:if="${tenant.deployflag == 1}" class="fas fa-sync-alt"></i>
-                            <span th:if="${tenant.deployflag == 1}">Refresh</span>
-                            <span th:if="${tenant.deployflag != 1}">Deploy</span>
-                        </button>
-                    </form>
-                    <form th:action="@{/tenant/admin/delete}" method="post" style="display: inline;">
-                        <input type="hidden" name="tenantid" th:value="${tenant.id}">
-                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this tenant?')">Delete</button>
-                    </form>
+                <td style="width: 10%; word-wrap: break-word;" th:text="${tenant.lastDeployed}"></td>
+                <td style="width: 14%;">
+                    <div class="d-flex gap-1 flex-wrap">
+                        <form th:action="@{/tenant/admin/deploy}" method="post" style="display: inline;">
+                            <input type="hidden" name="tenantid" th:value="${tenant.id}">
+                            <button type="submit" class="btn btn-success btn-sm" 
+                                    th:onclick="'return confirm(\'' + (${tenant.deployflag} == 1 ? 'Are you sure you want to refresh deployment for this tenant?' : 'Are you sure you want to trigger deployment for this tenant?') + '\')'">
+                                <i th:if="${tenant.deployflag == 1}" class="fas fa-sync-alt"></i>
+                                <span th:if="${tenant.deployflag == 1}">Refresh</span>
+                                <span th:if="${tenant.deployflag != 1}">Deploy</span>
+                            </button>
+                        </form>
+                        <form th:action="@{/tenant/admin/delete}" method="post" style="display: inline;">
+                            <input type="hidden" name="tenantid" th:value="${tenant.id}">
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this tenant?')">Delete</button>
+                        </form>
+                    </div>
                 </td>
             </tr>
             </tbody>
-        </table>
+            </table>
+        </div>
         <nav th:if="${tenantPage.totalPages > 0}">
             <ul class="pagination flex-wrap justify-content-center">
                 <li class="page-item" th:each="pageNumber : ${pageNumbers}">
@@ -442,6 +380,7 @@
                 </li>
             </ul>
         </nav>
+        </div>
     </div>
 
 </div>
