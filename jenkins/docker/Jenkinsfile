@@ -689,6 +689,126 @@ spec:
             }
         }
 
+stage('Copy Static Files to PVC') {
+            when {
+                expression { params.TENANT_NAME != '' }
+            }
+            steps {
+                script {
+                    def k8sNamespace = (params.K8S_NAMESPACE && params.K8S_NAMESPACE.trim() != '') ?
+                        params.K8S_NAMESPACE :
+                        "tenant-${params.TENANT_NAME.toLowerCase().replaceAll('[^a-z0-9-]', '-')}"
+
+                    withCredentials([file(credentialsId: 'KUBECONFIG_PATH', variable: 'KCFG')]) {
+                        dir('inventory') {
+                            // Create a temporary pod to copy files to the PVC
+                            def tempPodYaml = """
+apiVersion: v1
+kind: Pod
+metadata:
+  name: file-copy-pod-${params.TENANT_NAME}
+  namespace: ${k8sNamespace}
+  labels:
+    app: file-copy
+    tenant: ${params.TENANT_NAME}
+spec:
+  restartPolicy: Never
+  containers:
+  - name: file-copy
+    image: alpine:latest
+    command: ["/bin/sh", "-c", "sleep 3600"]
+    volumeMounts:
+    - name: uploads
+      mountPath: /uploads
+  volumes:
+  - name: uploads
+    persistentVolumeClaim:
+      claimName: inventory-${params.TENANT_NAME}-uploads-pvc
+"""
+
+                            // Write temporary pod manifest
+                            writeFile file: 'file-copy-pod.yaml', text: tempPodYaml
+
+                            sh """
+                                export KUBECONFIG="\$KCFG"
+
+                                # Apply the temporary pod
+                                kubectl apply -f file-copy-pod.yaml
+
+                                # Wait for pod to be ready
+                                kubectl wait --for=condition=Ready pod/file-copy-pod-${params.TENANT_NAME} -n ${k8sNamespace} --timeout=60s
+
+                                echo "Temporary pod is ready, copying files..."
+                            """
+
+                            // Copy font files if they exist
+                            sh """
+                                export KUBECONFIG="\$KCFG"
+
+                                if [ -d "uploads/font" ]; then
+                                    echo "Copying font files..."
+                                    kubectl exec file-copy-pod-${params.TENANT_NAME} -n ${k8sNamespace} -- mkdir -p /uploads/font
+                                    kubectl cp uploads/font/. ${k8sNamespace}/file-copy-pod-${params.TENANT_NAME}:/uploads/font/
+                                    echo "Font files copied successfully"
+                                else
+                                    echo "No font directory found, skipping font files"
+                                fi
+                            """
+
+                            // Copy photo files if they exist
+                            sh """
+                                export KUBECONFIG="\$KCFG"
+
+                                if [ -d "uploads/photos" ]; then
+                                    echo "Copying photo files..."
+                                    kubectl exec file-copy-pod-${params.TENANT_NAME} -n ${k8sNamespace} -- mkdir -p /uploads/photos
+                                    kubectl cp uploads/photos/. ${k8sNamespace}/file-copy-pod-${params.TENANT_NAME}:/uploads/photos/
+                                    echo "Photo files copied successfully"
+                                else
+                                    echo "No photos directory found, skipping photo files"
+                                fi
+                            """
+
+                            // Copy global user files if they exist
+                            sh """
+                                export KUBECONFIG="\$KCFG"
+
+                                if [ -d "uploads/globaluserfiles" ]; then
+                                    echo "Copying global user files..."
+                                    kubectl exec file-copy-pod-${params.TENANT_NAME} -n ${k8sNamespace} -- mkdir -p /uploads/globaluserfiles
+                                    kubectl cp uploads/globaluserfiles/. ${k8sNamespace}/file-copy-pod-${params.TENANT_NAME}:/uploads/globaluserfiles/
+                                    echo "Global user files copied successfully"
+                                else
+                                    echo "No globaluserfiles directory found, skipping global user files"
+                                fi
+                            """
+
+                            // Verify files were copied and clean up
+                            sh """
+                                export KUBECONFIG="\$KCFG"
+
+                                # Verify the files are in the PVC
+                                echo "Verifying files in PVC:"
+                                kubectl exec file-copy-pod-${params.TENANT_NAME} -n ${k8sNamespace} -- ls -la /uploads/
+
+                                # Show directory structure
+                                kubectl exec file-copy-pod-${params.TENANT_NAME} -n ${k8sNamespace} -- find /uploads -type d || true
+
+                                # Clean up the temporary pod
+                                kubectl delete pod file-copy-pod-${params.TENANT_NAME} -n ${k8sNamespace}
+
+                                echo "File copy operation completed and temporary pod cleaned up"
+                            """
+
+                            // Clean up temporary manifest
+                            sh 'rm -f file-copy-pod.yaml'
+                        }
+                    }
+                }
+            }
+        }
+
+
         stage('LB: Discover IDs') {
             steps {
                 withCredentials([ file(credentialsId: 'KUBECONFIG_PATH', variable: 'KCFG') ]) {
