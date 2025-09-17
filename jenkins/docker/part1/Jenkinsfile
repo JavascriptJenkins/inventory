@@ -494,6 +494,7 @@ BUILD_TIMESTAMP=${new Date().format('yyyy-MM-dd HH:mm:ss')}
                     // Trigger the deployment pipeline
                     build job: 'docker-part2',
                           parameters: [
+                              string(name: 'DOCKER_IMAGE', value: env.DOCKER_IMAGE),
                               string(name: 'BUILD_JOB_NAME', value: env.JOB_NAME),
                               string(name: 'BUILD_NUMBER', value: env.BUILD_NUMBER),
                               string(name: 'TENANT_NAME', value: params.TENANT_NAME),
