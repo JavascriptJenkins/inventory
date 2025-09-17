@@ -492,7 +492,7 @@ BUILD_TIMESTAMP=${new Date().format('yyyy-MM-dd HH:mm:ss')}
                     echo "Triggering deployment pipeline for tenant: ${params.TENANT_NAME}"
 
                     // Trigger the deployment pipeline
-                    build job: 'inventory-deploy',
+                    build job: 'docker-part2',
                           parameters: [
                               string(name: 'BUILD_JOB_NAME', value: env.JOB_NAME),
                               string(name: 'BUILD_NUMBER', value: env.BUILD_NUMBER),
