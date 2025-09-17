@@ -1,6 +1,8 @@
 package com.techvvs.inventory.service.jenkins;
 
 import com.techvvs.inventory.service.digitalocean.DigitalOceanService;
+import com.techvvs.inventory.jparepo.TenantRepo;
+import com.techvvs.inventory.model.Tenant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -10,7 +12,9 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.Optional;
 
 @Service
 public class JenkinsHttpService {
@@ -26,10 +30,12 @@ public class JenkinsHttpService {
     
     private final RestTemplate restTemplate;
     private final DigitalOceanService digitalOceanService;
+    private final TenantRepo tenantRepo;
     
-    public JenkinsHttpService(RestTemplate restTemplate, DigitalOceanService digitalOceanService) {
+    public JenkinsHttpService(RestTemplate restTemplate, DigitalOceanService digitalOceanService, TenantRepo tenantRepo) {
         this.restTemplate = restTemplate;
         this.digitalOceanService = digitalOceanService;
+        this.tenantRepo = tenantRepo;
     }
     
     public void triggerTenantProvisioning(String tenantName, String subscriptionTier, String billingEmail) {
@@ -209,11 +215,23 @@ public class JenkinsHttpService {
     }
 
     /**
-     * Triggers tenant deletion Jenkins job
+     * Triggers tenant deletion Jenkins job and updates tenant status to deleted
      */
     public void triggerTenantDeletion(String tenantName, String billingEmail, String domain) {
         try {
             System.out.println("Triggering tenant deletion for: " + tenantName);
+            
+            // First, update the tenant status to "deleted"
+            Optional<Tenant> tenantOpt = tenantRepo.findByTenantName(tenantName);
+            if (tenantOpt.isPresent()) {
+                Tenant tenant = tenantOpt.get();
+                tenant.setStatus("deleted");
+                tenant.setUpdateTimeStamp(LocalDateTime.now());
+                tenantRepo.save(tenant);
+                System.out.println("Updated tenant status to 'deleted' for tenant: " + tenantName);
+            } else {
+                System.out.println("Warning: Tenant not found in database: " + tenantName);
+            }
             
             String jobUrl = jenkinsUrl + "/job/deleteTenant/buildWithParameters";
             
