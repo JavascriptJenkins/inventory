@@ -148,235 +148,219 @@ pipeline {
             }
         }
 
-        stage('Update Application Properties') {
+        stage('Setup Environment Variables') {
+            steps {
+                script {
+                    // Calculate dynamic values
+                    def baseQrDomain = "https://${params.TENANT_NAME}.${params.DO_DOMAIN}"
+                    def k8sNamespace = params.K8S_NAMESPACE ?: "tenant-${params.TENANT_NAME.toLowerCase().replaceAll('[^a-z0-9-]', '-')}"
+
+                    // Store in environment variables for reuse
+                    env.BASE_QR_DOMAIN = baseQrDomain
+                    env.K8S_NAMESPACE = k8sNamespace
+
+                    echo "=========================================="
+                    echo "DYNAMIC VALUES CALCULATED DURING BUILD"
+                    echo "=========================================="
+                    echo "BASE_QR_DOMAIN: ${baseQrDomain}"
+                    echo "METRC_MCP_URI: ${baseQrDomain}/api/mcp"
+                    echo "K8S_NAMESPACE: ${k8sNamespace}"
+                    echo "=========================================="
+                }
+            }
+        }
+
+        stage('Setup Kubeconfig') {
+            steps {
+                script {
+                    withCredentials([file(credentialsId: 'KUBECONFIG_PATH', variable: 'KUBECONFIG_FILE')]) {
+                        dir('inventory') {
+                            sh "mkdir -p kubeconfig"
+                            sh "cp ${KUBECONFIG_FILE} kubeconfig/tulip-sandbox-kubeconfig.yaml"
+                            sh "chmod 600 kubeconfig/tulip-sandbox-kubeconfig.yaml"
+
+                            sh """
+                                if [ -f "kubeconfig/tulip-sandbox-kubeconfig.yaml" ]; then
+                                    echo "Kubeconfig file verified: kubeconfig/tulip-sandbox-kubeconfig.yaml"
+                                else
+                                    echo "ERROR: Kubeconfig file not found at expected location"
+                                    exit 1
+                                fi
+                            """
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Update Basic App Properties') {
+            steps {
+                script {
+                    dir('inventory') {
+                        // Basic application settings
+                        if (params.ENVIRONMENT_NAME) {
+                            sh "sed -i 's/^spring\\.profiles\\.active=.*/spring.profiles.active=${params.ENVIRONMENT_NAME}/' src/main/resources/application.properties"
+                        }
+                        if (params.LOAD_REF_DATA) {
+                            sh "sed -i 's/^load\\.ref\\.data=.*/load.ref.data=${params.LOAD_REF_DATA}/' src/main/resources/application.properties"
+                        }
+                        if (params.TAX_PERCENTAGE) {
+                            sh "sed -i 's/^tax\\.percentage=.*/tax.percentage=${params.TAX_PERCENTAGE}/' src/main/resources/application.properties"
+                        }
+                        sh "sed -i 's|^base\\.qr\\.domain=.*|base.qr.domain=${env.BASE_QR_DOMAIN}|' src/main/resources/application.properties"
+                        if (params.MAX_FILE_SIZE) {
+                            sh "sed -i 's/^spring\\.servlet\\.multipart\\.max-file-size=.*/spring.servlet.multipart.max-file-size=${params.MAX_FILE_SIZE}/' src/main/resources/application.properties"
+                        }
+                        if (params.MAX_REQ_SIZE) {
+                            sh "sed -i 's/^spring\\.servlet\\.multipart\\.max-request-size=.*/spring.servlet.multipart.max-request-size=${params.MAX_REQ_SIZE}/' src/main/resources/application.properties"
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Update Database Properties') {
             steps {
                 script {
                     withCredentials([
-                        // API Keys and Secrets
+                        string(credentialsId: 'SANDBOX_POSTGRESQL_PUBLIC_USER', variable: 'SANDBOX_POSTGRESQL_PUBLIC_USER'),
+                        string(credentialsId: 'SANDBOX_POSTGRESQL_PASSWORD', variable: 'SANDBOX_POSTGRESQL_PASSWORD')
+                    ]) {
+                        dir('inventory') {
+                            sh "sed -i 's|^spring\\.datasource\\.url=.*|spring.datasource.url=${params.DB_URI}/defaultdb?currentSchema=tenant_${params.TENANT_NAME}&sslmode=require|' src/main/resources/application.properties"
+                            if (params.DB_DRIVER_CLASS_NAME) {
+                                sh "sed -i 's/^spring\\.datasource\\.driver-class-name=.*/spring.datasource.driver-class-name=${params.DB_DRIVER_CLASS_NAME}/' src/main/resources/application.properties"
+                            }
+                            if (params.DB_JPA_DATABASE_PLATFORM) {
+                                sh "sed -i 's/^spring\\.jpa\\.database-platform=.*/spring.jpa.database-platform=${params.DB_JPA_DATABASE_PLATFORM}/' src/main/resources/application.properties"
+                            }
+                            if (params.DB_JPA_HIBERNATE_DIALECT) {
+                                sh "sed -i 's/^spring\\.jpa\\.properties\\.hibernate\\.dialect=.*/spring.jpa.properties.hibernate.dialect=${params.DB_JPA_HIBERNATE_DIALECT}/' src/main/resources/application.properties"
+                            }
+                            sh "sed -i 's/^spring\\.datasource\\.username=.*/spring.datasource.username=${SANDBOX_POSTGRESQL_PUBLIC_USER}/' src/main/resources/application.properties"
+                            sh "sed -i 's/^spring\\.datasource\\.password=.*/spring.datasource.password=${SANDBOX_POSTGRESQL_PASSWORD}/' src/main/resources/application.properties"
+                            sh "sed -i 's/^spring\\.jpa\\.properties\\.hibernate\\.default_schema=.*/spring.jpa.properties.hibernate.default_schema=${params.TENANT_NAME}/' src/main/resources/application.properties"
+
+                            if (params.SPRING_DATABASE_ACTION) {
+                                sh "sed -i 's/^spring\\.jpa\\.hibernate\\.ddl-auto=.*/spring.jpa.hibernate.ddl-auto=${params.SPRING_DATABASE_ACTION}/' src/main/resources/application.properties"
+                            }
+                            if (params.DB_H2_CONSOLE_ENABLED) {
+                                sh "sed -i 's/^spring\\.h2\\.console\\.enabled=.*/spring.h2.console.enabled=${params.DB_H2_CONSOLE_ENABLED}/' src/main/resources/application.properties"
+                            }
+                            if (params.DB_H2_WEB_ALLOWOTHERS) {
+                                sh "sed -i 's/^spring\\.h2\\.console\\.settings\\.web-allow-others=.*/spring.h2.console.settings.web-allow-others=${params.DB_H2_WEB_ALLOWOTHERS}/' src/main/resources/application.properties"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Update API Keys') {
+            steps {
+                script {
+                    withCredentials([
                         string(credentialsId: 'TWILIO_API_USER', variable: 'TWILIO_API_USER'),
                         string(credentialsId: 'TWILIO_API_PASSWORD', variable: 'TWILIO_API_PASSWORD'),
                         string(credentialsId: 'SENDGRID_API_KEY', variable: 'SENDGRID_API_KEY'),
                         string(credentialsId: 'JWT_SECRET_KEY', variable: 'JWT_SECRET_KEY'),
+                        string(credentialsId: 'ANTHROPIC_API_KEY', variable: 'ANTHROPIC_API_KEY')
+                    ]) {
+                        dir('inventory') {
+                            sh "sed -i 's|^twilio\\.api\\.username=.*|twilio.api.username=${TWILIO_API_USER}|' src/main/resources/application.properties"
+                            sh "sed -i 's|^twilio\\.api\\.password=.*|twilio.api.password=${TWILIO_API_PASSWORD}|' src/main/resources/application.properties"
+                            sh "sed -i 's|^sendgrid\\.api\\.key=.*|sendgrid.api.key=${SENDGRID_API_KEY}|' src/main/resources/application.properties"
+                            sh "sed -i 's|^security\\.jwt\\.token\\.secret-key=.*|security.jwt.token.secret-key=${JWT_SECRET_KEY}|' src/main/resources/application.properties"
+                            sh "sed -i 's|^anthropic\\.apiKey=.*|anthropic.apiKey=${ANTHROPIC_API_KEY}|' src/main/resources/application.properties"
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Update Payment & METRC Properties') {
+            steps {
+                script {
+                    withCredentials([
                         string(credentialsId: 'METRC_API_KEY_USERNAME', variable: 'METRC_API_KEY_USERNAME'),
                         string(credentialsId: 'METRC_API_KEY_PASSWORD', variable: 'METRC_API_KEY_PASSWORD'),
                         string(credentialsId: 'PAYPAL_CLIENT_ID', variable: 'PAYPAL_CLIENT_ID'),
-                        string(credentialsId: 'PAYPAL_CLIENT_SECRET', variable: 'PAYPAL_CLIENT_SECRET'),
-                        string(credentialsId: 'ANTHROPIC_API_KEY', variable: 'ANTHROPIC_API_KEY'),
-                        
-                        // Database credentials
-                        string(credentialsId: 'DB_PASSWORD', variable: 'DB_PASSWORD'),
-                        string(credentialsId: 'POSTGRE_TEST_DB_PASSWORD', variable: 'POSTGRE_TEST_DB_PASSWORD'),
-                        string(credentialsId: 'POSTGRE_PROD_DB_PASSWORD', variable: 'POSTGRE_PROD_DB_PASSWORD'),
-                        string(credentialsId: 'POSTGRE_ALPHA_DB_PASSWORD', variable: 'POSTGRE_ALPHA_DB_PASSWORD'),
-                        
-                        // Digital Ocean credentials
+                        string(credentialsId: 'PAYPAL_CLIENT_SECRET', variable: 'PAYPAL_CLIENT_SECRET')
+                    ]) {
+                        dir('inventory') {
+                            sh "sed -i 's|^metrc\\.api-key-username=.*|metrc.api-key-username=${METRC_API_KEY_USERNAME}|' src/main/resources/application.properties"
+                            sh "sed -i 's|^metrc\\.api-key-password=.*|metrc.api-key-password=${METRC_API_KEY_PASSWORD}|' src/main/resources/application.properties"
+                            sh "sed -i 's|^paypal\\.client-id=.*|paypal.client-id=${PAYPAL_CLIENT_ID}|' src/main/resources/application.properties"
+                            sh "sed -i 's|^paypal\\.client-secret=.*|paypal.client-secret=${PAYPAL_CLIENT_SECRET}|' src/main/resources/application.properties"
+
+                            if (params.PAYPAL_ENVIRONMENT) {
+                                sh "sed -i 's/^paypal\\.environment=.*/paypal.environment=${params.PAYPAL_ENVIRONMENT}/' src/main/resources/application.properties"
+                            }
+                            if (params.PAYPAL_BRAND_NAME) {
+                                sh "sed -i 's/^paypal\\.brand-name=.*/paypal.brand-name=${params.PAYPAL_BRAND_NAME}/' src/main/resources/application.properties"
+                            }
+
+                            if (params.METRC_MCP_FILE_PATH) {
+                                sh "sed -i 's|^metrc\\.mcp\\.dxtPath=.*|metrc.mcp.dxtPath=${params.METRC_MCP_FILE_PATH}|' src/main/resources/application.properties"
+                            }
+                            sh "sed -i 's|^metrc\\.mcp\\.url=.*|metrc.mcp.url=${env.BASE_QR_DOMAIN}/api/mcp|' src/main/resources/application.properties"
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Update Wallet Configuration') {
+            steps {
+                script {
+                    dir('inventory') {
+                        if (params.WALLET_BRAND) {
+                            sh "sed -i 's/^wallet\\.brand\\.organizationName=.*/wallet.brand.organizationName=${params.WALLET_BRAND}/' src/main/resources/application.properties"
+                        }
+                        if (params.WALLET_BRAND_PROGRAM) {
+                            sh "sed -i 's/^wallet\\.brand\\.programName=.*/wallet.brand.programName=${params.WALLET_BRAND_PROGRAM}/' src/main/resources/application.properties"
+                        }
+                        if (params.WALLET_GOOGLE_SERVICE_ACC_KEY_PATH) {
+                            sh "sed -i 's|^wallet\\.google\\.serviceAccountKeyPath=.*|wallet.google.serviceAccountKeyPath=${params.WALLET_GOOGLE_SERVICE_ACC_KEY_PATH}|' src/main/resources/application.properties"
+                        }
+                        if (params.WALLET_GOOGLE_ISSUER_ID) {
+                            sh "sed -i 's/^wallet\\.google\\.issuerId=.*/wallet.google.issuerId=${params.WALLET_GOOGLE_ISSUER_ID}/' src/main/resources/application.properties"
+                        }
+                        if (params.WALLET_GOOGLE_CLASS_ID) {
+                            sh "sed -i 's/^wallet\\.google\\.classId=.*/wallet.google.classId=${params.WALLET_GOOGLE_CLASS_ID}/' src/main/resources/application.properties"
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Update Infrastructure Properties') {
+            steps {
+                script {
+                    withCredentials([
                         string(credentialsId: 'DO_API_TOKEN', variable: 'DO_API_TOKEN'),
                         string(credentialsId: 'DO_LB_IP', variable: 'DO_LB_IP'),
                         string(credentialsId: 'SANDBOX_POSTGRESQL_PUBLIC_USER', variable: 'SANDBOX_POSTGRESQL_PUBLIC_USER'),
                         string(credentialsId: 'SANDBOX_POSTGRESQL_PUBLIC_URI', variable: 'SANDBOX_POSTGRESQL_PUBLIC_URI'),
                         string(credentialsId: 'SANDBOX_POSTGRESQL_PASSWORD', variable: 'SANDBOX_POSTGRESQL_PASSWORD'),
-                        
-                        // Jenkins credentials
                         string(credentialsId: 'JENKINS_USERNAME', variable: 'JENKINS_USERNAME'),
-                        string(credentialsId: 'JENKINS_API_TOKEN', variable: 'JENKINS_API_TOKEN'),
-
-                        // Kubernetes config file
-                        file(credentialsId: 'KUBECONFIG_PATH', variable: 'KUBECONFIG_FILE')
+                        string(credentialsId: 'JENKINS_API_TOKEN', variable: 'JENKINS_API_TOKEN')
                     ]) {
-                        // Log credentials being used (without exposing actual values)
-                        echo "=========================================="
-                        echo "CREDENTIALS BEING USED (IDs only for security)"
-                        echo "=========================================="
-                        echo ""
-                        
-                        echo "🔐 API KEYS AND SECRETS:"
-                        echo "  TWILIO_API_USER: [CREDENTIAL ID: TWILIO_API_USER]"
-                        echo "  TWILIO_API_PASSWORD: [CREDENTIAL ID: TWILIO_API_PASSWORD]"
-                        echo "  SENDGRID_API_KEY: [CREDENTIAL ID: SENDGRID_API_KEY]"
-                        echo "  JWT_SECRET_KEY: [CREDENTIAL ID: JWT_SECRET_KEY]"
-                        echo "  METRC_API_KEY_USERNAME: [CREDENTIAL ID: METRC_API_KEY_USERNAME]"
-                        echo "  METRC_API_KEY_PASSWORD: [CREDENTIAL ID: METRC_API_KEY_PASSWORD]"
-                        echo "  PAYPAL_CLIENT_ID: [CREDENTIAL ID: PAYPAL_CLIENT_ID]"
-                        echo "  PAYPAL_CLIENT_SECRET: [CREDENTIAL ID: PAYPAL_CLIENT_SECRET]"
-                        echo "  ANTHROPIC_API_KEY: [CREDENTIAL ID: ANTHROPIC_API_KEY]"
-                        echo ""
-                        
-                        echo "🗄️ DATABASE CREDENTIALS:"
-                        echo "  DB_PASSWORD: [CREDENTIAL ID: DB_PASSWORD]"
-                        echo "  POSTGRE_TEST_DB_PASSWORD: [CREDENTIAL ID: POSTGRE_TEST_DB_PASSWORD]"
-                        echo "  POSTGRE_PROD_DB_PASSWORD: [CREDENTIAL ID: POSTGRE_PROD_DB_PASSWORD]"
-                        echo "  POSTGRE_ALPHA_DB_PASSWORD: [CREDENTIAL ID: POSTGRE_ALPHA_DB_PASSWORD]"
-                        echo "  SANDBOX_POSTGRESQL_PUBLIC_USER: [CREDENTIAL ID: SANDBOX_POSTGRESQL_PUBLIC_USER]"
-                        echo "  SANDBOX_POSTGRESQL_PUBLIC_URI: [CREDENTIAL ID: SANDBOX_POSTGRESQL_PUBLIC_URI]"
-                        echo "  SANDBOX_POSTGRESQL_PASSWORD: [CREDENTIAL ID: SANDBOX_POSTGRESQL_PASSWORD]"
-                        echo ""
-                        
-                        echo "🌐 DIGITALOCEAN CREDENTIALS:"
-                        echo "  DO_API_TOKEN: [CREDENTIAL ID: DO_API_TOKEN]"
-                        echo "  DO_LB_IP: [CREDENTIAL ID: DO_LB_IP]"
-                        echo ""
-                        
-                        echo "🔧 JENKINS CREDENTIALS:"
-                        echo "  JENKINS_USERNAME: [CREDENTIAL ID: JENKINS_USERNAME]"
-                        echo "  JENKINS_API_TOKEN: [CREDENTIAL ID: JENKINS_API_TOKEN]"
-                        echo ""
-                        
-                        echo "☸️ KUBERNETES CONFIGURATION:"
-                        echo "  KUBECONFIG_PATH: [CREDENTIAL ID: KUBECONFIG_PATH]"
-                        echo ""
-                        
-                        echo "=========================================="
-                        echo "END OF CREDENTIALS LOG"
-                        echo "=========================================="
-                        
                         dir('inventory') {
-                            // Copy kubeconfig to a writable location and update the path in application.properties
-                            // Create kubeconfig from string content
-                            sh "mkdir -p kubeconfig"
-                            sh "cp ${KUBECONFIG_FILE} kubeconfig/tulip-sandbox-kubeconfig.yaml"
-                            sh "chmod 600 kubeconfig/tulip-sandbox-kubeconfig.yaml"
+                            // Digital Ocean configuration
+                            sh "sed -i 's|^digitalocean\\.api\\.token=.*|digitalocean.api.token=${DO_API_TOKEN}|' src/main/resources/application.properties"
+                            sh "sed -i 's|^digitalocean\\.domain=.*|digitalocean.domain=${params.DO_DOMAIN}|' src/main/resources/application.properties"
+                            sh "sed -i 's|^digitalocean\\.target\\.loadbalancer=.*|digitalocean.target.loadbalancer=${DO_LB_IP}|' src/main/resources/application.properties"
+                            sh "sed -i 's|^digitalocean\\.postgresql\\.username=.*|digitalocean.postgresql.username=${SANDBOX_POSTGRESQL_PUBLIC_USER}|' src/main/resources/application.properties"
+                            sh "sed -i 's|^digitalocean\\.postgresql\\.password=.*|digitalocean.postgresql.password=${SANDBOX_POSTGRESQL_PASSWORD}|' src/main/resources/application.properties"
+                            sh "sed -i 's|^digitalocean\\.postgresql\\.uri=.*|digitalocean.postgresql.uri=${SANDBOX_POSTGRESQL_PUBLIC_URI}|' src/main/resources/application.properties"
 
-                             // Construct BASE_QR_DOMAIN from tenant name and DO domain
-                             def baseQrDomain = "https://${params.TENANT_NAME}.${params.DO_DOMAIN}"
-                             echo "Constructed BASE_QR_DOMAIN: ${baseQrDomain}"
-                             
-                             // Construct Kubernetes namespace from tenant name (same logic as Java code)
-                             def k8sNamespace = params.K8S_NAMESPACE ?: "tenant-${params.TENANT_NAME.toLowerCase().replaceAll('[^a-z0-9-]', '-')}"
-                             echo "Using Kubernetes namespace: ${k8sNamespace}"
-                             
-                             // Log all dynamic values being used
-                             echo "=========================================="
-                             echo "DYNAMIC VALUES CALCULATED DURING BUILD"
-                             echo "=========================================="
-                             echo ""
-                             echo "🌐 DYNAMIC DOMAIN CONFIGURATION:"
-                             echo "  BASE_QR_DOMAIN: ${baseQrDomain}"
-                             echo "  METRC_MCP_URI: ${baseQrDomain}/api/mcp"
-                             echo ""
-                             echo "☸️ KUBERNETES CONFIGURATION:"
-                             echo "  K8S_NAMESPACE: ${k8sNamespace}"
-                             echo ""
-                             echo "=========================================="
-                             echo "END OF DYNAMIC VALUES LOG"
-                             echo "=========================================="
-                             
-                             // Update application.properties with all parameters
-                             // Basic application settings
-                             if (params.ENVIRONMENT_NAME) {
-                                 sh "sed -i 's/^spring\\.profiles\\.active=.*/spring.profiles.active=${params.ENVIRONMENT_NAME}/' src/main/resources/application.properties"
-                             }
-                             if (params.LOAD_REF_DATA) {
-                                 sh "sed -i 's/^load\\.ref\\.data=.*/load.ref.data=${params.LOAD_REF_DATA}/' src/main/resources/application.properties"
-                             }
-                             if (params.TAX_PERCENTAGE) {
-                                 sh "sed -i 's/^tax\\.percentage=.*/tax.percentage=${params.TAX_PERCENTAGE}/' src/main/resources/application.properties"
-                             }
-                             sh "sed -i 's|^base\\.qr\\.domain=.*|base.qr.domain=${baseQrDomain}|' src/main/resources/application.properties"
-                             if (params.MAX_FILE_SIZE) {
-                                 sh "sed -i 's/^spring\\.servlet\\.multipart\\.max-file-size=.*/spring.servlet.multipart.max-file-size=${params.MAX_FILE_SIZE}/' src/main/resources/application.properties"
-                             }
-                             if (params.MAX_REQ_SIZE) {
-                                 sh "sed -i 's/^spring\\.servlet\\.multipart\\.max-request-size=.*/spring.servlet.multipart.max-request-size=${params.MAX_REQ_SIZE}/' src/main/resources/application.properties"
-                             }
-                             
-                             // Database settings
-                             sh "sed -i 's|^spring\\.datasource\\.url=.*|spring.datasource.url=${params.DB_URI}/defaultdb?currentSchema=tenant_${params.TENANT_NAME}&sslmode=require|' src/main/resources/application.properties"
-                             sh "echo 'Updated DB_URI: ${params.DB_URI}/defaultdb?currentSchema=tenant_${params.TENANT_NAME}&sslmode=require'"
-                             if (params.DB_DRIVER_CLASS_NAME) {
-                                 sh "sed -i 's/^spring\\.datasource\\.driver-class-name=.*/spring.datasource.driver-class-name=${params.DB_DRIVER_CLASS_NAME}/' src/main/resources/application.properties"
-                             }
-                             if (params.DB_JPA_DATABASE_PLATFORM) {
-                                 sh "sed -i 's/^spring\\.jpa\\.database-platform=.*/spring.jpa.database-platform=${params.DB_JPA_DATABASE_PLATFORM}/' src/main/resources/application.properties"
-                             }
-                             if (params.DB_JPA_HIBERNATE_DIALECT) {
-                                 sh "sed -i 's/^spring\\.jpa\\.properties\\.hibernate\\.dialect=.*/spring.jpa.properties.hibernate.dialect=${params.DB_JPA_HIBERNATE_DIALECT}/' src/main/resources/application.properties"
-                             }
-                            sh "sed -i 's/^spring\\.datasource\\.username=.*/spring.datasource.username=${SANDBOX_POSTGRESQL_PUBLIC_USER}/' src/main/resources/application.properties"
-                            sh "sed -i 's/^spring\\.datasource\\.password=.*/spring.datasource.password=${SANDBOX_POSTGRESQL_PASSWORD}/' src/main/resources/application.properties"
-                            sh "sed -i 's/^spring\\.jpa\\.properties\\.hibernate\\.default_schema=.*/spring.jpa.properties.hibernate.default_schema=${params.TENANT_NAME}/' src/main/resources/application.properties"
+                            // Jenkins configuration
+                            sh "sed -i 's|^jenkins\\.username=.*|jenkins.username=${JENKINS_USERNAME}|' src/main/resources/application.properties"
+                            sh "sed -i 's|^jenkins\\.token=.*|jenkins.token=${JENKINS_API_TOKEN}|' src/main/resources/application.properties"
 
-                             if (params.SPRING_DATABASE_ACTION) {
-                                 sh "sed -i 's/^spring\\.jpa\\.hibernate\\.ddl-auto=.*/spring.jpa.hibernate.ddl-auto=${params.SPRING_DATABASE_ACTION}/' src/main/resources/application.properties"
-                             }
-                             if (params.DB_H2_CONSOLE_ENABLED) {
-                                 sh "sed -i 's/^spring\\.h2\\.console\\.enabled=.*/spring.h2.console.enabled=${params.DB_H2_CONSOLE_ENABLED}/' src/main/resources/application.properties"
-                             }
-                             if (params.DB_H2_WEB_ALLOWOTHERS) {
-                                 sh "sed -i 's/^spring\\.h2\\.console\\.settings\\.web-allow-others=.*/spring.h2.console.settings.web-allow-others=${params.DB_H2_WEB_ALLOWOTHERS}/' src/main/resources/application.properties"
-                             }
-                             
-                             // API Keys and Secrets
-                             sh "sed -i 's|^twilio\\.api\\.username=.*|twilio.api.username=${TWILIO_API_USER}|' src/main/resources/application.properties"
-                             sh "sed -i 's|^twilio\\.api\\.password=.*|twilio.api.password=${TWILIO_API_PASSWORD}|' src/main/resources/application.properties"
-                             sh "sed -i 's|^sendgrid\\.api\\.key=.*|sendgrid.api.key=${SENDGRID_API_KEY}|' src/main/resources/application.properties"
-                             sh "sed -i 's|^security\\.jwt\\.token\\.secret-key=.*|security.jwt.token.secret-key=${JWT_SECRET_KEY}|' src/main/resources/application.properties"
-                             sh "sed -i 's|^metrc\\.api-key-username=.*|metrc.api-key-username=${METRC_API_KEY_USERNAME}|' src/main/resources/application.properties"
-                             sh "sed -i 's|^metrc\\.api-key-password=.*|metrc.api-key-password=${METRC_API_KEY_PASSWORD}|' src/main/resources/application.properties"
-                             sh "sed -i 's|^paypal\\.client-id=.*|paypal.client-id=${PAYPAL_CLIENT_ID}|' src/main/resources/application.properties"
-                             sh "sed -i 's|^paypal\\.client-secret=.*|paypal.client-secret=${PAYPAL_CLIENT_SECRET}|' src/main/resources/application.properties"
-                             sh "sed -i 's|^anthropic\\.apiKey=.*|anthropic.apiKey=${ANTHROPIC_API_KEY}|' src/main/resources/application.properties"
-                             
-                             // PayPal configuration
-                             if (params.PAYPAL_ENVIRONMENT) {
-                                 sh "sed -i 's/^paypal\\.environment=.*/paypal.environment=${params.PAYPAL_ENVIRONMENT}/' src/main/resources/application.properties"
-                             }
-                             if (params.PAYPAL_BRAND_NAME) {
-                                 sh "sed -i 's/^paypal\\.brand-name=.*/paypal.brand-name=${params.PAYPAL_BRAND_NAME}/' src/main/resources/application.properties"
-                             }
-                             
-                             // Wallet configuration
-                             if (params.WALLET_BRAND) {
-                                 sh "sed -i 's/^wallet\\.brand\\.organizationName=.*/wallet.brand.organizationName=${params.WALLET_BRAND}/' src/main/resources/application.properties"
-                             }
-                             if (params.WALLET_BRAND_PROGRAM) {
-                                 sh "sed -i 's/^wallet\\.brand\\.programName=.*/wallet.brand.programName=${params.WALLET_BRAND_PROGRAM}/' src/main/resources/application.properties"
-                             }
-                             if (params.WALLET_GOOGLE_SERVICE_ACC_KEY_PATH) {
-                                 sh "sed -i 's|^wallet\\.google\\.serviceAccountKeyPath=.*|wallet.google.serviceAccountKeyPath=${params.WALLET_GOOGLE_SERVICE_ACC_KEY_PATH}|' src/main/resources/application.properties"
-                             }
-                             if (params.WALLET_GOOGLE_ISSUER_ID) {
-                                 sh "sed -i 's/^wallet\\.google\\.issuerId=.*/wallet.google.issuerId=${params.WALLET_GOOGLE_ISSUER_ID}/' src/main/resources/application.properties"
-                             }
-                             if (params.WALLET_GOOGLE_CLASS_ID) {
-                                 sh "sed -i 's/^wallet\\.google\\.classId=.*/wallet.google.classId=${params.WALLET_GOOGLE_CLASS_ID}/' src/main/resources/application.properties"
-                             }
-                             
-                             // METRC configuration
-                             if (params.METRC_MCP_FILE_PATH) {
-                                 sh "sed -i 's|^metrc\\.mcp\\.dxtPath=.*|metrc.mcp.dxtPath=${params.METRC_MCP_FILE_PATH}|' src/main/resources/application.properties"
-                             }
-                             sh "sed -i 's|^metrc\\.mcp\\.url=.*|metrc.mcp.url=${baseQrDomain}/api/mcp|' src/main/resources/application.properties"
-                             
-                             // Digital Ocean configuration
-                             sh "sed -i 's|^digitalocean\\.api\\.token=.*|digitalocean.api.token=${DO_API_TOKEN}|' src/main/resources/application.properties"
-                             sh "sed -i 's|^digitalocean\\.domain=.*|digitalocean.domain=${params.DO_DOMAIN}|' src/main/resources/application.properties"
-                             sh "sed -i 's|^digitalocean\\.target\\.loadbalancer=.*|digitalocean.target.loadbalancer=${DO_LB_IP}|' src/main/resources/application.properties"
-                             sh "sed -i 's|^digitalocean\\.postgresql\\.username=.*|digitalocean.postgresql.username=${SANDBOX_POSTGRESQL_PUBLIC_USER}|' src/main/resources/application.properties"
-                             sh "sed -i 's|^digitalocean\\.postgresql\\.password=.*|digitalocean.postgresql.password=${SANDBOX_POSTGRESQL_PASSWORD}|' src/main/resources/application.properties"
-                             sh "sed -i 's|^digitalocean\\.postgresql\\.uri=.*|digitalocean.postgresql.uri=${SANDBOX_POSTGRESQL_PUBLIC_URI}|' src/main/resources/application.properties"
-                             
-                             // Jenkins configuration
-                             sh "sed -i 's|^jenkins\\.username=.*|jenkins.username=${JENKINS_USERNAME}|' src/main/resources/application.properties"
-                             sh "sed -i 's|^jenkins\\.token=.*|jenkins.token=${JENKINS_API_TOKEN}|' src/main/resources/application.properties"
-                             
-                             // Update kubeconfig path to point to the copied file
-                            echo "Updating kubernetes.kubeconfig.path to: file:/app/kubeconfig/tulip-sandbox-kubeconfig.yaml"
-
-                             sh "sed -i 's|^kubernetes\\.kubeconfig\\.path=.*|kubernetes.kubeconfig.path=file:/app/kubeconfig/tulip-sandbox-kubeconfig.yaml|' src/main/resources/application.properties"
-                             
-                             // Verify the kubeconfig file exists
-                             sh """
-                                 if [ -f "kubeconfig/tulip-sandbox-kubeconfig.yaml" ]; then
-                                     echo "Kubeconfig file verified: kubeconfig/tulip-sandbox-kubeconfig.yaml"
-                                 else
-                                     echo "ERROR: Kubeconfig file not found at expected location"
-                                     echo "Current directory contents:"
-                                     ls -la
-                                     echo "Kubeconfig directory contents:"
-                                     ls -la kubeconfig/ || echo "Kubeconfig directory does not exist"
-                                     exit 1
-                                 fi
-                             """
+                            // Update kubeconfig path
+                            sh "sed -i 's|^kubernetes\\.kubeconfig\\.path=.*|kubernetes.kubeconfig.path=file:/app/kubeconfig/tulip-sandbox-kubeconfig.yaml|' src/main/resources/application.properties"
 
                             sh """
                                 echo "=== SCHEMA CONFIGURATION VERIFICATION ==="
