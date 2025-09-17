@@ -30,7 +30,7 @@ pipeline {
                     // Copy artifacts from the build job
                     copyArtifacts(
                         projectName: params.BUILD_JOB_NAME,
-                        selector: specific(params.BUILD_NUMBER),
+                        selector: params.BUILD_NUMBER,
                         filter: 'build-artifacts.properties'
                     )
 
