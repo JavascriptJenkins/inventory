@@ -55,6 +55,10 @@ pipeline {
         string(name: 'REQUEST_LOGGING_DEVICE_INFO', defaultValue: 'true', description: 'Log device info')
         string(name: 'REQUEST_LOGGING_SESSION_INFO', defaultValue: 'true', description: 'Log session info')
         string(name: 'REQUEST_LOGGING_SECURITY_INFO', defaultValue: 'false', description: 'Log security info')
+
+        // Additional parameters for deployment
+        string(name: 'K8S_NAMESPACE', defaultValue: '', description: 'Kubernetes namespace for deployment')
+        string(name: 'DO_LOADBALANCER_ID', defaultValue: '', description: 'DigitalOcean Load Balancer ID')
     }
 
     stages {
@@ -379,7 +383,7 @@ pipeline {
                     echo "DOCKER BUILD INFORMATION"
                     echo "=========================================="
                     echo ""
-                    echo "🐳 DOCKER CONFIGURATION:"
+                    echo "ðŸ³ DOCKER CONFIGURATION:"
                     echo "  DOCKER_USER: ${params.DOCKER_USER}"
                     echo "  TENANT_NAME: ${params.TENANT_NAME}"
                     echo "  APP_NAME: ${params.APP_NAME}"
@@ -478,10 +482,8 @@ BUILD_TIMESTAMP=${new Date().format('yyyy-MM-dd HH:mm:ss')}
                 }
             }
         }
-    }
 
-
-    stage('Trigger Deployment') {
+        stage('Trigger Deployment') {
             when {
                 expression { params.TENANT_NAME != '' && params.DO_DOMAIN != '' }
             }
