@@ -390,13 +390,9 @@ spec:
                         sh """
                             export KUBECONFIG="\$KCFG"
 
-                            # Create dummy photo directory structure for demonstration
-                            mkdir -p temp-uploads/photos
-                            echo "Photo files would be copied here" > temp-uploads/photos/README.txt
-
-                            echo "Copying photo files..."
+                            echo "Copying photo files from inventory/uploads/photos..."
                             kubectl exec file-copy-pod-${env.TENANT_NAME} -n ${env.K8S_NAMESPACE} -- mkdir -p /uploads/photos
-                            kubectl cp temp-uploads/photos/. ${env.K8S_NAMESPACE}/file-copy-pod-${env.TENANT_NAME}:/uploads/photos/
+                            kubectl cp inventory/uploads/photos/. ${env.K8S_NAMESPACE}/file-copy-pod-${env.TENANT_NAME}:/uploads/photos/
                             echo "Photo files copied successfully"
                         """
                     }
