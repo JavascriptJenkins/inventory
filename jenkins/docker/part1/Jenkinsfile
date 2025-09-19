@@ -364,6 +364,36 @@ pipeline {
             }
         }
 
+        stage('Replace Localhost URLs') {
+            steps {
+                script {
+                    dir('inventory') {
+                        // Build the base URL for the tenant
+                        def baseUrl = "https://${params.TENANT_NAME}.${params.DO_DOMAIN}"
+                        
+                        echo "Replacing localhost:8080 URLs with: ${baseUrl}"
+                        
+                        // Find all files in src/main/java and src/main/resources and replace occurrences
+                        sh """
+                            find src/main/java src/main/resources -type f -exec sed -i 's|http://localhost:8080|${baseUrl}|g' {} +
+                        """
+                        
+                        // Update the local METRC MCP connector file with the actual domain
+                        sh """
+                            if [ -f "uploads/mcp/local-metrcdocs-connector.dxt" ]; then
+                                sed -i 's|"url": "http://localhost:8080/api/mcp"|"url": "${baseUrl}/api/mcp"|g' uploads/mcp/local-metrcdocs-connector.dxt
+                                echo "Updated local-metrcdocs-connector.dxt with domain: ${baseUrl}"
+                            else
+                                echo "Warning: local-metrcdocs-connector.dxt not found in uploads/mcp/"
+                            fi
+                        """
+                        
+                        echo "URL replacement completed successfully"
+                    }
+                }
+            }
+        }
+
         stage('Build Application') {
             steps {
                 dir('inventory') {
