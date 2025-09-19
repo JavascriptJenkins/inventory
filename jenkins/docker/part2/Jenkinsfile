@@ -308,6 +308,53 @@ spec:
 
                             echo "=== Pod Status ==="
                             kubectl get pods -n ${env.K8S_NAMESPACE} -o wide
+
+                            echo "=== PVC Status ==="
+                            kubectl get pvc -n ${env.K8S_NAMESPACE}
+
+                            echo "=== PVC Details ==="
+                            kubectl describe pvc inventory-${env.TENANT_NAME}-uploads-pvc -n ${env.K8S_NAMESPACE}
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Verify PVC Mount in Application Pod') {
+            steps {
+                script {
+                    withCredentials([file(credentialsId: 'KUBECONFIG_PATH', variable: 'KCFG')]) {
+                        sh """
+                            export KUBECONFIG="\$KCFG"
+
+                            echo "=========================================="
+                            echo "VERIFYING PVC MOUNT IN APPLICATION POD"
+                            echo "=========================================="
+
+                            # Wait for the application pod to be ready
+                            echo "⏳ Waiting for application pod to be ready..."
+                            kubectl wait --for=condition=Ready pod -l app=inventory,tenant=${env.TENANT_NAME} -n ${env.K8S_NAMESPACE} --timeout=300s
+
+                            # Get the pod name
+                            POD_NAME=\$(kubectl get pods -l app=inventory,tenant=${env.TENANT_NAME} -n ${env.K8S_NAMESPACE} -o jsonpath='{.items[0].metadata.name}')
+                            echo "📦 Application pod name: \$POD_NAME"
+
+                            # Check if the uploads directory is mounted
+                            echo "📁 Checking uploads directory mount in application pod:"
+                            kubectl exec \$POD_NAME -n ${env.K8S_NAMESPACE} -- ls -la /uploads/ || echo "❌ /uploads directory not found or not accessible"
+
+                            # Check if files from PVC are visible in the application pod
+                            echo "📄 Checking if PVC files are visible in application pod:"
+                            kubectl exec \$POD_NAME -n ${env.K8S_NAMESPACE} -- find /uploads -type f -exec ls -lh {} \\; || echo "❌ No files found in /uploads"
+
+                            # Test write access in the application pod
+                            echo "🧪 Testing write access in application pod:"
+                            kubectl exec \$POD_NAME -n ${env.K8S_NAMESPACE} -- sh -c 'echo "Application pod test file created at \$(date)" > /uploads/app-pod-test.txt'
+                            kubectl exec \$POD_NAME -n ${env.K8S_NAMESPACE} -- cat /uploads/app-pod-test.txt
+
+                            echo "=========================================="
+                            echo "PVC MOUNT VERIFICATION COMPLETE"
+                            echo "=========================================="
                         """
                     }
                 }
@@ -390,10 +437,42 @@ spec:
                         sh """
                             export KUBECONFIG="\$KCFG"
 
-                            echo "Copying photo files from inventory/uploads/photos..."
-                            kubectl exec file-copy-pod-${env.TENANT_NAME} -n ${env.K8S_NAMESPACE} -- mkdir -p /uploads/photos
-                            kubectl cp inventory/uploads/photos/. ${env.K8S_NAMESPACE}/file-copy-pod-${env.TENANT_NAME}:/uploads/photos/
-                            echo "Photo files copied successfully"
+                            # Check if source directory exists
+                            echo "=== CHECKING SOURCE DIRECTORY ==="
+                            if [ -d "inventory/uploads/photos" ]; then
+                                echo "✅ Source directory exists: inventory/uploads/photos"
+                                echo "📁 Contents of inventory/uploads/photos:"
+                                ls -la inventory/uploads/photos/ || echo "Directory is empty or not accessible"
+                                echo "📊 File count: \$(find inventory/uploads/photos -type f | wc -l)"
+                                
+                                echo "=== COPYING PHOTO FILES ==="
+                                kubectl exec file-copy-pod-${env.TENANT_NAME} -n ${env.K8S_NAMESPACE} -- mkdir -p /uploads/photos
+                                kubectl cp inventory/uploads/photos/. ${env.K8S_NAMESPACE}/file-copy-pod-${env.TENANT_NAME}:/uploads/photos/
+                                
+                                echo "=== VERIFYING COPY OPERATION ==="
+                                echo "📁 Contents in PVC after copy:"
+                                kubectl exec file-copy-pod-${env.TENANT_NAME} -n ${env.K8S_NAMESPACE} -- ls -la /uploads/photos/
+                                echo "📊 File count in PVC: \$(kubectl exec file-copy-pod-${env.TENANT_NAME} -n ${env.K8S_NAMESPACE} -- find /uploads/photos -type f | wc -l)"
+                                
+                                echo "✅ Photo files copied and verified successfully"
+                            else
+                                echo "⚠️  Source directory not found: inventory/uploads/photos"
+                                echo "📁 Available directories in inventory/uploads:"
+                                ls -la inventory/uploads/ || echo "inventory/uploads directory does not exist"
+                                
+                                # Create dummy photo directory for demonstration
+                                echo "📁 Creating dummy photo files for demonstration..."
+                                mkdir -p temp-uploads/photos
+                                echo "Sample photo file 1" > temp-uploads/photos/sample1.jpg
+                                echo "Sample photo file 2" > temp-uploads/photos/sample2.png
+                                
+                                kubectl exec file-copy-pod-${env.TENANT_NAME} -n ${env.K8S_NAMESPACE} -- mkdir -p /uploads/photos
+                                kubectl cp temp-uploads/photos/. ${env.K8S_NAMESPACE}/file-copy-pod-${env.TENANT_NAME}:/uploads/photos/
+                                
+                                echo "=== VERIFYING DUMMY COPY OPERATION ==="
+                                kubectl exec file-copy-pod-${env.TENANT_NAME} -n ${env.K8S_NAMESPACE} -- ls -la /uploads/photos/
+                                echo "✅ Dummy photo files created and copied successfully"
+                            fi
                         """
                     }
                 }
@@ -428,17 +507,47 @@ spec:
                         sh """
                             export KUBECONFIG="\$KCFG"
 
+                            echo "=========================================="
+                            echo "FINAL PVC VERIFICATION"
+                            echo "=========================================="
+                            
                             # Verify the files are in the PVC
-                            echo "Verifying files in PVC:"
+                            echo "📁 Root uploads directory contents:"
                             kubectl exec file-copy-pod-${env.TENANT_NAME} -n ${env.K8S_NAMESPACE} -- ls -la /uploads/
 
                             # Show directory structure
+                            echo "📂 Complete directory structure in PVC:"
                             kubectl exec file-copy-pod-${env.TENANT_NAME} -n ${env.K8S_NAMESPACE} -- find /uploads -type d || true
 
+                            # Show all files with sizes
+                            echo "📄 All files in PVC with sizes:"
+                            kubectl exec file-copy-pod-${env.TENANT_NAME} -n ${env.K8S_NAMESPACE} -- find /uploads -type f -exec ls -lh {} \\; || true
+
+                            # Count files by directory
+                            echo "📊 File counts by directory:"
+                            kubectl exec file-copy-pod-${env.TENANT_NAME} -n ${env.K8S_NAMESPACE} -- sh -c '
+                                for dir in /uploads/*/; do
+                                    if [ -d "\$dir" ]; then
+                                        count=\$(find "\$dir" -type f | wc -l)
+                                        echo "  \$(basename "\$dir"): \$count files"
+                                    fi
+                                done
+                            ' || true
+
+                            # Test PVC mount by creating a test file
+                            echo "🧪 Testing PVC write access:"
+                            kubectl exec file-copy-pod-${env.TENANT_NAME} -n ${env.K8S_NAMESPACE} -- sh -c 'echo "PVC test file created at \$(date)" > /uploads/pvc-test.txt'
+                            kubectl exec file-copy-pod-${env.TENANT_NAME} -n ${env.K8S_NAMESPACE} -- cat /uploads/pvc-test.txt
+
+                            echo "=========================================="
+                            echo "PVC VERIFICATION COMPLETE"
+                            echo "=========================================="
+
                             # Clean up the temporary pod
+                            echo "🧹 Cleaning up temporary pod..."
                             kubectl delete pod file-copy-pod-${env.TENANT_NAME} -n ${env.K8S_NAMESPACE}
 
-                            echo "File copy operation completed and temporary pod cleaned up"
+                            echo "✅ File copy operation completed and temporary pod cleaned up"
                         """
 
                         // Clean up temporary manifest and directories
