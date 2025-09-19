@@ -1,15 +1,23 @@
 package com.techvvs.inventory.constants
 
 import org.apache.pdfbox.pdmodel.common.PDRectangle
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
 
 @Component
 class AppConstants {
 
+    @Autowired
+    Environment environment
+
     /* dir structure is /topdir/$batchnumber/$otherdirs */
 
-
-    public String UPLOAD_DIR_MEDIA = "./uploads/media/";
+    String getUPLOAD_DIR_MEDIA() {
+        String activeProfile = environment.getActiveProfiles().length > 0 ? 
+            environment.getActiveProfiles()[0] : "dev1"
+        return "dev1".equals(activeProfile) ? "./uploads/media/" : "/uploads/media/"
+    }
     public String UPLOAD_DIR_PRODUCT = "/product/";
     public String UPLOAD_DIR_PRODUCT_PRIMARY = "/primaryphoto/";
     public String UPLOAD_DIR_PRODUCT_VIDEOS = "/videos/";
@@ -18,10 +26,18 @@ class AppConstants {
     public String UPLOAD_DIR_IMAGES = "/image/images/";
 
     // todo: depricate this upload dir?
-    String UPLOAD_DIR = "./uploads/";
+    String getUPLOAD_DIR() {
+        String activeProfile = environment.getActiveProfiles().length > 0 ? 
+            environment.getActiveProfiles()[0] : "dev1"
+        return "dev1".equals(activeProfile) ? "./uploads/" : "/uploads/"
+    }
 
     // move to filesystemconstants
-    String PARENT_LEVEL_DIR = "./topdir/"
+    String getPARENT_LEVEL_DIR() {
+        String activeProfile = environment.getActiveProfiles().length > 0 ? 
+            environment.getActiveProfiles()[0] : "dev1"
+        return "dev1".equals(activeProfile) ? "./topdir/" : "/topdir/"
+    }
 
     String TRANSACTION_INVOICE_DIR = "/transaction/invoice/"
     String PACKAGE_DIR = "/package/"

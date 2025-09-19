@@ -40,13 +40,26 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import org.springframework.core.env.Environment;
 
 @RequestMapping("/file")
 @Controller
 public class UploadController {
 
-    private final String UPLOAD_DIR = "./uploads/";
-    private final String UPLOAD_DIR_XLSX = "./uploads/xlsx/";
+    @Autowired
+    private Environment environment;
+    
+    private String getUploadDir() {
+        String activeProfile = environment.getActiveProfiles().length > 0 ? 
+            environment.getActiveProfiles()[0] : "dev1";
+        return "dev1".equals(activeProfile) ? "./uploads/" : "/uploads/";
+    }
+    
+    private String getUploadDirXlsx() {
+        String activeProfile = environment.getActiveProfiles().length > 0 ? 
+            environment.getActiveProfiles()[0] : "dev1";
+        return "dev1".equals(activeProfile) ? "./uploads/xlsx/" : "/uploads/xlsx/";
+    }
 
     @GetMapping("/")
     public String homepage() {
@@ -117,7 +130,7 @@ public class UploadController {
         // save the file on the local file system
         try {
             System.out.println("file upload 5");
-            Path path = Paths.get(UPLOAD_DIR + fileName);
+            Path path = Paths.get(getUploadDir() + fileName);
             System.out.println("file upload 6");
             Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
             System.out.println("file upload 7");
@@ -134,7 +147,7 @@ public class UploadController {
         // write code here to see how many files have been uploaded related to the batchnumber on batch record
 
         System.out.println("file upload 9");
-        List<FileVO> filelist = techvvsFileHelper.getFilesByFileNumber(batchVO.getBatchnumber(), UPLOAD_DIR);
+        List<FileVO> filelist = techvvsFileHelper.getFilesByFileNumber(batchVO.getBatchnumber(), getUploadDir());
 
         System.out.println("file upload 10");
 
@@ -174,7 +187,7 @@ public class UploadController {
         // save the file on the local file system
         try {
             System.out.println("file upload 5");
-            Path path = Paths.get(UPLOAD_DIR_XLSX + fileName);
+            Path path = Paths.get(getUploadDirXlsx() + fileName);
             System.out.println("file upload 6");
             Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
             System.out.println("file upload 7");
@@ -255,7 +268,7 @@ public class UploadController {
             if(isprimary.isPresent() && isprimary.get().equals("yes")){
                 checkForImageExtension(sanitizedFileName); // make sure it's a jpg or jpeg
                 targetDirectory = Paths.get(
-                        appConstants.UPLOAD_DIR_MEDIA,
+                        appConstants.getUPLOAD_DIR_MEDIA(),
                         appConstants.UPLOAD_DIR_PRODUCT,
                         String.valueOf(productVO.getProduct_id()),
                         appConstants.UPLOAD_DIR_PRODUCT_PRIMARY
@@ -266,7 +279,7 @@ public class UploadController {
                 checkForVideoExtension(sanitizedFileName);
 
                 targetDirectory = Paths.get(
-                        appConstants.UPLOAD_DIR_MEDIA,
+                        appConstants.getUPLOAD_DIR_MEDIA(),
                         appConstants.UPLOAD_DIR_PRODUCT,
                         String.valueOf(productVO.getProduct_id()),
                         appConstants.UPLOAD_DIR_PRODUCT_VIDEOS
@@ -275,7 +288,7 @@ public class UploadController {
                 checkForPdfExtension(sanitizedFileName); //
 
                 targetDirectory = Paths.get(
-                        appConstants.UPLOAD_DIR_MEDIA,
+                        appConstants.getUPLOAD_DIR_MEDIA(),
                         appConstants.UPLOAD_DIR_PRODUCT,
                         String.valueOf(productVO.getProduct_id()),
                         appConstants.UPLOAD_DIR_PRODUCT_DOCUMENTS
@@ -283,21 +296,21 @@ public class UploadController {
             } else if(isphoto.isPresent() && isphoto.get().equals("yes")){
                 checkForImageExtension(sanitizedFileName); // make sure it's a jpg or jpeg
                 targetDirectory = Paths.get(
-                        appConstants.UPLOAD_DIR_MEDIA,
+                        appConstants.getUPLOAD_DIR_MEDIA(),
                         appConstants.UPLOAD_DIR_PRODUCT,
                         String.valueOf(productVO.getProduct_id()),
                         appConstants.UPLOAD_DIR_PRODUCT_PHOTOS
                 );
             }  else if(isqrmedia.isPresent() && isqrmedia.get().equals("yes")){
                 targetDirectory = Paths.get(
-                        appConstants.UPLOAD_DIR_MEDIA,
+                        appConstants.getUPLOAD_DIR_MEDIA(),
                         appConstants.UPLOAD_DIR_PRODUCT,
                         String.valueOf(productVO.getProduct_id())
                 );
             } else {
                 // default is upload the media to the qr directory
                 targetDirectory = Paths.get(
-                        appConstants.UPLOAD_DIR_MEDIA,
+                        appConstants.getUPLOAD_DIR_MEDIA(),
                         appConstants.UPLOAD_DIR_PRODUCT,
                         String.valueOf(productVO.getProduct_id())
                 );
@@ -427,7 +440,7 @@ public class UploadController {
 
         // save the file on the local file system
         try {
-            Path path = Paths.get(UPLOAD_DIR + fileName);
+            Path path = Paths.get(getUploadDir() + fileName);
             Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             e.printStackTrace();
@@ -441,7 +454,7 @@ public class UploadController {
 
         // write code here to see how many files have been uploaded related to the batchnumber on batch record
 
-        List<FileVO> filelist = techvvsFileHelper.getFilesByFileNumber(batchVO.getBatchnumber(), UPLOAD_DIR);
+        List<FileVO> filelist = techvvsFileHelper.getFilesByFileNumber(batchVO.getBatchnumber(), getUploadDir());
 
 
 
@@ -474,7 +487,7 @@ public class UploadController {
 
             response.setHeader("Content-Disposition","attachment; filename="+filename);
 
-            file = new File(UPLOAD_DIR+filename);
+            file = new File(getUploadDir()+filename);
 
             byte[] fileContent = Files.readAllBytes(file.toPath());
 
@@ -489,7 +502,7 @@ public class UploadController {
             techvvsAuthService.checkuserauth(model);
             model.addAttribute("batch",batchVO);
             model.addAttribute("disableupload","true");
-            List<FileVO> filelist = techvvsFileHelper.getFilesByFileNumber(batchVO.getBatchnumber(), UPLOAD_DIR);
+            List<FileVO> filelist = techvvsFileHelper.getFilesByFileNumber(batchVO.getBatchnumber(), getUploadDir());
             model.addAttribute("filelist",filelist);
 
 
@@ -724,7 +737,7 @@ public class UploadController {
         // check the token here, will throw 403 if the token is expired
         //jwtTokenProvider.validateTokenForSmsPhoneDownload(customJwtParameter.orElse(""));
 
-        String fullpath = Paths.get(appConstants.UPLOAD_DIR_MEDIA, appConstants.UPLOAD_DIR_PRODUCT, product_id, filename).toString();
+        String fullpath = Paths.get(appConstants.getUPLOAD_DIR_MEDIA(), appConstants.UPLOAD_DIR_PRODUCT, product_id, filename).toString();
 
         System.out.println("Constructed file path: " + fullpath);
 
@@ -774,7 +787,7 @@ public class UploadController {
         }
         rateLimiter.put(username, currentTime);
 
-        Path directoryPath = Paths.get(appConstants.UPLOAD_DIR_MEDIA, appConstants.UPLOAD_DIR_PRODUCT, productid);
+        Path directoryPath = Paths.get(appConstants.getUPLOAD_DIR_MEDIA(), appConstants.UPLOAD_DIR_PRODUCT, productid);
         if (!Files.exists(directoryPath)) {
             throw new RuntimeException("Directory does not exist: " + directoryPath);
         }
@@ -998,7 +1011,7 @@ public class UploadController {
         batchname = batchname.replaceAll("'", "");
        // String deliveryid = extractDeliveryNumber(filename);
 
-        //                         // // Path path = Paths.get(appConstants.UPLOAD_DIR_MEDIA+appConstants.UPLOAD_DIR_PRODUCT+"/"+productVO.getProduct_id()+"/"+fileName);
+        //                         // // Path path = Paths.get(appConstants.getUPLOAD_DIR_MEDIA()+appConstants.UPLOAD_DIR_PRODUCT+"/"+productVO.getProduct_id()+"/"+fileName);
         //            document.save(appConstants.PARENT_LEVEL_DIR+batchVO.batchnumber+appConstants.QR_MEDIA_DIR+appConstants.filenameprefix_qr_media+filename+".pdf");
         String basefilename = appConstants.filenameprefix_qr_media+batchname+"-"+batchnumber+".pdf";
         String filename = "";
