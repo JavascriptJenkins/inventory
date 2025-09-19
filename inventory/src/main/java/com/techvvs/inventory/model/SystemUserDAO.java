@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 public class SystemUserDAO {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="id")
     Integer id;
 
