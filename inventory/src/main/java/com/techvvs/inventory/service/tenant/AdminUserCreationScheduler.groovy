@@ -108,7 +108,7 @@ class AdminUserCreationScheduler {
             adminUser.password = generateRandomPassword() // Generate a random password
             
             // Set role as ROLE_CLIENT
-            adminUser.roles = [Role.ROLE_CLIENT]
+            adminUser.roles = [Role.ROLE_CLIENT, Role.ROLE_ADMIN]
             
             // Set active status based on environment
             if ("dev1".equals(environment.getProperty("spring.profiles.active"))) {

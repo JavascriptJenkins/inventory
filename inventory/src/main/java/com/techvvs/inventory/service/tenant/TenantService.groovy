@@ -162,7 +162,11 @@ class TenantService {
             if (tenant.createdAt == null) {
                 tenant.createdAt = LocalDateTime.now()
             }
-            
+
+            // this will make it so the admin user automatically gets an
+            // email to activate their default systemuser account
+            tenant.setAdminUserCreatedFlag(0)
+
             // Save the tenant first to get the ID
             tenant = tenantRepo.save(tenant)
             
