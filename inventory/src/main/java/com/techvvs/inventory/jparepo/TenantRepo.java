@@ -49,4 +49,8 @@ public interface TenantRepo extends JpaRepository<Tenant, UUID> {
     // Find tenant by both tenant name and domain name combination
     @Query("SELECT t FROM Tenant t WHERE t.tenantName = :tenantName AND t.domainName = :domainName")
     Optional<Tenant> findByTenantNameAndDomainName(@Param("tenantName") String tenantName, @Param("domainName") String domainName);
+
+    // Find tenants where admin user has not been created yet
+    @Query("SELECT t FROM Tenant t WHERE t.adminUserCreatedFlag = :adminUserCreatedFlag")
+    List<Tenant> findByAdminUserCreatedFlag(@Param("adminUserCreatedFlag") Integer adminUserCreatedFlag);
 }

@@ -4,6 +4,7 @@ import com.techvvs.inventory.constants.AppConstants
 import com.techvvs.inventory.jparepo.SystemUserRepo
 import com.techvvs.inventory.jparepo.TokenRepo
 import com.techvvs.inventory.model.SystemUserDAO
+import com.techvvs.inventory.model.Tenant
 import com.techvvs.inventory.model.TokenDAO
 import com.techvvs.inventory.security.CookieUtils
 import com.techvvs.inventory.security.JwtTokenProvider
@@ -533,6 +534,47 @@ class TechvvsAuthService {
         }    else {
             return null
         }
+
+    }
+
+
+    public void sendValidateEmailTokenForTenantAdmin(Tenant tenant) {
+
+
+
+            TokenDAO newToken = new TokenDAO();
+            //generate token and send email
+            newToken.setTokenused(0);
+            newToken.setUsermetadata(tenant.getBillingEmail());
+            newToken.setEmail(tenant.getBillingEmail());
+            newToken.setToken(String.valueOf(secureRandom.nextInt(1000000)));
+            newToken.setUpdatedtimestamp(LocalDateTime.now());
+            newToken.setCreatetimestamp(LocalDateTime.now());
+
+
+            try {
+                ArrayList<String> list = new ArrayList<String>(1);
+                list.add(newToken.getEmail());
+                StringBuilder sb = new StringBuilder();
+
+                List<Role> roles = new ArrayList<>(1);
+                roles.add(Role.ROLE_CLIENT);
+                String emailtoken = jwtTokenProvider.createTokenForEmailValidation(tenant.getBillingEmail(), roles);
+
+                sb.append("Verify your new account at https://");
+                sb.append(tenant.tenantName);
+                sb.append(".");
+                sb.append(tenant.domainName);
+                sb.append("/login/verify?customJwtParameter=" + emailtoken);
+
+                emailManager.generateAndSendEmail(sb.toString(), list, "Validate email for the admin billing email user new TECHVVS tenant");
+            } catch (Exception ex) {
+                System.out.println("error sending email");
+                System.out.println(ex.getMessage());
+
+            }
+
+
 
     }
 }

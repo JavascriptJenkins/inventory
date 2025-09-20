@@ -56,6 +56,10 @@ public class Tenant {
     @JsonProperty
     private Integer deleteFlag;
 
+    @Column(name = "admin_user_created_flag")
+    @JsonProperty
+    private Integer adminUserCreatedFlag;
+
     // One-to-many relationship with SystemUserDAO
     @OneToMany(mappedBy = "tenantEntity", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonProperty
@@ -83,6 +87,7 @@ public class Tenant {
         this.updateTimeStamp = LocalDateTime.now();
         this.deployflag = 0; // Default deploy flag to 0 (not deployed)
         this.deleteFlag = 0; // Default delete flag to 0 (not deleted)
+        this.adminUserCreatedFlag = 0; // Default admin user created flag to 0 (not created)
         // lastDeployed remains null by default
     }
 
@@ -174,6 +179,14 @@ public class Tenant {
 
     public void setDeleteFlag(Integer deleteFlag) {
         this.deleteFlag = deleteFlag;
+    }
+
+    public Integer getAdminUserCreatedFlag() {
+        return adminUserCreatedFlag;
+    }
+
+    public void setAdminUserCreatedFlag(Integer adminUserCreatedFlag) {
+        this.adminUserCreatedFlag = adminUserCreatedFlag;
     }
 
     public List<SystemUserDAO> getSystemUsers() {
@@ -284,6 +297,7 @@ public class Tenant {
                 ", billingEmail='" + billingEmail + '\'' +
                 ", deployflag=" + deployflag +
                 ", deleteFlag=" + deleteFlag +
+                ", adminUserCreatedFlag=" + adminUserCreatedFlag +
                 '}';
     }
 }
