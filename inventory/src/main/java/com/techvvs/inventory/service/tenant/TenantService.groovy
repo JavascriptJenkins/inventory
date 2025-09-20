@@ -415,6 +415,7 @@ class TenantService {
             
             // Set default values
             systemUser.setIsuseractive(1)
+            systemUser.setUiMode("MODERN")
             systemUser.setCreatetimestamp(LocalDateTime.now())
             systemUser.setUpdatedtimestamp(LocalDateTime.now())
             

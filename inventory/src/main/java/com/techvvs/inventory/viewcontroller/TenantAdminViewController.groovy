@@ -3,6 +3,7 @@ package com.techvvs.inventory.viewcontroller
 import com.techvvs.inventory.constants.MessageConstants
 import com.techvvs.inventory.jparepo.TenantRepo
 import com.techvvs.inventory.jparepo.TenantConfigRepo
+import com.techvvs.inventory.model.SystemUserDAO
 import com.techvvs.inventory.model.Tenant
 import com.techvvs.inventory.model.TenantConfig
 import com.techvvs.inventory.service.auth.TechvvsAuthService
@@ -339,9 +340,11 @@ public class TenantAdminViewController {
         
         try {
             UUID tenantUuid = UUID.fromString(tenantid)
-            tenantService.createSystemUserForTenant(tenantUuid, email, name)
-            model.addAttribute(MessageConstants.SUCCESS_MSG, "System user created successfully!")
-            
+            SystemUserDAO newuser = tenantService.createSystemUserForTenant(tenantUuid, email, name)
+            // send out magic login link here after SystemUser is created
+            boolean result = techvvsAuthService.sendMagicLoginLinkOverEmail(newuser);
+            model.addAttribute(MessageConstants.SUCCESS_MSG, "System user created successfully, magic link sent with status: "+result)
+
             // Reload the tenant and system users
             tenantService.getTenant(tenantUuid, model)
         } catch (IllegalArgumentException e) {
