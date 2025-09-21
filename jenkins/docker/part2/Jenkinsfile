@@ -996,8 +996,8 @@ spec:
                                             deploy_flag,
                                             delete_flag,
                                             admin_user_created_flag,
-                                            createTimeStamp,
-                                            updateTimeStamp,
+                                            create_time_stamp,
+                                            update_time_stamp,
                                             created_at
                                         ) VALUES (
                                             '${params.TENANT_UUID_ID}'::uuid,
