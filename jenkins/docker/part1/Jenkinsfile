@@ -531,58 +531,65 @@ BUILD_TIMESTAMP=${new Date().format('yyyy-MM-dd HH:mm:ss')}
                     echo "  Database: ${params.DB_NAME}"
                     echo "  Password: [FROM JENKINS CREDENTIAL]"
                     
-                    // Connect to PostgreSQL using the same method as delete Jenkins file
                     withCredentials([
+                        string(credentialsId: 'SANDBOX_POSTGRESQL_PUBLIC_USER', variable: 'SANDBOX_POSTGRESQL_PUBLIC_USER'),
                         string(credentialsId: 'SANDBOX_POSTGRESQL_PASSWORD', variable: 'SANDBOX_POSTGRESQL_PASSWORD')
                     ]) {
+                        echo "=========================================="
+                        echo "CREATING DATABASE SCHEMA"
+                        echo "=========================================="
+
+                        // Extract host and port from URI (EXACT same as delete file)
+                        def dbUri = params.SANDBOX_POSTGRESQL_URI.replace('jdbc:postgresql://', '')
+                        def hostPort = dbUri.split('/')[0]
+                        def host = hostPort.split(':')[0]
+                        def port = hostPort.split(':')[1]
+
+                        echo "Database connection details:"
+                        echo "  Host: ${host}"
+                        echo "  Port: ${port}"
+                        echo "  Username: ${SANDBOX_POSTGRESQL_PUBLIC_USER}"
+                        echo "  Schema to create: ${params.TENANT_NAME}"
+
                         sh """
-                            echo "Testing database connection..."
-                            echo "Credential length: \${#SANDBOX_POSTGRESQL_PASSWORD}"
-                            
-                            # Extract host and port from URI (same as delete file)
-                            DB_URI="${params.SANDBOX_POSTGRESQL_URI}"
-                            HOST_PORT=\$(echo \$DB_URI | sed 's|jdbc:postgresql://||' | cut -d/ -f1)
-                            HOST=\$(echo \$HOST_PORT | cut -d: -f1)
-                            PORT=\$(echo \$HOST_PORT | cut -d: -f2)
-                            
-                            echo "Connection details:"
-                            echo "  Host: \$HOST"
-                            echo "  Port: \$PORT"
-                            echo "  Username: ${params.DB_USERNAME}"
-                            echo "  Database: defaultdb"
-                            
-                            # Test basic connection first
-                            export PGPASSWORD='\${SANDBOX_POSTGRESQL_PASSWORD}'
-                            
-                            # Test if we can reach the host
-                            echo "Testing host connectivity..."
-                            nc -zv \$HOST \$PORT || echo "Host connectivity test failed"
-                            
-                            # Try connection (same as delete file)
-                            echo "Testing database connection..."
-                            psql -h \$HOST -p \$PORT -U ${params.DB_USERNAME} -d defaultdb -c "SELECT current_user, current_database(), version();" || {
-                                echo "Database connection failed. Possible issues:"
-                                echo "1. Incorrect password in Jenkins credential 'SANDBOX_POSTGRESQL_PASSWORD'"
-                                echo "2. Database server not allowing connections from Jenkins IP"
-                                echo "3. Firewall blocking connection"
-                                exit 1
-                            }
-                            
-                            echo "Database connection successful, creating schema..."
-                            
-                            # Create schema (same as delete file)
-                            psql -h \$HOST -p \$PORT -U ${params.DB_USERNAME} -d defaultdb -c "
-                            DO \\\$\\\$
-                            BEGIN
-                                IF NOT EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = '${params.TENANT_NAME}') THEN
-                                    CREATE SCHEMA ${params.TENANT_NAME};
-                                    RAISE NOTICE 'Schema ${params.TENANT_NAME} created successfully';
-                                ELSE
-                                    RAISE NOTICE 'Schema ${params.TENANT_NAME} already exists';
-                                END IF;
-                            END \\\$\\\$;
-                            "
+                            # Install PostgreSQL client if not available
+                            if ! command -v psql >/dev/null 2>&1; then
+                                echo "Installing PostgreSQL client..."
+                                apt-get update && apt-get install -y postgresql-client
+                            fi
+
+                            # Set PGPASSWORD for authentication
+                            export PGPASSWORD="${SANDBOX_POSTGRESQL_PASSWORD}"
+
+                            echo "Connecting to database to create schema: ${params.TENANT_NAME}"
+
+                            # Check if schema exists
+                            SCHEMA_EXISTS=\$(psql -h ${host} -p ${port} -U ${SANDBOX_POSTGRESQL_PUBLIC_USER} -d defaultdb -t -c "SELECT COUNT(*) FROM information_schema.schemata WHERE schema_name = '${params.TENANT_NAME}';" | tr -d ' ')
+
+                            if [ "\$SCHEMA_EXISTS" = "0" ]; then
+                                echo "Schema ${params.TENANT_NAME} does not exist, creating it..."
+
+                                # Create the schema
+                                echo "=== Creating schema ${params.TENANT_NAME} ==="
+                                psql -h ${host} -p ${port} -U ${SANDBOX_POSTGRESQL_PUBLIC_USER} -d defaultdb -c "CREATE SCHEMA ${params.TENANT_NAME};"
+
+                                # Verify creation
+                                SCHEMA_EXISTS_AFTER=\$(psql -h ${host} -p ${port} -U ${SANDBOX_POSTGRESQL_PUBLIC_USER} -d defaultdb -t -c "SELECT COUNT(*) FROM information_schema.schemata WHERE schema_name = '${params.TENANT_NAME}';" | tr -d ' ')
+
+                                if [ "\$SCHEMA_EXISTS_AFTER" = "1" ]; then
+                                    echo "✅ Schema ${params.TENANT_NAME} successfully created"
+                                else
+                                    echo "❌ Failed to create schema ${params.TENANT_NAME}"
+                                    exit 1
+                                fi
+                            else
+                                echo "Schema ${params.TENANT_NAME} already exists, skipping creation"
+                            fi
                         """
+
+                        echo "=========================================="
+                        echo "DATABASE SCHEMA CREATION COMPLETED"
+                        echo "=========================================="
                     }
                     
                     echo "Database schema check/creation completed for tenant: ${params.TENANT_NAME}"
@@ -600,25 +607,33 @@ BUILD_TIMESTAMP=${new Date().format('yyyy-MM-dd HH:mm:ss')}
                     echo "Billing email: ${params.BILLING_EMAIL}"
                     echo "Tenant UUID: ${params.TENANT_UUID_ID}"
                     
-                    // Check if tenant record exists and create if it doesn't
                     withCredentials([
+                        string(credentialsId: 'SANDBOX_POSTGRESQL_PUBLIC_USER', variable: 'SANDBOX_POSTGRESQL_PUBLIC_USER'),
                         string(credentialsId: 'SANDBOX_POSTGRESQL_PASSWORD', variable: 'SANDBOX_POSTGRESQL_PASSWORD')
                     ]) {
+                        echo "=========================================="
+                        echo "CREATING TENANT RECORD"
+                        echo "=========================================="
+
+                        // Extract host and port from URI (EXACT same as delete file)
+                        def dbUri = params.SANDBOX_POSTGRESQL_URI.replace('jdbc:postgresql://', '')
+                        def hostPort = dbUri.split('/')[0]
+                        def host = hostPort.split(':')[0]
+                        def port = hostPort.split(':')[1]
+
+                        echo "Database connection details for tenant record:"
+                        echo "  Host: ${host}"
+                        echo "  Port: ${port}"
+                        echo "  Username: ${SANDBOX_POSTGRESQL_PUBLIC_USER}"
+                        echo "  Database: defaultdb"
+
                         sh """
-                            # Extract host and port from URI (same as delete file)
-                            DB_URI="${params.SANDBOX_POSTGRESQL_URI}"
-                            HOST_PORT=\$(echo \$DB_URI | sed 's|jdbc:postgresql://||' | cut -d/ -f1)
-                            HOST=\$(echo \$HOST_PORT | cut -d: -f1)
-                            PORT=\$(echo \$HOST_PORT | cut -d: -f2)
-                            
-                            echo "Database connection details for tenant record:"
-                            echo "  Host: \$HOST"
-                            echo "  Port: \$PORT"
-                            echo "  Username: ${params.DB_USERNAME}"
-                            echo "  Database: defaultdb"
-                            
-                            export PGPASSWORD='\${SANDBOX_POSTGRESQL_PASSWORD}'
-                            psql -h \$HOST -p \$PORT -U ${params.DB_USERNAME} -d defaultdb -c "
+                            # Set PGPASSWORD for authentication
+                            export PGPASSWORD="${SANDBOX_POSTGRESQL_PASSWORD}"
+
+                            echo "Connecting to database to create tenant record: ${params.TENANT_NAME}"
+
+                            psql -h ${host} -p ${port} -U ${SANDBOX_POSTGRESQL_PUBLIC_USER} -d defaultdb -c "
                             DO \\\$\\\$
                             DECLARE
                                 tenant_exists INTEGER;
@@ -665,6 +680,10 @@ BUILD_TIMESTAMP=${new Date().format('yyyy-MM-dd HH:mm:ss')}
                             END \\\$\\\$;
                             "
                         """
+
+                        echo "=========================================="
+                        echo "TENANT RECORD CREATION COMPLETED"
+                        echo "=========================================="
                     }
                     
                     echo "Tenant record check/creation completed for: ${params.TENANT_NAME}"
