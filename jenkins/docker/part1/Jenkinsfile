@@ -35,7 +35,6 @@ pipeline {
         string(name: 'DB_HOST', defaultValue: 'private-sandbox-cluster-do-user-1326368-0.e.db.ondigitalocean.com', description: 'Database host')
         string(name: 'DB_PORT', defaultValue: '25060', description: 'Database port')
         string(name: 'DB_NAME', defaultValue: 'defaultdb', description: 'Database name')
-        string(name: 'DB_PASSWORD', defaultValue: '', description: 'Database password')
         string(name: 'SPRING_DATABASE_ACTION', defaultValue: 'update', description: 'Database action (update, create-drop)')
         string(name: 'DB_H2_CONSOLE_ENABLED', defaultValue: 'false', description: 'Enable H2 console')
         string(name: 'DB_H2_WEB_ALLOWOTHERS', defaultValue: 'false', description: 'Allow others to access H2 console')
@@ -525,21 +524,30 @@ BUILD_TIMESTAMP=${new Date().format('yyyy-MM-dd HH:mm:ss')}
             steps {
                 script {
                     echo "Creating database schema for tenant: ${params.TENANT_NAME}"
+                    echo "Database connection details:"
+                    echo "  Host: ${params.DB_HOST}"
+                    echo "  Port: ${params.DB_PORT}"
+                    echo "  Username: ${params.DB_USERNAME}"
+                    echo "  Database: ${params.DB_NAME}"
+                    echo "  Password: [FROM JENKINS CREDENTIAL]"
                     
-                    // Connect to PostgreSQL and create schema if it doesn't exist
-                    sh """
-                        PGPASSWORD=${params.DB_PASSWORD} psql -h ${params.DB_HOST} -p ${params.DB_PORT} -U ${params.DB_USERNAME} -d ${params.DB_NAME} -c "
-                        DO \\\$\\\$
-                        BEGIN
-                            IF NOT EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = '${params.TENANT_NAME}') THEN
-                                CREATE SCHEMA ${params.TENANT_NAME};
-                                RAISE NOTICE 'Schema ${params.TENANT_NAME} created successfully';
-                            ELSE
-                                RAISE NOTICE 'Schema ${params.TENANT_NAME} already exists';
-                            END IF;
-                        END \\\$\\\$;
-                        "
-                    """
+                    // Connect to PostgreSQL using Jenkins credentials
+                    withCredentials([string(credentialsId: 'DB_PASSWORD', variable: 'DB_PASSWORD')]) {
+                        sh """
+                            export PGPASSWORD='\${DB_PASSWORD}'
+                            psql -h ${params.DB_HOST} -p ${params.DB_PORT} -U ${params.DB_USERNAME} -d ${params.DB_NAME} -c "
+                            DO \\\$\\\$
+                            BEGIN
+                                IF NOT EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = '${params.TENANT_NAME}') THEN
+                                    CREATE SCHEMA ${params.TENANT_NAME};
+                                    RAISE NOTICE 'Schema ${params.TENANT_NAME} created successfully';
+                                ELSE
+                                    RAISE NOTICE 'Schema ${params.TENANT_NAME} already exists';
+                                END IF;
+                            END \\\$\\\$;
+                            "
+                        """
+                    }
                     
                     echo "Database schema check/creation completed for tenant: ${params.TENANT_NAME}"
                 }
@@ -557,54 +565,57 @@ BUILD_TIMESTAMP=${new Date().format('yyyy-MM-dd HH:mm:ss')}
                     echo "Tenant UUID: ${params.TENANT_UUID_ID}"
                     
                     // Check if tenant record exists and create if it doesn't
-                    sh """
-                        PGPASSWORD=${params.DB_PASSWORD} psql -h ${params.DB_HOST} -p ${params.DB_PORT} -U ${params.DB_USERNAME} -d ${params.DB_NAME} -c "
-                        DO \\\$\\\$
-                        DECLARE
-                            tenant_exists INTEGER;
-                        BEGIN
-                            -- Check if tenant record exists
-                            SELECT COUNT(*) INTO tenant_exists 
-                            FROM tenants 
-                            WHERE billing_email = '${params.BILLING_EMAIL}';
-                            
-                            IF tenant_exists = 0 THEN
-                                -- Insert new tenant record
-                                INSERT INTO tenants (
-                                    id,
-                                    tenant_name,
-                                    domain_name,
-                                    subscription_tier,
-                                    status,
-                                    billing_email,
-                                    deployflag,
-                                    delete_flag,
-                                    admin_user_created_flag,
-                                    create_time_stamp,
-                                    update_time_stamp,
-                                    created_at
-                                ) VALUES (
-                                    '${params.TENANT_UUID_ID}'::uuid,
-                                    '${params.TENANT_NAME}',
-                                    '${params.DO_DOMAIN}',
-                                    '${params.SUBSCRIPTION_TIER}',
-                                    'active',
-                                    '${params.BILLING_EMAIL}',
-                                    0,
-                                    0,
-                                    0,
-                                    NOW(),
-                                    NOW(),
-                                    NOW()
-                                );
+                    withCredentials([string(credentialsId: 'DB_PASSWORD', variable: 'DB_PASSWORD')]) {
+                        sh """
+                            export PGPASSWORD='\${DB_PASSWORD}'
+                            psql -h ${params.DB_HOST} -p ${params.DB_PORT} -U ${params.DB_USERNAME} -d ${params.DB_NAME} -c "
+                            DO \\\$\\\$
+                            DECLARE
+                                tenant_exists INTEGER;
+                            BEGIN
+                                -- Check if tenant record exists
+                                SELECT COUNT(*) INTO tenant_exists 
+                                FROM tenants 
+                                WHERE billing_email = '${params.BILLING_EMAIL}';
                                 
-                                RAISE NOTICE 'Tenant record created successfully for: ${params.TENANT_NAME}';
-                            ELSE
-                                RAISE NOTICE 'Tenant record already exists for billing email: ${params.BILLING_EMAIL}';
-                            END IF;
-                        END \\\$\\\$;
-                        "
-                    """
+                                IF tenant_exists = 0 THEN
+                                    -- Insert new tenant record
+                                    INSERT INTO tenants (
+                                        id,
+                                        tenant_name,
+                                        domain_name,
+                                        subscription_tier,
+                                        status,
+                                        billing_email,
+                                        deployflag,
+                                        delete_flag,
+                                        admin_user_created_flag,
+                                        create_time_stamp,
+                                        update_time_stamp,
+                                        created_at
+                                    ) VALUES (
+                                        '${params.TENANT_UUID_ID}'::uuid,
+                                        '${params.TENANT_NAME}',
+                                        '${params.DO_DOMAIN}',
+                                        '${params.SUBSCRIPTION_TIER}',
+                                        'active',
+                                        '${params.BILLING_EMAIL}',
+                                        0,
+                                        0,
+                                        0,
+                                        NOW(),
+                                        NOW(),
+                                        NOW()
+                                    );
+                                    
+                                    RAISE NOTICE 'Tenant record created successfully for: ${params.TENANT_NAME}';
+                                ELSE
+                                    RAISE NOTICE 'Tenant record already exists for billing email: ${params.BILLING_EMAIL}';
+                                END IF;
+                            END \\\$\\\$;
+                            "
+                        """
+                    }
                     
                     echo "Tenant record check/creation completed for: ${params.TENANT_NAME}"
                 }
