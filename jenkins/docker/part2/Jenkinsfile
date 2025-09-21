@@ -981,11 +981,11 @@ spec:
                                             subscription_tier,
                                             status,
                                             billing_email,
-                                            deployflag,
+                                            deploy_flag,
                                             delete_flag,
                                             admin_user_created_flag,
-                                            create_time_stamp,
-                                            update_time_stamp,
+                                            createTimeStamp,
+                                            updateTimeStamp,
                                             created_at
                                         ) VALUES (
                                             '${params.TENANT_UUID_ID}'::uuid,
