@@ -960,8 +960,20 @@ spec:
                                 echo "Database connection attempt \$ATTEMPT/\$MAX_ATTEMPTS..."
                                 
                                 if psql -h ${host} -p ${port} -U ${SANDBOX_POSTGRESQL_PUBLIC_USER} -d defaultdb -c "
+                                -- First, list all schemas to verify we can see the tenant schema
+                                SELECT schema_name FROM information_schema.schemata ORDER BY schema_name;
+                                
+                                -- Show current search path
+                                SHOW search_path;
+                                
                                 -- Set the search path to include the tenant schema
                                 SET search_path TO ${params.TENANT_NAME}, public;
+                                
+                                -- Show updated search path
+                                SHOW search_path;
+                                
+                                -- List tables in the tenant schema
+                                SELECT table_name FROM information_schema.tables WHERE table_schema = '${params.TENANT_NAME}' ORDER BY table_name;
                                 
                                 DO \\\$\\\$
                                 DECLARE
