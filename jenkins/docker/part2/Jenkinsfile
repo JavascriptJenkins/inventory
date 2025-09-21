@@ -949,6 +949,7 @@ spec:
                             export PGPASSWORD="${SANDBOX_POSTGRESQL_PASSWORD}"
 
                             echo "Connecting to database to create tenant record: ${params.TENANT_NAME}"
+                            echo "Using schema: ${params.TENANT_NAME}"
 
                             # Retry logic for database connection with exponential backoff
                             MAX_ATTEMPTS=5
@@ -959,6 +960,9 @@ spec:
                                 echo "Database connection attempt \$ATTEMPT/\$MAX_ATTEMPTS..."
                                 
                                 if psql -h ${host} -p ${port} -U ${SANDBOX_POSTGRESQL_PUBLIC_USER} -d defaultdb -c "
+                                -- Set the search path to include the tenant schema
+                                SET search_path TO ${params.TENANT_NAME}, public;
+                                
                                 DO \\\$\\\$
                                 DECLARE
                                     tenant_exists INTEGER;
