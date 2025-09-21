@@ -16,6 +16,12 @@ pipeline {
         // DigitalOcean parameters
         string(name: 'DO_LOADBALANCER_ID', defaultValue: '', description: 'DigitalOcean Load Balancer ID for Kubernetes Service annotation')
         string(name: 'ENVIRONMENT_NAME', defaultValue: 'prod', description: 'Environment name (prod, dev1)')
+
+        // Tenant record parameters
+        string(name: 'BILLING_EMAIL', defaultValue: '', description: 'Billing email address for tenant record')
+        string(name: 'TENANT_UUID_ID', defaultValue: '', description: 'Tenant UUID ID for database record')
+        string(name: 'SUBSCRIPTION_TIER', defaultValue: 'BASIC', description: 'Subscription tier for tenant')
+        string(name: 'SANDBOX_POSTGRESQL_URI', defaultValue: 'jdbc:postgresql://private-sandbox-cluster-do-user-1326368-0.e.db.ondigitalocean.com:25060', description: 'Database URI')
     }
 
     stages {
@@ -869,6 +875,101 @@ spec:
                 }
             }
         }
+
+        stage('Create Tenant Record') {
+            when {
+                expression { params.TENANT_NAME != '' && params.BILLING_EMAIL != '' && params.TENANT_UUID_ID != '' }
+            }
+            steps {
+                script {
+                    echo "Creating tenant record for: ${params.TENANT_NAME}"
+                    echo "Billing email: ${params.BILLING_EMAIL}"
+                    echo "Tenant UUID: ${params.TENANT_UUID_ID}"
+
+                    withCredentials([
+                        string(credentialsId: 'SANDBOX_POSTGRESQL_PUBLIC_USER', variable: 'SANDBOX_POSTGRESQL_PUBLIC_USER'),
+                        string(credentialsId: 'SANDBOX_POSTGRESQL_PASSWORD', variable: 'SANDBOX_POSTGRESQL_PASSWORD')
+                    ]) {
+                        echo "=========================================="
+                        echo "CREATING TENANT RECORD"
+                        echo "=========================================="
+
+                        // Extract host and port from URI (EXACT same as delete file)
+                        def dbUri = params.SANDBOX_POSTGRESQL_URI.replace('jdbc:postgresql://', '')
+                        def hostPort = dbUri.split('/')[0]
+                        def host = hostPort.split(':')[0]
+                        def port = hostPort.split(':')[1]
+
+                        echo "Database connection details for tenant record:"
+                        echo "  Host: ${host}"
+                        echo "  Port: ${port}"
+                        echo "  Username: ${SANDBOX_POSTGRESQL_PUBLIC_USER}"
+                        echo "  Database: defaultdb"
+
+                        sh """
+                            # Set PGPASSWORD for authentication
+                            export PGPASSWORD="${SANDBOX_POSTGRESQL_PASSWORD}"
+
+                            echo "Connecting to database to create tenant record: ${params.TENANT_NAME}"
+
+                            psql -h ${host} -p ${port} -U ${SANDBOX_POSTGRESQL_PUBLIC_USER} -d defaultdb -c "
+                            DO \\\$\\\$
+                            DECLARE
+                                tenant_exists INTEGER;
+                            BEGIN
+                                -- Check if tenant record exists
+                                SELECT COUNT(*) INTO tenant_exists
+                                FROM tenants
+                                WHERE billing_email = '${params.BILLING_EMAIL}';
+
+                                IF tenant_exists = 0 THEN
+                                    -- Insert new tenant record
+                                    INSERT INTO tenants (
+                                        id,
+                                        tenant_name,
+                                        domain_name,
+                                        subscription_tier,
+                                        status,
+                                        billing_email,
+                                        deployflag,
+                                        delete_flag,
+                                        admin_user_created_flag,
+                                        create_time_stamp,
+                                        update_time_stamp,
+                                        created_at
+                                    ) VALUES (
+                                        '${params.TENANT_UUID_ID}'::uuid,
+                                        '${params.TENANT_NAME}',
+                                        '${params.DO_DOMAIN}',
+                                        '${params.SUBSCRIPTION_TIER}',
+                                        'active',
+                                        '${params.BILLING_EMAIL}',
+                                        0,
+                                        0,
+                                        0,
+                                        NOW(),
+                                        NOW(),
+                                        NOW()
+                                    );
+
+                                    RAISE NOTICE 'Tenant record created successfully for: ${params.TENANT_NAME}';
+                                ELSE
+                                    RAISE NOTICE 'Tenant record already exists for billing email: ${params.BILLING_EMAIL}';
+                                END IF;
+                            END \\\$\\\$;
+                            "
+                        """
+
+                        echo "=========================================="
+                        echo "TENANT RECORD CREATION COMPLETED"
+                        echo "=========================================="
+                    }
+
+                    echo "Tenant record check/creation completed for: ${params.TENANT_NAME}"
+                }
+            }
+        }
+
 
         stage('Final Deployment Summary') {
             steps {

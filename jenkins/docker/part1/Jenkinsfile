@@ -597,99 +597,6 @@ BUILD_TIMESTAMP=${new Date().format('yyyy-MM-dd HH:mm:ss')}
             }
         }
 
-        stage('Create Tenant Record') {
-            when {
-                expression { params.TENANT_NAME != '' && params.BILLING_EMAIL != '' && params.TENANT_UUID_ID != '' }
-            }
-            steps {
-                script {
-                    echo "Creating tenant record for: ${params.TENANT_NAME}"
-                    echo "Billing email: ${params.BILLING_EMAIL}"
-                    echo "Tenant UUID: ${params.TENANT_UUID_ID}"
-                    
-                    withCredentials([
-                        string(credentialsId: 'SANDBOX_POSTGRESQL_PUBLIC_USER', variable: 'SANDBOX_POSTGRESQL_PUBLIC_USER'),
-                        string(credentialsId: 'SANDBOX_POSTGRESQL_PASSWORD', variable: 'SANDBOX_POSTGRESQL_PASSWORD')
-                    ]) {
-                        echo "=========================================="
-                        echo "CREATING TENANT RECORD"
-                        echo "=========================================="
-
-                        // Extract host and port from URI (EXACT same as delete file)
-                        def dbUri = params.SANDBOX_POSTGRESQL_URI.replace('jdbc:postgresql://', '')
-                        def hostPort = dbUri.split('/')[0]
-                        def host = hostPort.split(':')[0]
-                        def port = hostPort.split(':')[1]
-
-                        echo "Database connection details for tenant record:"
-                        echo "  Host: ${host}"
-                        echo "  Port: ${port}"
-                        echo "  Username: ${SANDBOX_POSTGRESQL_PUBLIC_USER}"
-                        echo "  Database: defaultdb"
-
-                        sh """
-                            # Set PGPASSWORD for authentication
-                            export PGPASSWORD="${SANDBOX_POSTGRESQL_PASSWORD}"
-
-                            echo "Connecting to database to create tenant record: ${params.TENANT_NAME}"
-
-                            psql -h ${host} -p ${port} -U ${SANDBOX_POSTGRESQL_PUBLIC_USER} -d defaultdb -c "
-                            DO \\\$\\\$
-                            DECLARE
-                                tenant_exists INTEGER;
-                            BEGIN
-                                -- Check if tenant record exists
-                                SELECT COUNT(*) INTO tenant_exists 
-                                FROM tenants 
-                                WHERE billing_email = '${params.BILLING_EMAIL}';
-                                
-                                IF tenant_exists = 0 THEN
-                                    -- Insert new tenant record
-                                    INSERT INTO tenants (
-                                        id,
-                                        tenant_name,
-                                        domain_name,
-                                        subscription_tier,
-                                        status,
-                                        billing_email,
-                                        deployflag,
-                                        delete_flag,
-                                        admin_user_created_flag,
-                                        create_time_stamp,
-                                        update_time_stamp,
-                                        created_at
-                                    ) VALUES (
-                                        '${params.TENANT_UUID_ID}'::uuid,
-                                        '${params.TENANT_NAME}',
-                                        '${params.DO_DOMAIN}',
-                                        '${params.SUBSCRIPTION_TIER}',
-                                        'active',
-                                        '${params.BILLING_EMAIL}',
-                                        0,
-                                        0,
-                                        0,
-                                        NOW(),
-                                        NOW(),
-                                        NOW()
-                                    );
-                                    
-                                    RAISE NOTICE 'Tenant record created successfully for: ${params.TENANT_NAME}';
-                                ELSE
-                                    RAISE NOTICE 'Tenant record already exists for billing email: ${params.BILLING_EMAIL}';
-                                END IF;
-                            END \\\$\\\$;
-                            "
-                        """
-
-                        echo "=========================================="
-                        echo "TENANT RECORD CREATION COMPLETED"
-                        echo "=========================================="
-                    }
-                    
-                    echo "Tenant record check/creation completed for: ${params.TENANT_NAME}"
-                }
-            }
-        }
 
         stage('Trigger Deployment') {
             when {
@@ -710,7 +617,11 @@ BUILD_TIMESTAMP=${new Date().format('yyyy-MM-dd HH:mm:ss')}
                               string(name: 'DO_DOMAIN', value: params.DO_DOMAIN),
                               string(name: 'ENVIRONMENT_NAME', value: params.ENVIRONMENT_NAME),
                               string(name: 'K8S_NAMESPACE', value: params.K8S_NAMESPACE ?: ''),
-                              string(name: 'DO_LOADBALANCER_ID', value: params.DO_LOADBALANCER_ID ?: '')
+                              string(name: 'DO_LOADBALANCER_ID', value: params.DO_LOADBALANCER_ID ?: ''),
+                              string(name: 'BILLING_EMAIL', value: params.BILLING_EMAIL),
+                              string(name: 'TENANT_UUID_ID', value: params.TENANT_UUID_ID),
+                              string(name: 'SUBSCRIPTION_TIER', value: params.SUBSCRIPTION_TIER),
+                              string(name: 'SANDBOX_POSTGRESQL_URI', value: params.SANDBOX_POSTGRESQL_URI)
                           ],
                           wait: true
 
