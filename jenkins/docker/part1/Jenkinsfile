@@ -532,10 +532,28 @@ BUILD_TIMESTAMP=${new Date().format('yyyy-MM-dd HH:mm:ss')}
                     echo "  Password: [FROM JENKINS CREDENTIAL]"
                     
                     // Connect to PostgreSQL using Jenkins credentials
-                    withCredentials([string(credentialsId: 'DB_PASSWORD', variable: 'DB_PASSWORD')]) {
+                    withCredentials([string(credentialsId: 'SANDBOX_POSTGRESQL_PASSWORD', variable: 'DB_PASSWORD')]) {
                         sh """
+                            echo "Testing database connection..."
+                            echo "Credential length: \${#DB_PASSWORD}"
+                            
+                            # Test basic connection first
                             export PGPASSWORD='\${DB_PASSWORD}'
-                            psql -h ${params.DB_HOST} -p ${params.DB_PORT} -U ${params.DB_USERNAME} -d ${params.DB_NAME} -c "
+                            
+                            # Try to connect with SSL and show connection info
+                            psql -h ${params.DB_HOST} -p ${params.DB_PORT} -U ${params.DB_USERNAME} -d ${params.DB_NAME} --set=sslmode=require -c "SELECT current_user, current_database(), version();" || {
+                                echo "Database connection failed. Possible issues:"
+                                echo "1. Incorrect password in Jenkins credential 'SANDBOX_POSTGRESQL_PASSWORD'"
+                                echo "2. Database server not allowing connections from Jenkins IP"
+                                echo "3. Database server requires SSL connection"
+                                echo "4. Firewall blocking connection"
+                                exit 1
+                            }
+                            
+                            echo "Database connection successful, creating schema..."
+                            
+                            # Create schema with SSL
+                            psql -h ${params.DB_HOST} -p ${params.DB_PORT} -U ${params.DB_USERNAME} -d ${params.DB_NAME} --set=sslmode=require -c "
                             DO \\\$\\\$
                             BEGIN
                                 IF NOT EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = '${params.TENANT_NAME}') THEN
@@ -565,10 +583,10 @@ BUILD_TIMESTAMP=${new Date().format('yyyy-MM-dd HH:mm:ss')}
                     echo "Tenant UUID: ${params.TENANT_UUID_ID}"
                     
                     // Check if tenant record exists and create if it doesn't
-                    withCredentials([string(credentialsId: 'DB_PASSWORD', variable: 'DB_PASSWORD')]) {
+                    withCredentials([string(credentialsId: 'SANDBOX_POSTGRESQL_PASSWORD', variable: 'DB_PASSWORD')]) {
                         sh """
                             export PGPASSWORD='\${DB_PASSWORD}'
-                            psql -h ${params.DB_HOST} -p ${params.DB_PORT} -U ${params.DB_USERNAME} -d ${params.DB_NAME} -c "
+                            psql -h ${params.DB_HOST} -p ${params.DB_PORT} -U ${params.DB_USERNAME} -d ${params.DB_NAME} --set=sslmode=require -c "
                             DO \\\$\\\$
                             DECLARE
                                 tenant_exists INTEGER;
