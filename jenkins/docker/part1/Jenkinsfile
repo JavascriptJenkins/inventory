@@ -535,11 +535,17 @@ BUILD_TIMESTAMP=${new Date().format('yyyy-MM-dd HH:mm:ss')}
                             echo "Credential length: \${#DB_PASSWORD}"
                             
                             # Parse the URI to extract host, port, and database
-                            # Format: jdbc:postgresql://host:port/database
+                            # Format: jdbc:postgresql://host:port/database or jdbc:postgresql://host:port
                             DB_URI="${params.SANDBOX_POSTGRESQL_URI}"
                             DB_HOST=\$(echo \$DB_URI | sed 's|jdbc:postgresql://||' | cut -d: -f1)
                             DB_PORT=\$(echo \$DB_URI | sed 's|jdbc:postgresql://||' | cut -d: -f2 | cut -d/ -f1)
-                            DB_NAME=\$(echo \$DB_URI | sed 's|jdbc:postgresql://||' | cut -d/ -f2)
+                            
+                            # Check if database name is provided in URI, otherwise use default
+                            if echo \$DB_URI | grep -q '/'; then
+                                DB_NAME=\$(echo \$DB_URI | sed 's|jdbc:postgresql://||' | cut -d/ -f2)
+                            else
+                                DB_NAME="defaultdb"
+                            fi
                             
                             echo "Parsed connection details:"
                             echo "  Host: \$DB_HOST"
@@ -598,7 +604,13 @@ BUILD_TIMESTAMP=${new Date().format('yyyy-MM-dd HH:mm:ss')}
                             DB_URI="${params.SANDBOX_POSTGRESQL_URI}"
                             DB_HOST=\$(echo \$DB_URI | sed 's|jdbc:postgresql://||' | cut -d: -f1)
                             DB_PORT=\$(echo \$DB_URI | sed 's|jdbc:postgresql://||' | cut -d: -f2 | cut -d/ -f1)
-                            DB_NAME=\$(echo \$DB_URI | sed 's|jdbc:postgresql://||' | cut -d/ -f2)
+                            
+                            # Check if database name is provided in URI, otherwise use default
+                            if echo \$DB_URI | grep -q '/'; then
+                                DB_NAME=\$(echo \$DB_URI | sed 's|jdbc:postgresql://||' | cut -d/ -f2)
+                            else
+                                DB_NAME="defaultdb"
+                            fi
                             
                             echo "Parsed connection details for tenant record:"
                             echo "  Host: \$DB_HOST"
