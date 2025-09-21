@@ -524,9 +524,12 @@ BUILD_TIMESTAMP=${new Date().format('yyyy-MM-dd HH:mm:ss')}
             steps {
                 script {
                     echo "Creating database schema for tenant: ${params.TENANT_NAME}"
-                    echo "Database URI: ${params.SANDBOX_POSTGRESQL_URI}"
-                    echo "Username: ${params.DB_USERNAME}"
-                    echo "Password: [FROM JENKINS CREDENTIAL]"
+                    echo "Database connection details:"
+                    echo "  Host: ${params.DB_HOST}"
+                    echo "  Port: ${params.DB_PORT}"
+                    echo "  Username: ${params.DB_USERNAME}"
+                    echo "  Database: ${params.DB_NAME}"
+                    echo "  Password: [FROM JENKINS CREDENTIAL]"
                     
                     // Connect to PostgreSQL using Jenkins credentials
                     withCredentials([string(credentialsId: 'SANDBOX_POSTGRESQL_PASSWORD', variable: 'DB_PASSWORD')]) {
@@ -534,30 +537,11 @@ BUILD_TIMESTAMP=${new Date().format('yyyy-MM-dd HH:mm:ss')}
                             echo "Testing database connection..."
                             echo "Credential length: \${#DB_PASSWORD}"
                             
-                            # Parse the URI to extract host, port, and database
-                            # Format: jdbc:postgresql://host:port/database or jdbc:postgresql://host:port
-                            DB_URI="${params.SANDBOX_POSTGRESQL_URI}"
-                            DB_HOST=\$(echo \$DB_URI | sed 's|jdbc:postgresql://||' | cut -d: -f1)
-                            DB_PORT=\$(echo \$DB_URI | sed 's|jdbc:postgresql://||' | cut -d: -f2 | cut -d/ -f1)
-                            
-                            # Check if database name is provided in URI, otherwise use default
-                            # Look for / after the port number, not in the jdbc:postgresql:// part
-                            if echo \$DB_URI | grep -q ':[0-9][0-9]*/'; then
-                                DB_NAME=\$(echo \$DB_URI | sed 's|jdbc:postgresql://||' | cut -d/ -f2)
-                            else
-                                DB_NAME="defaultdb"
-                            fi
-                            
-                            echo "Parsed connection details:"
-                            echo "  Host: \$DB_HOST"
-                            echo "  Port: \$DB_PORT"
-                            echo "  Database: \$DB_NAME"
-                            
                             # Test basic connection first
                             export PGPASSWORD='\${DB_PASSWORD}'
                             
                             # Try to connect with SSL and show connection info
-                            psql -h \$DB_HOST -p \$DB_PORT -U ${params.DB_USERNAME} -d \$DB_NAME --set=sslmode=require -c "SELECT current_user, current_database(), version();" || {
+                            psql -h ${params.DB_HOST} -p ${params.DB_PORT} -U ${params.DB_USERNAME} -d ${params.DB_NAME} --set=sslmode=require -c "SELECT current_user, current_database(), version();" || {
                                 echo "Database connection failed. Possible issues:"
                                 echo "1. Incorrect password in Jenkins credential 'SANDBOX_POSTGRESQL_PASSWORD'"
                                 echo "2. Database server not allowing connections from Jenkins IP"
@@ -569,7 +553,7 @@ BUILD_TIMESTAMP=${new Date().format('yyyy-MM-dd HH:mm:ss')}
                             echo "Database connection successful, creating schema..."
                             
                             # Create schema with SSL
-                            psql -h \$DB_HOST -p \$DB_PORT -U ${params.DB_USERNAME} -d \$DB_NAME --set=sslmode=require -c "
+                            psql -h ${params.DB_HOST} -p ${params.DB_PORT} -U ${params.DB_USERNAME} -d ${params.DB_NAME} --set=sslmode=require -c "
                             DO \\\$\\\$
                             BEGIN
                                 IF NOT EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = '${params.TENANT_NAME}') THEN
@@ -601,26 +585,13 @@ BUILD_TIMESTAMP=${new Date().format('yyyy-MM-dd HH:mm:ss')}
                     // Check if tenant record exists and create if it doesn't
                     withCredentials([string(credentialsId: 'SANDBOX_POSTGRESQL_PASSWORD', variable: 'DB_PASSWORD')]) {
                         sh """
-                            # Parse the URI to extract host, port, and database
-                            DB_URI="${params.SANDBOX_POSTGRESQL_URI}"
-                            DB_HOST=\$(echo \$DB_URI | sed 's|jdbc:postgresql://||' | cut -d: -f1)
-                            DB_PORT=\$(echo \$DB_URI | sed 's|jdbc:postgresql://||' | cut -d: -f2 | cut -d/ -f1)
-                            
-                            # Check if database name is provided in URI, otherwise use default
-                            # Look for / after the port number, not in the jdbc:postgresql:// part
-                            if echo \$DB_URI | grep -q ':[0-9][0-9]*/'; then
-                                DB_NAME=\$(echo \$DB_URI | sed 's|jdbc:postgresql://||' | cut -d/ -f2)
-                            else
-                                DB_NAME="defaultdb"
-                            fi
-                            
-                            echo "Parsed connection details for tenant record:"
-                            echo "  Host: \$DB_HOST"
-                            echo "  Port: \$DB_PORT"
-                            echo "  Database: \$DB_NAME"
+                            echo "Database connection details for tenant record:"
+                            echo "  Host: ${params.DB_HOST}"
+                            echo "  Port: ${params.DB_PORT}"
+                            echo "  Database: ${params.DB_NAME}"
                             
                             export PGPASSWORD='\${DB_PASSWORD}'
-                            psql -h \$DB_HOST -p \$DB_PORT -U ${params.DB_USERNAME} -d \$DB_NAME --set=sslmode=require -c "
+                            psql -h ${params.DB_HOST} -p ${params.DB_PORT} -U ${params.DB_USERNAME} -d ${params.DB_NAME} --set=sslmode=require -c "
                             DO \\\$\\\$
                             DECLARE
                                 tenant_exists INTEGER;
