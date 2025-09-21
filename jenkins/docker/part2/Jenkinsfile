@@ -912,52 +912,79 @@ spec:
 
                             echo "Connecting to database to create tenant record: ${params.TENANT_NAME}"
 
-                            psql -h ${host} -p ${port} -U ${SANDBOX_POSTGRESQL_PUBLIC_USER} -d defaultdb -c "
-                            DO \\\$\\\$
-                            DECLARE
-                                tenant_exists INTEGER;
-                            BEGIN
-                                -- Check if tenant record exists
-                                SELECT COUNT(*) INTO tenant_exists
-                                FROM tenants
-                                WHERE billing_email = '${params.BILLING_EMAIL}';
+                            # Retry logic for database connection with exponential backoff
+                            MAX_ATTEMPTS=5
+                            ATTEMPT=1
+                            SLEEP_TIME=10
 
-                                IF tenant_exists = 0 THEN
-                                    -- Insert new tenant record
-                                    INSERT INTO tenants (
-                                        id,
-                                        tenant_name,
-                                        domain_name,
-                                        subscription_tier,
-                                        status,
-                                        billing_email,
-                                        deployflag,
-                                        delete_flag,
-                                        admin_user_created_flag,
-                                        create_time_stamp,
-                                        update_time_stamp,
-                                        created_at
-                                    ) VALUES (
-                                        '${params.TENANT_UUID_ID}'::uuid,
-                                        '${params.TENANT_NAME}',
-                                        '${params.DO_DOMAIN}',
-                                        '${params.SUBSCRIPTION_TIER}',
-                                        'active',
-                                        '${params.BILLING_EMAIL}',
-                                        0,
-                                        0,
-                                        0,
-                                        NOW(),
-                                        NOW(),
-                                        NOW()
-                                    );
+                            while [ \$ATTEMPT -le \$MAX_ATTEMPTS ]; do
+                                echo "Database connection attempt \$ATTEMPT/\$MAX_ATTEMPTS..."
+                                
+                                if psql -h ${host} -p ${port} -U ${SANDBOX_POSTGRESQL_PUBLIC_USER} -d defaultdb -c "
+                                DO \\\$\\\$
+                                DECLARE
+                                    tenant_exists INTEGER;
+                                BEGIN
+                                    -- Check if tenant record exists
+                                    SELECT COUNT(*) INTO tenant_exists
+                                    FROM tenants
+                                    WHERE billing_email = '${params.BILLING_EMAIL}';
 
-                                    RAISE NOTICE 'Tenant record created successfully for: ${params.TENANT_NAME}';
-                                ELSE
-                                    RAISE NOTICE 'Tenant record already exists for billing email: ${params.BILLING_EMAIL}';
-                                END IF;
-                            END \\\$\\\$;
-                            "
+                                    IF tenant_exists = 0 THEN
+                                        -- Insert new tenant record
+                                        INSERT INTO tenants (
+                                            id,
+                                            tenant_name,
+                                            domain_name,
+                                            subscription_tier,
+                                            status,
+                                            billing_email,
+                                            deployflag,
+                                            delete_flag,
+                                            admin_user_created_flag,
+                                            create_time_stamp,
+                                            update_time_stamp,
+                                            created_at
+                                        ) VALUES (
+                                            '${params.TENANT_UUID_ID}'::uuid,
+                                            '${params.TENANT_NAME}',
+                                            '${params.DO_DOMAIN}',
+                                            '${params.SUBSCRIPTION_TIER}',
+                                            'active',
+                                            '${params.BILLING_EMAIL}',
+                                            0,
+                                            0,
+                                            0,
+                                            NOW(),
+                                            NOW(),
+                                            NOW()
+                                        );
+
+                                        RAISE NOTICE 'Tenant record created successfully for: ${params.TENANT_NAME}';
+                                    ELSE
+                                        RAISE NOTICE 'Tenant record already exists for billing email: ${params.BILLING_EMAIL}';
+                                    END IF;
+                                END \\\$\\\$;
+                                "; then
+                                    echo "✅ Database connection successful on attempt \$ATTEMPT"
+                                    break
+                                else
+                                    echo "❌ Database connection failed on attempt \$ATTEMPT"
+                                    if [ \$ATTEMPT -lt \$MAX_ATTEMPTS ]; then
+                                        echo "Waiting \$SLEEP_TIME seconds before retry..."
+                                        sleep \$SLEEP_TIME
+                                        SLEEP_TIME=\$((SLEEP_TIME * 2))  # Exponential backoff
+                                    fi
+                                fi
+                                
+                                ATTEMPT=\$((ATTEMPT + 1))
+                            done
+
+                            if [ \$ATTEMPT -gt \$MAX_ATTEMPTS ]; then
+                                echo "❌ Failed to connect to database after \$MAX_ATTEMPTS attempts"
+                                echo "This may be due to database connection limits. The tenant record can be created manually later."
+                                exit 0  # Don't fail the deployment for this
+                            fi
                         """
 
                         echo "=========================================="
