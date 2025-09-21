@@ -15,6 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class JenkinsHttpService {
@@ -99,7 +100,13 @@ public class JenkinsHttpService {
         }
     }
     
-    public void triggerGenericTenantBuild(String tenantName, String subscriptionTier, String billingEmail, String domain) {
+    public void triggerGenericTenantBuild(
+            String tenantName,
+            String subscriptionTier,
+            String billingEmail,
+            String domain,
+            UUID tenantid
+    ) {
         try {
             // Deploy comprehensive tenant infrastructure (DNS, SSL certificate, PostgreSQL schema)
             System.out.println("Deploying comprehensive infrastructure for tenant: " + tenantName);
@@ -157,7 +164,8 @@ public class JenkinsHttpService {
             params.add("DO_DOMAIN", domain);
             params.add("K8S_NAMESPACE", "tenant-" + tenantName);
             params.add("BRANCH", "test1"); // todo: change this
-            
+            params.add("TENANT_UUID_ID", tenantid.toString());
+
             // Add DigitalOcean load balancer ID to Jenkins parameters
             if (loadbalancerId != null && !loadbalancerId.trim().isEmpty()) {
                 params.add("DO_LOADBALANCER_ID", loadbalancerId);
