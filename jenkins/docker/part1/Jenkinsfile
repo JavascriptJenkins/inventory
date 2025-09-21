@@ -536,18 +536,34 @@ BUILD_TIMESTAMP=${new Date().format('yyyy-MM-dd HH:mm:ss')}
                         sh """
                             echo "Testing database connection..."
                             echo "Credential length: \${#DB_PASSWORD}"
+                            echo "Connection details:"
+                            echo "  Host: ${params.DB_HOST}"
+                            echo "  Port: ${params.DB_PORT}"
+                            echo "  Username: ${params.DB_USERNAME}"
+                            echo "  Database: ${params.DB_NAME}"
                             
                             # Test basic connection first
                             export PGPASSWORD='\${DB_PASSWORD}'
                             
-                            # Try to connect with SSL and show connection info
+                            # Test if we can reach the host
+                            echo "Testing host connectivity..."
+                            nc -zv ${params.DB_HOST} ${params.DB_PORT} || echo "Host connectivity test failed"
+                            
+                            # Try different SSL modes to find what works
+                            echo "Trying connection with sslmode=require..."
                             psql -h ${params.DB_HOST} -p ${params.DB_PORT} -U ${params.DB_USERNAME} -d ${params.DB_NAME} --set=sslmode=require -c "SELECT current_user, current_database(), version();" || {
-                                echo "Database connection failed. Possible issues:"
-                                echo "1. Incorrect password in Jenkins credential 'SANDBOX_POSTGRESQL_PASSWORD'"
-                                echo "2. Database server not allowing connections from Jenkins IP"
-                                echo "3. Database server requires SSL connection"
-                                echo "4. Firewall blocking connection"
-                                exit 1
+                                echo "sslmode=require failed, trying sslmode=prefer..."
+                                psql -h ${params.DB_HOST} -p ${params.DB_PORT} -U ${params.DB_USERNAME} -d ${params.DB_NAME} --set=sslmode=prefer -c "SELECT current_user, current_database(), version();" || {
+                                    echo "sslmode=prefer failed, trying without SSL..."
+                                    psql -h ${params.DB_HOST} -p ${params.DB_PORT} -U ${params.DB_USERNAME} -d ${params.DB_NAME} -c "SELECT current_user, current_database(), version();" || {
+                                        echo "Database connection failed. Possible issues:"
+                                        echo "1. Incorrect password in Jenkins credential 'SANDBOX_POSTGRESQL_PASSWORD'"
+                                        echo "2. Database server not allowing connections from Jenkins IP"
+                                        echo "3. Database server requires SSL connection"
+                                        echo "4. Firewall blocking connection"
+                                        exit 1
+                                    }
+                                }
                             }
                             
                             echo "Database connection successful, creating schema..."
