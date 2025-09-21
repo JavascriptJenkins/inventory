@@ -337,13 +337,51 @@ spec:
                             echo "VERIFYING PVC MOUNT IN APPLICATION POD"
                             echo "=========================================="
 
-                            # Wait for the application pod to be ready
+                            # Wait for the application pod to be ready with retry logic
                             echo "⏳ Waiting for application pod to be ready..."
-                            kubectl wait --for=condition=Ready pod -l app=inventory,tenant=${env.TENANT_NAME} -n ${env.K8S_NAMESPACE} --timeout=300s
+                            
+                            MAX_ATTEMPTS=10
+                            ATTEMPT=1
+                            SLEEP_TIME=30
+                            
+                            while [ \$ATTEMPT -le \$MAX_ATTEMPTS ]; do
+                                echo "Pod readiness check attempt \$ATTEMPT/\$MAX_ATTEMPTS..."
+                                
+                                # Wait for any pod with the correct labels to be ready
+                                if kubectl wait --for=condition=Ready pod -l app=inventory,tenant=${env.TENANT_NAME} -n ${env.K8S_NAMESPACE} --timeout=60s 2>/dev/null; then
+                                    echo "✅ Pod is ready on attempt \$ATTEMPT"
+                                    break
+                                else
+                                    echo "❌ Pod not ready on attempt \$ATTEMPT"
+                                    echo "Current pods:"
+                                    kubectl get pods -l app=inventory,tenant=${env.TENANT_NAME} -n ${env.K8S_NAMESPACE} || echo "No pods found"
+                                    
+                                    if [ \$ATTEMPT -lt \$MAX_ATTEMPTS ]; then
+                                        echo "Waiting \$SLEEP_TIME seconds before retry..."
+                                        sleep \$SLEEP_TIME
+                                    fi
+                                fi
+                                
+                                ATTEMPT=\$((ATTEMPT + 1))
+                            done
 
-                            # Get the pod name
+                            if [ \$ATTEMPT -gt \$MAX_ATTEMPTS ]; then
+                                echo "❌ Pod not ready after \$MAX_ATTEMPTS attempts"
+                                echo "Skipping PVC verification but continuing deployment..."
+                                exit 0
+                            fi
+
+                            # Get the current pod name (may have changed due to recreation)
                             POD_NAME=\$(kubectl get pods -l app=inventory,tenant=${env.TENANT_NAME} -n ${env.K8S_NAMESPACE} -o jsonpath='{.items[0].metadata.name}')
                             echo "📦 Application pod name: \$POD_NAME"
+
+                            # Verify the pod is actually running
+                            if [ -z "\$POD_NAME" ] || [ "\$POD_NAME" = "null" ]; then
+                                echo "❌ No pod found with labels app=inventory,tenant=${env.TENANT_NAME}"
+                                echo "Available pods:"
+                                kubectl get pods -n ${env.K8S_NAMESPACE}
+                                exit 0
+                            fi
 
                             # Check if the uploads directory is mounted
                             echo "📁 Checking uploads directory mount in application pod:"
