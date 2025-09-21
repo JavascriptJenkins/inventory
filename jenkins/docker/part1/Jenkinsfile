@@ -541,7 +541,8 @@ BUILD_TIMESTAMP=${new Date().format('yyyy-MM-dd HH:mm:ss')}
                             DB_PORT=\$(echo \$DB_URI | sed 's|jdbc:postgresql://||' | cut -d: -f2 | cut -d/ -f1)
                             
                             # Check if database name is provided in URI, otherwise use default
-                            if echo \$DB_URI | grep -q '/'; then
+                            # Look for / after the port number, not in the jdbc:postgresql:// part
+                            if echo \$DB_URI | grep -q ':[0-9][0-9]*/'; then
                                 DB_NAME=\$(echo \$DB_URI | sed 's|jdbc:postgresql://||' | cut -d/ -f2)
                             else
                                 DB_NAME="defaultdb"
@@ -606,7 +607,8 @@ BUILD_TIMESTAMP=${new Date().format('yyyy-MM-dd HH:mm:ss')}
                             DB_PORT=\$(echo \$DB_URI | sed 's|jdbc:postgresql://||' | cut -d: -f2 | cut -d/ -f1)
                             
                             # Check if database name is provided in URI, otherwise use default
-                            if echo \$DB_URI | grep -q '/'; then
+                            # Look for / after the port number, not in the jdbc:postgresql:// part
+                            if echo \$DB_URI | grep -q ':[0-9][0-9]*/'; then
                                 DB_NAME=\$(echo \$DB_URI | sed 's|jdbc:postgresql://||' | cut -d/ -f2)
                             else
                                 DB_NAME="defaultdb"
